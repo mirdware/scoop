@@ -1,0 +1,20 @@
+/* MirdWare you are free - mirdware.co.cc */
+
+/* TEAM */
+
+	Creator: Marlon Ramirez
+	Site: mirdware [at] gamil.com
+	twitter: @marloyramirez
+	Location: Cúcuta, Colombia
+
+/* THANKS */
+	FONTSQUIRREL http://www.fontsquirrel.com/
+	ICONFINDER http://www.iconfinder.com/
+
+/* SITE */
+
+	Last Update: 2012/06/21
+	Language: Español
+	Standards: HTML5, CSS3, Ecmascript
+	Components: Modernizr, std.js
+	Software: Adobe Fireworks, Sublime Text, PHP, postgreSQL

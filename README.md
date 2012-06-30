@@ -8,14 +8,14 @@
 <p><b>http/s://host/controller/method/arg-1/arg-2/.../arg-n/</b></p>
 <p>De esta manera los datos que deban ser enviados mediante la url, deberan ser escritos despues del metodo que se desea invocar y respetando el orden en que seran resividos por el metodo. Como las variables GET an sido suprimidas del bootstrap las peticiones de un formulario deben <b>realizarse mediante POST</b>, de otra manera el bootstrap se quedara en un bucle de servidor y mostrara el respectivo error.</p>
 <p>Cuando se envia información mediante el metodo POST se debe tener especial cuidado en enviarla, pues si seprume el ultimo slash de la url, el navegador llegara a la dirección correcta, pero perdera las variables en el camino.</p>
-<p><b>http/s://host/controller/method/arg-1</b><span style="color:#C00;">Mal</span></p>
-<p><b>http/s://host/controller/method/arg-1/</b><span style="color:#45B339">Bien</span></p>
+<p>http/s://host/controller/method/arg-1 <b>Mal</b></p>
+<p>http/s://host/controller/method/arg-1/ <b>Bien</b></p>
 <h3>Estilos</h3>
 <p>Este bootstrap posee una serie de estilos predefinidos, pero que tratan de no obligar al desarrollados, maquetador o diseñador a seguir un patron o platilla prediseñada. Los cambios a los estilos son pocos y cuenta con algunas clases e ids que complementanto tanto el bootstrap como la libreria javascript que tambien se encuentra incluida.</p>
 <p>Dentro de estos estilos se encuentran estilos especiales para los botones, para los mensajes de error del bootstrap, para las ventanas modales, etc. Un par de reglas de estilo interesantes son <b>custom-input-file y input-file</b> que basicamente lo que hacen es camuflajear el input file, para poderle dar estilo a nuestro gusto, pero tienen una serie de reglas a tener en cuenta:</p>
-<ol>
+<ul>
 	<li>No modificar nada en ".custom-input-file .input-file" a excepción del cursor.</li>
 	<li>No modificar "“"overflow: hidden; position: relative;" en ".custom-input-file", pueden agregar más estilos.</li>
 	<li>Todo el contenido que agreguen dentro del div "custom-input-file", debe ir despues de la etiqueta input file, no antes.</li>
 	<li>Cuando cambien el cursor, deben cambiarlo en ".custom-input-file" y ".custom-input-file .input-file."</li>
-</ol>
+</ul>

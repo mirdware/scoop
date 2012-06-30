@@ -32,9 +32,7 @@ abstract class Controller implements View {
 	/*Establece o modifica los datos que va a procesar la vista*/
 	protected function setView ($key, $value=NULL) {
 		if(is_array($key)) {
-			foreach($key as $k => $v) {
-				$this->setView($k, $v);
-			}
+			$this->hashMap = array_merge ($this->hashMap, $key);
 		} else {
 			$this->hashMap[$key] = $value;
 		}

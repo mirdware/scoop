@@ -8,10 +8,10 @@
 	http(s)://host/controller/method/arg-1/arg-2/.../arg-n/
 <p>De esta manera los datos que serán enviados mediante la url, deberán ser escritos después del método que se desea invocar y respetando el orden en que seran resividos por el metodo. Como las variables GET han sido suprimidas del bootstrap, las peticiones de un formulario deben <b>realizarse mediante POST</b>, de otra manera el bootstrap se quedara en un bucle de servidor y mostrara el respectivo error.</p>
 <p>Cuando se envía información mediante el método POST se debe tener especial cuidado, pues si se suprime el ultimo slash de la url, el navegador llegara a la dirección correcta pero perderá las variables en el camino.</p>
+<h4>Mal</h4>
 	http(s)://host/controller/method/arg-1
-<b>Mal</b>
+<h4>Bien</h4>
 	http(s)://host/controller/method/arg-1/
-<b>Bien</b>
 <h3>Estilos</h3>
 <p>Este bootstrap posee una serie de estilos predefinidos que en ningún tratan de no obligar al desarrollador, maquetador o diseñador a seguir un patrón o platilla prediseñada. Los cambios a los estilos son pocos y cuentan con algunas clases e ids que complementan tanto el bootstrap como la librería javascript que también se encuentra incluida.</p>
 <p>Dentro de estos estilos se encuentran estilos especiales para los botones, para los mensajes de error del bootstrap, para las ventanas modales, etc. Un par de reglas de estilo interesantes son <b>custom-input-file e input-file</b> que básicamente lo que hacen es camuflajear el input file, para poderle dar estilo a nuestro gusto, pero tienen una serie de reglas a tener en cuenta:</p>

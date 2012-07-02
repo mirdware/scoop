@@ -9,7 +9,7 @@
 <p>De esta manera los datos que serán enviados mediante la url, deberán ser escritos después del método que se desea invocar y respetando el orden en que seran resividos por el metodo. Como las variables GET han sido suprimidas del bootstrap, las peticiones de un formulario deben <b>realizarse mediante POST</b>, de otra manera el bootstrap se quedara en un bucle de servidor y mostrara el respectivo error.</p>
 <p>Cuando se envía información mediante el método POST se debe tener especial cuidado, pues si se suprime el ultimo slash de la url, el navegador llegara a la dirección correcta pero perderá las variables en el camino.</p>
 <div><b>Mal</b></div>
-	http(s)://host/controller/method/arg-1<b>
+	http(s)://host/controller/method/arg-1
 <div><b>Bien</b></div>
 	http(s)://host/controller/method/arg-1/
 <h3>Estilos</h3>

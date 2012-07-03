@@ -76,5 +76,56 @@ class Helper {
         	require $load;
         }
 	}
+
+	public static function sendMail($subject, $message, $from, $to, $opt=array()) {
+		/*Estableciendo variables*/
+		$docsNames = NULL;
+		$fBody = NULL;
+		$cc = ( isset($opt['cc']) )?$opt['cc']:'';
+		$cco = ( isset($opt['cco']) )?$opt['cco']:'';
+		$reply = ( isset($opt['reply']) )?$opt['reply']:'';
+		$format = ( isset($opt['format']) )?$opt['format']:'html';
+		$attach = ( isset($opt['attach']) )?$opt['attach']:array();
+		unset ($opt);
+		foreach ($attach as $file) {
+      		if($file['size']!=0) {
+      			if( !isset($file['data']) ) {
+      				$file['data']=fread(fopen($file['tmp_name'], "r"),$file['size']);
+      			}
+      			$docsNames.= "X-attachments: ".$file['name']."\n";
+      			$fBody   .="\n--Neftali-Yaguas\n"
+      						."Content-type: ".$file['type']."; name=\"".$file['name']."\"\n"
+      						."Content-Transfer-Encoding: BASE64\n"
+      						."Content-disposition: attachment; filename=\"".$file['name']."\"\n\n"
+      						.chunk_split(base64_encode($file['data']))."\n";
+			}
+		}
+		/* Aplicando Cabezeras al Mensaje*/
+		$headers = "From: ".$from."\n";
+		if($cc) {
+			$headers .= "CC: ".$cc."\n";
+		}
+		if($cco) {
+			$headers .= "BCC: ".$cco."\n";
+		}
+		if($reply) {
+			$headers .= "Reply-To: ".$reply."\n";
+		}
+		$headers .= "X-Priority: 1\n"
+            .		"X-MSMail-Priority: High\n"
+            .		"X-Mailer: Neftali Yaguas -\"Sendmail Attach files 1.2\"- jhony192@coderic.org\n"
+            .		"Return-Path: ".$from."\n"
+            .		"MIME-version: 1.0\n"
+            .		"Content-type: multipart/mixed; boundary=\"Neftali-Yaguas\"\n"
+            .		"Content-transfer-encoding: 7BIT\n".$docsNames;
+        /* Comienzo del Cuerpo del Mensaje*/
+   		$body = "--Neftali-Yaguas\n"
+            .	"Content-type: text/".$format."; charset=UTF-8\n"
+            .	"Content-transfer-encoding: 7BIT\n"
+            .	"Content-description:Cuerpo de Mensaje\n\n"
+            .	$message."\n\n".$fBody."--Neftali-Yaguas--\n";
+   		/* Enviando el Mensaje*/
+   		return mail($to,'=?ISO-8859-1?B?'.base64_encode(utf8_decode($subject)).'=?=',$body,$headers);
+	}
 }
 ?>

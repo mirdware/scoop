@@ -7,37 +7,38 @@ class Home extends Controller{
 		if ($this->ajax()) {
 			$this->showLayer (false);
 		} else {
-			$this->setView('title', 'EPS - IPS');
+			$this->setView('title', 'Prueba de bootstrap');
 		}
 	}
 	
-	public function save () {
-		if (empty($_POST['nombre'])) {
-			return 'falta nombre';
+	public function send () {
+		$error = '';
+		if (empty($_POST['from'])) {
+			$error .= "Falta campo de\n";
 		}
-		if (empty($_POST['nombres'])) {
-			return 'falta nombres';
+		$from = $_POST['from'];
+		unset($_POST['from']);
+		if (empty($_POST['to'])) {
+			$error .= "Falta campo para\n";
 		}
-		if (empty($_POST['apellidos'])) {
-			return 'falta apellidos';
+		$to = $_POST['to'];
+		unset($_POST['to']);
+		if (empty($_POST['msj'])) {
+			$error .= "Falta el mensaje\n";
 		}
-		if (empty($_POST['direccion'])) {
-			return 'falta direccion';
+		$msj = $_POST['msj'];
+		unset($_POST['msj']);
+		if (empty($_POST['subject'])) {
+			$error .= "Falta el asunto\n";
 		}
-		if (!Usuario::exist($_POST['nombre'])) {
-			$user = Usuario::create($_POST)->read()->toObject();
-			return utf8_encode('Nombre: '.$user->nombre.
-					'<br>Nombres: '.$user->nombres.
-					'<br>Apellidos: '.$user->apellidos.
-					'<br>Dirección: '.$user->direccion);
-		} else {
-			$user = new Usuario ($_POST['nombre']);
-			$user = $user->read()->toObject();
-			return utf8_decode('Nombre: '.$user->nombre.
-					'<br>Nombres: '.$user->nombres.
-					'<br>Apellidos: '.$user->apellidos.
-					'<br>Dirección: '.$user->direccion);
+		$asunto = $_POST['subject'];
+		unset($_POST['subject']);
+		if (!empty($error)) {
+			return $error;
 		}
+		$_POST['attach'] = $_FILES;
+		Helper::sendMail ($asunto, $msj, $from, $to, $_POST);
+		return 'Mensaje enviado';
 	}
 	
 	public function hola ($msj, $type='out') {

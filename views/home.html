@@ -1,6 +1,82 @@
-<div style="background:#FFF; padding:10px;">
-<h1>Registro Individual de Prestación de Servicios</h1>
-<div class="custom-input-file btn">
-	<input type="file" class="input-file" />Cargar RIPS
-</div>​
-</div>
+<style>
+body {
+	margin: 20px;
+}
+label {
+	width: 90px;
+}
+span {
+	padding-left: 1em;
+}
+form {
+	width: 550px;
+}
+</style>
+<h1>Pagina de prueba</h1>
+<p>Probando el metodo sedMail que fue adicionado a la clase Hepper</p>
+<form method="post" action="{root}home/send/" enctype="multipart/form-data" target="frame-ajax" >
+	<label>de:</label><input type="text" name="from" class="input-text" size="30" required /><br />
+	<label>para:</label><input type="text" name="to" class="input-text" size="30" required /><br />
+	<label>Asunto:</label><input type="text" name="subject" class="input-text" size="30" required /><br />
+	<label>CC:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+	<label>CCO:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+	<label>Responder a:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+	<label>Formato:</label> <label>HTML <input type="radio" name="format" value="html" checked /></label> <label>PLAIN <input type="radio" name="format" value="plain" /></label><br /><br />
+	<div id="file-container">
+		<div class="custom-input-file btn">
+			<input type="file" class="input-file" id="load-1" name="file-1" />Adjuntar archivo
+		</div><span id="loading-1"></span><br /><br />
+	</div>
+	<label>Mensaje: </label><textarea rows="10" cols="50" class="input-text" name="msj"></textarea>
+	<div class="center">
+		<input type="submit" class="btn red" value="Enviar" id="btn-submit" />
+	</div>
+</form>
+<iframe name="frame-ajax" style="display:none"></iframe>
+<script type="text/javascript">
+	function loadName () {
+		var data = this.id.split("-"),
+			id = parseInt(data[1])+1,
+			container = $("#file-container"),
+			cunstom = document.createElement("div"),
+			input = document.createElement("input"),
+			span = document.createElement("span"),
+			text = document.createTextNode("Adjuntar archivo"),
+			br = document.createElement("br");
+		cunstom.className = "custom-input-file btn";
+		input.type = "file";
+		input.className = "input-file";
+		input.id = "load-"+id;
+		input.name = 'file-'+id;
+		span.id = "loading-"+id;
+		$("#loading-"+data[1]).innerHTML = this.value;
+		cunstom.appendChild(input);
+		cunstom.appendChild(text);
+		container.appendChild(cunstom);
+		container.appendChild(span);
+		container.appendChild(br);
+		container.appendChild(br.cloneNode(true));
+	}
+
+	function submitForm () {
+		var self = this,
+			form = self.form,
+			r = $("@frame-ajax")[0];
+		form.submit();
+		self.disabled = true;
+		r.onload = function () {
+			r = (r.contentWindow || r.contentDocument);
+			if (r.document) {
+				r = r.document.body.innerHTML;
+			}
+			//procesamiento de la respuesta
+			alert (r);
+			self.disabled = false;
+		}
+	}
+
+	ready (function () {
+		evt.on ($("#file-container"), ".input-file", "change", loadName);
+		evt.add ($("#btn-submit"), "click", submitForm);
+	});
+</script>

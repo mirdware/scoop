@@ -9,7 +9,7 @@ span {
 	padding-left: 1em;
 }
 form {
-	width: 550px;
+	width: 580px;
 }
 </style>
 <h1>Pagina de prueba</h1>
@@ -23,9 +23,11 @@ form {
 	<label>Responder a:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
 	<label>Formato:</label> <label>HTML <input type="radio" name="format" value="html" checked /></label> <label>PLAIN <input type="radio" name="format" value="plain" /></label><br /><br />
 	<div id="file-container">
-		<div class="custom-input-file btn">
-			<input type="file" class="input-file" id="load-1" name="file-1" />Adjuntar archivo
-		</div><span id="loading-1"></span><br /><br />
+		<div id="file-1" style="margin-bottom:1em;">
+			<div class="custom-input-file btn">
+				<input type="file" class="input-file" name="file-1" />Adjuntar archivo
+			</div><span></span>
+		</div>
 	</div>
 	<label>Mensaje: </label><textarea rows="10" cols="50" class="input-text" name="msj"></textarea>
 	<div class="center">
@@ -35,28 +37,46 @@ form {
 <iframe name="frame-ajax" style="display:none"></iframe>
 <script type="text/javascript">
 	function loadName () {
-		var data = this.id.split("-"),
-			id = parseInt(data[1])+1,
-			container = $("#file-container"),
-			cunstom = document.createElement("div"),
-			input = document.createElement("input"),
-			span = document.createElement("span"),
-			text = document.createTextNode("Adjuntar archivo"),
-			br = document.createElement("br");
-		cunstom.className = "custom-input-file btn";
-		input.type = "file";
-		input.className = "input-file";
-		input.id = "load-"+id;
-		input.name = 'file-'+id;
-		span.id = "loading-"+id;
-		$("#loading-"+data[1]).innerHTML = this.value;
-		cunstom.appendChild(input);
-		cunstom.appendChild(text);
-		container.appendChild(cunstom);
-		container.appendChild(span);
-		container.appendChild(br);
-		container.appendChild(br.cloneNode(true));
+		var parent = this.parentNode.parentNode,
+			data = parent.id.split("-"),
+			info = $("span", parent)[0],
+			addFile = (info.innerHTML == '');
+
+		info.innerHTML = this.value+' <img src="'+root+'views/images/delete.png" style="cursor:pointer;" />';
+
+		if (addFile) {
+			var id = parseInt(data[1])+1,
+				containerFile = $("#file-container"),
+				cunstom = document.createElement("div"),
+				container = cunstom.cloneNode(true),
+				input = document.createElement("input"),
+				span = document.createElement("span"),
+				text = document.createTextNode("Adjuntar archivo");
+
+			cunstom.className = "custom-input-file btn";
+			container.id = "file-"+id;
+			container.style.marginBottom = "1em";
+			input.type = "file";
+			input.className = "input-file";
+			input.name = 'file-'+id;
+
+			cunstom.appendChild(input);
+			cunstom.appendChild(text);
+			container.appendChild(cunstom);
+			container.appendChild(span);
+			containerFile.appendChild(container);
+			$.evt.add (input, "change", loadName);
+			$.evt.add ($("img", parent)[0], "click", deleteFile);
+		}
+		
 	}
+
+		function deleteFile () {
+			var parent = this.parentNode.parentNode;
+			$.evt.remove ($("input", parent)[0], "change", loadName);
+			$.evt.remove (this, "click", deleteFile);
+			parent.parentNode.removeChild(parent);
+		}
 
 	function submitForm () {
 		var self = this,
@@ -75,8 +95,8 @@ form {
 		}
 	}
 
-	ready (function () {
-		evt.on ($("#file-container"), ".input-file", "change", loadName);
-		evt.add ($("#btn-submit"), "click", submitForm);
+	$ (function () {
+		$.evt.add ($(".input-file"), "change", loadName);
+		$.evt.add ($("#btn-submit"), "click", submitForm);
 	});
 </script>

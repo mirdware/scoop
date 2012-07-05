@@ -1,0 +1,161 @@
+/* HTML5 display-role reset for older browsers */
+* {
+	margin: 0;
+	padding: 0;
+}
+
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+
+body {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size:62.5%;
+}
+
+a {
+	text-decoration: none;
+}
+
+input, textarea, img {
+	vertical-align: middle;
+}
+
+img, fieldset {
+	border: 0;
+	max-width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0.5em 0;
+}
+h1 { font-size: 3.2em; }
+h2 { font-size: 2.8em; }
+h3 { font-size: 2.4em; }
+h4 { font-size: 2em; }
+h5 { font-size: 1.6em; }
+h6 { font-size: 1.2em; }
+
+label {
+	display: inline-block;
+	font-size: 1.2em;
+	text-align: right;
+	vertical-align: middle;
+	zoom: 1;
+	*display: inline;
+}
+
+p {
+	font-size: 1.2em;
+	margin: 1em 0;
+}
+
+hr {
+	background: #CCC;
+	border: 0;
+	clear: both;
+	color: #CCC;
+	height: 0.1em;
+	margin: 0.5em auto;
+}
+
+table {
+	border-collapse: collapse;
+	border: 0.1em solid #CCC;
+	width: 100%;
+}
+
+th, td {
+	border: 0.1em solid #CCC;
+	padding: 0.2em 0.5em;
+}
+
+td.num {
+	text-align: center;
+}
+
+td.label {
+	font-weight: 700;
+	text-align: right;
+}
+
+/*** botones ***/
+
+.btn {
+	background: #222 url(../btn-overlay.png) repeat-x;		
+	border: 0;
+	border-bottom: 0.1em solid rgba(0,0,0,0.25);
+	border-radius: 0.5em;
+	box-shadow: 0 0.1em 0.3em rgba(0,0,0,0.6);
+	color: #FFF;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 1.2em;
+	font-weight: 700;
+	padding: 0.5em 1em;
+	position: relative;
+	text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+	zoom: 1;
+	*display: inline;
+}
+.btn:hover { background-color: #111; }
+.btn:active { top:0.1em; }
+
+.blue { background-color: #2981E4;}
+.blue:hover { background-color: #2575CF; }
+.red { background-color: #E62727; }
+.red:hover { background-color: #CF2525; }
+.green { background-color: #91BD09; }
+.green:hover { background-color: #749A02;}
+.orange { background-color: #FF5C00; }
+.orange:hover { background-color: #D45500; }
+.yellow { background-color: #FFB515; }
+.yellow:hover { background-color: #FC9200; }
+
+.custom-input-file {
+	overflow: hidden;
+	position: relative;
+	cursor: pointer;
+}
+.custom-input-file .input-file {
+	margin: 0;
+	padding: 0;
+	outline: 0;
+	font-size: 10000px;
+	border: 10000px solid transparent;
+	opacity: 0;
+	filter: alpha(opacity=0);
+	position: absolute;
+	right: -1000px;
+	top: -1000px;
+	cursor: pointer;
+}
+.input-text {
+	border-radius: 3px;
+	border: solid 1px #96A6C5;
+	margin: 5px;
+	padding: 5px;
+	vertical-align: middle;
+}
+
+#out, #error {
+	background: no-repeat left center;
+	font: 700 1.4em Arial, Helvetica, sans-serif;
+	margin: 0.5em;
+	padding-left: 20px;
+}
+#msg {display:none;}
+#out {
+	background-image: url(../ok.png);
+	color: #45B339;
+}
+#error {
+	background-image: url(../error.png);
+	color: #C00;
+}
+
+.center {
+	text-align: center;
+}

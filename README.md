@@ -21,3 +21,12 @@
 	<li>Todo el contenido que agreguen dentro del div "custom-input-file", debe ir despues de la etiqueta input file, no antes.</li>
 	<li>Cuando cambien el cursor, deben cambiarlo en ".custom-input-file" y ".custom-input-file .input-file."</li>
 </ul>
+<h3>Comprimiendo css y javascript</h3>
+<p>Dentro del proyecto se encuentra un archivo rar.bat que va a servir para unir y comprimir archivos javascrpt y css, gracias a <a href="http://developer.yahoo.com/yui/compressor/">yuicompressor</a> se realiza esta ultima acción, generando de esta manera un solo archivo css y javascript optimizado y totalmente funcional para la web.</p>
+<p>De momento la compresión de archivos solo funciona en entornos Windows, próximamente se usara un compresor automático en Linux. El orden de los archivos al realizar la concatenación se encuentran dentro del mismo rar.bat de la siguiente manera:</p>
+<div><b>javascript</b></div>
+	copy /Y /B modernizr.js +std.js +modal.std.js +slider.std.js +fun.js scripts.js
+<div><b>css</b></div>
+	copy /Y /B stylestd.css +styles.modal.css +styles.slider.css +styles.app styles.css
+<p>Para agregar archivos se debe colocar <b>+nombredearchivo.extención</b> En el orden que se desea sea concatenado dicho archivo (en caso de plugins, módulos, dependencias, etc), en caso de querer eliminar un archivo simplemente se suprime de la línea.</p>
+

@@ -1,0 +1,85 @@
+.slider {
+	margin: 0 auto;
+}
+
+.slider ul {
+	list-style: none;
+	background: #000;
+	overflow: hidden;
+	border: solid 0.4em #CCC;
+	border-radius: 0.5em;
+	position: relative;
+	box-shadow: 0 0 2.5em #000;
+}
+
+.slider span {
+	background: url(../opacity.png);
+	color: #FFF;
+	display: block;
+	padding: 0.5em;
+	position: relative;
+	width: 100%;
+	left: 0;
+	bottom: 0;
+	font-size: 1.2em;
+}
+
+.slider .control {
+	height: 100%;
+	width: 100%;
+	position:  absolute;
+	margin: 0.5em auto;
+	top: 0;
+	text-align: center;
+}
+
+.slider .control .navLeft, .slider .control .navRight, .slider .control .link {
+	cursor: pointer;
+	display: inline-block;
+	width: 25%;
+	height: 100%;
+	zoom: 1;
+	*display: inline;
+}
+
+.slider .control .navLeft {
+	background: url(../left.gif) no-repeat center left;
+	float: left;
+}
+.slider .control .navRight {
+	background: url(../right.gif) no-repeat center right;
+	float: right;
+}
+.slider .control .link {
+	background: no-repeat center center;
+	width: 50%;
+}
+
+.slider .control .link:hover {
+	background-image: url(../link.gif);
+}
+
+.slider-nav {
+	text-align: center;
+}
+
+.slider-nav a {
+	display: inline-block;
+	margin: 0.3em;
+	width: 13px;
+	height: 13px;
+	background: url(../bg_control_nav.png);
+	cursor: pointer;
+	text-indent: -999em;
+	zoom: 1;
+	*display: inline;
+}
+
+.slider-nav .normal:hover {
+	background-position: 0 -13px;
+}
+
+.slider-nav .span {
+	background-position: 0 -26px;
+	cursor: default;
+}

@@ -1,0 +1,61 @@
+#overlay {
+	background: url(../opacity.png);
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index:1001;
+}
+
+#modal {
+	display: none;
+	left: 50%;
+	overflow: hidden;
+	padding: 0;
+	position: fixed;
+	top: 50%;
+	z-index: 1002;
+}
+
+.head {
+	background:#3381B7;
+	cursor: move;
+	height: 16px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+	width:100%;
+}
+
+.head h2 {
+	color: #FFF;
+	font: 700 14px Verdana, Geneva, sans-serif;
+	margin-left: 10px;
+	margin-right: 50px;
+	margin: 0;
+	padding: 0 5px;
+}
+
+.head div {
+	background: url(../cerrar.png) no-repeat;
+	cursor: pointer;
+	float: right;
+	height: 15px;
+	margin-right: 10px;
+	width: 15px;
+}
+
+.round {
+	display: block;
+}
+
+.round * {
+	clear: both;
+	display: block;
+	height: 1px;
+	overflow: hidden;
+}
+.r1 { margin: 0 5px; }
+.r2 { margin: 0 3px; }
+.r3 { margin: 0 2px; }
+.r4 { margin: 0 1px; height: 2px; }

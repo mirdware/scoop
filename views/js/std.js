@@ -25,6 +25,9 @@ var TRUE = true,
 	NULL = null,
 	document = window.document,
 	_$ = window.$,
+	encodeURIComponent = window.encodeURIComponent,
+	parseInt = window.parseInt,
+	parseFloat = window.parseFloat,
 	testElement = document.documentElement,
 	std = {
 		/****** NUCLEO ******/
@@ -129,9 +132,9 @@ var TRUE = true,
 							std.evt.remove (document, {
 								"DOMContentLoaded": ready,
 								"dataavailable": ready,
-								"onreadystatechange": stateChange,
-								"load": ready
+								"readystatechange": stateChange
 							});
+							std.evt.remove(window, "load", ready);
 						}
 					}
 
@@ -153,21 +156,22 @@ var TRUE = true,
 						}
 					}
 					
-					/*
-						añadiendo manejadores a los eventos que controlan la carga del documento, de esta manera aparecen:
-						DOMContentLoaded, dataavailable (Carga más rapido que DOMContenetLoaded), onreadystatechange y load
-					*/ 
-					std.evt.add (document, {
-						"DOMContentLoaded": ready,
-						"dataavailable": ready,
-						"onreadystatechange": stateChange,
-						"load": ready
-					});
+					
 					//Se tiene aparte una manera extra para cargar el DOM para <IE8
 					if ( testElement.doScroll && window == window.top ) {
 						tryScroll();
 					}
-
+					/*
+						añadiendo manejadores a los eventos que controlan la carga del documento, de esta manera aparecen:
+						DOMContentLoaded, dataavailable (Carga más rapido que DOMContenetLoaded), onreadystatechange y 
+						para window load (document no lo acepta)
+					*/ 
+					std.evt.add (document, {
+						"DOMContentLoaded": ready,
+						"dataavailable": ready,
+						"readystatechange": stateChange
+					});
+					std.evt.add (window, "load", ready);
 				}
 				
 				/**
@@ -316,10 +320,11 @@ var TRUE = true,
 			*/
 			function loops(element, nEvent, fn, capture, observe) {
 				var caller = loops.caller;
-				/*if(element["data-exe"]) {
-					return TRUE;
-				}*/
-				if(element.length) {
+
+				if (!element) {
+					return FALSE;
+				}
+				if(!element.nodeType && element.length) {
 					for(var i=0; el = element[i]; i++) {
 						caller(el, nEvent, fn, capture);
 					}
@@ -554,11 +559,11 @@ var TRUE = true,
 				if(!(obj instanceof Object)) {
 					return obj;
 				}
-				var res="",
-					encode = encodeURIComponent;
+				var res="", typeKey;
 				for(var key in obj) {
-					if(typeof obj[key] == "string" || typeof obj[key] == "number") {
-						res += encode(key)+"="+encode(obj[key])+"\&";
+					typeKey = typeof obj[key];
+					if(typeKey == "string" || typeKey == "number") {
+						res += encodeURIComponent(key)+"="+encodeURIComponent(obj[key])+"\&";
 					}
 				}
 				
@@ -699,8 +704,8 @@ var TRUE = true,
 							post[prop][i] = (from[prop][i]-to[prop][i])/((duration/1000)*fps);
 						}
 					} else {
-						from[prop] = parseInt(cssProp);
-						to[prop] = parseInt(props[prop]);
+						from[prop] = parseFloat(cssProp);
+						to[prop] = parseFloat(props[prop]);
 						post[prop] = isNaN(props[prop])?props[prop].replace(/(\+|-)?\d+/g, ""):"";
 					}
 				}
@@ -799,7 +804,7 @@ std.extend (String.prototype,{
 
 
 /****** JSON ******/
-if(typeof window.JSON == "undefined") {
+if(window.JSON == undefined) {
 	window.JSON = {
 		/**
 			Genera una cadena JSON valida partiendo de un objeto javascript sin funciones.

@@ -1,4 +1,4 @@
-(function($, window) {
+(function($, window, undefined) {
 	// declaración de variables globales
 	var FALSE = false,
 		TRUE = true,

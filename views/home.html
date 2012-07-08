@@ -1,102 +1,105 @@
-<style>
-body {
-	margin: 20px;
-}
-label {
-	width: 90px;
-}
-span {
-	padding-left: 1em;
-}
-form {
-	width: 580px;
-}
-</style>
-<h1>Pagina de prueba</h1>
-<p>Probando el metodo sedMail que fue adicionado a la clase Hepper</p>
-<form method="post" action="{root}home/send/" enctype="multipart/form-data" target="frame-ajax" >
-	<label>de:</label><input type="text" name="from" class="input-text" size="30" required /><br />
-	<label>para:</label><input type="text" name="to" class="input-text" size="30" required /><br />
-	<label>Asunto:</label><input type="text" name="subject" class="input-text" size="30" required /><br />
-	<label>CC:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
-	<label>CCO:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
-	<label>Responder a:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
-	<label>Formato:</label> <label>HTML <input type="radio" name="format" value="html" checked /></label> <label>PLAIN <input type="radio" name="format" value="plain" /></label><br /><br />
-	<div id="file-container">
-		<div id="file-1" style="margin-bottom:1em;">
-			<div class="custom-input-file btn">
-				<input type="file" class="input-file" name="file-1" />Adjuntar archivo
-			</div><span></span>
+<div style="background-color:#FFF; padding:5px;">
+	<style>
+	body {
+		margin: 20px;
+	}
+	label {
+		width: 90px;
+	}
+	span {
+		padding-left: 1em;
+	}
+	form {
+		width: 580px;
+	}
+	</style>
+	<h1>Pagina de prueba</h1>
+	<p>Probando el metodo sedMail que fue adicionado a la clase Hepper</p>
+	<form method="post" action="{root}home/send/" enctype="multipart/form-data" target="frame-ajax" >
+		<label>de:</label><input type="text" name="from" class="input-text" size="30" required /><br />
+		<label>para:</label><input type="text" name="to" class="input-text" size="30" required /><br />
+		<label>Asunto:</label><input type="text" name="subject" class="input-text" size="30" required /><br />
+		<label>CC:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+		<label>CCO:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+		<label>Responder a:</label><input type="text" name="reply" class="input-text" size="30"  /><br />
+		<label>Formato:</label> <label>HTML <input type="radio" name="format" value="html" checked /></label> <label>PLAIN <input type="radio" name="format" value="plain" /></label><br /><br />
+		<div id="file-container">
+			<div id="file-1" style="margin-bottom:1em;">
+				<div class="custom-input-file btn">
+					<input type="file" class="input-file" name="file-1" />Adjuntar archivo
+				</div><span></span>
+			</div>
 		</div>
-	</div>
-	<label>Mensaje: </label><textarea rows="10" cols="50" class="input-text" name="msj"></textarea>
-	<div class="center">
-		<input type="submit" class="btn red" value="Enviar" id="btn-submit" />
-	</div>
-</form>
-<iframe name="frame-ajax" style="display:none"></iframe>
-<script type="text/javascript">
-	function loadName () {
-		var parent = this.parentNode.parentNode,
-			data = parent.id.split("-"),
-			info = $("span", parent)[0],
-			addFile = (info.innerHTML == '');
+		<label>Mensaje: </label><textarea rows="10" cols="50" class="input-text" name="msj"></textarea>
+		<div class="center">
+			<input type="submit" class="btn red" value="Enviar" id="btn-submit" />
+		</div>
+	</form>
+	<iframe name="frame-ajax" style="display:none"></iframe>
+	<a href="{root}home/modal/" title="Ventana modal" rel="modal-cache">Open modal</a><br />
+	<a href="{root}home/modal/">Whithout modal</a>
+	<script type="text/javascript">
+		function loadName () {
+			var parent = this.parentNode.parentNode,
+				data = parent.id.split("-"),
+				info = $("span", parent)[0],
+				addFile = (info.innerHTML == '');
 
-		info.innerHTML = this.value+' <img src="'+root+'views/images/delete.png" style="cursor:pointer;" />';
+			info.innerHTML = this.value+' <img src="'+root+'views/images/delete.png" style="cursor:pointer;" />';
 
-		if (addFile) {
-			var id = parseInt(data[1])+1,
-				containerFile = $("#file-container"),
-				cunstom = document.createElement("div"),
-				container = cunstom.cloneNode(true),
-				input = document.createElement("input"),
-				span = document.createElement("span"),
-				text = document.createTextNode("Adjuntar archivo");
+			if (addFile) {
+				var id = parseInt(data[1])+1,
+					containerFile = $("#file-container"),
+					cunstom = document.createElement("div"),
+					container = cunstom.cloneNode(true),
+					input = document.createElement("input"),
+					span = document.createElement("span"),
+					text = document.createTextNode("Adjuntar archivo");
 
-			cunstom.className = "custom-input-file btn";
-			container.id = "file-"+id;
-			container.style.marginBottom = "1em";
-			input.type = "file";
-			input.className = "input-file";
-			input.name = 'file-'+id;
+				cunstom.className = "custom-input-file btn";
+				container.id = "file-"+id;
+				container.style.marginBottom = "1em";
+				input.type = "file";
+				input.className = "input-file";
+				input.name = 'file-'+id;
 
-			cunstom.appendChild(input);
-			cunstom.appendChild(text);
-			container.appendChild(cunstom);
-			container.appendChild(span);
-			containerFile.appendChild(container);
-			$.evt.add (input, "change", loadName);
-			$.evt.add ($("img", parent)[0], "click", deleteFile);
-		}
-		
-	}
-
-		function deleteFile () {
-			var parent = this.parentNode.parentNode;
-			$.evt.remove ($("input", parent)[0], "change", loadName);
-			$.evt.remove (this, "click", deleteFile);
-			parent.parentNode.removeChild(parent);
-		}
-
-	function submitForm () {
-		var self = this,
-			form = self.form,
-			r = $("@frame-ajax")[0];
-		form.submit();
-		self.disabled = true;
-		r.onload = function () {
-			r = (r.contentWindow || r.contentDocument);
-			if (r.document) {
-				r = r.document.body.innerHTML;
+				cunstom.appendChild(input);
+				cunstom.appendChild(text);
+				container.appendChild(cunstom);
+				container.appendChild(span);
+				containerFile.appendChild(container);
+				$.evt.add (input, "change", loadName);
+				$.evt.add ($("img", parent)[0], "click", deleteFile);
 			}
-			//procesamiento de la respuesta
-			alert (r);
-			self.disabled = false;
+			
 		}
-	}
 
-	$ (function () {
-		$.evt.add ($(".input-file"), "change", loadName);
-		$.evt.add ($("#btn-submit"), "click", submitForm);
-	});
-</script>
+			function deleteFile () {
+				var parent = this.parentNode.parentNode;
+				$.evt.remove ($("input", parent)[0], "change", loadName);
+				$.evt.remove (this, "click", deleteFile);
+				parent.parentNode.removeChild(parent);
+			}
+
+		function submitForm () {
+			var self = this,
+				form = self.form,
+				r = $("@frame-ajax")[0];
+			form.submit();
+			self.disabled = true;
+			r.onload = function () {
+				r = (r.contentWindow || r.contentDocument);
+				if (r.document) {
+					r = r.document.body.innerHTML;
+				}
+				//procesamiento de la respuesta
+				alert (r);
+				self.disabled = false;
+			}
+		}
+
+		$ (function () {
+			$.evt.add ($(".input-file"), "change", loadName);
+			$.evt.add ($("#btn-submit"), "click", submitForm);
+		});
+	</script>

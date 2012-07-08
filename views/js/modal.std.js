@@ -28,12 +28,15 @@
 					show: function () {
 						$.evt.get().preventDefault();
 						var title = this.getAttribute("title") || "",
+							isCache = this.rel.split("-")[1] == "cache",
 							url = this.getAttribute("href"),
 							path = document.location,
 							element;
+
 						if (url.indexOf(path+"#") == 0) {
 							url = url.replace(path, "");
 						}
+
 						if(!overlay) {
 							overlay = document.createElement("div");
 							modal = overlay.cloneNode(FALSE);
@@ -47,7 +50,7 @@
 							$.evt.add(head,"mousedown",function(){
 								$.sfx.dyd($.evt.get(),modal,overlay);
 							});
-							$.evt.add(img,"click",core.hide);
+							$.evt.add([img, overlay],"click",core.hide);
 							document.body.appendChild(overlay);
 							head.appendChild(img);
 							head.appendChild(text);
@@ -73,16 +76,19 @@
 							parent.removeChild(local);
 						} else {
 							var aux = document.createElement("div");
-							if (! (aux.innerHTML = cache[url]) ) {
+							if (!isCache || !(aux.innerHTML = cache[url])) {
 								$.ajax.request(url,function(r){
 									//console.log(r);
-									cache[url] = aux.innerHTML = r;
-								}, {data:"ajax="+TRUE, sync:TRUE});
+									if (isCache) {
+										cache[url] = r;
+									}
+									aux.innerHTML = r;
+								}, {sync:TRUE});
 							}
 							element = aux.firstChild;
 						}
 						modal.appendChild(element);
-						modal.appendChild(core.round($.css("#"+element.id).get("backgroundColor"),"bottom"));
+						modal.appendChild(core.round($.css(element).get("backgroundColor"),"bottom"));
 						element.style.display = "block";
 						modal.childNodes[1].childNodes[1].innerHTML = title;
 						
@@ -183,7 +189,7 @@
 				$.evt.add(window,"resize",$.modal.reset);
 				$.evt.on(document,"a","click", function() {
 					var rel = this.rel;
-					if(rel == "modal") {
+					if(rel.indexOf("modal") == 0 ) {
 						$.modal.show.apply(this,arguments);
 					} else if(rel == "external" && this.target != "_blank") {
 						this.target = "_blank";

@@ -41,6 +41,13 @@ class Home extends Controller{
 		return 'Mensaje enviado';
 	}
 	
+	public function modal () {
+		if ($this->ajax()) {
+			$this->showLayer(false);
+		}
+		$this->render(self::$view);
+	}
+
 	public function hola ($msj, $type='out') {
 		$this->message($type, urldecode($msj));
 		$this->render(self::$view);

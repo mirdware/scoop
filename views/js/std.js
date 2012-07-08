@@ -52,10 +52,10 @@ var TRUE = true,
 			@return: {object} retorna todo std, de esta manera se le puede asignar un nuevo alias fuera del ambito.
 		**/
 		cmode: function () {
-			if ( window.$ === window.std ) {
+			if ( window.$ === std ) {
 				window.$ = _$;
 			}
-			return window.std;
+			return std;
 		},
 
 		/****** DOM ******/
@@ -89,7 +89,7 @@ var TRUE = true,
 					}
 					tag || (tag = "*");
 					var classElements = [],
-						els = std.dom.get(tag),
+						els = std(tag),
 						pattern = new RegExp("(^|\\s)"+name+"(\\s|$)");
 					for (var i=0,el, j=0; el=els[i]; i++) {
 						if ( pattern.test(el.className) ) {
@@ -303,9 +303,9 @@ var TRUE = true,
 						e.target = e.srcElement;
 						e.time = (new Date).getTime();
 						return e;
-					} else {
-						return core.get.caller.arguments[0];
 					}
+					
+					return core.get.caller.arguments[0];
 				}
 			};
 			
@@ -395,7 +395,7 @@ var TRUE = true,
 				var prop = args[0],
 					value = args[1];
 				if(prop == "opacity" && testElement.style[prop] == undefined) {
-					if (!value) {
+					if (!value && value !== 0) {
 						value = 1;
 					}
 					prop = "filter";
@@ -452,8 +452,7 @@ var TRUE = true,
 						var style = (obj != ruleName)?obj.style[prop]:(obj.currentStyle || document.defaultView.getComputedStyle(obj, ""))[prop];
 						//unificar a rgb la salida de colores
 						if(style.indexOf("#") == 0) {
-							temp = hexToRGB(style);
-							style = "rgb("+temp[0]+", "+temp[1]+", "+temp[2]+")";
+							style = "rgb("+hexToRGB(style).join(", ")+")";
 						}
 						if(prop == "filter") {
 							style = (style == "")?"1":(parseInt(style.replace(/[^\d]/g,""))/100)+"";
@@ -527,8 +526,7 @@ var TRUE = true,
 				xmlHttp.onreadystatechange = function() {
 					if (xmlHttp.readyState == 4) {
 						if (xmlHttp.status == 200) {
-							var r = (response == "XML")?xmlHttp.responseXML:xmlHttp.responseText;
-							callback(r);
+							callback( (response == "XML")?xmlHttp.responseXML:xmlHttp.responseText );
 						} else if (feedback) {
 							feedback(xmlHttp.status);
 						}
@@ -537,16 +535,15 @@ var TRUE = true,
 					}
 				};
 				data = std.ajax.url(data);
-				if (method == "GET") {
-					if(data) {
-						url = url+"?"+data;
-						data = NULL;
-					}
-					xmlHttp.open(method, url, async);
-				} else {
-					xmlHttp.open("POST", url, async);
+				if (method == "GET" && data) {
+					url = url+"?"+data;
+					data = NULL;
+				}
+				xmlHttp.open(method, url, async);
+				if (method == "POST") {
 					xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 				}
+				xmlHttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 				xmlHttp.send(data);
 			},
 			
@@ -559,15 +556,16 @@ var TRUE = true,
 				if(!(obj instanceof Object)) {
 					return obj;
 				}
-				var res="", typeKey;
+				var res=[], i=0, typeKey;
 				for(var key in obj) {
 					typeKey = typeof obj[key];
 					if(typeKey == "string" || typeKey == "number") {
-						res += encodeURIComponent(key)+"="+encodeURIComponent(obj[key])+"\&";
+						res[i] = encodeURIComponent(key)+"="+encodeURIComponent(obj[key]);
+						i++;
 					}
 				}
-				
-				return res.substr(0, res.length-1);
+
+				return res.join("&");
 			},
 			
 			/**
@@ -578,6 +576,7 @@ var TRUE = true,
 			*/
 			form: function(form) {
 				var obj = {};
+				
 				for(var i=0, inp; inp = form[i]; i++) {
 					if(inp.name != undefined  && inp.name != "") {
 						if(inp.type == "radio" || inp.type == "checkbox") {
@@ -603,8 +602,8 @@ var TRUE = true,
 				@param: {Element} area es el contenedor sobre el cual se movera mov
 			*/
 			dyd: function (e, mov, area) {
-				var cEjeX = e.clientX+document.documentElement.scrollLeft+document.body.scrollLeft,
-					cEjeY = e.clientY+document.documentElement.scrollTop+document.body.scrollTop,
+				var cEjeX = e.clientX+testElement.scrollLeft+document.body.scrollLeft,
+					cEjeY = e.clientY+testElement.scrollTop+document.body.scrollTop,
 					cssMov = std.css(mov),
 					marginL = parseInt(cssMov.get("marginLeft")) || 0,
 					marginT = parseInt(cssMov.get("marginTop")) || 0,
@@ -617,8 +616,8 @@ var TRUE = true,
 				*/
 				function drag() {
 					var e = std.evt.get(),
-						nowX = e.clientX+document.documentElement.scrollLeft+document.body.scrollLeft,
-						nowY = e.clientY+document.documentElement.scrollTop+document.body.scrollTop,
+						nowX = e.clientX+testElement.scrollLeft+document.body.scrollLeft,
+						nowY = e.clientY+testElement.scrollTop+document.body.scrollTop,
 						aLeft = area.offsetLeft,
 						aTop = area.offsetTop,
 						aHeight = area.offsetHeight,
@@ -842,17 +841,13 @@ if(window.JSON == undefined) {
 			@deprecated
 		*/
 		parse: function(strJSON) {
-			if (typeof strJSON != "string") {
-				return;
-			}
-			if (/^[\],:{}\s]*$/
-				.test(strJSON.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-				.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-				.replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+			if (typeof strJSON == "string" && /^[\],:{}\s]*$/
+					.test(strJSON.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+					.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+					.replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 				return window[ "eval" ]("("+strJSON+")");
-			} else {
-				return;
 			}
+			return;
 		}
 	};
 }
@@ -865,6 +860,6 @@ window.$ = function () {
 
 /* Estableciendo std en el exterior */
 std.extend (window.$, std);
-window.std = window.$;
+std = window.std = window.$;
 
 })(window);

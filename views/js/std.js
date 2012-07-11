@@ -672,14 +672,14 @@ var TRUE = true,
 				@param: {Object} props son las propiedades que se van a modificar durante la animación (propiedad: valor final)
 				@param: {Object} opt son las opciones configurables durante la animación, estas son:
 					duration: (por defecto 1000) es el tiempo que durara la animación representado en milisegundos
-					fps: (por defecto 40) es el numero de frames por segundo o dicho de otra forma pasos por segundo
+					fps: (por defecto 60) es el numero de frames por segundo o dicho de otra forma pasos por segundo
 					onComplete: es un comportamiento final tras acabar la animación
 			*/
 			anim: function (element, props, opt) {
 				opt || (opt={});
 				var style = std.css(element),
 					duration = parseInt(opt.duration) || 1000,
-					fps = parseInt(opt.fps) || 100,
+					fps = parseInt(opt.fps) || 60,
 					onComplete = opt.onComplete,
 					time,
 					timer,
@@ -733,6 +733,8 @@ var TRUE = true,
 						}
 					}
 				}, Math.round(1000/fps));
+
+				return timer;
 			},
 			
 			/**
@@ -842,11 +844,12 @@ if(window.JSON == undefined) {
 		*/
 		parse: function(strJSON) {
 			if (typeof strJSON == "string" && /^[\],:{}\s]*$/
-					.test(strJSON.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-					.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-					.replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+				.test(strJSON.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+				.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+				.replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 				return window[ "eval" ]("("+strJSON+")");
 			}
+			
 			return;
 		}
 	};

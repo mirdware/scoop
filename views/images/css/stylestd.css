@@ -11,7 +11,7 @@ footer, header, hgroup, menu, nav, section {
 
 body {
 	font-family: Verdana, Geneva, sans-serif;
-	font-size:62.5%;
+	font-size:.85em;
 }
 
 a {
@@ -31,16 +31,15 @@ h1, h2, h3, h4, h5, h6 {
 	font-family: Arial, Helvetica, sans-serif;
 	margin: 0.5em 0;
 }
-h1 { font-size: 3.2em; }
-h2 { font-size: 2.8em; }
-h3 { font-size: 2.4em; }
-h4 { font-size: 2em; }
-h5 { font-size: 1.6em; }
-h6 { font-size: 1.2em; }
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; }
+h3 { font-size: 1.2em; }
+h4 { font-size: 1em; }
+h5 { font-size: .9em; }
+h6 { font-size: .8em; }
 
 label {
 	display: inline-block;
-	font-size: 1.2em;
 	text-align: right;
 	vertical-align: middle;
 	zoom: 1;
@@ -48,8 +47,8 @@ label {
 }
 
 p {
-	font-size: 1.2em;
 	margin: 1em 0;
+	text-align: justify;
 }
 
 hr {
@@ -57,28 +56,22 @@ hr {
 	border: 0;
 	clear: both;
 	color: #CCC;
-	height: 0.1em;
-	margin: 0.5em auto;
+	height: 1px;
+	margin: 5px auto;
 }
 
 table {
 	border-collapse: collapse;
-	border: 0.1em solid #CCC;
+	border: 1px solid #CCC;
 	width: 100%;
 }
 
 th, td {
 	border: 0.1em solid #CCC;
-	padding: 0.2em 0.5em;
+	padding: 2px 5px;
 }
-
-td.num {
-	text-align: center;
-}
-
-td.label {
-	font-weight: 700;
-	text-align: right;
+:focus {
+	outline: 0;
 }
 
 /*** botones ***/
@@ -86,22 +79,21 @@ td.label {
 .btn {
 	background: #222 url(../btn-overlay.png) repeat-x;		
 	border: 0;
-	border-bottom: 0.1em solid rgba(0,0,0,0.25);
-	border-radius: 0.5em;
-	box-shadow: 0 0.1em 0.3em rgba(0,0,0,0.6);
+	border-bottom: 1px solid rgba(0,0,0,0.25);
+	border-radius: 5px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.6);
 	color: #FFF;
 	cursor: pointer;
 	display: inline-block;
-	font-size: 1.2em;
 	font-weight: 700;
-	padding: 0.5em 1em;
+	padding: 5px 10px;
 	position: relative;
 	text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
 	zoom: 1;
 	*display: inline;
 }
 .btn:hover { background-color: #111; }
-.btn:active { top:0.1em; }
+.btn:active { top:1px; }
 
 .blue { background-color: #2981E4;}
 .blue:hover { background-color: #2575CF; }
@@ -119,9 +111,8 @@ td.label {
 	position: relative;
 	cursor: pointer;
 }
+/* margin:0; padding:0*/
 .custom-input-file .input-file {
-	margin: 0;
-	padding: 0;
 	outline: 0;
 	font-size: 10000px;
 	border: 10000px solid transparent;
@@ -142,8 +133,8 @@ td.label {
 
 #out, #error {
 	background: no-repeat left center;
-	font: 700 1.4em Arial, Helvetica, sans-serif;
-	margin: 0.5em;
+	font: 700 1em Arial, Helvetica, sans-serif;
+	margin: 5px;
 	padding-left: 20px;
 }
 #msg {display:none;}
@@ -156,6 +147,4 @@ td.label {
 	color: #C00;
 }
 
-.center {
-	text-align: center;
-}
+.center { text-align: center; }

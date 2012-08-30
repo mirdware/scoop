@@ -82,6 +82,6 @@ if ( is_readable('controllers/'.$class.'.php') ) {
 
 /*Ejecuta una rutina de error*/
 require 'controllers/Error.php';
-$class = new ReflectionClass( 'Error' );
-$class->getMethod( 'main' )->invoke(NULL);
+$class = new Error ();
+$class->main();
 ?>

@@ -9,7 +9,6 @@ class Home extends Controller{
 		} else {
 			$this->setView('title', 'Prueba de bootstrap');
 		}
-		print_r($_SESSION);
 	}
 	
 	public function send () {

@@ -76,6 +76,9 @@ var TRUE = true,
 				var name = id.substr(1),
 					prefix = id.charAt(0);
 				
+				if (node === null) {
+					return testElement;
+				}
 				if (prefix == "#") {
 					return document.getElementById(name);
 				}
@@ -129,7 +132,7 @@ var TRUE = true,
 							do {
 								readyList.shift()();
 							} while (readyList.length);
-							std.evt.remove (document, {
+							std.evt.remove(document, {
 								"DOMContentLoaded": ready,
 								"dataavailable": ready,
 								"readystatechange": stateChange
@@ -166,12 +169,12 @@ var TRUE = true,
 						DOMContentLoaded, dataavailable (Carga más rapido que DOMContenetLoaded), onreadystatechange y 
 						para window load (document no lo acepta)
 					*/ 
-					std.evt.add (document, {
+					std.evt.add(document, {
 						"DOMContentLoaded": ready,
 						"dataavailable": ready,
 						"readystatechange": stateChange
 					});
-					std.evt.add (window, "load", ready);
+					std.evt.add(window, "load", ready);
 				}
 				
 				/**
@@ -190,7 +193,9 @@ var TRUE = true,
 		
 		/****** EVENTOS ******/
 		evt: (function() {
-			var core = {
+			var id = 0,//id unico para cada funcion que se vaya a asociar
+				events = [],//array con las funciones asociadas a IE<9
+				core = {
 				/**
 					Realiza la captura de ciertos eventos a un elemento.
 					@param: {element} element es el elemento al cual se le va a asignar el evento
@@ -203,11 +208,13 @@ var TRUE = true,
 						if (element.addEventListener) {
 							element.addEventListener(nEvent,fn,capture);
 						} else if (element.attachEvent) {
-							var f= function(){
-								fn.call(element,event);
+							if (fn.id == undefined) {
+								events[id] = function(){
+									fn.call(element,event);
+								};
+								fn.id = id++;
 							}
-							element.attachEvent("on"+nEvent,f);
-							element[fn.toString()+nEvent] = f;
+							element.attachEvent("on"+nEvent,events[fn.id]);
 						} else {
 							element["on"+nEvent] = fn;
 						}
@@ -225,10 +232,9 @@ var TRUE = true,
 					if(loops(element, nEvent, fn, capture)) {
 						if (element.removeEventListener){
 							element.removeEventListener(nEvent,fn,capture);
-						} else if (element.detachEvent){
-							element.detachEvent("on"+nEvent,element[fn.toString()+nEvent]);
-							element[fn.toString()+nEvent] = NULL;
-						} else{
+						} else if (element.detachEvent) {
+							element.detachEvent("on"+nEvent,events[fn.id]);
+						} else {
 							element["on"+nEvent] = function(){};
 						}
 					}
@@ -421,18 +427,23 @@ var TRUE = true,
 				@return: El objeto con los metodos get y set necesarios para trabajar los estilos de manera correcta y estandarizada
 			*/
 			return function(ruleName, deleteFlag) {
-				var styleSheetInit = document.styleSheets[0],
+				var styleSheets = document.styleSheets,
 					obj;
 				if(typeof ruleName == "string") {
 					if(deleteFlag) {
 						getCSSRule(ruleName, deleteFlag)
 					} else {
+						if (!styleSheets.length) {
+							$("head")[0].appendChild(document.createElement("style"));
+						}
+						var styleSheetEnd = styleSheets[styleSheets.length-1],
+							lengthRule = styleSheetEnd.length;
 						if (!getCSSRule(ruleName)) {
 
-							if (styleSheetInit.addRule) {
-								styleSheetInit.addRule(ruleName, NULL,0);
+							if (styleSheetEnd.addRule) {
+								styleSheetEnd.addRule(ruleName, NULL, lengthRule);
 							} else {
-								styleSheetInit.insertRule(ruleName+" { }", 0);
+								styleSheetEnd.insertRule(ruleName+" { }", lengthRule);
 							}
 						}
 						obj = getCSSRule(ruleName);
@@ -735,32 +746,6 @@ var TRUE = true,
 				}, Math.round(1000/fps));
 
 				return timer;
-			},
-			
-			/**
-				Animación que oculta o muestra un elemento gradualmente, si el elemento es display block lo oculta y si es display none lo muestra
-				@see: ESTILOS
-				@param: {Element} obj es el elemento que se desea mostrar u ocultar
-				@param: {Object} opt son las opciones configurables durante el efecto, estas son las mismas de anim.
-			*/
-			fade: function (obj, opt) {
-				opt || (opt = {});
-				var cssObj = std.css(obj),
-					onComplete = opt.onComplete;
-				if(cssObj.get("display") == "none") {
-					cssObj.set({
-						display: "block",
-						opacity: 0
-					});
-					std.sfx.anim(obj, {opacity: 1}, opt);
-				} else {
-					std.sfx.anim(obj, {opacity: 0}, std.extend(opt, {
-						onComplete: function(){
-							cssObj.set("display", "none");
-							onComplete&&onComplete();
-						}
-					}));
-				}
 			}
 		}
 	};

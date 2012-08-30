@@ -11,11 +11,13 @@
 
 (function ($) {
 	$.extend($, {
-		modal: (function() {
+		modal: (function(window, undefined) {
 			var cache = window.sessionStorage || {},
 				FALSE = false,
 				TRUE = true,
 				NULL = true,
+				document = window.document,
+				location = document.location,
 				modal,
 				overlay,
 				local,
@@ -30,7 +32,7 @@
 						var title = this.getAttribute("title") || "",
 							isCache = this.rel.split("-")[1] == "cache",
 							url = this.getAttribute("href"),
-							path = document.location,
+							path = location.href.replace(location.hash, ""),
 							element;
 
 						if (url.indexOf(path+"#") == 0) {
@@ -38,6 +40,7 @@
 						}
 
 						if(!overlay) {
+							$.css("#modal").set("opacity", 0);
 							overlay = document.createElement("div");
 							modal = overlay.cloneNode(FALSE);
 							var head  = overlay.cloneNode(FALSE),
@@ -51,12 +54,12 @@
 								$.sfx.dyd($.evt.get(),modal,overlay);
 							});
 							$.evt.add([img, overlay],"click",core.hide);
-							document.body.appendChild(overlay);
 							head.appendChild(img);
 							head.appendChild(text);
 							modal.appendChild(core.round($.css(".head").get("backgroundColor"),"top"));
-							modal.appendChild(head);							
-							document.body.appendChild(modal);
+							modal.appendChild(head);
+							overlay.appendChild(modal);
+							document.body.appendChild(overlay);
 						}
 						
 						if (modal.childNodes[2]) {
@@ -68,7 +71,6 @@
 							}, duration:500});
 							return;
 						} 
-						
 						if (url.indexOf("#") == 0) {
 							local = $(url);
 							var parent = local.parentNode;
@@ -93,7 +95,7 @@
 						modal.childNodes[1].childNodes[1].innerHTML = title;
 						
 						$.css(overlay).set("display", "block");
-						$.sfx.fade(modal);
+						$.sfx.anim(modal, {opacity:1});
 						
 						var childsModal = modal.childNodes,
 							height = 0,
@@ -116,7 +118,7 @@
 						@see: std
 					*/
 					hide: function () {
-						$.sfx.fade(modal, {onComplete:function(){
+						$.sfx.anim(modal, {opacity: 0}, {onComplete:function(){
 							$.css(overlay).set("display", "none");
 							removeLocal();
 						}, duration:500});
@@ -182,11 +184,13 @@
 
 
 			/**
-				Se encarga de gestionar los anchors que contengan atributos rel,
-				ademas agrega los eventos necesarios para cuando se carga la libreria.
+				Configuración de entorno para la creación de ventanas modal, aparte de generar el entorno
+				para las ventanas, tambien permite omitir por (X)HTML el atributo target="_blank", pudiendolo
+				reemplazar por rel="external"
 			*/
+			$.evt.add(window,"resize",core.reset);
+
 			$(function (){
-				$.evt.add(window,"resize",$.modal.reset);
 				$.evt.on(document,"a","click", function() {
 					var rel = this.rel;
 					if(rel.indexOf("modal") == 0 ) {
@@ -198,6 +202,6 @@
 			});
 
 			return core;
-		})()
+		})(window)
 	});
 }) (std);

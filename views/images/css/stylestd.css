@@ -1,42 +1,110 @@
-/* HTML5 display-role reset for older browsers */
+@charset "utf-8";
+
+/*
+	* Reset universal de tipo caja.
+*/
+
 * {
 	margin: 0;
 	padding: 0;
 }
 
-article, aside, details, figcaption, figure, 
-footer, header, hgroup, menu, nav, section {
-	display: block;
+/*
+	* Visualizar correctamente etiquetas semanticas HTML5 en navegadores antigüos.
+*/
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section,
+summary {
+    display: block;
+}
+
+/*
+	* Normalizar la forma en que navegadores antigüos renderizan el tamaño del texto cuando se usan 
+	* unidades 'em' en el body.
+	* Establecer tamaño y tipo de fuente principal
+*/
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+html,
+button,
+input,
+select,
+textarea {
+    font-family: Verdana, Geneva, sans-serif;
 }
 
 body {
-	font-family: Verdana, Geneva, sans-serif;
 	font-size:.85em;
 }
 
 a {
 	text-decoration: none;
+	outline: 0;
 }
 
-input, textarea, img {
+input,
+textarea,
+img {
 	vertical-align: middle;
 }
 
-img, fieldset {
+img,
+fieldset {
 	border: 0;
 	max-width: 100%;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	font-family: Arial, Helvetica, sans-serif;
-	margin: 0.5em 0;
+
 }
-h1 { font-size: 2em; }
-h2 { font-size: 1.5em; }
-h3 { font-size: 1.2em; }
-h4 { font-size: 1em; }
-h5 { font-size: .9em; }
-h6 { font-size: .8em; }
+
+h1 {
+	font-size: 2em;
+	margin: .67em 0;
+}
+
+h2 {
+	font-size: 1.5em;
+	margin: .83em 0;
+}
+
+h3 {
+	font-size: 1.17em;
+	margin: 1em 0;
+}
+
+h4 {
+	font-size: 1em;
+	margin: 1.33em 0;
+}
+
+h5 {
+	font-size: .83;
+	margin: 1.67em 0;
+}
+
+h6 {
+	font-size: .75em;
+	margin: 2.33em 0;
+}
 
 label {
 	display: inline-block;
@@ -63,6 +131,7 @@ hr {
 table {
 	border-collapse: collapse;
 	border: 1px solid #CCC;
+	border-spacing: 0;
 	width: 100%;
 }
 
@@ -70,9 +139,8 @@ th, td {
 	border: 0.1em solid #CCC;
 	padding: 2px 5px;
 }
-:focus {
-	outline: 0;
-}
+
+:focus { outline: 0; }
 
 /*** botones ***/
 
@@ -111,7 +179,7 @@ th, td {
 	position: relative;
 	cursor: pointer;
 }
-/* margin:0; padding:0*/
+
 .custom-input-file .input-file {
 	outline: 0;
 	font-size: 10000px;
@@ -132,12 +200,15 @@ th, td {
 }
 
 #out, #error {
-	background: no-repeat left center;
+	background: #FFF no-repeat left center;
 	font: 700 1em Arial, Helvetica, sans-serif;
-	margin: 5px;
+	padding: 5px;
 	padding-left: 20px;
+	position: relative;
+	top: 0;
+	width: 100%;
 }
-#msg {display:none;}
+#msg { display:none; }
 #out {
 	background-image: url(../ok.png);
 	color: #45B339;
@@ -148,3 +219,14 @@ th, td {
 }
 
 .center { text-align: center; }
+
+.error {
+	background: url(../error.png);
+	display: inline-block;
+	height: 16px;
+	text-indent: -999em;
+	visibility: hidden;
+	width: 16px;
+	zoom: 1;
+	*display: inline;
+}

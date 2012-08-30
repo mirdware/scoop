@@ -7,8 +7,7 @@ class Error extends Controller {
 	}
 	
 	public static function main() {
-		$error = new Error;
-		$error->render('404');
+		$this->render('404');
 	}
 }
 ?>

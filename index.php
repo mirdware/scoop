@@ -74,12 +74,7 @@ if ( is_readable('controllers/'.$class.'.php') ) {
 		$auxReflection = count ($params);
 		if ($auxReflection >= $method->getNumberOfRequiredParameters() && $auxReflection <= $method->getNumberOfParameters()) {
 			//$auxReflection = lo que se mostrara al finalizar aplicación
-			$auxReflection = false;
-			if ( $method->isStatic() ) {
-				$auxReflection = $method->invokeArgs(NULL, $params);
-			} else {
-				$auxReflection = $method->invokeArgs(new $class, $params);
-			}
+			$auxReflection = $method->invokeArgs(new $class, $params);
 			exit ($auxReflection);
 		}
 	}

@@ -1,11 +1,11 @@
 <?php
 /**
-	Clase conexion que sirve para enlazar la base de datos con
-	la aplicación y abstraer las funciones que dependen de cada
-	DBMS.
-	Autor: Marlon Ramirez
-	Version: 0.8
-	DBMS: postgreSQL
+	* Clase conexion que sirve para enlazar la base de datos con
+	* la aplicación y abstraer las funciones que dependen de cada
+	* DBMS.
+	* Autor: Marlon Ramirez
+	* Version: 0.8
+	* DBMS: postgreSQL
 **/
 
 class Conexion {

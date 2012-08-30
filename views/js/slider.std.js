@@ -36,11 +36,16 @@
 						
 				item.appendChild(document.createTextNode(0));
 				nav.appendChild(item);
+				/* ciclo que inicia los valores de todos lo elementos de lista
+				excepto el principal */
 				for(var i=1, li; li = lis[i]; i++) {
 					item = link.cloneNode(true);
 					item.appendChild(document.createTextNode(i));
 					item.className = "normal";
-					lis[i].style.display = "none";
+					$.css(lis[i]).set({
+						display: "none",
+						opacity: 0
+					});
 					nav.appendChild(item);
 				}
 				control.className = "control";
@@ -151,10 +156,12 @@
 					block = true;
 					clearTimeout(timer);
 					select();
-					$.sfx.fade(lis[prev], {
+					$.sfx.anim(lis[prev], {opacity:0}, {
 						duration: vel,
 						onComplete: function(){
-							$.sfx.fade(lis[now], {
+							lis[prev].style.display = "none";
+							lis[now].style.display = "block";
+							$.sfx.anim(lis[now], {opacity: 1}, {
 								duration: vel,
 								onComplete: function() {
 									animSpan();

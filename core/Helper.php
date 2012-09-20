@@ -14,7 +14,7 @@ class Helper {
 		$opt=>sc = (SpecialChars) des/activa la generación con caracteres especiales, por defecto NO lo hace.
 	*/
 	public static function strRandom($length=10, $opt=array()) {
-		$opt = array_merge(array('uc'=>true, 'n'=>true, 'sc'=>false), $opt);
+		$opt = array_merge(array('uc'=>TRUE, 'n'=>TRUE, 'sc'=>FALSE), $opt);
 		$source = 'abcdefghijklmnopqrstuvwxyz';
 		if($opt['uc']==1) $source .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		if($opt['n']==1) $source .= '1234567890';
@@ -39,7 +39,7 @@ class Helper {
 		* Debe tener algun tipo de caracter especial
 		* Dependiendo del tamaño se considera más o menos segura
 	*/
-	public static function esClaveSegura($clave) {
+	public static function isSafePassword($clave) {
 		$cont = 0;
 		$csize = strlen($clave);
 		if ($csize!=0){
@@ -65,14 +65,21 @@ class Helper {
 	
 	/*Sistema de __autolad manejado por el bootstrap*/
 	public static function autoload ($name) {
-		$load = 'models/'.$name.'.php';
-		if (!is_readable($load)) {
-			$load = 'controllers/'.$name.'.php';
-			if(!is_readable($load)) {
-				$load = 'library/'.$name.'/'.$name.'.php';
+		$routes = array(
+			'models/'.$name.'.php',
+			'library/'.$name.'/'.$name.'.php',
+			'controllers/'.$name.'.php'
+		);
+		$load = FALSE;
+
+		foreach ($routes as $route) {
+			if ( is_readable($route) ) {
+				$load = $route;
+				break;
 			}
 		}
-        if (is_readable($load)) {
+
+        if ($load) {
         	require $load;
         }
 	}
@@ -81,11 +88,12 @@ class Helper {
 		/*Estableciendo variables*/
 		$docsNames = NULL;
 		$fBody = NULL;
-		$cc = ( isset($opt['cc']) )?$opt['cc']:'';
-		$cco = ( isset($opt['cco']) )?$opt['cco']:'';
-		$reply = ( isset($opt['reply']) )?$opt['reply']:'';
-		$format = ( isset($opt['format']) )?$opt['format']:'html';
-		$attach = ( isset($opt['attach']) )?$opt['attach']:array();
+		$cc = isset($opt['cc'])? $opt['cc'] : '';
+		$cco = isset($opt['cco'])? $opt['cco'] : '';
+		$reply = isset($opt['reply']) ?$opt['reply'] : '';
+		$format = isset($opt['format']) ?$opt['format'] : 'html';
+		$attach = isset($opt['attach'])? $opt['attach'] : array();
+		$separator =  uniqid("MirdWare");
 		unset ($opt);
 		foreach ($attach as $file) {
       		if($file['size']!=0) {
@@ -93,11 +101,11 @@ class Helper {
       				$file['data']=fread(fopen($file['tmp_name'], "r"),$file['size']);
       			}
       			$docsNames.= "X-attachments: ".$file['name']."\n";
-      			$fBody   .="\n--Neftali-Yaguas\n"
-      						."Content-type: ".$file['type']."; name=\"".$file['name']."\"\n"
-      						."Content-Transfer-Encoding: BASE64\n"
-      						."Content-disposition: attachment; filename=\"".$file['name']."\"\n\n"
-      						.chunk_split(base64_encode($file['data']))."\n";
+      			$fBody	.= "\n--$separator\n"
+						.	"Content-type: ".$file['type']."; name=\"".$file['name']."\"\n"
+						.	"Content-Transfer-Encoding: BASE64\n"
+						.	"Content-disposition: attachment; filename=\"".$file['name']."\"\n\n"
+						.	chunk_split(base64_encode($file['data']))."\n";
 			}
 		}
 		/* Aplicando Cabezeras al Mensaje*/
@@ -112,20 +120,19 @@ class Helper {
 			$headers .= "Reply-To: ".$reply."\n";
 		}
 		$headers .= "X-Priority: 1\n"
-            .		"X-MSMail-Priority: High\n"
-            .		"X-Mailer: Neftali Yaguas -\"Sendmail Attach files 1.2\"- jhony192@coderic.org\n"
-            .		"Return-Path: ".$from."\n"
-            .		"MIME-version: 1.0\n"
-            .		"Content-type: multipart/mixed; boundary=\"Neftali-Yaguas\"\n"
-            .		"Content-transfer-encoding: 7BIT\n".$docsNames;
+				.	"X-MSMail-Priority: High\n"
+				.	"X-Mailer: std.php\n"
+				.	"Return-Path: ".$from."\n"
+				.	"MIME-version: 1.0\n"
+				.	"Content-type: multipart/mixed; boundary=\"$separator\"\n"
+				.	"Content-transfer-encoding: 7BIT\n".$docsNames;
         /* Comienzo del Cuerpo del Mensaje*/
-   		$body = "--Neftali-Yaguas\n"
-            .	"Content-type: text/".$format."; charset=UTF-8\n"
-            .	"Content-transfer-encoding: 7BIT\n"
-            .	"Content-description:Cuerpo de Mensaje\n\n"
-            .	$message."\n\n".$fBody."--Neftali-Yaguas--\n";
+   		$body = "--$separator\n"
+			.	"Content-type: text/".$format."; charset=UTF-8\n"
+			.	"Content-transfer-encoding: 7BIT\n"
+			.	"Content-description:Cuerpo de Mensaje\n\n"
+			.	$message."\n\n".$fBody."--$separator--\n";
    		/* Enviando el Mensaje*/
    		return mail($to,'=?ISO-8859-1?B?'.base64_encode(utf8_decode($subject)).'=?=',$body,$headers);
 	}
 }
-?>

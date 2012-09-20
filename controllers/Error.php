@@ -6,8 +6,7 @@ class Error extends Controller {
 		$this->setView('title', 'ERROR 404!');
 	}
 	
-	public static function main() {
+	public function main() {
 		$this->render('404');
 	}
 }
-?>

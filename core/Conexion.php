@@ -33,7 +33,7 @@ class Conexion {
 	private function __clone(){ }
 	
 	/*Patron Multiton*/
-	public static function get ($db = '', $user = '', $pass = '', $host = '') {
+	public static function get ($db = 'rips', $user = 'web', $pass = 'qwe123', $host = 'localhost') {
 		$key = $db.$user.$pass.$host;
 		if (!isset(self::$instances[$key])) {
 			self::$instances[$key] = new Conexion($db, $user, $pass, $host);
@@ -44,7 +44,7 @@ class Conexion {
 	/*abstraccion de los metodos independiente del DBMS*/
 	public function query($consulta) {
 		if(!$this->conex) {
-			return false;
+			return FALSE;
 		}
 		$consulta = trim($consulta);
 		//echo $consulta;
@@ -64,12 +64,9 @@ class Conexion {
 	
 	public function escape($val) {
 		if (get_magic_quotes_gpc()) {
-        	$val = stripslashes($val);
+			$val = stripslashes($val);
 		}
-		
-		if (!is_numeric($val)) {
-			$val = "'" . pg_escape_string($val) . "'";
-		}
+		$val = "'" . pg_escape_string($val) . "'";
 		return $val;
 	}
 	
@@ -91,8 +88,8 @@ class Conexion {
 			$ra1 = Array('javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'style', 'script', 'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base');
 			$ra2 = Array('onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload');
 			$ra = array_merge($ra1, $ra2);
-			$found = true;
-			while ($found == true) {
+			$found = TRUE;
+			while ($found == TRUE) {
 				$val_before = $val;
 				for ($i = 0, $l = count($ra); $i < $l; $i++) {
 					$pattern = '/';
@@ -109,7 +106,7 @@ class Conexion {
 					$replacement = substr($ra[$i], 0, 2).'<x>'.substr($ra[$i], 2);
 					$val = preg_replace($pattern, $replacement, $val);
 					if ($val_before == $val) {
-						$found = false;
+						$found = FALSE;
 					}
 				}
 			}
@@ -128,7 +125,7 @@ class Result {
 	}
 	
 	public function __destruct() {
-		if(!is_null($this->res)){
+		if($this->res){
 			pg_free_result($this->res);
 		}
 	}
@@ -158,4 +155,3 @@ class Result {
 		pg_result_seek($this->res, 0);
 	}
 }
-?>

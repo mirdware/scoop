@@ -76,7 +76,7 @@ var TRUE = true,
 				var name = id.substr(1),
 					prefix = id.charAt(0);
 				
-				if (node === null) {
+				if (arguments.length>1 && !node) {
 					return testElement;
 				}
 				if (prefix == "#") {

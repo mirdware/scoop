@@ -52,9 +52,16 @@ class Home extends Controller{
 		$this->message($type, urldecode($msj));
 		$this->render(self::$view);
 	}
+
+	public function model () {
+		$user = new Usuario();
+		print_r($user->read()->toArray());
+	}
 	
 	public function main () {
+		if (strrpos($_SERVER['REQUEST_URI'], 'home') || strrpos($_SERVER['REQUEST_URI'], 'main')) {
+			Helper::redirect(ROOT);
+		}
 		$this->render(self::$view);
 	}
 }
-?>

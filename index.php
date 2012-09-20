@@ -1,17 +1,15 @@
 <?php
-session_start();
-
 /*importando archivos de configuración*/
-require 'config/Helper.php';
-require 'config/Conexion.php';
-require 'config/MVC.php';
+require 'core/Helper.php';
+require 'core/Conexion.php';
+require 'core/MVC.php';
 
 /*redireccion de index*/
 $index = substr($_SERVER['REQUEST_URI'], -10);
 if ($index != 'index.html') {
 	$index = substr($_SERVER['REQUEST_URI'], -9);
 	if ($index != 'index.php' && $index != 'index.htm') {
-		$index = false;
+		$index = FALSE;
 	}
 }
 
@@ -23,13 +21,14 @@ unset ($index);
 /*definicion de constantes*/
 define ('ROOT', 'http://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
 
+/*configuración*/
 spl_autoload_register('Helper::autoload');
-/*configuración regional*/
 setlocale(LC_ALL,"es_ES@euro","es_ES","esp");
 date_default_timezone_set('America/Bogota');
+session_start();
 
 /*Ruta por defecto*/
-$class = 'Home';
+$class = 'Auth';
 $method = 'main';
 $params = array();
 if( $_GET ) {
@@ -84,4 +83,3 @@ if ( is_readable('controllers/'.$class.'.php') ) {
 require 'controllers/Error.php';
 $class = new Error ();
 $class->main();
-?>

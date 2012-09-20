@@ -26,7 +26,7 @@ abstract class Controller implements View {
 	//Muestra el mensaje, puede ser de tipo error u out
 	private $msg = '<div id="msg"></div>';
 	//Atributo que define si una vista va a tener Layer o no
-	private $renderLayer = true;
+	private $renderLayer = TRUE;
 	//Layer por defecto que sera mostrado por la aplicación
 	private $layer = 'layer';
 	
@@ -40,7 +40,7 @@ abstract class Controller implements View {
 	}
 	
 	/*Remueve un dato de la vista o en su defecto, reinicia la misma*/
-	protected function removeView ($key=false) {
+	protected function removeView ($key=FALSE) {
 		if($key) {
 			unset($this->hashMap[$key]);
 		} else {
@@ -79,15 +79,16 @@ abstract class Controller implements View {
 		sobrecarga de trabajo.
 	*/
 	private function getLayer() {
-		if (!isset($_SESSION['layer'])) {
-			$_SESSION['layer'] = array();
+		if (!isset($_SESSION['layers'])) {
+			$_SESSION['layers'] = array();
 		}
-		if (!isset($_SESSION['layer'][$this->layer])) {
+		if (!isset($_SESSION['layers'][$this->layer])) {
 			//ubicacion completa del archivo
 			$file = 'views/layers/'.$this->layer.'.html';
-			$_SESSION['layer'][$this->layer] = file_get_contents($file);
+			//si se debe armar un layer dinamico/estable se usa una variable $layer intermedia
+			$_SESSION['layers'][$this->layer] = file_get_contents($file);
 		}
-		return $_SESSION['layer'][$this->layer];
+		return $_SESSION['layers'][$this->layer];
 		//return file_get_contents('views/layers/'.$this->layer.'html');
 	}
 
@@ -96,7 +97,7 @@ abstract class Controller implements View {
 	}
 
 	/*Renderiza la vista con los datos suminitrados*/
-	public function render ($vista, $return=false) {
+	public function render ($vista, $return=FALSE) {
 		$template = file_get_contents('views/'.$vista.'.html');
 		$layer = $this->getLayer();
 
@@ -108,6 +109,7 @@ abstract class Controller implements View {
 			$template = str_replace('{'.$clave.'}', $valor, $template);
 		}
 		
+		//constantes de la vista
 		$template = str_replace('{root}', ROOT, $template);
 		$template = str_replace('{msg}', $this->msg, $template);
 
@@ -118,4 +120,3 @@ abstract class Controller implements View {
 	}
 	
 }
-?>

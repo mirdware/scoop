@@ -37,7 +37,7 @@ class Home extends Controller{
 			return $error;
 		}
 		$_POST['attach'] = $_FILES;
-		Helper::sendMail ($asunto, $msj, $from, $to, $_POST);
+		Helper::sendMail ($asunto, $msj.'<br/><br/>RandomString: '.Helper::strRandom(25), $from, $to, $_POST);
 		return 'Mensaje enviado';
 	}
 	
@@ -53,15 +53,16 @@ class Home extends Controller{
 		$this->render(self::$view);
 	}
 
+	public function test ($pass) {
+		echo Helper::isSafePassword ($pass);
+	}
+
 	public function model () {
 		$user = new Usuario();
 		print_r($user->read()->toArray());
 	}
 	
 	public function main () {
-		if (strrpos($_SERVER['REQUEST_URI'], 'home') || strrpos($_SERVER['REQUEST_URI'], 'main')) {
-			Helper::redirect(ROOT);
-		}
 		$this->render(self::$view);
 	}
 }

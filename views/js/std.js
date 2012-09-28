@@ -208,13 +208,15 @@ var TRUE = true,
 						if (element.addEventListener) {
 							element.addEventListener(nEvent,fn,capture);
 						} else if (element.attachEvent) {
-							if (fn.id == undefined) {
-								events[id] = function(){
+							!fn.idf && (fn.idf = id++);
+							!element.ide && (element.ide = id++);
+							var sid = fn.idf+"-"+element.ide;
+							if (!events[sid]) {
+								events[sid] = function(){
 									fn.call(element,event);
 								};
-								fn.id = id++;
 							}
-							element.attachEvent("on"+nEvent,events[fn.id]);
+							element.attachEvent("on"+nEvent,events[sid]);
 						} else {
 							element["on"+nEvent] = fn;
 						}
@@ -233,7 +235,7 @@ var TRUE = true,
 						if (element.removeEventListener){
 							element.removeEventListener(nEvent,fn,capture);
 						} else if (element.detachEvent) {
-							element.detachEvent("on"+nEvent,events[fn.id]);
+							element.detachEvent("on"+nEvent,events[fn.idf+"-"+element.ide]);
 						} else {
 							element["on"+nEvent] = function(){};
 						}
@@ -612,68 +614,85 @@ var TRUE = true,
 				@param: {Element} mov es el elemento que se va a mover dentro del contenedor
 				@param: {Element} area es el contenedor sobre el cual se movera mov
 			*/
-			dyd: function (e, mov, area) {
-				var cEjeX = e.clientX+testElement.scrollLeft+document.body.scrollLeft,
-					cEjeY = e.clientY+testElement.scrollTop+document.body.scrollTop,
+			dyd: function (point, opt) {
+				opt || (opt = {});
+				var body = document.body,
+					mov = opt.mov || point,
+					area = opt.area || mov.parentNode,
+					onDrag = opt.onDrag,
+					onDrop = opt.onDrop,
 					cssMov = std.css(mov),
-					marginL = parseInt(cssMov.get("marginLeft")) || 0,
-					marginT = parseInt(cssMov.get("marginTop")) || 0,
-					initX = mov.offsetLeft-marginL,
-					initY = mov.offsetTop-marginT;
-				
-				/**
-					Cambia la posición del elemento que se esta arrastrando dependiendo de la posición del puntero.
-					@see: EVENTOS, ESTILOS
-				*/
-				function drag() {
+					movIsAbsolute = (cssMov.get("position") == "absolute");
+
+
+				function dragstart () {
 					var e = std.evt.get(),
-						nowX = e.clientX+testElement.scrollLeft+document.body.scrollLeft,
-						nowY = e.clientY+testElement.scrollTop+document.body.scrollTop,
-						aLeft = area.offsetLeft,
-						aTop = area.offsetTop,
-						aHeight = area.offsetHeight,
-						aWidth = area.offsetWidth,
-						x = initX+nowX-cEjeX,
-						y = initY+nowY-cEjeY;
+						marginL = parseInt(cssMov.get("marginLeft")) || 0,
+						marginT = parseInt(cssMov.get("marginTop")) || 0,
+						cEjeX = e.clientX+testElement.scrollLeft+body.scrollLeft,
+						cEjeY = e.clientY+testElement.scrollTop+body.scrollTop,
+						initX = mov.offsetLeft-marginL,
+						initY = mov.offsetTop-marginT;
+
+					/**
+						Cambia la posición del elemento que se esta arrastrando dependiendo de la posición del puntero.
+						@see: EVENTOS, ESTILOS
+					*/
+					function drag() {
+						var e = std.evt.get(),
+							nowX = e.clientX+testElement.scrollLeft+body.scrollLeft,
+							nowY = e.clientY+testElement.scrollTop+body.scrollTop,
+							aLeft = !movIsAbsolute?area.offsetLeft:0,
+							aTop = !movIsAbsolute?area.offsetTop:0,
+							aHeight = area.offsetHeight,
+							aWidth = area.offsetWidth,
+							x = initX+nowX-cEjeX,
+							y = initY+nowY-cEjeY;
+
+						if (x<=(marginL*-1)+aLeft) {
+							x = (marginL*-1)+aLeft;
+						} else if (x>=(aWidth+marginL+aLeft-(mov.offsetWidth+marginL*2))) {
+							x = aWidth+marginL+aLeft-(mov.offsetWidth+marginL*2);
+						}
+						if (y<=(marginT*-1)+aTop) {
+							y = (marginT*-1)+aTop;
+						} else if (y>=(aHeight+marginT+aTop-(mov.offsetHeight+marginT*2))) {
+							y = aHeight+marginT+aTop-(mov.offsetHeight+marginT*2);
+						}
+						if(cssMov.get("position") == "relative") {
+							x = x-aLeft;
+							y = y-aTop;
+						}
+						cssMov.set({
+							left: x+"px",
+							top: y+"px"
+						});
+						onDrag&&onDrag();
+						e.preventDefault();
+					}
 					
-					if (x<=(marginL*-1)+aLeft) {
-						x = (marginL*-1)+aLeft;
-					} else if (x>=(aWidth+marginL+aLeft-(mov.offsetWidth+marginL*2))) {
-						x = aWidth+marginL+aLeft-(mov.offsetWidth+marginL*2);
+					/**
+						Remueve los eventos mousemove y mouseup del documento
+						@see: EVENTOS
+					*/
+					function drop() {
+						std.evt.remove(document,{
+							mousemove: drag,
+							mouseup: drop
+						}, TRUE);
+						onDrop&&onDrop();
 					}
-					if (y<=(marginT*-1)+aTop) {
-						y = (marginT*-1)+aTop;
-					} else if (y>=(aHeight+marginT+aTop-(mov.offsetHeight+marginT*2))) {
-						y = aHeight+marginT+aTop-(mov.offsetHeight+marginT*2);
-					}
-					if(cssMov.get("position") == "relative") {
-						x = x-aLeft;
-						y = y-aTop;
-					}
-					cssMov.set({
-						left: x+"px",
-						top: y+"px"
-					});
-					e.preventDefault();
-				}
-				
-				/**
-					Remueve los eventos mousemove y mouseup del documento
-					@see: EVENTOS
-				*/
-				function drop() {
-					std.evt.remove(document,{
+					
+					std.evt.add(document,{
 						mousemove: drag,
 						mouseup: drop
 					}, TRUE);
+					
+					e.preventDefault();
 				}
-				
-				std.evt.add(document,{
-					mousemove: drag,
-					mouseup: drop
-				}, TRUE);
-				
-				e.preventDefault();
+
+				//iniciando el evento de arrastre
+				std.evt.add(point, "mousedown", dragstart);
 			},
 			
 			/**

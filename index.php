@@ -20,6 +20,7 @@ unset ($index);
 
 /*definicion de constantes*/
 define ('ROOT', 'http://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
+define ('APP_NAME', 'AI Salud Web');
 
 /*configuración*/
 spl_autoload_register('Helper::autoload');
@@ -28,29 +29,25 @@ date_default_timezone_set('America/Bogota');
 session_start();
 
 /*Ruta por defecto*/
-$class = 'Auth';
+$class = 'home';
 $method = 'main';
 $params = array();
+$validMethod = TRUE;
 if( $_GET ) {
 	/*sanatizo las variables que vienen por url y libero route del array $_GET*/
 	$url = filter_input (INPUT_GET, 'route', FILTER_SANITIZE_STRING);
 	unset( $_GET['route'] );
-	/*
-		$last contendra el ultimo caracter de la variable en caso de no ser un / se redirecciona a la misma
-		dirección pero incluyendo el / al final de la cadena.
-	*/
-	$last = strlen($url) - 1;
-	if ($url[$last] != '/') {
-		helper::redirect ($_SERVER['REQUEST_URI'].'/');
-	}
 	$url = array_filter ( explode( '/', $url ) );
-	unset ($last);
 	
 	/*Configurando clase, metodo y parametros según la url*/
-	$class = array_shift($url);
+	$class = strtolower( array_shift($url) );
 	if ($url) {
-		$method = array_shift($url);
+		$method = strtolower( array_shift($url) );
+		$validMethod = ($method != 'main');
+	} elseif ($class == 'home') {
+		Helper::redirect(ROOT);
 	}
+
 	$params = $url;
 	unset ($url);
 }
@@ -63,7 +60,7 @@ if ( $_POST ) {
 }
 
 /*generando la reflexion sobre el controlador*/
-if ( is_readable('controllers/'.$class.'.php') ) {
+if ( $validMethod && is_readable('controllers/'.$class.'.php') ) {
 	require 'controllers/'.$class.'.php';
 	//$auxReflection = la reflexion de la clase para poder explorarla
 	$auxReflection = new ReflectionClass( $class );

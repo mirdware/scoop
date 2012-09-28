@@ -13,7 +13,7 @@
 <div><b>Bien</b></div>
 	http(s)://host/controller/method/arg-1/
 <h3>Estilos</h3>
-<p>Este bootstrap posee una serie de estilos predefinidos que en ningún tratan de no obligar al desarrollador, maquetador o diseñador a seguir un patrón o platilla prediseñada. Los cambios a los estilos son pocos y cuentan con algunas clases e ids que complementan tanto el bootstrap como la librería javascript que también se encuentra incluida.</p>
+<p>Este bootstrap posee una serie de estilos predefinidos que trata de no obligar al desarrollador, maquetador o diseñador a seguir un patrón o platilla prediseñada. Los cambios a los estilos son pocos y cuentan con algunas clases e ids que complementan tanto el bootstrap como la librería javascript que también se encuentra incluida.</p>
 <p>Dentro de estos estilos se encuentran estilos especiales para los botones, para los mensajes de error del bootstrap, para las ventanas modales, etc. Un par de reglas de estilo interesantes son <b>custom-input-file e input-file</b> que básicamente lo que hacen es camuflajear el input file, para poderle dar estilo a nuestro gusto, pero tienen una serie de reglas a tener en cuenta:</p>
 <ul>
 	<li>No modificar nada en ".custom-input-file .input-file" a excepción del cursor.</li>

@@ -50,15 +50,16 @@
 							overlay.id = "overlay";
 							modal.id = "modal";
 							head.className = "head";
-							$.evt.add(head,"mousedown",function(){
-								$.sfx.dyd($.evt.get(),modal,overlay);
+							$.sfx.dyd(head, {
+								mov: modal,
+								area: overlay
 							});
 							$.evt.add([img, overlay],"click",core.hide);
 							head.appendChild(img);
 							head.appendChild(text);
 							modal.appendChild(core.round($.css(".head").get("backgroundColor"),"top"));
 							modal.appendChild(head);
-							overlay.appendChild(modal);
+							document.body.appendChild(modal);
 							document.body.appendChild(overlay);
 						}
 						
@@ -94,7 +95,8 @@
 						element.style.display = "block";
 						modal.childNodes[1].childNodes[1].innerHTML = title;
 						
-						$.css(overlay).set("display", "block");
+						overlay.style.display = "";
+						modal.style.display = "";
 						$.sfx.anim(modal, {opacity:1});
 						
 						var childsModal = modal.childNodes,
@@ -119,7 +121,8 @@
 					*/
 					hide: function () {
 						$.sfx.anim(modal, {opacity: 0}, {onComplete:function(){
-							$.css(overlay).set("display", "none");
+							overlay.style.display = "none";
+							modal.style.display = "none";
 							removeLocal();
 						}, duration:500});
 					},

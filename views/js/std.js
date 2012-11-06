@@ -29,6 +29,7 @@ var TRUE = true,
 	parseInt = window.parseInt,
 	parseFloat = window.parseFloat,
 	testElement = document.documentElement,
+	styleSheets = document.styleSheets,
 	std = {
 		/****** NUCLEO ******/
 
@@ -356,7 +357,7 @@ var TRUE = true,
 		})(),
 		
 		/****** ESTILOS ******/
-		css: (function(parseInt){			
+		css: (function(){	
 			/**
 				Busca selectores CSS dentro de las hojas de estilos del documento que coincidan con la regla de estilo pasada como parametro,
 				en caso de encontrarla procede a eliminarla o retornarla segun sea el caso.
@@ -367,16 +368,9 @@ var TRUE = true,
 			*/
 			function getCSSRule(ruleName, deleteFlag) {
 				//console.log(ruleName);
-				var styleSheets = document.styleSheets,
-					i = styleSheets.length,
-					j, cssRules, cssRule, styleSheet;
-
-				while (i--) {
-					styleSheet = styleSheets[i];
+				for (var i = 0, styleSheet, cssRules; styleSheet = styleSheets[i]; i++) {
 					cssRules = styleSheet.cssRules || styleSheet.rules;
-					j = cssRules.length;
-					while(j--){
-						cssRule = cssRules[j];
+					for (var j = 0, cssRule; cssRule = cssRules[j]; j++){
 						if (cssRule.selectorText == ruleName) {
 							if (deleteFlag) {
 								if (styleSheet.cssRules) {
@@ -429,8 +423,7 @@ var TRUE = true,
 				@return: El objeto con los metodos get y set necesarios para trabajar los estilos de manera correcta y estandarizada
 			*/
 			return function(ruleName, deleteFlag) {
-				var styleSheets = document.styleSheets,
-					obj;
+				var obj;
 				if(typeof ruleName == "string") {
 					if(deleteFlag) {
 						getCSSRule(ruleName, deleteFlag)
@@ -438,14 +431,14 @@ var TRUE = true,
 						if (!styleSheets.length) {
 							$("head")[0].appendChild(document.createElement("style"));
 						}
-						var styleSheetEnd = styleSheets[styleSheets.length-1],
-							lengthRule = styleSheetEnd.length;
+						var lastStyleSheet = styleSheets[styleSheets.length-1],
+							lengthRule = lastStyleSheet.length;
 						if (!getCSSRule(ruleName)) {
 
-							if (styleSheetEnd.addRule) {
-								styleSheetEnd.addRule(ruleName, NULL, lengthRule);
+							if (lastStyleSheet.addRule) {
+								lastStyleSheet.addRule(ruleName, NULL, lengthRule);
 							} else {
-								styleSheetEnd.insertRule(ruleName+" { }", lengthRule);
+								lastStyleSheet.insertRule(ruleName+" { }", lengthRule);
 							}
 						}
 						obj = getCSSRule(ruleName);
@@ -492,7 +485,7 @@ var TRUE = true,
 				};
 			}
 			
-		})(parseInt),
+		})(),
 		
 		/****** AJAX ******/
 		ajax: {

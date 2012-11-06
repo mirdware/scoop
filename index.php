@@ -5,22 +5,14 @@ require 'core/Conexion.php';
 require 'core/MVC.php';
 
 /*redireccion de index*/
-$index = substr($_SERVER['REQUEST_URI'], -10);
-if ($index != 'index.html') {
-	$index = substr($_SERVER['REQUEST_URI'], -9);
-	if ($index != 'index.php' && $index != 'index.htm') {
-		$index = FALSE;
-	}
+if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
+	helper::redirect ( str_replace('index.php', '', $_SERVER['REQUEST_URI']) );
 }
 
-if( $index ) {
-	helper::redirect ( str_replace($index, '', $_SERVER['REQUEST_URI']) );
-}
-unset ($index);
-
-/*definicion de constantes*/
+/*definicion de constantes globales*/
 define ('ROOT', 'http://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
-define ('APP_NAME', 'AI Salud Web');
+define ('APP_NAME', 'bootstrap std - MirdWare');
+define ('APC', TRUE);
 
 /*configuración*/
 spl_autoload_register('Helper::autoload');

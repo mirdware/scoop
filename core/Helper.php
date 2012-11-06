@@ -113,7 +113,7 @@ class Helper {
 		$total = ($len*7)+$ucChar+$lcChar+($numChar*4)+($spChar*5)
 				-$only-($charRep*3)-($cucChar*2)-($cnumChar*2)-($clcChar*2)-($cons*5);
 
-		return ($total>60);
+		return ($total>=60);
 	}
 	
 	/*Sistema de __autolad manejado por el bootstrap*/

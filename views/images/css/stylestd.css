@@ -10,7 +10,7 @@
 }
 
 /*
-	* Visualizar correctamente etiquetas semanticas HTML5 en navegadores antigüos.
+	* Visualizar correctamente etiquetas HTML5 en navegadores antigüos.
 */
 article,
 aside,
@@ -24,6 +24,14 @@ nav,
 section,
 summary {
     display: block;
+}
+
+audio,
+canvas,
+video {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
 }
 
 /*
@@ -61,7 +69,8 @@ img {
 }
 
 img,
-fieldset {
+fieldset,
+video {
 	border: 0;
 	max-width: 100%;
 }
@@ -110,13 +119,38 @@ label {
 	display: inline-block;
 	text-align: right;
 	vertical-align: middle;
-	zoom: 1;
 	*display: inline;
+	*zoom: 1;
 }
 
 p {
 	margin: 1em 0;
 	text-align: justify;
+}
+
+dl,
+menu,
+ol,
+ul {
+    margin: 1em 0;
+}
+
+dd {
+    margin: 0 0 0 40px;
+}
+
+menu,
+ol,
+ul {
+    padding: 0 0 0 40px;
+}
+
+nav ul,
+nav ol {
+    list-style: none;
+    list-style-image: none;
+    margin: 0;
+    padding: 0;
 }
 
 hr {
@@ -136,7 +170,7 @@ table {
 }
 
 th, td {
-	border: 0.1em solid #CCC;
+	border: .1em solid #CCC;
 	padding: 2px 5px;
 }
 
@@ -157,8 +191,8 @@ th, td {
 	padding: 5px 10px;
 	position: relative;
 	text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
-	zoom: 1;
 	*display: inline;
+	*zoom: 1;
 }
 .btn:hover { background-color: #111; }
 .btn:active { top:1px; }
@@ -190,6 +224,7 @@ th, td {
 	right: -1000px;
 	top: -1000px;
 	cursor: pointer;
+	z-index: 1;
 }
 .input-text {
 	border-radius: 3px;
@@ -199,7 +234,7 @@ th, td {
 	vertical-align: middle;
 }
 
-#out, #error {
+#msg-out, #msg-error, #msg-alert {
 	background: #FFF no-repeat left center;
 	font: 700 1em Arial, Helvetica, sans-serif;
 	padding: 5px;
@@ -208,14 +243,18 @@ th, td {
 	top: 0;
 	width: 100%;
 }
-#msg { display:none; }
-#out {
+#msg-not { display:none; }
+#msg-out {
 	background-image: url(../ok.png);
 	color: #45B339;
 }
-#error {
+#msg-error {
 	background-image: url(../error.png);
 	color: #C00;
+}
+#msg-alert {
+	background-image: url(../alert.png);
+	color: #F7B81C;
 }
 
 .center { text-align: center; }
@@ -227,6 +266,6 @@ th, td {
 	text-indent: -999em;
 	visibility: hidden;
 	width: 16px;
-	zoom: 1;
 	*display: inline;
+	*zoom: 1;
 }

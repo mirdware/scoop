@@ -24,11 +24,11 @@ abstract class Controller implements View {
 	//HashMap que contiene los datos a ser procesados por la vista
 	private $hashMap = array();
 	//Muestra el mensaje, puede ser de tipo error u out
-	private $msg = '<div id="msg"></div>';
+	private $msg = '<div id="msg-not"></div>';
 	//Atributo que define si una vista va a tener Layer o no
 	private $renderLayer = TRUE;
 	//Layer por defecto que sera mostrado por la aplicación
-	private $layer = 'layer';
+	private $layer = 'layer'; 
 	
 	/*Establece o modifica los datos que va a procesar la vista*/
 	protected function setView ($key, $value=NULL) {
@@ -49,8 +49,19 @@ abstract class Controller implements View {
 	}
 	
 	/* Configura el mensaje que sera mostrado en el sistema de notificaciones interno */
-	protected function message ($type, $msg) {
-		$this->msg = '<div id="'.$type.'">'.$msg.'</div>';
+	protected function showMessage ($type, $msg) {
+		$this->msg = '<div id="msg-'.$type.'">'.$msg.'</div>';
+	}
+
+	protected function pushMessage ($type, $msg) {
+		$_SESSION['msg'] = array('type'=>$type, 'msg'=>$msg);
+	}
+
+	protected function pullMessage () {
+		if (isset($_SESSION['msg'])) {
+			$this->showMessage($_SESSION['msg']['type'], $_SESSION['msg']['msg']);
+			unset($_SESSION['msg']);
+		}
 	}
 	
 	/* Configura los datos para que coincidan con el sistema interno de errores */
@@ -79,17 +90,24 @@ abstract class Controller implements View {
 		sobrecarga de trabajo.
 	*/
 	private function getLayer() {
-		if (!isset($_SESSION['layers'])) {
-			$_SESSION['layers'] = array();
+		$key = 'layers-'.$this->layer;
+		if (APC) {
+			if ( apc_exists($key) ) {
+				return apc_fetch($key);
+			}
+		} else {
+			$layer =& $_SESSION[$key];
+			if ( $layer ) {
+				return $layer;
+			}
 		}
-		if (!isset($_SESSION['layers'][$this->layer])) {
-			//ubicacion completa del archivo
-			$file = 'views/layers/'.$this->layer.'.html';
-			//si se debe armar un layer dinamico/estable se usa una variable $layer intermedia
-			$_SESSION['layers'][$this->layer] = file_get_contents($file);
+		//ubicacion completa del archivo
+		$file = 'views/layers/'.$this->layer.'.html';
+		$layer = file_get_contents($file);
+		if (APC) {
+			apc_store($key, $layer);
 		}
-		return $_SESSION['layers'][$this->layer];
-		//return file_get_contents('views/layers/'.$this->layer.'html');
+		return $layer;
 	}
 
 	protected function setLayer($layer) {

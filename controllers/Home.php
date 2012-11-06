@@ -7,7 +7,7 @@ class Home extends Controller{
 		if ($this->ajax()) {
 			$this->showLayer (false);
 		} else {
-			$this->setView('title', 'Prueba de bootstrap');
+			$this->setView('title', APP_NAME);
 		}
 	}
 	
@@ -49,7 +49,7 @@ class Home extends Controller{
 	}
 
 	public function hola ($msj, $type='out') {
-		$this->message($type, urldecode($msj));
+		$this->showMessage($type, urldecode($msj));
 		$this->render(self::$view);
 	}
 
@@ -64,5 +64,6 @@ class Home extends Controller{
 	
 	public function main () {
 		$this->render(self::$view);
+		print_r($_SESSION);
 	}
 }

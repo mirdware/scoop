@@ -63,6 +63,9 @@ class Conexion {
 	}
 	
 	public function escape($val) {
+		if ($val === NULL) {
+			return 'NULL';
+		}
 		if (get_magic_quotes_gpc()) {
 			$val = stripslashes($val);
 		}

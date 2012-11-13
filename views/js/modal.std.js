@@ -6,205 +6,207 @@
 	su sitio; hasta la versión 0.0.9 de std.
 
 	@author: Marlon Ramirez
-	@version: 0.1
+	@version: 0.2
 **/
 
-(function ($) {
-	$.extend($, {
-		modal: (function(window, undefined) {
-			var cache = window.sessionStorage || {},
-				FALSE = false,
-				TRUE = true,
-				NULL = true,
-				document = window.document,
-				location = document.location,
-				modal,
-				overlay,
-				local,
-				core = {
-					/**
-						Renderiza el nodo la ventana modal dependiendo del enlace que la halla invocado, tomando el titulo de la misma etiqueta.
-						Crea todo el marco de la ventana modal y el overlay que cubrira la pantalla del navegador.
-						@see: std
-					*/
-					show: function () {
-						$.evt.get().preventDefault();
-						var title = this.getAttribute("title") || "",
-							isCache = this.rel.split("-")[1] == "cache",
-							url = this.getAttribute("href"),
-							path = location.href.replace(location.hash, ""),
-							element;
-
-						if (url.indexOf(path+"#") == 0) {
-							url = url.replace(path, "");
-						}
-
-						if(!overlay) {
-							$.css("#modal").set("opacity", 0);
-							overlay = document.createElement("div");
-							modal = overlay.cloneNode(FALSE);
-							var head  = overlay.cloneNode(FALSE),
-								img = overlay.cloneNode(FALSE),
-								text = document.createElement("h2");
-							
-							overlay.id = "overlay";
-							modal.id = "modal";
-							head.className = "head";
-							$.sfx.dyd(head, {
-								mov: modal,
-								area: overlay
-							});
-							$.evt.add([img, overlay],"click",core.hide);
-							head.appendChild(img);
-							head.appendChild(text);
-							modal.appendChild(core.round($.css(".head").get("backgroundColor"),"top"));
-							modal.appendChild(head);
-							document.body.appendChild(modal);
-							document.body.appendChild(overlay);
-						}
-						
-						if (modal.childNodes[2]) {
-							var self = this,
-								args = arguments;
-							$.sfx.fade(modal, {onComplete:function(){
-								removeLocal();
-								core.show.apply(self, args);
-							}, duration:500});
-							return;
-						} 
-						if (url.indexOf("#") == 0) {
-							local = $(url);
-							var parent = local.parentNode;
-							element = local.cloneNode(TRUE);
-							parent.removeChild(local);
-						} else {
-							var aux = document.createElement("div");
-							if (!isCache || !(aux.innerHTML = cache[url])) {
-								$.ajax.request(url,function(r){
-									//console.log(r);
-									if (isCache) {
-										cache[url] = r;
-									}
-									aux.innerHTML = r;
-								}, {sync:TRUE});
-							}
-							element = aux.firstChild;
-						}
-						modal.appendChild(element);
-						modal.appendChild(core.round($.css(element).get("backgroundColor"),"bottom"));
-						element.style.display = "block";
-						modal.childNodes[1].childNodes[1].innerHTML = title;
-						
-						overlay.style.display = "";
-						modal.style.display = "";
-						$.sfx.anim(modal, {opacity:1});
-						
-						var childsModal = modal.childNodes,
-							height = 0,
-							width = element.offsetWidth;
-						
-						for (var i=0,h; h=childsModal[i]; i++) {
-							height += h.offsetHeight;
-						}
-						$.css(modal).set({
-							width: width+"px",
-							height: height+"px",
-							marginLeft: -(width/2)+"px",
-							marginTop: -(height/2)+"px"
-						});
-						$.modal.reset();
-					},
-				
-					/**
-						Elimina el nodo principal de la ventana modal y oculta el resto de la estructura.
-						@see: std
-					*/
-					hide: function () {
-						$.sfx.anim(modal, {opacity: 0}, {onComplete:function(){
-							overlay.style.display = "none";
-							modal.style.display = "none";
-							removeLocal();
-						}, duration:500});
-					},
-				
-					/**
-						Restablece la posición de la ventana modal, siempre y cuando esta se encuentre dentro del DOM.
-						@see: std
-					*/
-					reset: function (){
-						modal&&$.css(modal).set({
-							top: "50%",
-							left: "50%"
-						});
-					},
-				
-					/**
-						Se encarga de crear bordes redondeados a la ventana modal.
-						@param: {String} color es el color que se desea para el borde que se va a crear
-						@param: {String} position es la posición en la que se colocaran los bordes redondeados, puede ser TOP o BOTTOM
-						@return: Los bordes redondeados para ser incluidos en la ventana
-					*/
-					round: function (color, position) {
-						position = position.toLowerCase();
-						var border = document.createElement("b"),
-							r = [],
-							i = 0;
-						while(i<4) {
-							r[i] = border.cloneNode(FALSE);
-							r[i].style.backgroundColor = color;
-							r[i].className = "r"+(i+1);
-							i++;
-						}
-						border.className = "round";
-						
-						if (position == "top"){
-							i=0;
-							while(i<4) {
-								border.appendChild(r[i]);
-								i++;
-							}
-						} else if (position == "bottom") {
-							i=3;
-							while(i>=0) {
-								border.appendChild(r[i]);
-								i--;
-							}
-						} else {
-							return;
-						}
-						
-						return border;
-					}
-				};
-			
-			function removeLocal () {
-				if (local) {
-					document.body.appendChild(local);
-				}
-				modal.removeChild(modal.childNodes[2]);
-				modal.removeChild(modal.childNodes[2]);
-			}
-
-
+(function ($, window, undefined) {
+	var cache = window.sessionStorage || {},
+		FALSE = false,
+		TRUE = true,
+		document = window.document,
+		location = document.location,
+		modal,
+		overlay,
+		local,
+		body,
+		core = {
 			/**
-				Configuración de entorno para la creación de ventanas modal, aparte de generar el entorno
-				para las ventanas, tambien permite omitir por (X)HTML el atributo target="_blank", pudiendolo
-				reemplazar por rel="external"
+				Renderiza el nodo la ventana modal dependiendo del enlace que la halla invocado, tomando el titulo de la misma etiqueta.
+				Crea todo el marco de la ventana modal y el overlay que cubrira la pantalla del navegador.
+				@see: std
 			*/
-			$.evt.add(window,"resize",core.reset);
+			show: function () {
+				$.evt.get().preventDefault();
+				var self = this,
+					title = self.getAttribute("title") || "",
+					isCache = self.rel.split("-")[1] == "cache",
+					url = self.getAttribute("href"),
+					path = location.href.replace(location.hash, ""),
+					element;
 
-			$(function (){
-				$.evt.on(document,"a","click", function() {
-					var rel = this.rel;
-					if(rel.indexOf("modal") == 0 ) {
-						$.modal.show.apply(this,arguments);
-					} else if(rel == "external" && this.target != "_blank") {
-						this.target = "_blank";
+				if (url.indexOf(path+"#") == 0) {
+					url = url.replace(path, "");
+				}
+
+				if(!overlay) {
+					$.css("#modal").set("opacity", 0);
+					overlay = createElement("div");
+					modal = overlay.cloneNode(FALSE);
+					var head  = overlay.cloneNode(FALSE),
+						img = overlay.cloneNode(FALSE),
+						text = createElement("h2");
+					
+					overlay.id = "overlay";
+					modal.id = "modal";
+					head.className = "head";
+					$.evt.add([img, overlay],"click",core.hide);
+					head.appendChild(img);
+					head.appendChild(text);
+					modal.appendChild(core.round($.css(".head").get("backgroundColor"),"top"));
+					modal.appendChild(head);
+					body.appendChild(modal);
+					body.appendChild(overlay);
+					$.sfx.dyd(head, {
+						mov: modal,
+						area: overlay
+					});
+				}
+				
+				if (modal.childNodes[2]) {
+					var self = this,
+						args = arguments;
+					$.sfx.fade(modal, {onComplete:function(){
+						removeLocal();
+						core.show.apply(self, args);
+					}, duration:500});
+					return;
+				} 
+				if (url.indexOf("#") == 0) {
+					local = $(url);
+					var parent = local.parentNode;
+					element = local.cloneNode(TRUE);
+					parent.removeChild(local);
+				} else {
+					var aux = createElement("div");
+					if (!isCache || !(aux.innerHTML = cache[url])) {
+						$.ajax.request(url,function(r){
+							//console.log(r);
+							if (isCache) {
+								cache[url] = r;
+							}
+							aux.innerHTML = r;
+						}, {sync:TRUE});
 					}
+					element = aux.firstChild;
+				}
+				modal.appendChild(element);
+				modal.appendChild(core.round($.css(element).get("backgroundColor"),"bottom"));
+				element.style.display = "block";
+				modal.childNodes[1].childNodes[1].innerHTML = title;
+				
+				overlay.style.display = "";
+				modal.style.display = "";
+				$.sfx.anim(modal, {opacity:1});
+				
+				var childsModal = modal.childNodes,
+					height = 0,
+					width = element.offsetWidth;
+				
+				for (var i=0,h; h=childsModal[i]; i++) {
+					height += h.offsetHeight;
+				}
+				$.css(modal).set({
+					width: width+"px",
+					height: height+"px",
+					marginLeft: -(width/2)+"px",
+					marginTop: -(height/2)+"px"
 				});
-			});
+				$.modal.reset();
+			},
+		
+			/**
+				Elimina el nodo principal de la ventana modal y oculta el resto de la estructura.
+				@see: std
+			*/
+			hide: function () {
+				$.sfx.anim(modal, {opacity: 0}, {onComplete:function(){
+					overlay.style.display = "none";
+					modal.style.display = "none";
+					removeLocal();
+				}, duration:500});
+			},
+		
+			/**
+				Restablece la posición de la ventana modal, siempre y cuando esta se encuentre dentro del DOM.
+				@see: std
+			*/
+			reset: function (){
+				modal && $.css(modal).set({
+					top: "50%",
+					left: "50%"
+				});
+			},
+		
+			/**
+				Se encarga de crear bordes redondeados a la ventana modal.
+				@param: {String} color es el color que se desea para el borde que se va a crear
+				@param: {String} position es la posición en la que se colocaran los bordes redondeados, puede ser TOP o BOTTOM
+				@return: Los bordes redondeados para ser incluidos en la ventana
+			*/
+			round: function (color, position) {
+				position = position.toLowerCase();
+				var border = createElement("b"),
+					r = [],
+					i = 0;
+				while(i<4) {
+					r[i] = border.cloneNode(FALSE);
+					r[i].style.backgroundColor = color;
+					r[i].className = "r"+(i+1);
+					i++;
+				}
+				border.className = "round";
+				
+				if (position == "top"){
+					i=0;
+					while(i<4) {
+						border.appendChild(r[i]);
+						i++;
+					}
+				} else if (position == "bottom") {
+					i=3;
+					while(i>=0) {
+						border.appendChild(r[i]);
+						i--;
+					}
+				} else {
+					return;
+				}
+				
+				return border;
+			}
+		};
+	
+	function removeLocal () {
+		if (local) {
+			body.appendChild(local);
+		}
+		modal.removeChild(modal.childNodes[2]);
+		modal.removeChild(modal.childNodes[2]);
+	}
 
-			return core;
-		})(window)
+	function createElement (element) {
+		return document.createElement(element);
+	}
+
+	/**
+		Configuración de entorno para la creación de ventanas modal, aparte de generar el entorno
+		para las ventanas, tambien permite omitir por (X)HTML el atributo target="_blank", pudiendolo
+		reemplazar por rel="external"
+	*/
+	$.evt.add(window,"resize",core.reset);
+
+	$(function (){
+		body = document.body;
+		$.evt.on(document,"a","click", function() {
+			var self = this,
+				rel = self.rel;
+			if(rel.indexOf("modal") == 0 ) {
+				$.modal.show.apply(self,arguments);
+			} else if(rel == "external" && self.target != "_blank") {
+				self.target = "_blank";
+			}
+		});
 	});
-}) (std);
+
+	$.extend($, {modal: core});
+}) (std, window);

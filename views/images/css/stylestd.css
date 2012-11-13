@@ -234,7 +234,7 @@ th, td {
 	vertical-align: middle;
 }
 
-#msg-out, #msg-error, #msg-alert {
+#msg-out, #msg-error, #msg-alert, #msg-not {
 	background: #FFF no-repeat left center;
 	font: 700 1em Arial, Helvetica, sans-serif;
 	padding: 5px;
@@ -243,7 +243,7 @@ th, td {
 	top: 0;
 	width: 100%;
 }
-#msg-not { display:none; }
+#msg-not { height: 0 }
 #msg-out {
 	background-image: url(../ok.png);
 	color: #45B339;

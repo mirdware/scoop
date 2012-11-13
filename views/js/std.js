@@ -28,8 +28,10 @@ var TRUE = true,
 	encodeURIComponent = window.encodeURIComponent,
 	parseInt = window.parseInt,
 	parseFloat = window.parseFloat,
+	isNaN = window.isNaN,
 	testElement = document.documentElement,
 	styleSheets = document.styleSheets,
+	FormData = window.FormData,
 	std = {
 		/****** NUCLEO ******/
 
@@ -209,14 +211,16 @@ var TRUE = true,
 						if (element.addEventListener) {
 							element.addEventListener(nEvent,fn,capture);
 						} else if (element.attachEvent) {
-							!fn.idf && (fn.idf = id++);
-							!element.ide && (element.ide = id++);
-							var sid = fn.idf+"-"+element.ide;
-							if (!events[sid]) {
-								events[sid] = function(){
-									fn.call(element,event);
-								};
+							if (!fn.idf) {
+								fn.idf = id++;
 							}
+							if (!element.ide) {
+								element.ide = id++;
+							}
+							var sid = fn.idf+"-"+element.ide;
+							events[sid] = function(){
+								fn.call(element,event);
+							};
 							element.attachEvent("on"+nEvent,events[sid]);
 						} else {
 							element["on"+nEvent] = fn;
@@ -249,24 +253,32 @@ var TRUE = true,
 					@param {element} element es el elemento que va a "observar" a sus elementos hijos
 					@param {string} observe es el selector de los hijos que se van a observar, los prefijos utilizados son los mismos que para $
 					@param {string} nEvent es el nombre del evento que va a ser asignado
-					@param {function} fn es la funcion que se les asiganara a los elementos onservados
-					@param {boolean} capture establece como ocurria el flujo de eventos TRUE si es capture y FALSE si es bubbling
+					@param {function} fn es la funcion que se les asiganara a los elementos observados
+					@param {boolean} capture establece como ocurrira el flujo de eventos TRUE si es capture y FALSE si es bubbling
 				*/
 				on: function(element, observe, nEvent, fn, capture) {
 					if(loops(element, nEvent, fn, capture, observe)) {
+						if (!fn.idf) {
+							fn.idf = id++;
+						}
+						if (!element.ide) {
+							element.ide = id++;
+						}
 						var prefix = observe.charAt(0),
 							type = 	(prefix == "#")?"id":
 									(prefix == ".")?"className":
 									(prefix == "@")?"name":
 									"nodeName",
-							name = (type=="nodeName")?observe.toUpperCase():observe.substr(1);
-						core.add(element, nEvent, function() {
-							var target = core.get().target;
+							name = (type=="nodeName")?observe.toUpperCase():observe.substr(1),
+							sid = observe+fn.idf+"-"+element.ide;
+						events[sid] = function () {
+							var target = core.get().target,
+								array;
 							if(observe == "*") {
 								fn.apply(target, arguments);
 							} else {
 								while(target && target !== element) {
-									var array = target[type].split(' ');
+									array = target[type].split(' ');
 									for (var i=0, el; el = array[i]; i++) {
 										if(el == name) {
 											fn.apply(target, arguments);
@@ -275,8 +287,21 @@ var TRUE = true,
 									target = target.parentNode;
 								}
 							}
-						}, capture);
+						};
+						core.add(element, nEvent, events[sid], capture);
 					}
+				},
+
+				/**
+					Deja de escuchar los eventos que generan los hijos de un elemento,
+					@param {element} element es el elemento que se encuentra observando
+					@param {string} observe es el selector de los hijos que se encuentran bajo observación
+					@param {string} nEvent es el nombre del evento asignado
+					@param {function} fn es la funcion asiganada a los elementos observados
+					@param {boolean} capture establece como ocurria el flujo de eventos TRUE si es capture y FALSE si es bubbling
+				*/
+				off: function (element, observe, nEvent, fn, capture) {
+					core.remove(element, nEvent, events[observe+fn.idf+"-"+element.ide], capture);
 				},
 				
 				/**
@@ -368,7 +393,8 @@ var TRUE = true,
 			*/
 			function getCSSRule(ruleName, deleteFlag) {
 				//console.log(ruleName);
-				for (var i = 0, styleSheet, cssRules; styleSheet = styleSheets[i]; i++) {
+				for (var i = 0, styleSheet, cssRules; i<styleSheets.length; i++) {//si se hace como se deberia, no funciona en IE 8, 7
+					styleSheet = styleSheets[i]
 					cssRules = styleSheet.cssRules || styleSheet.rules;
 					for (var j = 0, cssRule; cssRule = cssRules[j]; j++){
 						if (cssRule.selectorText == ruleName) {
@@ -527,6 +553,7 @@ var TRUE = true,
 					feedback = opt.feedback,
 					data = opt.data,
 					method = (opt.method || "POST").toUpperCase(),
+					isDataForm = FormData && data instanceof FormData,
 					async = !opt.sync;
 				
 				xmlHttp.onreadystatechange = function() {
@@ -540,15 +567,15 @@ var TRUE = true,
 						feedback(xmlHttp.readyState);
 					}
 				};
-				data = std.ajax.url(data);
-				if (method == "GET" && data) {
-					url = url+"?"+data;
-					data = NULL;
+				if (data && !isDataForm) {
+					data = std.ajax.url(data);
+					if (method == "GET") {
+						url = url+"?"+data;
+						data = NULL;
+					}
 				}
 				xmlHttp.open(method, url, async);
-				if (method == "POST") {
-					xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-				}
+				!isDataForm && xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				xmlHttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 				xmlHttp.send(data);
 			},
@@ -603,9 +630,12 @@ var TRUE = true,
 			/**
 				Genera un efecto drag and drop de un elemento dentro de otro elemento contenedor.
 				@see: EVENTOS, ESTILOS
-				@param: {Event} e es el evento que dispara la función que invoco al metodo
-				@param: {Element} mov es el elemento que se va a mover dentro del contenedor
-				@param: {Element} area es el contenedor sobre el cual se movera mov
+				@param: {Element} point es el elemento que desencadenara el efecto
+				@param: {object} opt es el conjunto de opciones que se le puede pasar al metodo, estas opciones son:
+					mov: Es el elemento que se va a arrastrar dentro del contenedor (por defecto es point)
+					area: Es el contenedor sobre el cual se movera mov (por defecto es el parent de point)
+					onDrag: es la función que se ejecuta mientras el elemento es arrastrado
+					onDrop: es la función que se ejecutara al momento de soltar el elemento
 			*/
 			dyd: function (point, opt) {
 				opt || (opt = {});
@@ -660,7 +690,7 @@ var TRUE = true,
 							left: x+"px",
 							top: y+"px"
 						});
-						onDrag&&onDrag();
+						onDrag && onDrag();
 						e.preventDefault();
 					}
 					
@@ -771,7 +801,7 @@ var TRUE = true,
 */
 function hexToRGB(color) {
 	color = color.substr(1);
-	if (color.length==3) {
+	if (color.length == 3) {
 		var aux = color.split("");
 		color = "";
 		for (var i=0;i<3;i++){
@@ -812,26 +842,23 @@ if(window.JSON == undefined) {
 		*/
 		stringify: function(obj) {
 			if (!(obj instanceof Object)) {
-				return;
+				return obj;
 			}
-			var isArray = (obj instanceof Array),
+			var isArray = obj instanceof Array,
 				strJSON = isArray?"[":"{";
 				
 			for(var key in obj) {
-				if(obj[key] instanceof Object) {
-					if(!isArray) {
+				if(typeof obj[key] != "function") {
+					if (!isArray) {
 						strJSON += '"'+key+'" : ';
 					}
-					strJSON += JSON.stringify(obj[key])+", ";
-				} else if(typeof obj[key] != "function") {
-					if(!isArray) {
-						strJSON += '"'+key+'" : ';
-					}
-					strJSON += '"'+obj[key]+'", ';
+					strJSON += (obj[key] instanceof Object? JSON.stringify(obj[key]):
+								(isNaN(obj[key]))?'"'+obj[key]+'"':
+								obj[key])+', ';
 				}
 			}
 			
-			return strJSON.substr(0, strJSON.length-2) + (isArray?" ]":" }");
+			return strJSON.substr(0, strJSON.length-2) + (isArray?"]":"}");
 		},
 		/**
 			Crea un objeto partiendo de una cadena JSON correctamente formateada.
@@ -847,7 +874,7 @@ if(window.JSON == undefined) {
 				return window[ "eval" ]("("+strJSON+")");
 			}
 			
-			return;
+			throw new SyntaxError('JSON.parse');
 		}
 	};
 }

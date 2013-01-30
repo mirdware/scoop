@@ -5,7 +5,6 @@
 		Read: Obtiene de la base de datos los atributos que le son pasados en el array.
 		Update: Actualiza la base de datos segun la información contenida en el array asociativo.
 		Delete: Elimina el objeto de la base de datos.
-		Exist: Verifica si un dato existe dentro de la base de datos o no.
 */
 interface Model {
 	public static function create($array);
@@ -33,9 +32,11 @@ abstract class Controller implements View {
 	/*Establece o modifica los datos que va a procesar la vista*/
 	protected function setView ($key, $value=NULL) {
 		if(is_array($key)) {
-			$this->hashMap = array_merge ($this->hashMap, $key);
+			foreach ($key as $k=>$v) {
+				$this->setView($k, $v);
+			}
 		} else {
-			$this->hashMap[$key] = $value;
+			$this->hashMap['${'.$key.'}'] = $value;
 		}
 	}
 	
@@ -54,13 +55,13 @@ abstract class Controller implements View {
 	}
 
 	protected function pushMessage ($type, $msg) {
-		$_SESSION['msg'] = array('type'=>$type, 'msg'=>$msg);
+		$_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
 	}
 
 	protected function pullMessage () {
-		if (isset($_SESSION['msg'])) {
-			$this->showMessage($_SESSION['msg']['type'], $_SESSION['msg']['msg']);
-			unset($_SESSION['msg']);
+		if (isset($_SESSION['msg-scoop'])) {
+			$this->showMessage($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
+			unset($_SESSION['msg-scoop']);
 		}
 	}
 	
@@ -91,21 +92,20 @@ abstract class Controller implements View {
 	*/
 	private function getLayer() {
 		$key = 'layers-'.$this->layer;
+
+		//opteniendo los layers por APC o sesión
 		if (APC) {
 			if ( apc_exists($key) ) {
 				return apc_fetch($key);
 			}
-		} else {
-			$layer =& $_SESSION[$key];
-			if ( $layer ) {
-				return $layer;
-			}
+		} elseif ( isset($_SESSION[$key]) ) {
+			return $_SESSION[$key];
 		}
 		//ubicacion completa del archivo
 		$file = 'views/layers/'.$this->layer.'.html';
 		$layer = file_get_contents($file);
 		if (APC) {
-			apc_store($key, $layer);
+			apc_store($key, $layer, 1200);
 		}
 		return $layer;
 	}
@@ -120,16 +120,19 @@ abstract class Controller implements View {
 		$layer = $this->getLayer();
 
 		if($layer && $this->renderLayer) {
-			$template = str_replace('{page}', $template, $layer);
+			$template = str_replace('${page}', $template, $layer);
 		}
+		//constantes SCOOP
+		$this->hashMap = array_merge($this->hashMap, array(
+			'${root}' => ROOT,
+			'${msg-scoop}' => $this->msg
+		));
 		
-		foreach ($this->hashMap as $clave=>$valor) {
-			$template = str_replace('{'.$clave.'}', $valor, $template);
-		}
-		
-		//constantes de la vista
-		$template = str_replace('{root}', ROOT, $template);
-		$template = str_replace('{msg}', $this->msg, $template);
+		$template = str_replace(
+			array_keys($this->hashMap),
+			array_values($this->hashMap),
+			$template
+		);
 
 		if ($return) {
 			return $template;

@@ -4,7 +4,7 @@
 	no solo en javascript, si no tambien orientados a AJAX (Asynchronous JavaScript And XML) y con 
 	soporte para JSON. Todo esto basandose en una interfaz sencilla.
 	
-	Para buscar secciones dentro del documento utiliza "****** sección ******" sin comillas, las secciones de std son:
+	Para buscar secciones dentro del documento utiliza "* sección" sin comillas, las secciones de std son:
 		NUCLEO: Se encuentran los metodos propios de std(extend, cmode).
 		DOM: Realiza trabajos con el DOM al igual que ejecuta acciones cuando este esta completamente listo(ready).
 		EVENTOS: Contiene manejadores de eventosadd, remove, on) dentro del objeto evt y una verion de event estandarizada(get).
@@ -17,7 +17,7 @@
 	
 	El camino más sencillo casi siempre es el más rapido y efectivo. Recuerda Keep It Simple, Stupid!!
 	@author: Marlon Ramirez
-	@version: 0.0.9
+	@version: 0.1
 */
 (function(window, undefined) {
 var TRUE = true,
@@ -29,11 +29,11 @@ var TRUE = true,
 	parseInt = window.parseInt,
 	parseFloat = window.parseFloat,
 	isNaN = window.isNaN,
+	FormData = window.FormData,
 	testElement = document.documentElement,
 	styleSheets = document.styleSheets,
-	FormData = window.FormData,
 	std = {
-		/****** NUCLEO ******/
+		/** NUCLEO */
 
 		/**
 			Extiende o copia las propiedades de un objeto origen en otro objeto destino. Las propiedades del objeto origen se
@@ -61,21 +61,20 @@ var TRUE = true,
 			return std;
 		},
 
-		/****** DOM ******/
+		/** DOM */
 		dom: {
 			/**
 				Engloba la ejecución de varios getElements, para esto se usa un unico prefijo antes del nombre del identificador.
 				Los prefijos permitidos son:
 				# = getElementById
 				. = getElementsByClassName
-				@ = getElementByName
+				@ = getElementsByName
 				Si se omite el prefijo se utilizara getElementsByTagName.
 				@param: {string} id es el identificador del nodo que se busca, este identificador puede ser un id, una clase, un nombre o una etiqueta
-				@param: {element} node es el padre del elemento que se busca
-				@param: {string} tag es opcional y se utiliza para agilizar la busqueda de clases, es el tipo de etiqueta de la clase
+				@param: {element} node es el padre del elemento que se busca (por defecto es document)
 				@return: El nodo o serie de nodos que se buscan con esta función
 			*/
-			get: function (id, node, tag) {
+			get: function (id, node) {
 				var name = id.substr(1),
 					prefix = id.charAt(0);
 				
@@ -93,14 +92,12 @@ var TRUE = true,
 					if (node.getElementsByClassName) {
 						return node.getElementsByClassName(name);
 					}
-					tag || (tag = "*");
 					var classElements = [],
-						els = std(tag),
+						els = std("*", node),
 						pattern = new RegExp("(^|\\s)"+name+"(\\s|$)");
-					for (var i=0,el, j=0; el=els[i]; i++) {
+					for (var i=0, el; el=els[i]; i++) {
 						if ( pattern.test(el.className) ) {
-							classElements[j] = el;
-							j++;
+							classElements.push(el);
 						}
 					}
 					return classElements;
@@ -194,7 +191,7 @@ var TRUE = true,
 			})()
 		},
 		
-		/****** EVENTOS ******/
+		/** EVENTOS */
 		evt: (function() {
 			var id = 0,//id unico para cada funcion que se vaya a asociar
 				events = [],//array con las funciones asociadas a IE<9
@@ -211,15 +208,15 @@ var TRUE = true,
 						if (element.addEventListener) {
 							element.addEventListener(nEvent,fn,capture);
 						} else if (element.attachEvent) {
-							if (!fn.idf) {
-								fn.idf = id++;
+							if (!fn.id) {
+								fn.id = id++;
 							}
-							if (!element.ide) {
-								element.ide = id++;
+							if (!element.id) {
+								element.id = id++;
 							}
-							var sid = fn.idf+"-"+element.ide;
+							var sid = fn.id+"-"+element.id;
 							events[sid] = function(){
-								fn.call(element,event);
+								fn.call(element, core.fix());
 							};
 							element.attachEvent("on"+nEvent,events[sid]);
 						} else {
@@ -240,7 +237,7 @@ var TRUE = true,
 						if (element.removeEventListener){
 							element.removeEventListener(nEvent,fn,capture);
 						} else if (element.detachEvent) {
-							element.detachEvent("on"+nEvent,events[fn.idf+"-"+element.ide]);
+							element.detachEvent("on"+nEvent,events[fn.id+"-"+element.id]);
 						} else {
 							element["on"+nEvent] = function(){};
 						}
@@ -258,11 +255,11 @@ var TRUE = true,
 				*/
 				on: function(element, observe, nEvent, fn, capture) {
 					if(loops(element, nEvent, fn, capture, observe)) {
-						if (!fn.idf) {
-							fn.idf = id++;
+						if (!fn.id) {
+							fn.id = id++;
 						}
-						if (!element.ide) {
-							element.ide = id++;
+						if (!element.id) {
+							element.id = id++;
 						}
 						var prefix = observe.charAt(0),
 							type = 	(prefix == "#")?"id":
@@ -270,24 +267,24 @@ var TRUE = true,
 									(prefix == "@")?"name":
 									"nodeName",
 							name = (type=="nodeName")?observe.toUpperCase():observe.substr(1),
-							sid = observe+fn.idf+"-"+element.ide;
-						events[sid] = function () {
-							var target = core.get().target,
-								array;
+							sid = observe+fn.id+"-"+element.id;
+
+						events[sid] = function (e) {
+							var target = e.target,
+								args = arguments,
+								pattern = new RegExp("(^|\\s)"+name+"(\\s|$)");
 							if(observe == "*") {
-								fn.apply(target, arguments);
+								fn.apply(target, args);
 							} else {
 								while(target && target !== element) {
-									array = target[type].split(' ');
-									for (var i=0, el; el = array[i]; i++) {
-										if(el == name) {
-											fn.apply(target, arguments);
-										}
+									if( (prefix == "." && pattern.test(target[type])) || target[type] == name ) {
+										fn.apply(target, args);
 									}
 									target = target.parentNode;
 								}
 							}
 						};
+
 						core.add(element, nEvent, events[sid], capture);
 					}
 				},
@@ -301,24 +298,22 @@ var TRUE = true,
 					@param {boolean} capture establece como ocurria el flujo de eventos TRUE si es capture y FALSE si es bubbling
 				*/
 				off: function (element, observe, nEvent, fn, capture) {
-					core.remove(element, nEvent, events[observe+fn.idf+"-"+element.ide], capture);
+					core.remove(element, nEvent, events[observe+fn.id+"-"+element.id], capture);
 				},
 				
 				/**
 					Se encarga de generar un objeto evento con un formato unico permitiendo asi una solución crossbrowser.
 					@return: El evento formateado para su correcto uso
 				*/
-				get: function() {
-					var e = window.event;	
+				fix: function() {
+					var e = window.event,
+						body = document.body;	
 					if (e) {
-						if( navigator.appName == "Opera") {
-							return e;
-						}
 						e.charCode = (e.type == "keypress") ? e.keyCode : 0;
 						e.eventPhase = 2;
 						e.isChar = (e.charCode > 0);
-						e.pageX = e.clientX + document.body.scrollLeft;
-						e.pageY = e.clientY + document.body.scrollTop;
+						e.pageX = e.clientX + body.scrollLeft;
+						e.pageY = e.clientY + body.scrollTop;
 						
 						e.preventDefault = function() {
 							this.returnValue = FALSE;
@@ -339,7 +334,7 @@ var TRUE = true,
 						return e;
 					}
 					
-					return core.get.caller.arguments[0];
+					return core.fix.caller.arguments[0];
 				}
 			};
 			
@@ -355,33 +350,35 @@ var TRUE = true,
 			function loops(element, nEvent, fn, capture, observe) {
 				var caller = loops.caller;
 
-				if (!element) {
-					return FALSE;
-				}
-				if(!element.nodeType && element.length) {
-					for(var i=0; el = element[i]; i++) {
-						caller(el, nEvent, fn, capture);
-					}
-					return FALSE;
-				}
-				if(nEvent instanceof Object) {
-					for(var attr in nEvent) {
-						if(observe) {
-							caller(element, observe, attr, nEvent[attr], fn);
-						} else {
-							caller(element, attr, nEvent[attr], fn);
+				if (element) {
+					/*	validar si no es un elemento (una lista de elementos es distinta), si tiene una
+						longitud, es decir se encuentra serializado y es diferente a window, esta ultima
+						validación al igual que la primera es para evitar que los elementos a los que se
+						desea añadir el evente no se les adicione a causa de hacerlo a sus hijos.*/
+					if(!element.nodeType && element.length && element != window) {
+						for(var i=0, el; el = element[i]; i++) {
+							caller(el, nEvent, fn, capture);
 						}
+						return FALSE;
 					}
-					return FALSE;
+					if (nEvent instanceof Object) {
+						/*	Recorre el objeto tomando como nombre de evento el key y como funcion el
+							contenido del elemento de array.*/
+						for(var attr in nEvent) {
+							observe?caller(element, observe, attr, nEvent[attr], fn):
+									caller(element, attr, nEvent[attr], fn);
+						}
+						return FALSE;
+					}
 				}
-				return TRUE;
+				return !!element;
 			}
 			
 			return core;
 			
 		})(),
 		
-		/****** ESTILOS ******/
+		/** ESTILOS */
 		css: (function(){	
 			/**
 				Busca selectores CSS dentro de las hojas de estilos del documento que coincidan con la regla de estilo pasada como parametro,
@@ -392,8 +389,8 @@ var TRUE = true,
 						 no encontrala retorna FALSE.
 			*/
 			function getCSSRule(ruleName, deleteFlag) {
-				//console.log(ruleName);
-				for (var i = 0, styleSheet, cssRules; i<styleSheets.length; i++) {//si se hace como se deberia, no funciona en IE 8, 7
+				//si se hace como se deberia, no funciona en IE 8, 7
+				for (var i = 0, styleSheet, cssRules; i<styleSheets.length; i++) {
 					styleSheet = styleSheets[i]
 					cssRules = styleSheet.cssRules || styleSheet.rules;
 					for (var j = 0, cssRule; cssRule = cssRules[j]; j++){
@@ -455,7 +452,7 @@ var TRUE = true,
 						getCSSRule(ruleName, deleteFlag)
 					} else {
 						if (!styleSheets.length) {
-							$("head")[0].appendChild(document.createElement("style"));
+							std("head")[0].appendChild(document.createElement("style"));
 						}
 						var lastStyleSheet = styleSheets[styleSheets.length-1],
 							lengthRule = lastStyleSheet.length;
@@ -513,60 +510,44 @@ var TRUE = true,
 			
 		})(),
 		
-		/****** AJAX ******/
+		/** AJAX */
 		ajax: {
 			/**
-				Crea un objeto XMLHttpRequest crossbrowser
+				Crea un objeto XMLHttpRequest crossbrowser, se usa una tecnica de reflección
+				para reducir el codígo del script.
 				@return: El objeto XMLHttpRequest dependiendo del browser en el que se realize la petición
 			*/
 			xhr: function() {
-				try {
-					return new XMLHttpRequest();
-				} catch(e1) {
+				for (var i=0; i<4; i++) {
 					try {
-						return new ActiveXObject("Microsoft.XMLHTTP");
-					} catch(e2) {
-						try {
-							return new ActiveXObject("Msxml2.XMLHTTP");
-						} catch(e3) {
-							return NULL;
-						}
-					}
+						return i?new ActiveXObject([, "Microsoft", "Msxml3", "Msxml2"][i]+".XMLHTTP")
+								:new XMLHttpRequest;
+					} catch (e) {}
 				}
 			},
 			
 			/**
 				Realiza una petición asincrona al servidor
 				@param: {String} url es la ruta del archivo del servidor que procesara la solicitud
-				@param: {function} callback es la función que establece el comportamiento cuando el servidor retorna una respuesta 200
 				@param: {object} opt es el conjunto de opciones que se le puede pasar al metodo, estas opciones son:
 					response: Tipo de respuesta, puede ser text (por defecto) o XML
+					callback: Función que establece el comportamiento cuando el servidor retorna una respuesta 200
 					feedback: Función que establece un comportamiento cuando el servidor no retorna una respuesta 200
 					data: Datos que se envian al servidor desde el cliente
 					method: Metodo utilizado para enviar los datos, puede ser POST (por defecto) o GET
 					sync: Valor booleano que dice si la petición es sincrona, por defecto es false y la petición se realiza de modo asincrono
 			*/
-			request: function(url, callback, opt) {
+			request: function(url, opt) {
 				opt || (opt = {});
-				var xmlHttp =std.ajax.xhr(),
-					response = (opt.response || "Text").toUpperCase(),
+				var xmlHttp = opt.xhr || std.ajax.xhr(),
+					response = (opt.response || "TEXT").toUpperCase(),
 					feedback = opt.feedback,
+					callback = opt.callback,
 					data = opt.data,
 					method = (opt.method || "POST").toUpperCase(),
 					isDataForm = FormData && data instanceof FormData,
 					async = !opt.sync;
-				
-				xmlHttp.onreadystatechange = function() {
-					if (xmlHttp.readyState == 4) {
-						if (xmlHttp.status == 200) {
-							callback( (response == "XML")?xmlHttp.responseXML:xmlHttp.responseText );
-						} else if (feedback) {
-							feedback(xmlHttp.status);
-						}
-					} else if (feedback) {
-						feedback(xmlHttp.readyState);
-					}
-				};
+
 				if (data && !isDataForm) {
 					data = std.ajax.url(data);
 					if (method == "GET") {
@@ -574,6 +555,19 @@ var TRUE = true,
 						data = NULL;
 					}
 				}
+				xmlHttp.onreadystatechange = function() {
+					if (xmlHttp.readyState == 4) {
+						if (xmlHttp.status == 200) {
+							callback && callback( response == "XML"?xmlHttp.responseXML:
+																	xmlHttp.responseText );
+						} else if (feedback) {
+							feedback(xmlHttp.status);
+						}
+					} else if (feedback) {
+						feedback(xmlHttp.readyState);
+					}
+				};
+				
 				xmlHttp.open(method, url, async);
 				!isDataForm && xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				xmlHttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -586,18 +580,16 @@ var TRUE = true,
 				@return: una cadena url segura para enviar via ajax o url
 			*/
 			url: function(obj) {
-				if(!(obj instanceof Object)) {
+				if(typeof obj != "object") {
 					return obj;
 				}
-				var res=[], i=0, typeKey;
+				var res=[], typeKey;
 				for(var key in obj) {
 					typeKey = typeof obj[key];
 					if(typeKey == "string" || typeKey == "number") {
-						res[i] = encodeURIComponent(key)+"="+encodeURIComponent(obj[key]);
-						i++;
+						res.push( encodeURIComponent(key)+"="+encodeURIComponent(obj[key]) );
 					}
 				}
-
 				return res.join("&");
 			},
 			
@@ -608,16 +600,19 @@ var TRUE = true,
 				@return: Un objeto que contiene todos los campos diligenciados del formulario (nombre del campo: valor del campo)
 			*/
 			form: function(form) {
-				var obj = {};
+				var obj = {},
+					i=0, inp, name, type, index;
 				
-				for(var i=0, inp; inp = form[i]; i++) {
-					if(inp.name != undefined  && inp.name != "") {
-						if(inp.type == "radio" || inp.type == "checkbox") {
-							if(inp.checked) {
-								obj[inp.name] = inp.value;
-							}
-						} else {
-							obj[inp.name] = inp.value;
+				for(; inp = form[i]; i++) {
+					name = inp.name;
+					if(name) {
+						type = inp.type;
+						if( (type == "radio" || type == "checkbox") && !inp.checked ) {
+							continue;
+						}
+						obj[name] = inp.value;
+						if(!obj[name] && type.indexOf("select") == 0 && (index = inp.selectedIndex) != -1) {
+							obj[name] = inp.options[index].text;
 						}
 					}
 				}
@@ -625,7 +620,7 @@ var TRUE = true,
 			}
 		},
 		
-		/****** EFECTOS ESPECIALES ******/
+		/** EFECTOS ESPECIALES */
 		sfx: {
 			/**
 				Genera un efecto drag and drop de un elemento dentro de otro elemento contenedor.
@@ -648,9 +643,8 @@ var TRUE = true,
 					movIsAbsolute = (cssMov.get("position") == "absolute");
 
 
-				function dragstart () {
-					var e = std.evt.get(),
-						marginL = parseInt(cssMov.get("marginLeft")) || 0,
+				function dragstart (e) {
+					var marginL = parseInt(cssMov.get("marginLeft")) || 0,
 						marginT = parseInt(cssMov.get("marginTop")) || 0,
 						cEjeX = e.clientX+testElement.scrollLeft+body.scrollLeft,
 						cEjeY = e.clientY+testElement.scrollTop+body.scrollTop,
@@ -661,9 +655,8 @@ var TRUE = true,
 						Cambia la posición del elemento que se esta arrastrando dependiendo de la posición del puntero.
 						@see: EVENTOS, ESTILOS
 					*/
-					function drag() {
-						var e = std.evt.get(),
-							nowX = e.clientX+testElement.scrollLeft+body.scrollLeft,
+					function drag(e) {
+						var nowX = e.clientX+testElement.scrollLeft+body.scrollLeft,
 							nowY = e.clientY+testElement.scrollTop+body.scrollTop,
 							aLeft = !movIsAbsolute?area.offsetLeft:0,
 							aTop = !movIsAbsolute?area.offsetTop:0,
@@ -703,7 +696,7 @@ var TRUE = true,
 							mousemove: drag,
 							mouseup: drop
 						}, TRUE);
-						onDrop&&onDrop();
+						onDrop && onDrop();
 					}
 					
 					std.evt.add(document,{
@@ -792,7 +785,7 @@ var TRUE = true,
 		}
 	};
 
-/****** FUNCIONES PRIVADAS ******/
+/** FUNCIONES PRIVADAS */
 /**
 	Cuando un color se encuentra en formato #hexadecimal esta función lo convierte a RGB, se bebe comprobar que el parametro pasado es un 
 	hexadecimal ya que la función no realiza dicha comprobación.
@@ -802,17 +795,14 @@ var TRUE = true,
 function hexToRGB(color) {
 	color = color.substr(1);
 	if (color.length == 3) {
-		var aux = color.split("");
-		color = "";
-		for (var i=0;i<3;i++){
-			color+=aux[i]+aux[i];
-		}
+		color = color.split("");
+		color = color[0]+color[0]+color[1]+color[1]+color[2]+color[2];
 	}
 	color = parseInt(color, 16);
 	return [color >> 16, color >> 8 & 255, color & 255];
 }
 
-/****** CONFIGURACION DE ENTORNO ******/
+/** CONFIGURACION DE ENTORNO */
 
 /**
 	Extendiende los objetos nativos javascript necesarios para el funcionamiento de la liberia,
@@ -831,7 +821,7 @@ std.extend (String.prototype,{
 
 
 
-/****** JSON ******/
+/** JSON */
 if(window.JSON == undefined) {
 	window.JSON = {
 		/**
@@ -845,20 +835,22 @@ if(window.JSON == undefined) {
 				return obj;
 			}
 			var isArray = obj instanceof Array,
-				strJSON = isArray?"[":"{";
+				strJSON = isArray?"[":"{",
+				value;
 				
 			for(var key in obj) {
-				if(typeof obj[key] != "function") {
+				value = obj[key]
+				if(typeof value != "function") {
 					if (!isArray) {
-						strJSON += '"'+key+'" : ';
+						strJSON += '"'+key+'":';
 					}
-					strJSON += (obj[key] instanceof Object? JSON.stringify(obj[key]):
-								(isNaN(obj[key]))?'"'+obj[key]+'"':
-								obj[key])+', ';
+					strJSON += (value instanceof Object? JSON.stringify(value):
+								typeof value == "string"?'"'+value+'"':
+								value)+',';
 				}
 			}
 			
-			return strJSON.substr(0, strJSON.length-2) + (isArray?"]":"}");
+			return strJSON.substr(0, strJSON.length-1) + (isArray?"]":"}");
 		},
 		/**
 			Crea un objeto partiendo de una cadena JSON correctamente formateada.
@@ -874,15 +866,16 @@ if(window.JSON == undefined) {
 				return window[ "eval" ]("("+strJSON+")");
 			}
 			
-			throw new SyntaxError('JSON.parse');
+			throw new Error("JSON.parse");
 		}
 	};
 }
 
 /* Estableciendo un mismo atajo para std.dom.ready y std.dom.get */
 window.$ = function () {
-	var fun = (typeof arguments[0] == "function")? std.dom.ready: std.dom.get;
-	return fun.apply(this, arguments);
+	var args = arguments,
+		fun = (typeof args[0] == "function")? std.dom.ready: std.dom.get;
+	return fun.apply(this, args);
 }
 
 /* Estableciendo std en el exterior */

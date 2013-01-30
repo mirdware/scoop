@@ -1,4 +1,4 @@
-#overlay {
+#overlay-std {
 	background: url(../opacity.png);
 	height: 100%;
 	left: 0;
@@ -8,54 +8,55 @@
 	z-index:1001;
 }
 
-#modal {
-	display: none;
+#modal-std {
 	left: 50%;
 	overflow: hidden;
-	padding: 0;
 	position: fixed;
 	top: 50%;
 	z-index: 1002;
 }
 
-.head {
+.modal-head {
 	background:#3381B7;
 	cursor: move;
 	height: 16px;
-	padding-bottom: 5px;
-	padding-top: 5px;
+	padding: 10px 0 5px 0;
 	width:100%;
+	border-bottom: 1px solid #169;
+	border-radius: 5px 5px 0 0;
 }
 
-.head h2 {
+.modal-head h2 {
 	color: #FFF;
 	font: 700 14px Verdana, Geneva, sans-serif;
-	margin-left: 10px;
-	margin-right: 50px;
-	margin: 0;
-	padding: 0 5px;
+	margin: 0 10px;
 }
 
-.head div {
-	background: url(../cerrar.png) no-repeat;
+.modal-head div {
+	background: url(../cerrar.png) no-repeat center center;
 	cursor: pointer;
 	float: right;
-	height: 15px;
-	margin-right: 10px;
-	width: 15px;
+	margin-top: -10px;
+	border-left: 1px solid #169;
+	height: 30px;
+	width: 30px;
 }
 
-.round {
-	display: block;
+.modal-body {
+	background: #FFF;
+	padding: 1px 0 5px 0;
+	border-radius: 0 0 5px 5px;
 }
 
-.round * {
-	clear: both;
-	display: block;
-	height: 1px;
-	overflow: hidden;
+#modal-loading {
+	width: 50px;
+	height: 50px;
+	z-index: 1002;
+	top: 50%;
+	left: 50%;
+	margin-left: -25px;
+	margin-top: -25px;
+	position: fixed;
+	background: #000 url(../modal_loading.gif) no-repeat center center; 
+	border-radius: 6px;
 }
-.r1 { margin: 0 5px; }
-.r2 { margin: 0 3px; }
-.r3 { margin: 0 2px; }
-.r4 { margin: 0 1px; height: 2px; }

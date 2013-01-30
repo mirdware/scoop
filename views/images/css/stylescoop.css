@@ -235,13 +235,12 @@ th, td {
 }
 
 #msg-out, #msg-error, #msg-alert, #msg-not {
-	background: #FFF no-repeat left center;
+	background: #FFF no-repeat 5px center;
 	font: 700 1em Arial, Helvetica, sans-serif;
 	padding: 5px;
-	padding-left: 20px;
+	padding-left: 25px;
 	position: relative;
 	top: 0;
-	width: 100%;
 }
 #msg-not { height: 0 }
 #msg-out {

@@ -7,7 +7,10 @@ class Home extends Controller{
 		if ($this->ajax()) {
 			$this->showLayer (false);
 		} else {
-			$this->setView('title', APP_NAME);
+			$this->setView(array(
+				'title' => 'bootstrap '.APP_NAME.' - MirdWare',
+				'app_name' => APP_NAME
+			));
 		}
 	}
 	
@@ -40,15 +43,8 @@ class Home extends Controller{
 		Helper::sendMail ($asunto, $msj.'<br/><br/>RandomString: '.Helper::strRandom(25), $from, $to, $_POST);
 		return 'Mensaje enviado';
 	}
-	
-	public function modal () {
-		if ($this->ajax()) {
-			$this->showLayer(false);
-		}
-		$this->render(self::$view);
-	}
 
-	public function hola ($msj, $type='out') {
+	public function msj ($msj, $type='out') {
 		$this->showMessage($type, urldecode($msj));
 		$this->render(self::$view);
 	}
@@ -64,6 +60,5 @@ class Home extends Controller{
 	
 	public function main () {
 		$this->render(self::$view);
-		print_r($_SESSION);
 	}
 }

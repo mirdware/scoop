@@ -6,7 +6,7 @@
 	su sitio; hasta la versión 0.0.9 de std.
 
 	@author: Marlon Ramirez
-	@version: 0.2
+	@version: 0.3
 **/
 
 (function ($, window, undefined) {
@@ -15,6 +15,9 @@
 		TRUE = true,
 		document = window.document,
 		location = document.location,
+		EventList = {ready: [], close: []},
+		text = createElement("h2"),
+		loading = createElement("div"),
 		modal,
 		overlay,
 		local,
@@ -25,34 +28,33 @@
 				Crea todo el marco de la ventana modal y el overlay que cubrira la pantalla del navegador.
 				@see: std
 			*/
-			show: function () {
-				$.evt.get().preventDefault();
+			show: function (e) {
 				var self = this,
 					title = self.getAttribute("title") || "",
 					isCache = self.rel.split("-")[1] == "cache",
 					url = self.getAttribute("href"),
 					path = location.href.replace(location.hash, ""),
 					element;
-
+					
+				e && e.preventDefault();
 				if (url.indexOf(path+"#") == 0) {
 					url = url.replace(path, "");
 				}
 
 				if(!overlay) {
-					$.css("#modal").set("opacity", 0);
-					overlay = createElement("div");
-					modal = overlay.cloneNode(FALSE);
-					var head  = overlay.cloneNode(FALSE),
-						img = overlay.cloneNode(FALSE),
-						text = createElement("h2");
+					$.css("#modal-std").set("opacity", 0);
+					overlay = loading.cloneNode(FALSE);
+					modal = loading.cloneNode(FALSE);
+					var head = loading.cloneNode(FALSE),
+						img = loading.cloneNode(FALSE);
 					
-					overlay.id = "overlay";
-					modal.id = "modal";
-					head.className = "head";
+					overlay.id = "overlay-std";
+					modal.id = "modal-std";
+					loading.id = "modal-loading"
+					head.className = "modal-head";
 					$.evt.add([img, overlay],"click",core.hide);
 					head.appendChild(img);
 					head.appendChild(text);
-					modal.appendChild(core.round($.css(".head").get("backgroundColor"),"top"));
 					modal.appendChild(head);
 					body.appendChild(modal);
 					body.appendChild(overlay);
@@ -61,41 +63,46 @@
 						area: overlay
 					});
 				}
-				
-				if (modal.childNodes[2]) {
-					var self = this,
-						args = arguments;
-					$.sfx.fade(modal, {onComplete:function(){
-						removeLocal();
-						core.show.apply(self, args);
-					}, duration:500});
+
+				overlay.style.display = "";
+				modal.style.display = "";
+
+				if (modal.childNodes[1]) {
+					$.sfx.anim(modal, {opacity: 0}, {
+						onComplete: function(){
+							removeLocal();
+							core.show.call(self);
+						},
+						duration: 500
+					});
 					return;
-				} 
+				}
+
 				if (url.indexOf("#") == 0) {
 					local = $(url);
-					var parent = local.parentNode;
 					element = local.cloneNode(TRUE);
-					parent.removeChild(local);
+					local.parentNode.removeChild(local);
 				} else {
 					var aux = createElement("div");
 					if (!isCache || !(aux.innerHTML = cache[url])) {
-						$.ajax.request(url,function(r){
-							//console.log(r);
-							if (isCache) {
-								cache[url] = r;
-							}
-							aux.innerHTML = r;
-						}, {sync:TRUE});
+						body.appendChild(loading);
+						$.ajax.request(url, {
+							callback: function(r){
+								body.removeChild(loading);
+								if (isCache) {
+									cache[url] = r;
+								}
+								aux.innerHTML = r;
+							},
+							sync:TRUE
+						});
 					}
 					element = aux.firstChild;
 				}
+				element.className += " modal-body";
 				modal.appendChild(element);
-				modal.appendChild(core.round($.css(element).get("backgroundColor"),"bottom"));
 				element.style.display = "block";
-				modal.childNodes[1].childNodes[1].innerHTML = title;
-				
-				overlay.style.display = "";
-				modal.style.display = "";
+				text.innerHTML = title;
 				$.sfx.anim(modal, {opacity:1});
 				
 				var childsModal = modal.childNodes,
@@ -111,7 +118,8 @@
 					marginLeft: -(width/2)+"px",
 					marginTop: -(height/2)+"px"
 				});
-				$.modal.reset();
+				core.reset();
+				bind ("ready");
 			},
 		
 			/**
@@ -119,11 +127,14 @@
 				@see: std
 			*/
 			hide: function () {
-				$.sfx.anim(modal, {opacity: 0}, {onComplete:function(){
-					overlay.style.display = "none";
-					modal.style.display = "none";
-					removeLocal();
-				}, duration:500});
+				$.sfx.anim(modal, {opacity: 0}, {
+					onComplete: function (){
+						overlay.style.display = "none";
+						modal.style.display = "none";
+						removeLocal();
+					},
+					duration: 500
+				});
 			},
 		
 			/**
@@ -136,52 +147,44 @@
 					left: "50%"
 				});
 			},
-		
+
 			/**
-				Se encarga de crear bordes redondeados a la ventana modal.
-				@param: {String} color es el color que se desea para el borde que se va a crear
-				@param: {String} position es la posición en la que se colocaran los bordes redondeados, puede ser TOP o BOTTOM
-				@return: Los bordes redondeados para ser incluidos en la ventana
+				Se encarga de agregar funciones para ejecutarlas al momento de cargar la ventana modal
+				@param {function} fn es la función que sera agregada a la lista de eventos que se 
+					dispararán cuando la ventana se cargue.
 			*/
-			round: function (color, position) {
-				position = position.toLowerCase();
-				var border = createElement("b"),
-					r = [],
-					i = 0;
-				while(i<4) {
-					r[i] = border.cloneNode(FALSE);
-					r[i].style.backgroundColor = color;
-					r[i].className = "r"+(i+1);
-					i++;
-				}
-				border.className = "round";
-				
-				if (position == "top"){
-					i=0;
-					while(i<4) {
-						border.appendChild(r[i]);
-						i++;
-					}
-				} else if (position == "bottom") {
-					i=3;
-					while(i>=0) {
-						border.appendChild(r[i]);
-						i--;
-					}
-				} else {
-					return;
-				}
-				
-				return border;
+			ready: function (fn) {
+				EventList.ready.push(fn);
+			},
+
+			/**
+				Se encarga de agregar funciones para ejecutarlas al momento de cerrar la ventana modal
+				@param {function} fn es la función que sera agregada a la lista de eventos que se 
+					dispararán cuando la ventana se cierre.
+			*/
+			close: function (fn) {
+				EventList.close.push(fn);
 			}
 		};
 	
 	function removeLocal () {
-		if (local) {
-			body.appendChild(local);
+		var modalBody = modal.childNodes[1];
+		if (modalBody) {
+			local && body.appendChild(local);
+			modal.removeChild(modalBody);
+			bind ("close");
+		} else {
+			body.removeChild(loading);
 		}
-		modal.removeChild(modal.childNodes[2]);
-		modal.removeChild(modal.childNodes[2]);
+	}
+
+	function bind (type) {
+		var array = EventList[type],
+			len = array.length,
+			i = 0;
+		for (; i < len; i++) {
+			array[i]();
+		}
 	}
 
 	function createElement (element) {
@@ -201,7 +204,7 @@
 			var self = this,
 				rel = self.rel;
 			if(rel.indexOf("modal") == 0 ) {
-				$.modal.show.apply(self,arguments);
+				core.show.apply(self,arguments);
 			} else if(rel == "external" && self.target != "_blank") {
 				self.target = "_blank";
 			}

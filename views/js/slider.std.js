@@ -15,35 +15,35 @@
 		document = window.document,
 		opacity = 0.4;
 
-	$.css(".slider .control .navLeft").set("opacity", opacity);
-	$.css(".slider .control .navRight").set("opacity", opacity);
-	$.css(".slider .control .link").set("opacity", opacity);
+	$.css(".slider-std .control .navLeft").set("opacity", opacity);
+	$.css(".slider-std .control .navRight").set("opacity", opacity);
+	$.css(".slider-std .control .link").set("opacity", opacity);
 
 	function show(slider, img) {
 		
 		//create controls
 		var ul = $("ul", slider)[0],
 			lis = toArray($("li", ul)),
-			control = document.createElement("li"),
-			link = document.createElement("a"),
+			control = createElement("li"),
+			link = createElement("a"),
 			navLeft = link.cloneNode(TRUE),
 			navRight = link.cloneNode(TRUE),
-			nav = document.createElement("div"),
+			nav = createElement("div"),
 			item = link.cloneNode(TRUE),
 			now = 0,
 			block = FALSE,
 			prev = 0,
 			timer;
-				
-		item.appendChild(document.createTextNode(0));
+
+		item.appendChild(createTextNode(0));
 		nav.appendChild(item);
 		/* ciclo que inicia los valores de todos lo elementos de lista
 		excepto el principal */
 		for(var i=1, li; li = lis[i]; i++) {
 			item = link.cloneNode(TRUE);
-			item.appendChild(document.createTextNode(i));
+			item.appendChild(createTextNode(i));
 			item.className = "normal";
-			$.css(lis[i]).set({
+			$.css(li).set({
 				display: "none",
 				opacity: 0
 			});
@@ -65,8 +65,7 @@
 		ul.appendChild(control);
 		//
 		select();
-		animSpan();
-		var controls = control.childNodes;
+		animSpan( $("span", lis[now])[0]);
 		/*limpiar nodos vacios
 		for (var i=0, node; node = controls[i];i++){
            if (node.nodeType == 3 && !/\S/.test(node.nodeValue))
@@ -74,10 +73,13 @@
         }
 		*/
 		
-		$.css(slider).set("maxWidth", img.width+"px");
+		$.css(slider).set({
+			maxWidth: img.width+"px",
+			display: "block"
+		});
 		
 		//eventos
-		$.evt.add([controls[0],controls[1]], {
+		$.evt.add([navLeft, navRight], {
 			mouseover: function () {
 				$.css(this).set("opacity", 0.7);
 			},
@@ -86,7 +88,7 @@
 			}
 		});
 		
-		$.evt.add(controls[0], "click", function(){
+		$.evt.add(navLeft, "click", function(){
 			if(block) {
 				return;
 			}
@@ -98,7 +100,7 @@
 			}
 			anim();
 		});
-		$.evt.add(controls[1], "click", next);
+		$.evt.add(navRight, "click", next);
 		
 		$.evt.add($("a", nav), "click", function() {
 			if(block) {
@@ -127,6 +129,7 @@
 		
 		function select() {
 			var anchor = nav.childNodes,
+				props = ["href", "rel", "target"],
 				a, span;
 			
 			if(span = $("span", lis[prev])[0]) {
@@ -134,19 +137,19 @@
 			}
 			anchor[prev].className = "normal";
 			anchor[now].className = "span";
-			if(a =$("a", lis[now])[0]) {
+			if(a = $("a", lis[now])[0]) {
 				link.style.visibility = "visible";
-				link.href = a.href;
-				link.rel = a.rel;
+				for (var i=0, prop; prop = props[i]; i++) {
+					link[prop] = a[prop];
+				}
 			} else {
 				link.style.visibility = "hidden";
 			}
 			
 		}
 		
-		function animSpan () {
-			var span;
-			if(span = $("span", lis[now])[0]) {
+		function animSpan (span) {
+			if(span) {
 				$.sfx.anim(span,{marginTop: -(span.offsetHeight)+"px"});
 			}
 			timer = setTimeout(next, 5000);
@@ -160,12 +163,16 @@
 			$.sfx.anim(lis[prev], {opacity:0}, {
 				duration: vel,
 				onComplete: function(){
+					var span = $("span", lis[now])[0];
 					lis[prev].style.display = "none";
 					lis[now].style.display = "block";
+					if (span) {
+						span.style.marginTop = 0;
+					}
 					$.sfx.anim(lis[now], {opacity: 1}, {
 						duration: vel,
 						onComplete: function() {
-							animSpan();
+							animSpan(span);
 							block = FALSE;
 						}
 					});
@@ -173,6 +180,10 @@
 			});
 		}
 		
+		/*
+			Ajustar el alto del li segun el ancho de la imagen, de esta manera se logra ocultar
+			el span debajo de la imagen.
+		*/
 		var imgPrev = $("img", slider)[now],
 			wp = imgPrev.offsetWidth;
 		ul.style.height = imgPrev.offsetHeight+"px";
@@ -196,16 +207,26 @@
 	}
 
 	function load(slider) {
-		var img = img = new Image();
+		var img = new Image();
 		$.evt.add(img, "load", function() {
 			show(slider, img);
 		});
 		img.src = $("img" ,slider)[0].src;
 	}
+
+	function createElement (element) {
+		return document.createElement(element);
+	}
+
+	function createTextNode (text) {
+		return document.createTextNode(text);
+	}
+
+	/* Exportar el modulo */
+	$.extend($, { slider: load });
 	
 	$(function() {
-		var sliders = $(".slider");
-		for (var i=0, slider; slider = sliders[i]; i++) {
+		for (var sliders = $(".slider-std"), i = 0, slider; slider = sliders[i]; i++) {
 			load(slider);
 		}
 	});

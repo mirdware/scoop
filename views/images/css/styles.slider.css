@@ -1,18 +1,28 @@
-.slider {
-	margin: 0 auto;
+* {
+	padding: 0;
+	margin: 0;
 }
 
-.slider ul {
+img {
+	border: 0;
+}
+
+.slider-std {
+	margin: 0 auto;
+	display: table;
+}
+
+.slider-std ul {
 	list-style: none;
 	background: #000;
 	overflow: hidden;
-	border: solid 0.4em #CCC;
-	border-radius: 0.5em;
+	border: solid 4px #CCC;
+	border-radius: 5px;
 	position: relative;
-	box-shadow: 0 0 2.5em #000;
+	box-shadow: 0 0 25px rgba(0, 0, 0, .3);
 }
 
-.slider span {
+.slider-std span {
 	background: url(../opacity.png);
 	color: #FFF;
 	display: block;
@@ -21,19 +31,17 @@
 	width: 100%;
 	left: 0;
 	bottom: 0;
-	font-size: 1.2em;
 }
 
-.slider .control {
+.slider-std .control {
 	height: 100%;
 	width: 100%;
 	position:  absolute;
-	margin: 0.5em auto;
 	top: 0;
 	text-align: center;
 }
 
-.slider .control .navLeft, .slider .control .navRight, .slider .control .link {
+.slider-std .control .navLeft, .slider-std .control .navRight, .slider-std .control .link {
 	cursor: pointer;
 	display: inline-block;
 	width: 25%;
@@ -42,20 +50,20 @@
 	*display: inline;
 }
 
-.slider .control .navLeft {
+.slider-std .control .navLeft {
 	background: url(../left.gif) no-repeat center left;
 	float: left;
 }
-.slider .control .navRight {
+.slider-std .control .navRight {
 	background: url(../right.gif) no-repeat center right;
 	float: right;
 }
-.slider .control .link {
+.slider-std .control .link {
 	background: no-repeat center center;
 	width: 50%;
 }
 
-.slider .control .link:hover {
+.slider-std .control .link:hover {
 	background-image: url(../link.gif);
 }
 
@@ -65,13 +73,15 @@
 
 .slider-nav a {
 	display: inline-block;
-	margin: 0.3em;
+	margin: 10px 5px;
 	width: 13px;
 	height: 13px;
-	background: url(../bg_control_nav.png);
+	background: url(../bg_control_nav.png) no-repeat;
 	cursor: pointer;
-	text-indent: -999em;
+	font-size: 0;
+	line-height: 0;
 	zoom: 1;
+	vertical-align: middle;
 	*display: inline;
 }
 

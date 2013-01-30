@@ -11,7 +11,7 @@ if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
 
 /*definicion de constantes globales*/
 define ('ROOT', 'http://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
-define ('APP_NAME', 'bootstrap std - MirdWare');
+define ('APP_NAME', 'SCOOP');
 define ('APC', extension_loaded('apc'));
 
 /*configuración*/

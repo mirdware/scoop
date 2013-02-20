@@ -58,7 +58,7 @@ class Conexion {
 	}
 	
 	public function escape($val) {
-		if ($val === NULL) {
+		if ($val === NULL || $val === '') {
 			return 'NULL';
 		}
 		if (get_magic_quotes_gpc()) {

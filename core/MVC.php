@@ -50,17 +50,20 @@ abstract class Controller implements View {
 	}
 	
 	/* Configura el mensaje que sera mostrado en el sistema de notificaciones interno */
-	protected function showMessage ($type, $msg) {
+	protected function showMessage ($msg, $type = 'out') {
+		if ($type !== 'error' && $type !== 'out' && $type !== 'alert') {
+			throw new Exception("Error building only accepted message types: error, out and alert.", 1);
+		}
 		$this->msg = '<div id="msg-'.$type.'">'.$msg.'</div>';
 	}
 
-	protected function pushMessage ($type, $msg) {
+	protected function pushMessage ($msg, $type = 'out') {
 		$_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
 	}
 
 	protected function pullMessage () {
 		if (isset($_SESSION['msg-scoop'])) {
-			$this->showMessage($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
+			$this->showMessage($_SESSION['msg-scoop']['msg'], $_SESSION['msg-scoop']['type']);
 			unset($_SESSION['msg-scoop']);
 		}
 	}
@@ -95,6 +98,7 @@ abstract class Controller implements View {
 
 		//opteniendo los layers por APC o sesión
 		if (APC) {
+			apc_delete($key);//eliminar en producción
 			if ( apc_exists($key) ) {
 				return apc_fetch($key);
 			}

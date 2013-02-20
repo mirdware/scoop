@@ -234,6 +234,65 @@ th, td {
 	vertical-align: middle;
 }
 
+/* CONTROL PICK */
+.control-pick input[type="checkbox"],
+.control-pick input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+}
+
+/* prevent the entire page from scrolling if there is overflow and checkbox or radio button are clicked */
+.control-pick label {
+	position: relative;
+}
+
+/* fallback for IE6, IE7 and IE8 */
+.control-pick input[type="checkbox"],
+.control-pick input[type="radio"] {
+	position: static\9;
+}
+
+.control-pick input[type="checkbox"] + span::before,
+.control-pick input[type="radio"] + span::before {
+	content: "";
+	display: inline-block;
+	width: 13px;
+	height: 13px;
+	vertical-align: middle;
+	background-repeat:  no-repeat;
+	background-position: 0px -13px;
+	margin: 0 3px;
+}
+
+.control-pick input[type="checkbox"]:checked + span::before {
+	background-position: 0 -26px;
+}
+
+.control-pick input[type="radio"] + span::before {
+	background-position: -13px -13px;
+}
+
+.control-pick input[type="radio"]:checked + span::before {
+	background-position: -13px -26px;
+}
+
+/* disabled form elements */
+.control-pick input[type="checkbox"]:disabled + span,
+.control-pick input[type="checkbox"]:disabled + span::before {
+	background-position: 0 0;
+}
+
+.control-pick input[type="radio"]:disabled + span,
+.control-pick input[type="radio"]:disabled + span::before {
+	background-position: -13px 0;
+}
+
+/* skin-specific sprite */
+.control-pick input[type="checkbox"] + span::before,
+.control-pick input[type="radio"] + span::before {
+	background-image: url("../sprite-control-pick.png");
+}
+
 #msg-out, #msg-error, #msg-alert, #msg-not {
 	background: #FFF no-repeat 5px center;
 	font: 700 1em Arial, Helvetica, sans-serif;

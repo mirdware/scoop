@@ -1,3 +1,6 @@
 [submodule "std"]
 	path = views/js/std
 	url = git://github.com/marlonramirez/std.git
+[submodule "modernizr"]
+	path = views/js/modernizr
+	url = git://github.com/Modernizr/Modernizr.git

@@ -1,12 +1,20 @@
+php_value zlib.output_compression 16386
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 #Descomentar si tu servidor web está realmente siendo servido desde un directorio de usuario 
 #que ya utiliza mod_rewrite:
 #RewriteBase /
 
+#ocultar las carpetas de la app
+RewriteRule ^(core|models|controllers|library)/ - [F]
+
 #Forzar a usar la barra o slash (/) final dentro de la URL 	
 RewriteCond %{REQUEST_URI} /+[^\.]+$
 	RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]
+
+RewriteCond %{HTTP_HOST} ^www.(.*) [NC]
+	RewriteRule ^(.*) http://%1/$1 [R=301,L]
 
 #Redirigir cualquier petición a index.php
 #Si la url solicitada no es un fichero(existente), continuar...
@@ -15,3 +23,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 		RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
 </IfModule>
+
+<FilesMatch "\.(htaccess|htpasswd|ini|html|log|bak)$">
+ Order Allow,Deny
+ Deny from all
+</FilesMatch>

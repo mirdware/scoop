@@ -1,18 +1,18 @@
 <h1>SCOOP Simple Characteristics of Object Oriented PHP</h1>
-<p>La creación de este conjunto de archivos (PHP, JS, CSS, PNG, etc.) esta dada por la necesidad de construir un marco de trabajo con el cual iniciar mis proyectos PHP, su real y principal finalidad es la de poder utilizar POO y MVC dentro de PHP de una forma más sencilla y siempre manteniendo el control sobre el código (Bendito problema de frameworks, CMS, etc.).</p>
+<p>La creación de este conjunto de archivos (PHP, JS, CSS, PNG, etc.) esta dada por la necesidad de construir un sistema de arranque con el cual iniciar mis proyectos PHP, su real y principal finalidad es la de poder utilizar POO y MVC dentro de PHP de una forma más sencilla y siempre manteniendo el control sobre el código (Bendito problema de frameworks, CMS, etc.).</p>
 
 <p>Este no es un framework en toda la extensión de la palabra; primero, es muy sencillo para ser considerado como tal, segundo, me parece que framework es una palabra que se ha usado hasta el cansancio y así como decidí llamar a std: mi librería JavaScript personal, he decidido llamar scoop: mi bootstrap php.</p>
 
 <p>Bootstrap es el sistema de arranque de cualquier entorno informático y es por ello la elección de la definición del proyecto, pues scoop dista mucho de ser un completo marco de desarrollo en PHP como podrían ser: zend, synphony, codeigniter, etc; lo que si es scoop es un sistema de arranque para iniciar un desarrollo organizado y basado en POO y MVC.</p>
 
 <h2>Peticiones GET & POST</h2>
-<p>Lo primero que se debe tener en cuenta es la <b>eliminación de variables GET</b> dentro del entorno de trabajo, por lo menos de la manera común como se conocen, en scoop se envía información a los controladores de la siguiente forma:</p>
+<p>Lo primero que se debe tener en cuenta es la manera como SCOOP trata las peticiones mediante la URL, primero esta el protocolo, seguido del nombre del host, el controlador, el metodo y los argumentos.</p>
 
 	http(s)://host/controller/method/arg-1/arg-2/.../arg-n/
 
-<p>De esta manera los datos que serán enviados mediante la URL, deberán ser escritos después del método que se desea invocar y respetando el orden en que serán recibidos por el método. Como las variables GET han sido suprimidas del bootstrap, las peticiones de un formulario deben <b>realizarse mediante POST</b>, de otra manera el bootstrap no interpretara correctamente la información enviada y mostrara el respectivo error.</p>
+<p>Los argumentos deben coincider en el orden a como seran recibidos por los párametros del método dentro del controlador. Se recomienda usar cada metodo de envido como ha sido definido en los protocolos RESTful y evitar en la medida de lo posible las query URL (http://host/?data=hello).</p>
 
-<p>La manera correcta de enviar datos por GET es mediante el uso final de la barra separadora (slash), de esta manera llegaremos a un estatus 200, de lo contrario se obtendrá un estatus 301 de redirección con sus respectivas consecuencias.</p>
+<p>La manera correcta de escribir una URL SCOOP es mediante el uso final de la barra separadora (slash), de esta manera llegaremos a un estatus 200, de lo contrario se obtendrá un estatus 301 de redirección con sus respectivas consecuencias.</p>
 
 <div><b>Mal</b></div>
 
@@ -46,7 +46,7 @@
 
 <div><b>JavaScript</b></div>
 
-	copy /Y /B std.js +scoop.std.js +modal.std.js +slider.std.js +fun.js scripts.js
+	copy /Y /B modernizr.js +std.js +scoop.std.js +modal.std.js +slider.std.js +fun.js scripts.js
 
 <div><b>css</b></div>
 

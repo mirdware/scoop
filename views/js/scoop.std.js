@@ -4,7 +4,8 @@
 		document = window.document,
 		message = (function () {
 			var duration = 400,
-				timer;
+				timer,
+				container;
 
 			function hide (container) {
 				timer = setTimeout(function () {
@@ -18,7 +19,7 @@
 			}
 
 			$(function () {
-				var container = $("#msg-error") || $("#msg-out") || $("#msg-alert");
+				container = $("#msg-error") || $("#msg-out") || $("#msg-alert");
 				if (container) {
 					$.css(container).set({
 						opacity: 1,
@@ -26,8 +27,8 @@
 					});
 					hide(container);
 				} else {
-					$.css("#error").set("opacity", 0);
-					$.css("#out").set("opacity", 0);
+					$.css("#msg-error").set("opacity", 0);
+					$.css("#msg-out").set("opacity", 0);
 				}
 			});
 
@@ -35,8 +36,8 @@
 				if (type != "error" && type != "out" && type != "alert") {
 					return;
 				}
-				var container = $("#msg-error") || $("#msg-out") || $("#msg-alert") || $("#msg-not"),
-					height;
+				var height;
+				container = $("#msg-error") || $("#msg-out") || $("#msg-alert") || $("#msg-not");
 				container.id = "msg-"+type;
 				container.innerHTML = msg;
 				clearTimeout(timer);

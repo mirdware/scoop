@@ -13,10 +13,11 @@ form {
 	width: 580px;
 }
 </style>
-<a href="https://github.com/marlonramirez/scoop/"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+<a href="http://scoop.mirdware.info"><img src="http://scoop.mirdware.info/views/images/scoop.big.png" alt="scoop" /></a>
+<a href="https://github.com/marlonramirez/scoop"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 <h1>Pagina de prueba usando el bootstrap ${app_name}</h1>
-<p>Puedes probar como funciona el sistema de notificaciones y el routedaor interno de url adicionando <b>home/msj/Hola%20mundo/</b> en la barra de direcciones, si deseas que aparesca como tipo error o alert debes enviar como ultimo parametro el tipo notificación, en esta pagina se pondra a prueba el metodo sedMail que fue adicionado a la clase Helper:</p>
-<form method="post" action="{root}home/send/" enctype="multipart/form-data" target="frame-ajax" >
+<p>Puedes probar como funciona el sistema de notificaciones y el routedaor interno de url adicionando <b>home/msj/Hola+mundo/</b> en la barra de direcciones, si deseas que aparesca como tipo error o alert debes enviar como ultimo parametro el tipo notificación, en esta pagina se pondra a prueba el metodo sedMail que fue adicionado a la clase Helper:</p>
+<form method="post" action="${root}home/send/" enctype="multipart/form-data" target="frame-ajax" >
 	<label>de:</label><input type="text" name="from" class="input-text" size="30" required /><br />
 	<label>para:</label><input type="text" name="to" class="input-text" size="30" required /><br />
 	<label>Asunto:</label><input type="text" name="subject" class="input-text" size="30" required /><br />

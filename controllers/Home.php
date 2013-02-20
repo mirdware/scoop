@@ -3,7 +3,7 @@ class Home extends Controller{
 	private static $view;
 	
 	public function __construct () {
-		self::$view = 'Home';
+		self::$view = 'home';
 		if ($this->ajax()) {
 			$this->showLayer (false);
 		} else {
@@ -45,7 +45,7 @@ class Home extends Controller{
 	}
 
 	public function msj ($msj, $type='out') {
-		$this->showMessage($type, urldecode($msj));
+		$this->showMessage(urldecode($msj), $type);
 		$this->render(self::$view);
 	}
 
@@ -60,5 +60,6 @@ class Home extends Controller{
 	
 	public function main () {
 		$this->render(self::$view);
+		print_r($_GET);
 	}
 }

@@ -6,8 +6,11 @@ RewriteEngine On
 #que ya utiliza mod_rewrite:
 #RewriteBase /
 
+RewriteCond %{THE_REQUEST} ^.*/index\.php 
+	RewriteRule ^(.*)index.php$ /$1 [R=301,L]
+
 #ocultar las carpetas de la app
-RewriteRule ^(core|models|controllers|library)/ - [F]
+RewriteRule ^(app|library|scoop)/ - [F]
 
 #Forzar a usar la barra o slash (/) final dentro de la URL 	
 RewriteCond %{REQUEST_URI} /+[^\.]+$
@@ -24,7 +27,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 		RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
 </IfModule>
 
-<FilesMatch "\.(htaccess|htpasswd|ini|html|log|bak)$">
+<FilesMatch "\.(htaccess|htpasswd|ini|log|bak)$">
  Order Allow,Deny
  Deny from all
 </FilesMatch>

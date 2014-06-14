@@ -1,6 +1,6 @@
 <?php
 /**
- * SCOOP (Simple Characteristics of Object Oriented PHP) apoya el uso de convenciones PHP.
+ * Scoop (Simple Characteristics of Object Oriented PHP) apoya el uso de convenciones PHP.
  * Clases: PascalCase <http://localhost/class-to-pascal-case/>
  * Métodos: camelCase <http://localhost/class-to-pascal-case/method-to-camel-case/>
  * constantes: ALL_CAPS
@@ -11,19 +11,15 @@
  * Interface: PascalCase
  * Usa PHP como si se tratase de un lenguaje case sensitive.
  *
- * @package SCOOP
+ * @package Scoop
  * @author  Marlon Ramirez <marlonramirez@outlook.com>
  */
 
 /*importando archivos de configuración*/
-require 'core/Helper.php';
-require 'core/Conexion.php';
-require 'core/MVC.php';
-
-/*redireccion de index*/
-if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-	helper::redirect ( str_replace('index.php', '', $_SERVER['REQUEST_URI']) );
-}
+require 'scoop/bootstrap/UniversalClassLoader.php';
+$loader = new UniversalClassLoader();
+$loader->useIncludePath( TRUE );
+$loader->register();
 
 /*definicion de constantes globales*/
 define ('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
@@ -33,16 +29,16 @@ define ('APC', extension_loaded('apc'));
 define ('DB_SCHEMA', '');//valido para bases de datos con esquemas
 define ('DEFAULT_CLASS', 'Home');
 define ('DEFAULT_METHOD', 'main');
+define ('NS_CONTROLLERS', 'app\controllers\\');
 
 /*configuración*/
-spl_autoload_register('Helper::autoload');
 setlocale(LC_ALL,"es_ES@euro","es_ES","esp");
 date_default_timezone_set('America/Bogota');
 //ini_set('display_errors', '0');// descomentar en producción
 session_start();
 
 /*Ruta por defecto*/
-$class = DEFAULT_CLASS;
+$class = NS_CONTROLLERS.DEFAULT_CLASS;
 $method = DEFAULT_METHOD;
 $params = array();
 $validURL = TRUE;
@@ -54,7 +50,7 @@ if( isset($_GET['route']) ) {
 	$url = array_filter ( explode( '/', $url ) );
 	
 	/*Configurando clase, metodo y parametros según la url*/
-	$class = str_replace( ' ', '', //une las palabras
+	$class = NS_CONTROLLERS.str_replace( ' ', '', //une las palabras
 		ucwords( //combierte las primeras letras de las palabras a mayuscula
 			str_replace( '-', ' ', //convierte cada - a un espacio
 				strtolower( //pasa a minuscula todo el string (en estudio)
@@ -101,8 +97,8 @@ if ($_GET) {
 }
 
 /*generando la reflexion sobre el controlador*/
-if ( $validURL && is_readable('controllers/'.$class.'.php') ) {
-	require 'controllers/'.$class.'.php';
+$path = str_replace('\\', DIRECTORY_SEPARATOR, $class).'.php';
+if ( $validURL && is_readable($path) ) {
 	//$auxReflection = la reflexion de la clase para poder explorarla
 	$auxReflection = new ReflectionClass( $class );
 	if ($auxReflection->hasMethod( $method )) {
@@ -118,6 +114,5 @@ if ( $validURL && is_readable('controllers/'.$class.'.php') ) {
 }
 
 /*Ejecuta una rutina de error*/
-require 'controllers/Error.php';
-$class = new Error ();
+$class = new \app\controllers\Error ();
 $class->main();

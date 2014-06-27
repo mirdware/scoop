@@ -1,0 +1,15 @@
+{
+    "name": "mirdware/scoop",
+    "description": "Simple Characteristics of Object Oriented PHP",
+    "keywords": ["bootstrap", "scoop"],
+    "license": "MIT",
+    "type": "project",
+    "homepage": "http://getscoop.org",
+    "authors": [
+        {
+            "name": "Marlon Ramírez",
+            "email": "marlonramirez@outlook.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}

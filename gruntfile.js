@@ -12,6 +12,7 @@ module.exports = function(grunt) {
     pathJS: "public/js/",
     pathCSS: "public/css/",
     srcCSS: srcCSS,
+
     uglify: {
       minify: {
         options: {
@@ -35,7 +36,7 @@ module.exports = function(grunt) {
           cwd: srcCSS,
           src: [ "**/compress.styl" ],
           dest: srcCSS,
-          ext: ".css"
+          ext: ".cp.css"
         }]
       }
     },
@@ -49,13 +50,13 @@ module.exports = function(grunt) {
     },
 
     clean: {
-      css: ["<%= srcCSS %>/**/*.css"]
+      css: ["<%= srcCSS %>/**/*.cp.css"]
     },
 
     watch: {
       scripts: {
         files: jsFiles,
-        tasks: ["unglify"]
+        tasks: ["uglify"]
       },
       stylesheets: {
         files: "<%= srcCSS %>**/*.styl",

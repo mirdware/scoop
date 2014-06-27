@@ -1,5 +1,5 @@
 <?php
-namespace scoop\persistence\driver;
+namespace scoop\persistence\driver\mysql;
 /**
 	* Clase conexion que sirve para enlazar la base de datos con
 	* la aplicación y abstraer las funciones que dependen de cada

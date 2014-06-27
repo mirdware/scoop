@@ -224,7 +224,7 @@ final class __SQOFilter__ {
 			$this->orderType = $desc? ' DESC': ' ASC';
 			unset($args[ $lastItem ]);
 		}
-		
+
 		$this->order += $args;
 		return $this;
 	}

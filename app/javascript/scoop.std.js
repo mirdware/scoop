@@ -7,11 +7,13 @@
 				timer,
 				container;
 
-			function hide (container) {
+			function hide () {
 				timer = setTimeout(function () {
 					$.sfx.anim(container, {
 						opacity: 0,
-						height: "0px"
+						height: "0px",
+						paddingTop: "0px",
+						paddingBottom: "0px"
 					}, {
 						duration: duration
 					});
@@ -25,7 +27,7 @@
 						opacity: 1,
 						height: (container.offsetHeight-parseInt($.css(container).get("paddingTop"))*2)+"px"
 					});
-					hide(container);
+					hide();
 				} else {
 					$.css("#msg-error").set("opacity", 0);
 					$.css("#msg-out").set("opacity", 0);
@@ -47,10 +49,14 @@
 				container.style.height = 0;
 				$.sfx.anim(container, {
 					opacity: 1,
-					height: height
-				}, {duration: duration});
+					height: height,
+					paddingTop: "5px",
+					paddingBottom: "5px"
+				}, {
+					duration: duration
+				});
 
-				hide(container);
+				hide();
 			};
 		})(),
 		/*

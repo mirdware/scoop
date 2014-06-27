@@ -61,8 +61,8 @@
 	padding 5px
 	vertical-align middle
 
-/* CONTROL PICK */
-.control-pick
+/* FORM */
+.form-scoop
 	input[type="checkbox"]
 	input[type="radio"]
 		position absolute
@@ -76,7 +76,7 @@
 			vertical-align middle
 			background-repeat  no-repeat
 			background-position 0px -13px
-			margin 0 3px
+			margin-left -10px
 			background-image url($url-images+"sprite-control-pick.png")
 	input[type="checkbox"]:checked + span::before
 		background-position 0 -26px
@@ -95,3 +95,7 @@
 	and checkbox or radio button are clicked */
 	label
 		position relative
+		cursor pointer
+	input[type="text"]
+	textarea
+		@extend .input-text

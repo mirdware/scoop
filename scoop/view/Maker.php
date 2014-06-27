@@ -1,16 +1,17 @@
 <?php
 namespace scoop\view;
 
-abstract class Maker extends \scoop\View {
+use scoop\View as View;
+
+abstract class Maker {
 	private static $footer = '';
 
-	public static function expand ( $parent, &$dataView ) {
-		if ( self::$flagLayer ) {
-			extract($dataView);
-			require self::ROOT_VIEWS.$parent.self::EXT_VIEWS;
-			self::$footer = ob_get_contents();
-			ob_clean();
-		}
+	public static function expand ( $parent, &$view ) {
+		extract( $view->getData() );
+		ob_start();
+		require View::ROOT_VIEWS.$parent.View::EXT_VIEWS;
+		self::$footer = ob_get_contents();
+		ob_clean();
 	}
 
 	public static function output () {

@@ -5,13 +5,9 @@ namespace scoop;
  */
 class View {
 	//ruta donde se encuentran las vistas
-	const ROOT_VIEWS = 'app/views/';
-	//ruta donde se encuentran las platillas
-	const ROOT_TEMPLATES = 'app/templates/';
+	const ROOT = 'app/views/';
 	//extención de los archivos que funcionan como vistas
-	const EXT_VIEWS = '.php';
-	//extención de los archivos que funcionan como plantillas
-	const EXT_TEMPLATES = '.sdt.php';
+	const EXT = '.php';
 	//viewData que contiene los datos a ser procesados por la vista
 	private $viewData;
 	//Nombre de la vista
@@ -88,9 +84,10 @@ class View {
 	}
 
 	private function generate () {
+		\scoop\view\Template::parse( $this->viewName );
 		$view = new __Wrapper__($this->viewName, $this->viewData, $this->msg);
 		extract ($this->viewData);
-		include self::ROOT_VIEWS.$this->viewName.self::EXT_VIEWS;
+		include self::ROOT.$this->viewName.self::EXT;
 	}
 	
 }

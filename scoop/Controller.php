@@ -8,7 +8,7 @@ abstract class Controller {
 	}
 
 	/*Metodo que realiza la redirección permanente de ciertas paginas*/
-	protected function redirect ($url) {
+	public static function redirect ($url) {
 		header('HTTP/1.0 301 Moved Permanently');
 		header ( 'Location:'.$url );
 		exit;

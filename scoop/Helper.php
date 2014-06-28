@@ -1,5 +1,5 @@
 <?php
-namespace scoop\packaged;
+namespace scoop\http;
 class Helper {
 	
 	/*

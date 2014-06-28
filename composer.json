@@ -11,5 +11,5 @@
             "email": "marlonramirez@outlook.com"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }

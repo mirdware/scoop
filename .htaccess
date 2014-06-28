@@ -6,9 +6,6 @@ RewriteEngine On
 #que ya utiliza mod_rewrite:
 #RewriteBase /
 
-RewriteCond %{THE_REQUEST} ^.*/index\.php 
-	RewriteRule ^(.*)index.php$ /$1 [R=301,L]
-
 #ocultar las carpetas de la app
 RewriteRule ^(app|library|scoop)/ - [F]
 

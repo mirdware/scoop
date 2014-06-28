@@ -1,4 +1,4 @@
-@expand('layers/layer')
+@expand 'layers/layer'
 <a href="http://getscoop.org" target="_blank">
 	<img src="{ROOT}public/images/scoop.png" alt="scoop" width="200" />
 </a>

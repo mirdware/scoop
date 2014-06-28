@@ -7,6 +7,7 @@ abstract class Maker {
 	private static $footer = '';
 
 	public static function expand ( $parent, &$view ) {
+		Template::parse( $parent );
 		extract( $view->getData() );
 		ob_start();
 		require View::ROOT.$parent.View::EXT;

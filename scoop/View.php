@@ -5,7 +5,7 @@ namespace scoop;
  */
 class View {
 	//ruta donde se encuentran las vistas
-	const ROOT = 'app/views/';
+	const ROOT = 'app/views/php/';
 	//extención de los archivos que funcionan como vistas
 	const EXT = '.php';
 	//viewData que contiene los datos a ser procesados por la vista
@@ -84,39 +84,21 @@ class View {
 	}
 
 	private function generate () {
+		\scoop\view\Wrapper::init( array(
+			'name' => &$this->viewName,
+			'data' => &$this->viewData,
+			'msg' => $this->msg->__toString()
+		) );
+		\scoop\view\Template::addClass('View', '\scoop\view\Wrapper');
+		\scoop\view\Template::addClass('Config', '\scoop\bootstrap\Config');
 		\scoop\view\Template::parse( $this->viewName );
-		$view = new __Wrapper__($this->viewName, $this->viewData, $this->msg);
 		extract ($this->viewData);
 		include self::ROOT.$this->viewName.self::EXT;
 	}
 	
 }
 
-class __Wrapper__ {
-	private $name;
-	private $msg;
-	private $data;
-
-	public function __construct(&$viewName, &$viewData, &$message) {
-		$this->name =& $viewName;
-		$this->msg =& $message;
-		$this->data =& $viewData;
-	}
-
-	public function getName () {
-		return $this->name;
-	}
-
-	public function getMsg () {
-		return $this->msg;
-	}
-
-	public function getData() {
-		return $this->data;
-	}
-}
-
-class __Message__ {
+final class __Message__ {
 	private $msg;
 	private $type;
 

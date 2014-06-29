@@ -6,9 +6,9 @@ use scoop\View as View;
 abstract class Maker {
 	private static $footer = '';
 
-	public static function expand ( $parent, &$view ) {
+	public static function expand ( $parent ) {
 		Template::parse( $parent );
-		extract( $view->getData() );
+		extract( \scoop\view\Wrapper::get('data') );
 		ob_start();
 		require View::ROOT.$parent.View::EXT;
 		self::$footer = ob_get_contents();

@@ -5,9 +5,10 @@ use scoop\View as View;
 
 final class Template {
 	//ruta donde se encuentran las platillas
-	const ROOT = 'app/templates/';
+	const ROOT = 'app/views/templates/';
 	//extención de los archivos que funcionan como plantillas
 	const EXT = '.sdt.php';
+	private static $classes = array();
 
 	public static function parse ($name) {
 		$template = self::ROOT.$name.self::EXT;
@@ -20,7 +21,7 @@ final class Template {
 			$lastLine = '';
 			$file = fopen($template, 'r');
 			while ( !feof($file) ) {
-				$line = trim(fgets($file));
+				$line = fgets($file);
 				$flag = self::replace($line);
 				
 				if ($flagPHP) {
@@ -42,9 +43,12 @@ final class Template {
 
 			fclose($file);
 			$content .= $lastLine;
-			$content = preg_replace('/<!--(.|\n)*?-->/', '', $content);
 			self::create( $view, $content );
 		}
+	}
+
+	public static function addClass ($key, $class) {
+		self::$classes[$key] = $class;
 	}
 
 	private static function formatObj (&$line) {
@@ -52,37 +56,25 @@ final class Template {
 		$objs = array_map('ucfirst', $objs);
 		$line = implode('->get', $objs);
 		$line = preg_replace('/->get(\w+)(->|\s)/', '->get${1}()${2}', $line);
+		$line = str_replace(array_keys(self::$classes), self::$classes, $line);
 	}
 
 	private static function replace (&$line) {
-		$line = preg_replace('/@expand\s\'([\w\/]+)\'/', 
-			'\scoop\view\Maker::expand(\'${1}\', $view)', 
-			$line, 1, $count);
-		if ($count != 0) return TRUE;
-
-		$line = preg_replace('/@if\s([\w\s\.\&\|\$!=<>\-]+)/',
-			'if(${1}):', 
-			$line, 1, $count);
-		if ($count != 0) return TRUE;
-
-		$line = preg_replace('/@elseif\s([\w\s\.\&\|\$!=<>\-]+)/',
-			'elseif(${1}):', 
-			$line, 1, $count);
-		if ($count != 0) return TRUE;
-
-		$line = preg_replace('/@foreach\s([\w\s\.\&\|\$\->]+)/',
-			'foreach(${1}):', 
-			$line, 1, $count);
-		if ($count != 0) return TRUE;
-
-		$line = preg_replace('/@for\s([\w\s\.\&\|\$;\(\)!=<>\+\-]+)/',
-			'for(${1}):', 
-			$line, 1, $count);
-		if ($count != 0) return TRUE;
-
-		$line = preg_replace('/@while\s([\w\s\.\&\|\$\(\)!=<>\+\-]+)/',
-			'while(${1}):', 
-			$line, 1, $count);
+		$line = preg_replace( array(
+				'/@expand\s\'([\w\/]+)\'/',
+				'/@if\s([\w\s\.\&\|\$!=<>\-]+)/',
+				'/@elseif\s([\w\s\.\&\|\$!=<>\-]+)/',
+				'/@foreach\s([\w\s\.\&\|\$\->:]+)/',
+				'/@for\s([\w\s\.\&\|\$;\(\)!=<>\+\-]+)/',
+				'/@while\s([\w\s\.\&\|\$\(\)!=<>\+\-]+)/'
+			), array( 
+				'\scoop\view\Maker::expand(\'${1}\')',
+				'if(${1}):',
+				'elseif(${1}):',
+				'foreach(${1}):',
+				'for(${1}):',
+				'while(${1}):'
+			), $line, 1, $count);
 		if ($count != 0) return TRUE;
 
 		$line = str_replace( array(
@@ -102,7 +94,7 @@ final class Template {
 			), $line, $count);
 		if ($count != 0) return TRUE;
 		
-		$line = preg_replace( '/\{([\w\s\.\$\[\]\'\'\"\"\->]+)\}/',
+		$line = preg_replace( '/\{([\w\s\.\$\[\]\(\)\'\'\"\"\->:]+)\}/',
 			'<?php echo ${1} ?>',
 			$line, -1, $count);
 		if ($count != 0) self::formatObj($line);
@@ -110,6 +102,19 @@ final class Template {
 	}
 
 	private static function create ( $viewName, &$content ) {
+		$content = preg_replace( array(
+			'/<!--(.|\n)*?-->/',
+			'/\s+\/>/',
+			'/\s+/'
+		), array(
+			'',
+			'/>',
+			' '
+		), $content);
+		$dir = substr( $viewName, 0, strrpos($viewName, '/') ).'/';
+		if ( !file_exists($dir) ) {
+			mkdir($dir, 0700);
+		}
 		$view = fopen($viewName, 'w');
 		fwrite($view, $content);
 		fclose($view);

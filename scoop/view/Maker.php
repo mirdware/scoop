@@ -17,7 +17,7 @@ abstract class Maker {
 
 	public static function output () {
 		ob_start( function ($buffer) {
-			return $buffer.self::$footer;
+			return $buffer.trim(self::$footer);
 		} );
 	}
 }

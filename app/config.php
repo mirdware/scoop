@@ -1,11 +1,7 @@
 <?php
 return array(
 	'app' => array(
-		'name' => 'SCOOP',
-		'default' => array(
-			'class' => 'Home',
-			'method' => 'main'
-		)
+		'name' => 'SCOOP'
 	),
 	'path' => array(
 		'public' => ROOT.'public/',

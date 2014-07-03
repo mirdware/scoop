@@ -89,8 +89,6 @@ class View {
 			'data' => &$this->viewData,
 			'msg' => $this->msg->__toString()
 		) );
-		\scoop\view\Template::addClass('View', '\scoop\view\Wrapper');
-		\scoop\view\Template::addClass('Config', '\scoop\bootstrap\Config');
 		\scoop\view\Template::parse( $this->viewName );
 		extract ($this->viewData);
 		include self::ROOT.$this->viewName.self::EXT;

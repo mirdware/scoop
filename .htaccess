@@ -7,7 +7,7 @@ RewriteEngine On
 #RewriteBase /
 
 #ocultar las carpetas de la app
-RewriteRule ^(app|library|scoop)/ - [F]
+RewriteRule ^(app|vendor|scoop)/ - [F]
 
 #Forzar a usar la barra o slash (/) final dentro de la URL 	
 RewriteCond %{REQUEST_URI} /+[^\.]+$

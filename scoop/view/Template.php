@@ -52,11 +52,14 @@ final class Template {
 	}
 
 	private static function formatObj (&$line) {
-		$objs = explode('->', $line);
-		$objs = array_map('ucfirst', $objs);
-		$line = implode('->get', $objs);
-		$line = preg_replace('/->get(\w+)(->|\s)/', '->get${1}()${2}', $line);
-		$line = str_replace(array_keys(self::$classes), self::$classes, $line);
+		if ( strpos($line, '->') != -1 ) {
+			$objs = explode('->', $line);
+			$init = array_shift($objs);
+			$objs = array_map('ucfirst', $objs);
+			$line = $init.implode('->get', $objs);
+			$line = preg_replace('/->get(\w+)(->|\s)/', '->get${1}()${2}', $line);
+			$line = str_replace(array_keys(self::$classes), self::$classes, $line);
+		}
 	}
 
 	private static function replace (&$line) {
@@ -101,16 +104,37 @@ final class Template {
 		return FALSE;
 	}
 
-	private static function create ( $viewName, &$content ) {
-		$content = preg_replace( array(
-			'/<!--(.|\n)*?-->/',
-			'/\s+\/>/',
+	private static function clearHTML ($html) {
+		return preg_replace( array(
+			'/>\s*\n\s*</',
 			'/\s+/'
 		), array(
-			'',
-			'/>',
+			'><',
 			' '
+		), $html);
+	}
+
+	private static function create ( $viewName, &$content ) {
+		$content = preg_replace( array(
+			'/<!--.*?-->/s',
+			'/<\/\s+/',
+			'/\s+\/>/',
+			'/<\s+/',
+			'/\s+>/'
+		), array(
+			'',
+			'</',
+			'/>',
+			'<',
+			'>'
 		), $content);
+
+		preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
+		$match = $match[0];
+		$content = self::clearHTML($content);
+		$search = array_map( array('\scoop\view\Template', 'clearHTML'), $match);
+		$content = str_replace($search, $match, $content);
+
 		$dir = substr( $viewName, 0, strrpos($viewName, '/') ).'/';
 		if ( !file_exists($dir) ) {
 			mkdir($dir, 0700);

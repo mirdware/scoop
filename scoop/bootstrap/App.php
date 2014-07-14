@@ -7,7 +7,7 @@ abstract class App {
 
 	public static function run () {
 		if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-			\scoop\controller::redirect ( str_replace('index.php', '', $_SERVER['REQUEST_URI']) );
+			\scoop\Controller::redirect ( str_replace('index.php', '', $_SERVER['REQUEST_URI']) );
 		}
 
 		Config::init();
@@ -19,28 +19,35 @@ abstract class App {
 		$params = array();
 		$validURL = TRUE;
 
+		/*Sanear variables por POST y GET*/
+		if ( $_POST ) {
+			self::purgePOST( $_POST );
+		}
+		if ($_GET) {
+			self::purgeGET( $_GET );
+		}
+
 		if( isset($_GET['route']) ) {
 			/*saneo las variables que vienen por url y libero route del array $_GET*/
 			$url = filter_input (INPUT_GET, 'route', FILTER_SANITIZE_STRING);
 			unset( $_GET['route'] );
+			if ( strtolower($url) !== $url ) {
+				throw new \scoop\http\NotFoundException();
+			}
 			$url = array_filter ( explode( '/', $url ) );
 			
 			/*Configurando clase, metodo y parametros según la url*/
 			$class = str_replace( ' ', '', //une las palabras
 				ucwords( //convierte las primeras letras de las palabras a mayúscula
 					str_replace( '-', ' ', //convierte cada - a un espacio
-						strtolower( //pasa a minúscula todo el string (en estudio)
-							array_shift($url) //obtiene el primer parámetro
-						)
+						array_shift($url) //obtiene el primer parámetro
 					)
 				)
 			);
 
 			if ($url) {
 				$method = explode( '-',
-					strtolower(
-						array_shift($url)
-					)
+					array_shift($url)
 				);
 				//uso a $params como auxiliar
 				$params = array_shift( $method );
@@ -52,19 +59,11 @@ abstract class App {
 
 				$validURL = ($method !== self::MAIN_METHOD);
 			} elseif ($class === self::MAIN_CONTROLLER) {
-				\scoop\controller::redirect(ROOT);
+				\scoop\Controller::redirect(ROOT);
 			}
 
 			$params = $url;
 			unset ($url);
-		}
-
-		/*Sanear variables por POST y GET*/
-		if ( $_POST ) {
-			self::purgePOST( $_POST );
-		}
-		if ($_GET) {
-			self::purgeGET( $_GET );
 		}
 
 		/*generando la reflexión sobre el controlador*/
@@ -93,7 +92,7 @@ abstract class App {
 			if (is_array($value)) {
 				restructurePOST($value);
 			} else {
-				$post[$key] = Helper::filterXSS( trim($value) );
+				$post[$key] = self::filterXSS( trim($value) );
 			}
 		}
 	}

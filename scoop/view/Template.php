@@ -31,7 +31,7 @@ final class Template {
 						$flagPHP = FALSE;
 					}
 					$lastLine .= $lastChar;
-					self::formatObj($line);
+					self::formatObj($lastLine);
 				} elseif ($flag) {
 					$line = '<?php '.$line;
 					$flagPHP = TRUE;
@@ -43,6 +43,9 @@ final class Template {
 
 			fclose($file);
 			$content .= $lastLine;
+			if ($flagPHP) {
+				$content .= ' ?>';
+			}
 			self::create( $view, $content );
 		}
 	}
@@ -64,7 +67,7 @@ final class Template {
 
 	private static function replace (&$line) {
 		$line = preg_replace( array(
-				'/@expand\s\'([\w\/]+)\'/',
+				'/@expand\s\'([\w\/-]+)\'/',
 				'/@if\s([\w\s\.\&\|\$!=<>\-]+)/',
 				'/@elseif\s([\w\s\.\&\|\$!=<>\-]+)/',
 				'/@foreach\s([\w\s\.\&\|\$\->:]+)/',
@@ -106,23 +109,30 @@ final class Template {
 
 	private static function clearHTML ($html) {
 		return preg_replace( array(
+			'/<!--.*?-->/s',
 			'/>\s*\n\s*</',
+			'/;\s*(\"|\')/',
+			'/\s*:\s*/',
+			'/s*;\s*/',
 			'/\s+/'
 		), array(
+			'',
 			'><',
+			'${1}',
+			':',
+			';',
 			' '
 		), $html);
 	}
 
 	private static function create ( $viewName, &$content ) {
+		//normalizar las etiquetas
 		$content = preg_replace( array(
-			'/<!--.*?-->/s',
 			'/<\/\s+/',
 			'/\s+\/>/',
 			'/<\s+/',
 			'/\s+>/'
 		), array(
-			'',
 			'</',
 			'/>',
 			'<',

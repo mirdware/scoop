@@ -29,7 +29,7 @@ class Conexion {
 	
 	private function __clone(){ }
 	
-	public static function get ($db = '', $user = '', $pass = '', $host = '') {
+	public static function get ($config = NULL) {
 		$key = $db.$user.$pass.$host;
 		if (!isset(self::$instances[$key])) {
 			self::$instances[$key] = new Conexion($db, $user, $pass, $host);

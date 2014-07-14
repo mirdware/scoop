@@ -5,11 +5,11 @@ namespace scoop\persistence\driver\pdo;
 	* la aplicación y abstraer las funciones que dependen de cada
 	* DBMS.
 	* Autor: Marlon Ramirez
-	* Version: 0.8
+	* Version: 0.1.1
 	* DBMS: PDO
 **/
 
-class Conexion extends PDO {
+class DBC extends PDO {
 	private static $instances = array();
 	
 	private function __construct ($db, $user, $pass, $host, $engine) {
@@ -21,24 +21,18 @@ class Conexion extends PDO {
 	
 	private function __clone(){ }
 	
-	public static function get ($db = '', $user = '', $pass = '', $host = '', $engine = '') {
-		$key = $db.$user.$pass.$server;
+	public static function get ($config = array()) {
+		$config || ($config = \scoop\bootstrap\Config::get('db.pdo'));
+		$key = implode('', $config);
 		if (!isset(self::$instances[$key])) {
-			self::$instances[$key] = new Conexion($db, $user, $pass, $server);
+			self::$instances[$key] = new Conexion(
+				$config['database'], 
+				$config['user'], 
+				$config['password'], 
+				$config['host'],
+				$config['driver']
+			);
 		}
 		return self::$instances[$key];
 	}
-}
-
-class Result extends PDOStatement {
-	private $pdo;
-	
-	protected function BdSentencia($pdo) {
-        $this->pdo = $pdo;
-    }
-	
-	public function toAssoc() {
-        return parent::fetchAll(PDO::FETCH_ASSOC);
-    }
-	
 }

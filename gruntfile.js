@@ -12,6 +12,7 @@ module.exports = function(grunt) {
     pathJS: "public/js/",
     pathCSS: "public/css/",
     srcCSS: srcCSS,
+    srcJS: srcJS,
 
     uglify: {
       minify: {
@@ -44,7 +45,7 @@ module.exports = function(grunt) {
     cssmin: {
       build: {
         files: {
-          "<%= pathCSS %><%= pkg.name %>.min.css": [ "<%= srcCSS %>**/*.css" ]
+          "<%= pathCSS %><%= pkg.name %>.min.css": ["<%= srcCSS %>**/compress.cp.css"]
         }
       }
     },
@@ -55,11 +56,11 @@ module.exports = function(grunt) {
 
     watch: {
       scripts: {
-        files: jsFiles,
+        files: ["<%= srcJS %>compress.json"].concat(jsFiles),
         tasks: ["uglify"]
       },
       stylesheets: {
-        files: "<%= srcCSS %>**/*.styl",
+        files: ["<%= srcCSS %>**/*.styl", "<%= srcCSS %>**/*.css", "!<%= srcCSS %>**/*.cp.css"],
         tasks: [ "css" ]
       }
     }

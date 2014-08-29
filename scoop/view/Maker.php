@@ -4,8 +4,13 @@ namespace scoop\view;
 use scoop\View as View;
 
 abstract class Maker {
-	private static $footer = '';
-	private static $firstView = TRUE;
+	private static $footer;
+	private static $firstView;
+
+	public static function init () {
+		self::$footer = '';
+		self::$firstView = TRUE;
+	}
 
 	public static function expand ( $parent ) {
 		Template::parse( $parent );
@@ -21,7 +26,6 @@ abstract class Maker {
 		if (self::$firstView) {
 			$fun = function ($buffer) {
 				$buffer .= self::$footer;
-				self::$footer = '';
 				return $buffer;
 			};
 			self::$firstView = FALSE;

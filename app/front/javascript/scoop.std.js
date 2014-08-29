@@ -1,62 +1,102 @@
 (function ($, window, undefined) {
 	var FALSE = false,
 		TRUE = true,
+		blockSubmit = FALSE,
 		document = window.document,
 		message = (function () {
 			var duration = 400,
 				timer,
-				container;
+				divMsg,
+				cssMsg,
+				msgTop,
+				msgHeight;
 
-			function hide () {
+			function hide ( ) {
 				timer = setTimeout(function () {
-					$.sfx.anim(container, {
+					$.sfx.anim(divMsg, {
 						opacity: 0,
 						height: "0px",
 						paddingTop: "0px",
 						paddingBottom: "0px"
 					}, {
-						duration: duration
+						duration: duration,
+						onComplete: function () {
+							divMsg.id = "msg-not";
+						}
 					});
 				}, 10000);
 			}
 
-			$(function () {
-				container = $("#msg-error") || $("#msg-out") || $("#msg-alert");
-				if (container) {
-					$.css(container).set({
-						opacity: 1,
-						height: (container.offsetHeight-parseInt($.css(container).get("paddingTop"))*2)+"px"
-					});
-					hide();
-				} else {
-					$.css("#msg-error").set("opacity", 0);
-					$.css("#msg-out").set("opacity", 0);
+			function onScroll (e) {
+				if (divMsg.id !== "msg-not") {
+					if (window.pageYOffset > msgHeight) {
+						cssMsg.set({
+							position: "fixed",
+							top: msgTop+"px"
+						});
+					} else {
+						cssMsg.set({
+							position: "",
+							top: ""
+						});
+					}
 				}
+			}
+
+			$(function () {
+				divMsg = $("#msg-error") || $("#msg-out") || $("#msg-alert");
+				if (divMsg) {
+					cssMsg = $.css(divMsg);
+					msgHeight = divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2;
+
+					cssMsg.set({
+						opacity: 1,
+						height: msgHeight+"px"
+					});
+					hide( );
+				} else {
+					divMsg = $("#msg-not");
+					cssMsg = $.css(divMsg);
+					//$.css("#msg-out, #msg-error, #msg-alert, #msg-not").set("opacity", 0);
+				}
+				$.evt.add(window, "scroll", onScroll);
 			});
 
 			return function (type, msg) {
 				if (type != "error" && type != "out" && type != "alert") {
-					return;
+					throw new Error(type+" no es un tipo de mensaje valido");
 				}
-				var height;
-				container = $("#msg-error") || $("#msg-out") || $("#msg-alert") || $("#msg-not");
-				container.id = "msg-"+type;
-				container.innerHTML = msg;
+				divMsg.id = "msg-"+type;
+				divMsg.innerHTML = msg;
+				msgTop = divMsg.offsetTop;
 				clearTimeout(timer);
 
-				container.style.height = "";
-				height = (container.offsetHeight-parseInt($.css(container).get("paddingTop"))*2)+"px";
-				container.style.height = 0;
-				$.sfx.anim(container, {
-					opacity: 1,
-					height: height,
-					paddingTop: "5px",
-					paddingBottom: "5px"
-				}, {
-					duration: duration
+				cssMsg.set({
+					opacity: 0,
+					height: "",
+					position: "",
+					top: ""
 				});
 
-				hide();
+				if (window.pageYOffset > 0) {
+					cssMsg.set({
+						position: "fixed",
+						top: msgTop+"px",
+						paddingTop: "5px",
+						paddingBottom: "5px"
+					});
+				}
+				
+				msgHeight = (divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2);
+				divMsg.style.height = 0;
+				$.sfx.anim(divMsg, {
+					opacity: 1,
+					height: msgHeight+"px",
+					paddingTop: "5px",
+					paddingBottom: "5px"
+				}, {duration: duration});
+
+				hide( );
 			};
 		})(),
 		/*
@@ -66,26 +106,48 @@
 			principio.
 		*/
 		placeholder = (function () {
-			var originInput = {};
+			var sph = 0,
+				originInput = {};
 
-			function reset () {
-				if (originInput[this.id] === undefined) {
-					originInput[this.id] = this.value;
+			function clear () {
+				var id = getData(this, "sph");
+				if (originInput[id] === undefined) {
+					originInput[id] = this.value;
 					this.value = "";
-				} else if (this.value == originInput[this.id]) {
+				} else if (this.value == originInput[id]) {
 					this.value = "";
 				}
 			}
 
 			function revert () {
 				if (this.value == "") {
-					this.value = originInput[this.id];
+					this.value = originInput[getData(this, "sph")];
 				}
+			}
+
+			function getData (el, id) {
+				return el.getAttribute("data-"+id);
+			}
+
+			function setData (el, id, value) {
+				el.setAttribute("data-"+id, value);
 			}
 
 			return {
 				add: function (input) {
-					$.evt.add(input, {focus: reset, blur: revert});
+					if (input) {
+						if (input.length) {
+							for (var i=0, inp; inp=input[i]; i++) {
+								if (inp.type === "text"|| inp.type === "search" || inp.type === "email") {
+									setData(inp, "sph", sph++);
+									$.evt.add(inp, {focus: clear, blur: revert});
+								}
+							}
+						} else {
+							setData(input, "sph", sph++);
+							$.evt.add(input, {focus: clear, blur: revert});
+						}
+					}
 				},
 				reset: function () {
 					originInput = {};
@@ -93,8 +155,8 @@
 			};
 		})();
 
-		function safePassword () {
-			var clave = this.value,
+		function safePassword (e) {
+			var clave = typeof e === "string"? e: this.value,
 				color = 'rgb(173,255,47)',
 				len = clave.length,
 				nivel = "Muy alto",
@@ -204,52 +266,91 @@
 			var form = evt.target,
 				data = $.ajax.form(form),
 				url = opt.url || form.action,
+				container = $("#msg-error") || $("#msg-out") || $("#msg-alert"),
 				success = opt.success,
 				trouble = opt.trouble,
 				error,
 				key;
 
+			if (container) {
+				container.id= "msg-not";
+			}
 			for (key in data) {
-				error = $("#error-"+key);
+				error = $("#error-"+key.replace("_", "-"));
 				if (error) {
 					error.style.visibility = "hidden";
 				}
 			}
-			$.ajax.request(url, {
-				callback: function (r) {
-					var res;
-					try { res = JSON.parse(r); } catch (ex) { res = false; }
-					if (res) {
-						if (res.out) {
-							$.message("out", res.out);
-							success&&success(form);
-						} else if (res.error) {
-							$.message("error", res.error);
-							trouble&&trouble(form);
+
+			if ( !blockSubmit ) {
+				blockSubmit = TRUE;
+				if ( form.enctype === "multipart/form-data" ) {
+					var frame = $("#frame-scoop-ajax");
+					if ( !frame ) {
+						frame = document.createElement("iframe");
+						frame.style.display = "none";
+						frame.name = "frame-scoop-ajax";
+						frame.id = "frame-scoop-ajax";
+						document.body.appendChild(frame);
+					}
+					form.target = "frame-scoop-ajax";
+					form.submit();
+					frame.onload = function () {
+						frame = (frame.contentWindow || frame.contentDocument);
+						if (frame.document) {
+							frame = frame.document.body.innerHTML;
+						}
+						//procesamiento de la respuesta
+						callback(frame);
+					};
+				} else {
+					$.ajax.request(url, {
+						callback: callback,
+						data: data
+					});
+				}
+			}
+
+			function callback (r) {
+				blockSubmit = FALSE;
+				var res = FALSE;
+				try { res = JSON.parse(r); } catch (ex) {}
+
+				if ( res ) {
+					if (res.redirect) {
+						window.location = res.redirect;
+					}
+					if (res.out) {
+						message("out", res.out);
+						success && success(form, res);
+						return;
+					}
+					if (res.error) {
+						if (typeof res.error === "string") {
+							message("error", res.error);
 						} else {
-							for (key in res) {
-								var error = $("#"+key);
-								error.title = res[key];
+							for (key in res.error) {
+								var error = $("#error-"+key);
+								error.title = res.error[key];
 								error.style.visibility = "visible";
 							}
-							trouble&&trouble(form, res);
 						}
-					} else {
-						success&&success(form, r);
+						
+						trouble && trouble(form, res);
+						return;
 					}
-				},
-				data: data
-			});
+					r = res;
+				}
+
+				success && success(form, r);
+			};
+
 		}
 
 		$.extend($, {
 			message: message,
 			placeholder: placeholder,
-			password: {
-				safe: function (input) {
-					$.evt.add(input, "keyup", safePassword);
-				}
-			}
+			password: {safe: safePassword}
 		});
 
 		$.extend($.ajax, {submit: submit});

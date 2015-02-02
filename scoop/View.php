@@ -6,7 +6,7 @@ namespace scoop;
 class View {
 	//ruta donde se encuentran las vistas
 	const ROOT = 'app/views/php/';
-	//extención de los archivos que funcionan como vistas
+	//extensión de los archivos que funcionan como vistas
 	const EXT = '.php';
 	//viewData que contiene los datos a ser procesados por la vista
 	private $viewData;
@@ -20,7 +20,7 @@ class View {
 		$this->msg = new __Message__();
 		$this->viewName = $viewName;
 	}
-	
+
 	/**
 	 * Establece o modifica los datos que va a procesar la vista.
 	 * @param string|array $key   Nombre de la variable dentro de la vista.
@@ -35,7 +35,7 @@ class View {
 		}
 		return $this;
 	}
-	
+
 	/**
 	 * Remueve un dato de la vista o en su defecto, reinicia la misma.
 	 * @param  string|array|null $key dependiendo del tipo de dato elimina una o varias variables
@@ -63,10 +63,10 @@ class View {
 		ob_end_clean();
 		return $view;
 	}
-	
+
 	/**
 	 * @deprecated
-	 * @param array Array con los errores a mostrar 
+	 * @param array Array con los errores a mostrar
 	 * @return View
 	 */
 	public function setErrors ($array) {
@@ -84,17 +84,16 @@ class View {
 	}
 
 	private function generate () {
-		\scoop\view\Wrapper::init( array(
+		\scoop\view\Helper::init( array(
 			'name' => &$this->viewName,
-			'data' => &$this->viewData,
-			'msg' => $this->msg->__toString()
+			'msg' => $this->msg
 		) );
-		\scoop\view\Maker::init();
+		\scoop\view\Heritage::init( $this->viewData );
 		\scoop\view\Template::parse( $this->viewName );
 		extract ($this->viewData);
 		include self::ROOT.$this->viewName.self::EXT;
 	}
-	
+
 }
 
 final class __Message__ {
@@ -107,8 +106,8 @@ final class __Message__ {
 
 	private function validate (&$type) {
 		$this->type = $type;
-		if ($this->type !== 'error' && 
-			$this->type !== 'out' && 
+		if ($this->type !== 'error' &&
+			$this->type !== 'out' &&
 			$this->type !== 'alert') {
 			throw new Exception("Error building only accepted message types: error, out and alert.", 1);
 		}

@@ -1,20 +1,21 @@
 <?php
 namespace scoop\view;
 
-use scoop\View as View;
-
 final class Template {
 	//ruta donde se encuentran las platillas
 	const ROOT = 'app/views/templates/';
-	//extención de los archivos que funcionan como plantillas
+	//extensión de los archivos que funcionan como plantillas
 	const EXT = '.sdt.php';
+	//clase para el manejo de herencia
+	const HERITAGE = '\scoop\view\Heritage';
+	//clases añadidas al template
 	private static $classes = array();
 
 	public static function parse ($name) {
 		$template = self::ROOT.$name.self::EXT;
-		$view = View::ROOT.$name.View::EXT;
+		$view = \scoop\View::ROOT . $name . \scoop\View::EXT;
 
-		if ( is_readable($template) && 
+		if ( is_readable($template) &&
 			( !is_readable($view) || filemtime($template) > filemtime($view) ) ) {
 			$content = '';
 			$flagPHP = FALSE;
@@ -23,7 +24,7 @@ final class Template {
 			while ( !feof($file) ) {
 				$line = fgets($file);
 				$flag = self::replace($line);
-				
+
 				if ($flagPHP) {
 					$lastChar = ';';
 					if (!$flag) {
@@ -55,7 +56,7 @@ final class Template {
 	}
 
 	private static function formatObj (&$line) {
-		if ( strpos($line, '->') != -1 ) {
+		if ( strpos($line, '->') !== -1 ) {
 			$objs = explode('->', $line);
 			$init = array_shift($objs);
 			$objs = array_map('ucfirst', $objs);
@@ -73,8 +74,8 @@ final class Template {
 				'/@foreach\s([\w\s\.\&\|\$\->:]+)/',
 				'/@for\s([\w\s\.\&\|\$;\(\)!=<>\+\-]+)/',
 				'/@while\s([\w\s\.\&\|\$\(\)!=<>\+\-]+)/'
-			), array( 
-				'\scoop\view\Maker::expand(\'${1}\')',
+			), array(
+				self::HERITAGE.'::expand(\'${1}\')',
 				'if(${1}):',
 				'elseif(${1}):',
 				'foreach(${1}):',
@@ -84,23 +85,23 @@ final class Template {
 		if ($count != 0) return TRUE;
 
 		$line = str_replace( array(
-				':if', 
+				':if',
 				':foreach',
 				':for',
 				':while',
 				'@else',
 				'@output'
 			), array(
-				'endif', 
+				'endif',
 				'endforeach',
 				'endfor',
 				'endwhile',
 				'else:',
-				'\scoop\view\Maker::output()'
+				self::HERITAGE.'::output()'
 			), $line, $count);
 		if ($count != 0) return TRUE;
-		
-		$line = preg_replace( '/\{([\w\s\.\$\[\]\(\)\'\'\"\"\->:]+)\}/',
+
+		$line = preg_replace( '/\{([\w\s\.\$\[\]\(\)\'\"\-\?:=!<>]+)\}/',
 			'<?php echo ${1} ?>',
 			$line, -1, $count);
 		if ($count != 0) self::formatObj($line);

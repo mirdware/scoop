@@ -4,9 +4,18 @@ return array(
 		'name' => 'SCOOP'
 	),
 	'path' => array(
-		'public' => ROOT.'public/',
-		'css' => ROOT.'public/css/',
-		'js' => ROOT.'public/js/',
-		'img' => ROOT.'public/images/'
+		'public' => 'public/',
+		'css' => 'css/',
+		'js' => 'js/',
+		'img' => 'images/'
+	),
+	'db' => array(
+		'default' => array(
+			'database' => '',
+			'user' => '',
+			'password' => '',
+			'host' => '',
+			'driver' => ''
+		)
 	)
 );

@@ -7,8 +7,13 @@ abstract class Controller {
 
 	/*Verifica si la pagina fue llamada via ajax o normalmente*/
 	protected function ajax() {
-		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
 			$_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+	}
+
+	protected function json ($json) {
+		header('Content-Type: application/json');
+		return json_encode($json);
 	}
 
 	/*Metodo que realiza la redirección permanente de ciertas paginas*/

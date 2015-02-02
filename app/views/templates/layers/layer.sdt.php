@@ -4,20 +4,20 @@
 	<!-- Codificación de la pagina a utf-8 para que admita caracteres especiales -->
 	<meta charset="utf-8" />
 	<!-- Referencia a los datos del autor y material utilizado -->
-	<link rel="author" href="{Config::get('path.public')}humans.txt" />
+	<link rel="author" href="{View::overt('humans.txt')}" />
 	<!-- Visualización en cualquier dispositivo utilizando responsive disign -->
 	<meta name="viewport" content="width=device-width">
 	<!-- Icono de la aplicación -->
-	<link rel="shortcut icon" type="image/x-icon" href="{Config::get('path.public')}favicon.ico" />
+	<link rel="shortcut icon" type="image/x-icon" href="{View::overt('favicon.ico')}" />
 	<!-- Enlace a la hoja de estilos general -->
-	<link rel="stylesheet" href="{Config::get('path.css')}project.scoop.min.css" />
+	<link rel="stylesheet" href="{View::css('project.scoop.min.css')}" />
 	<!-- trabajar las rutas absolutas dentro de javascript -->
 	<script type="text/javascript">
 		var root = "{ROOT}";
 	</script>
-	<script src="{Config::get('path.js')}project.scoop.min.js"></script>
+	<script src="{View::js('project.scoop.min.js')}"></script>
 	<!-- Titulo de la pagina -->
-	<title>{$title} - {Config::get('app.name')} MirdWare</title>
+	<title>{$title} » {View::get('app.name')} MirdWare</title>
 </head>
 
 <body>

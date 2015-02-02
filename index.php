@@ -21,8 +21,7 @@ try {
 	$loader->useIncludePath( TRUE );
 	$loader->register();
 
-	\scoop\view\Template::addClass('View', '\scoop\view\Wrapper');
-	\scoop\view\Template::addClass('Config', '\scoop\bootstrap\Config');
+	\scoop\view\Template::addClass('View', '\scoop\view\Helper');
 	\scoop\bootstrap\App::run();
 
 } catch (\scoop\http\Exception $ex) {

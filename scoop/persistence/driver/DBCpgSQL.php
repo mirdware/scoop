@@ -1,5 +1,5 @@
 <?php
-namespace scoop\persistence\driver\pgsql;
+namespace scoop\persistence\driver;
 /**
 	* Clase conexion que sirve para enlazar la base de datos con
 	* la aplicación y abstraer las funciones que dependen de cada
@@ -18,7 +18,7 @@ class DBC {
 	const FETCH_BOTH = 2;
 	const FETCH_NUM = 3;
 	const FETCH_OBJ = 4;
-	
+
 	/*constructor*/
 	private function __construct($db, $user, $pass, $host) {
 		$this->conex = pg_connect(
@@ -27,7 +27,7 @@ class DBC {
 		) or die();
 		$this->query('SET NAMES \'utf8\'');
 	}
-	
+
 	public function __destruct(){
 		if ($this->conex) {
 			pg_close($this->conex);
@@ -36,35 +36,43 @@ class DBC {
 
 	/*Inpedir el clonado de objetos*/
 	private function __clone(){ }
-	
+
 	/*Patron Multiton*/
-	public static function get ($config = array()) {
-		$config || ($config = \scoop\bootstrap\Config::get('db.pgsql'));
+	public static function get ($conf = NULL)) {
+		$bundle = 'db.default';
+		if ( is_string($conf) ) {
+			$bundle = $conf;
+		}
+		$config = \scoop\bootstrap\Config::get($bundle);
+		if ( is_array($conf) ) {
+			$config += $conf;
+		}
 		$key = implode('', $config);
+
 		if (!isset(self::$instances[$key])) {
-			self::$instances[$key] = new Conexion(
-				$config['database'], 
-				$config['user'], 
-				$config['password'], 
+			self::$instances[$key] = new DBC(
+				$config['database'],
+				$config['user'],
+				$config['password'],
 				$config['host']
 			);
 		}
 		return self::$instances[$key];
 	}
-	
+
 	/*abstraccion de los metodos independiente del DBMS*/
 	public function query($consulta) {
 		if(!$this->conex) {
 			return FALSE;
 		}
-		
+
 		$consulta = trim($consulta);
 		//echo $consulta;
 		$r = pg_query($this->conex, $consulta);
 		if ( !$r ) {
-			throw new SQLException($this->error(), 1);
+			throw new \scoop\persistence\driver\SQLException($this->error(), 1);
 		}
-		
+
 		if(strpos(strtoupper($consulta), 'SELECT') === 0) {
 			$res = new __Result__($r);
 			return $res;
@@ -72,11 +80,11 @@ class DBC {
 			return $r;
 		}
 	}
-	
+
 	public function error(){
 		return pg_last_error($this->conex);
 	}
-	
+
 	public function escape($val) {
 		$val = trim($val);
 		if ($val === NULL || $val === '') {
@@ -88,41 +96,41 @@ class DBC {
 		$val = "'" . pg_escape_string($val) . "'";
 		return $val;
 	}
-	
+
 	public function lastId() {
 		return $this->query('SELECT lastval()')->result(0);
 	}
-	
+
 }
 
 //**********************************************************************************
 
 final class __Result__ {
 	private $res;
-	
+
 	public function __construct($res) {
 		$this->res = $res;
 	}
-	
+
 	public function __destruct() {
 		if($this->res){
 			pg_free_result($this->res);
 		}
 	}
-	
+
 	/*abstraccion de los metodos independiente del DBMS*/
 	public function numRows() {
 		return pg_num_rows($this->res);
 	}
-	
+
 	public function toObject() {
 		return pg_fetch_object($this->res);
 	}
-	
+
 	public function toArray() {
 		return pg_fetch_array($this->res);
 	}
-	
+
 	public function toAssoc() {
 		return pg_fetch_assoc($this->res);
 	}
@@ -130,84 +138,12 @@ final class __Result__ {
 	public function toRow () {
 		return pg_fetch_row($this->res);
 	}
-	
+
 	public function result($row=0, $field=0) {
 		return pg_fetch_result($this->res,$row, $field);
 	}
-	
+
 	public function reset() {
 		pg_result_seek($this->res, 0);
-	}
-}
-
-class SQLException extends Exception {
-	/** Information that provides additional information for context of Exception (e.g. SQL statement or DSN). */
-	protected $userInfo;
-
-	/** Native RDBMS error string */
-	protected $nativeError;
-
-	/**
-		* Constructs a SQLException.
-		* @param string $msg Error message
-		* @param string $native Native DB error message.
-		* @param string $userinfo More info, e.g. the SQL statement or the connection string that caused the error.
-	*/
-	public function __construct($msg, $native = null, $userinfo = null) {
-		parent::__construct($msg);
-		if ($native !== null) {
-			$this->setNativeError($native);
-		}
-		if ($userinfo !== null) {
-			$this->setUserInfo($userinfo);
-		}
-	}
-
-	/**
-		* Sets additional user / debug information for this error.
-		* 
-		* @param array $info
-		* @return void
-	*/
-	public function setUserInfo($info) {
-		$this->userInfo = $info;
-		$this->message .= " [User Info: " .$this->userInfo . "]";
-	}
-
-
-	/**
-		* Returns the additional / debug information for this error.
-		*
-		* @return array hash of user info properties.
-	*/
-	public function getUserInfo() {
-		return $this->userInfo;
-	}
-
-	/**
-		* Sets driver native error message.
-		* 
-		* @param string $info
-		* @return void
-		*/
-	public function setNativeError($msg) {
-		$this->nativeError = $msg;
-		$this->message .= " [Native Error: " .$this->nativeError . "]";
-	}
-
-	/**
-		* Gets driver native error message.
-		*
-		* @return string
-	*/
-	public function getNativeError() {
-		return $this->nativeError;
-	}       
-
-	/**
-		* @deprecated This method only exists right now for easier compatibility w/ PHPUnit!
-	*/
-	public function toString() {
-		return $this->getMessage();
 	}
 }

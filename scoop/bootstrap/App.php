@@ -35,7 +35,7 @@ abstract class App {
 				throw new \scoop\http\NotFoundException();
 			}
 			$url = array_filter ( explode( '/', $url ) );
-			
+
 			/*Configurando clase, metodo y parametros según la url*/
 			$class = str_replace( ' ', '', //une las palabras
 				ucwords( //convierte las primeras letras de las palabras a mayúscula
@@ -73,7 +73,7 @@ abstract class App {
 			$auxReflection = new \ReflectionClass( $class );
 			if ($auxReflection->hasMethod( $method )) {
 				$method = $auxReflection->getMethod( $method );
-				/*$auxReflection = el número de elementos de $param, 
+				/*$auxReflection = el número de elementos de $param,
 				para no tener que llamar 2 veces la funcion count*/
 				$auxReflection = count ($params);
 				if ($auxReflection >= $method->getNumberOfRequiredParameters() && $auxReflection <= $method->getNumberOfParameters()) {
@@ -110,7 +110,7 @@ abstract class App {
 
 	/**
 	 * Función para filtrar XSS tomada de https://gist.github.com/mbijon/1098477
-	 * @param string $data 
+	 * @param string $data
 	 * @return Datos filtrados
 	 */
 	private static function filterXSS ( $data ) {
@@ -136,16 +136,14 @@ abstract class App {
 		// Remove namespaced elements (we do not need them)
 		$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
 
-		do
-		{
+		do {
 			// Remove really unwanted tags
 			$old_data = $data;
 			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
-		}
-		while ($old_data !== $data);
+		} while ($old_data !== $data);
 
 		// we are done...
 		return $data;
 	}
-	
+
 }

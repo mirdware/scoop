@@ -1,22 +1,22 @@
 <?php
 namespace scoop\view;
 
-use scoop\View as View;
-
-abstract class Maker {
+abstract class Heritage {
 	private static $footer;
 	private static $firstView;
+	private static $data;
 
-	public static function init () {
+	public static function init ( $data ) {
 		self::$footer = '';
 		self::$firstView = TRUE;
+		self::$data = $data;
 	}
 
 	public static function expand ( $parent ) {
 		Template::parse( $parent );
-		extract( \scoop\view\Wrapper::get('data') );
+		extract( self::$data );
 		ob_start();
-		require View::ROOT.$parent.View::EXT;
+		require \scoop\View::ROOT.$parent.\scoop\View::EXT;
 		self::$footer = trim( ob_get_contents() ).self::$footer;
 		ob_clean();
 	}

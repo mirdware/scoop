@@ -1,5 +1,5 @@
 <?php
-namespace scoop\persistence\driver\pdo;
+namespace scoop\persistence\driver;
 /**
 	* Clase conexion que sirve para enlazar la base de datos con
 	* la aplicación y abstraer las funciones que dependen de cada
@@ -11,24 +11,32 @@ namespace scoop\persistence\driver\pdo;
 
 class DBC extends PDO {
 	private static $instances = array();
-	
+
 	private function __construct ($db, $user, $pass, $host, $engine) {
 		parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass);
 		parent::setAttribute(PDO::ATTR_STATEMENT_CLASS, array('result', array($this)));
 		parent::setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		parent::exec('SET NAMES \'utf8\'');
 	}
-	
+
 	private function __clone(){ }
-	
-	public static function get ($config = array()) {
-		$config || ($config = \scoop\bootstrap\Config::get('db.pdo'));
+
+	public static function get ($conf = NULL) {
+		$bundle = 'db.default';
+		if ( is_string($conf) ) {
+			$bundle = $conf;
+		}
+		$config = \scoop\bootstrap\Config::get($bundle);
+		if ( is_array($conf) ) {
+			$config += $conf;
+		}
 		$key = implode('', $config);
+
 		if (!isset(self::$instances[$key])) {
-			self::$instances[$key] = new Conexion(
-				$config['database'], 
-				$config['user'], 
-				$config['password'], 
+			self::$instances[$key] = new DBC(
+				$config['database'],
+				$config['user'],
+				$config['password'],
 				$config['host'],
 				$config['driver']
 			);

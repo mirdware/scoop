@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
-  var srcJS = "app/front/javascript/",
-      srcCSS = "app/front/styles/",
+  var srcJS = "app/resources/javascript/",
+      srcCSS = "app/resources/styles/",
       jsFiles = grunt.file.readJSON(srcJS+"compress.json");
 
   for (var i=0, file; file = jsFiles[i]; i++) {

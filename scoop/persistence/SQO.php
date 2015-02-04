@@ -1,6 +1,8 @@
 <?php
 namespace scoop\presistence;
 
+use scoop\presistence\driver\DBC AS DBC;
+
 class SQO extends __SQOFactory__ {
 	private $table;
 	private $aliasTable;
@@ -8,10 +10,10 @@ class SQO extends __SQOFactory__ {
 	const UPDATE = 2;
 	const DELETE = 3;
 
-	public function __construct ($table, $alias = '', $conexion = NULL) {
+	public function __construct ($table, $alias = '', $connexion = NULL) {
 		$this->table = $table;
 		$this->aliasTable = $table.' '.$alias;
-		$this->con = $conexion === NULL? Conexion::get(): $conexion;
+		$this->con = $connexion === NULL? DBC::get(): $connexion;
 	}
 
 	public function create ($fields) {
@@ -90,10 +92,10 @@ final class __SQOCreate__ extends __SQOFactory__ {
 	private $query;
 	private $keys;
 
-	public function __construct( $query, &$keys, &$conexion ) {
+	public function __construct( $query, &$keys, &$connexion ) {
 		$this->query = $query;
 		$this->keys =& $keys;
-		$this->con =& $conexion;
+		$this->con =& $connexion;
 	}
 
 	public function chain ( $fields ) {
@@ -121,11 +123,11 @@ final class __SQOResult__ {
 	private $type;
 	private $filter;
 
-	public function __construct( $query, $type, &$conexion ) {
+	public function __construct( $query, $type, &$connexion ) {
 		$this->query = $query;
 		$this->type = $type;
-		$this->con =& $conexion;
-		$this->filter = new __SQOFilter__( $conexion );
+		$this->con =& $connexion;
+		$this->filter = new __SQOFilter__( $connexion );
 	}
 
 	public function getFilter () {
@@ -187,8 +189,8 @@ final class __SQOFilter__ {
 	private $limit = '';
 	private $con;
 
-	public function __construct( &$conexion ) {
-		$this->con =& $conexion;
+	public function __construct( &$connexion ) {
+		$this->con =& $connexion;
 	}
 
 	public function find ($rule, $replace = NULL) {

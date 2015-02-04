@@ -12,7 +12,7 @@ abstract class Controller {
 	}
 
 	protected function json ($json) {
-		header('Content-Type: application/json');
+		header('Content-type: application/json');
 		return json_encode($json);
 	}
 

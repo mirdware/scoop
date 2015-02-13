@@ -1,13 +1,17 @@
 <?php
-namespace scoop\bootstrap;
+namespace Scoop\Bootstrap;
 
-abstract class App {
+abstract class App
+{
 	const MAIN_CONTROLLER = 'Home';
 	const MAIN_METHOD = 'main';
 
-	public static function run () {
+	public static function run()
+	{
 		if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-			\scoop\Controller::redirect ( str_replace('index.php', '', $_SERVER['REQUEST_URI']) );
+			\Scoop\Controller::redirect(
+				str_replace('index.php', '', $_SERVER['REQUEST_URI'])
+			);
 		}
 
 		Config::init();
@@ -20,46 +24,46 @@ abstract class App {
 		$validURL = TRUE;
 
 		/*Sanear variables por POST y GET*/
-		if ( $_POST ) {
-			self::purgePOST( $_POST );
+		if ($_POST) {
+			self::purgePOST($_POST);
 		}
 		if ($_GET) {
-			self::purgeGET( $_GET );
+			self::purgeGET($_GET);
 		}
 
-		if( isset($_GET['route']) ) {
+		if (isset($_GET['route'])) {
 			/*saneo las variables que vienen por url y libero route del array $_GET*/
-			$url = filter_input (INPUT_GET, 'route', FILTER_SANITIZE_STRING);
+			$url = filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
 			unset( $_GET['route'] );
-			if ( strtolower($url) !== $url ) {
-				throw new \scoop\http\NotFoundException();
+			if (strtolower($url) !== $url) {
+				throw new \Scoop\Http\NotFoundException();
 			}
-			$url = array_filter ( explode( '/', $url ) );
+			$url = array_filter(explode('/', $url));
 
 			/*Configurando clase, metodo y parametros según la url*/
-			$class = str_replace( ' ', '', //une las palabras
+			$class = str_replace(' ', '', //une las palabras
 				ucwords( //convierte las primeras letras de las palabras a mayúscula
-					str_replace( '-', ' ', //convierte cada - a un espacio
+					str_replace('-', ' ', //convierte cada - a un espacio
 						array_shift($url) //obtiene el primer parámetro
 					)
 				)
 			);
 
 			if ($url) {
-				$method = explode( '-',
+				$method = explode('-',
 					array_shift($url)
 				);
 				//uso a $params como auxiliar
-				$params = array_shift( $method );
+				$params = array_shift($method);
 				if (empty($method)) {
 					$method = $params;
 				} else {
-					$method = $params.implode( array_map('ucfirst', $method) );
+					$method = $params.implode(array_map('ucfirst', $method));
 				}
 
 				$validURL = ($method !== self::MAIN_METHOD);
 			} elseif ($class === self::MAIN_CONTROLLER) {
-				\scoop\Controller::redirect(ROOT);
+				\Scoop\Controller::redirect(ROOT);
 			}
 
 			$params = $url;
@@ -67,43 +71,45 @@ abstract class App {
 		}
 
 		/*generando la reflexión sobre el controlador*/
-		if ( $validURL && is_readable(\scoop\Controller::ROOT.$class.'.php') ) {
+		if ( $validURL && is_readable(\Scoop\Controller::ROOT.$class.'.php') ) {
 			//$auxReflection = la reflexión de la clase para poder explorarla
-			$class = str_replace('/', '\\', \scoop\Controller::ROOT).$class;
-			$auxReflection = new \ReflectionClass( $class );
-			if ($auxReflection->hasMethod( $method )) {
-				$method = $auxReflection->getMethod( $method );
+			$class = str_replace('/', '\\', \Scoop\Controller::ROOT).$class;
+			$auxReflection = new \ReflectionClass($class);
+			if ($auxReflection->hasMethod($method)) {
+				$method = $auxReflection->getMethod($method);
 				/*$auxReflection = el número de elementos de $param,
 				para no tener que llamar 2 veces la funcion count*/
-				$auxReflection = count ($params);
+				$auxReflection = count($params);
 				if ($auxReflection >= $method->getNumberOfRequiredParameters() && $auxReflection <= $method->getNumberOfParameters()) {
 					//$auxReflection = lo que se mostrara al finalizar aplicación
 					$auxReflection = $method->invokeArgs(new $class, $params);
-					exit ($auxReflection);
+					exit($auxReflection);
 				}
 			}
 		}
 
-		throw new \scoop\http\NotFoundException();
+		throw new \Scoop\Http\NotFoundException();
 	}
 
-	private static function purgePOST ( &$post ) {
+	private static function purgePOST(&$post)
+	{
 		foreach ($post as $key => $value) {
 			if (is_array($value)) {
-				restructurePOST($value);
+				self::purgePOST($value);
 			} else {
-				$post[$key] = self::filterXSS( trim($value) );
+				$post[$key] = self::filterXSS(trim($value));
 			}
 		}
 	}
 
-	private static function purgeGET ( &$get ) {
+	private static function purgeGET(&$get)
+	{
 		foreach ($get as $key => $value) {
 			if (is_array($value)) {
-				restructureGET($value);
+				self::purgeGET($value);
 			} else {
 				//<htmlentities> dentro del POST va a ser suprimida en proximas versiones
-				$get[$key] = htmlspecialchars( trim($value) , ENT_QUOTES, 'UTF-8');
+				$get[$key] = htmlspecialchars(trim($value) , ENT_QUOTES, 'UTF-8');
 			}
 		}
 	}
@@ -113,7 +119,8 @@ abstract class App {
 	 * @param string $data
 	 * @return Datos filtrados
 	 */
-	private static function filterXSS ( $data ) {
+	private static function filterXSS($data)
+	{
 		// Fix &entity\n;
 		$data = str_replace(array('&amp;','&lt;','&gt;'), array('&amp;amp;','&amp;lt;','&amp;gt;'), $data);
 		$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);

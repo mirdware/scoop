@@ -1,5 +1,5 @@
 <?php
-namespace scoop\persistence\driver;
+namespace Scoop\Persistence\Driver;
 /**
 	* Clase conexion que sirve para enlazar la base de datos con
 	* la aplicación y abstraer las funciones que dependen de cada
@@ -9,25 +9,28 @@ namespace scoop\persistence\driver;
 	* DBMS: PDO
 **/
 
-class DBC extends PDO {
+class DBC extends \PDO
+{
 	private static $instances = array();
 
-	private function __construct ($db, $user, $pass, $host, $engine) {
+	public function __construct($db, $user, $pass, $host, $engine)
+	{
 		parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass);
-		parent::setAttribute(PDO::ATTR_STATEMENT_CLASS, array('result', array($this)));
-		parent::setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ); 
+		parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		parent::exec('SET NAMES \'utf8\'');
 	}
 
-	private function __clone(){ }
+	private function __clone() {}
 
-	public static function get ($conf = NULL) {
+	public static function get($conf = NULL)
+	{
 		$bundle = 'db.default';
-		if ( is_string($conf) ) {
+		if (is_string($conf)) {
 			$bundle = $conf;
 		}
-		$config = \scoop\bootstrap\Config::get($bundle);
-		if ( is_array($conf) ) {
+		$config = \Scoop\Bootstrap\Config::get($bundle);
+		if (is_array($conf)) {
 			$config += $conf;
 		}
 		$key = implode('', $config);

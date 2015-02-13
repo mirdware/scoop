@@ -1,5 +1,5 @@
 <?php
-namespace scoop\presistence;
+namespace Scoop\Persistence;
 
 class ObjectRelation {
 	const ONE_TO_ONE = 1;
@@ -10,14 +10,16 @@ class ObjectRelation {
 	private $self;
 	private $methodRel;
 
-	public function __construct ($self, $methodRel, $type = self::ONE_TO_MANY, $objRel = NULL) {
+	public function __construct($self, $methodRel, $type = self::ONE_TO_MANY, $objRel = NULL)
+	{
 		$this->self =& $self;
 		$this->objRel =& $objRel;
 		$this->methodRel = $methodRel;
 		$this->type = $type;
 	}
 
-	private function delete (&$obj, $remove) {
+	private function delete(&$obj, $remove)
+	{
 		if ($remove) {
 			$method = 'remove'.$this->methodRel;
 			$arg =& $this->self;
@@ -28,7 +30,8 @@ class ObjectRelation {
 		$obj->$method($arg);
 	}
 
-	public function add (&$child) {
+	public function add(&$child)
+	{
 		if (!$this->objRel) {
 			$this->objRel = new ObjectCollector();
 		}
@@ -39,7 +42,8 @@ class ObjectRelation {
 		}
 	}
 
-	public function remove (&$child) {
+	public function remove(&$child)
+	{
 		if (!$this->objRel) {
 			$this->objRel = new ObjectCollector();
 		}
@@ -48,7 +52,8 @@ class ObjectRelation {
 		
 	}
 
-	public function set (&$parent) {
+	public function set(&$parent)
+	{
 		$isSettable = $parent !== NULL && $this->objRel !== $parent;
 		if ( $isSettable) {
 			$method = ($this->type !== self::ONE_TO_ONE?'add':'set').$this->methodRel;
@@ -58,7 +63,8 @@ class ObjectRelation {
 		$isSettable && $parent->$method($this->self);
 	}
 
-	public function get () {
+	public function get()
+	{
 		return $this->objRel instanceOf ObjectCollector?
 					$this->objRel->toArray():
 					$this->objRel;

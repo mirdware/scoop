@@ -11,5 +11,8 @@
             "email": "marlonramirez@outlook.com"
         }
     ],
+    "config": {
+        "use-include-path": true
+    },
     "minimum-stability": "stable"
 }

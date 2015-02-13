@@ -1,18 +1,21 @@
 <?php
-namespace app\controllers;
+namespace App\Controllers;
 
-class Home extends \scoop\Controller {
+class Home extends \Scoop\Controller
+{
 	private $view;
 
-	public function __construct () {
-		$this->view = new \scoop\View( 'home' );
+	public function __construct()
+	{
+		$this->view = new \Scoop\View('home');
 		$this->view->set(array(
-			'title' => 'Welcome',
+			'title' => \Scoop\Bootstrap\Config::get('app.name'),
 			'ajax' => $this->ajax()
 		));
 	}
 
-	public function main () {
+	public function main()
+	{
 		$this->view->render();
 	}
 }

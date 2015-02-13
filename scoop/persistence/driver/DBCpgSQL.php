@@ -1,149 +1,166 @@
 <?php
-namespace scoop\persistence\driver;
+namespace Scoop\Persistence\Driver;
 /**
-	* Clase conexion que sirve para enlazar la base de datos con
-	* la aplicación y abstraer las funciones que dependen de cada
-	* DBMS.
-	* Autor: Marlon Ramirez
-	* Version: 0.8
-	* DBMS: postgreSQL
+    * Clase conexion que sirve para enlazar la base de datos con
+    * la aplicación y abstraer las funciones que dependen de cada
+    * DBMS.
+    * Autor: Marlon Ramirez
+    * Version: 0.8
+    * DBMS: postgreSQL
 **/
 
-class DBC {
-	//conexion persistente a la base de datos
-	private $conex;
-	//Lista de conexiones existentes en la ejecución de la aplicación
-	private static $instances = array();
-	const FETCH_ASSOC = 1;
-	const FETCH_BOTH = 2;
-	const FETCH_NUM = 3;
-	const FETCH_OBJ = 4;
+class DBC
+{
+    //conexion persistente a la base de datos
+    private $conex;
+    //Lista de conexiones existentes en la ejecución de la aplicación
+    private static $instances = array();
+    const FETCH_ASSOC = 1;
+    const FETCH_BOTH = 2;
+    const FETCH_NUM = 3;
+    const FETCH_OBJ = 4;
 
-	/*constructor*/
-	private function __construct($db, $user, $pass, $host) {
-		$this->conex = pg_connect(
-			'host='.$host.' port=5432 dbname='.$db.
-			' user='.$user.' password='.$pass
-		) or die();
-		$this->query('SET NAMES \'utf8\'');
-	}
+    /*constructor*/
+    private function __construct($db, $user, $pass, $host)
+    {
+        $this->conex = pg_connect(
+            'host='.$host.' port=5432 dbname='.$db.
+            ' user='.$user.' password='.$pass
+        ) or die();
+        $this->query('SET NAMES \'utf8\'');
+    }
 
-	public function __destruct(){
-		if ($this->conex) {
-			pg_close($this->conex);
-		}
-	}
+    public function __destruct()
+    {
+        if ($this->conex) {
+            pg_close($this->conex);
+        }
+    }
 
-	/*Inpedir el clonado de objetos*/
-	private function __clone(){ }
+    /*Inpedir el clonado de objetos*/
+    private function __clone() {}
 
-	/*Patron Multiton*/
-	public static function get ($conf = NULL)) {
-		$bundle = 'db.default';
-		if ( is_string($conf) ) {
-			$bundle = $conf;
-		}
-		$config = \scoop\bootstrap\Config::get($bundle);
-		if ( is_array($conf) ) {
-			$config += $conf;
-		}
-		$key = implode('', $config);
+    /*Patron Multiton*/
+    public static function get($conf = NULL))
+    {
+        $bundle = 'db.default';
+        if (is_string($conf)) {
+            $bundle = $conf;
+        }
+        $config = \Scoop\Bootstrap\Config::get($bundle);
+        if ( is_array($conf) ) {
+            $config += $conf;
+        }
+        $key = implode('', $config);
 
-		if (!isset(self::$instances[$key])) {
-			self::$instances[$key] = new DBC(
-				$config['database'],
-				$config['user'],
-				$config['password'],
-				$config['host']
-			);
-		}
-		return self::$instances[$key];
-	}
+        if (!isset(self::$instances[$key])) {
+            self::$instances[$key] = new DBC(
+                $config['database'],
+                $config['user'],
+                $config['password'],
+                $config['host']
+            );
+        }
+        return self::$instances[$key];
+    }
 
-	/*abstraccion de los metodos independiente del DBMS*/
-	public function query($consulta) {
-		if(!$this->conex) {
-			return FALSE;
-		}
+    /*abstraccion de los metodos independiente del DBMS*/
+    public function query($consulta)
+    {
+        if(!$this->conex) {
+            return FALSE;
+        }
 
-		$consulta = trim($consulta);
-		//echo $consulta;
-		$r = pg_query($this->conex, $consulta);
-		if ( !$r ) {
-			throw new \scoop\persistence\driver\SQLException($this->error(), 1);
-		}
+        $consulta = trim($consulta);
+        //echo $consulta;
+        $r = pg_query($this->conex, $consulta);
+        if ( !$r ) {
+            throw new \Scoop\Persistence\Driver\SQLException($this->error(), 1);
+        }
 
-		if(strpos(strtoupper($consulta), 'SELECT') === 0) {
-			$res = new __Result__($r);
-			return $res;
-		} else {
-			return $r;
-		}
-	}
+        if(strpos(strtoupper($consulta), 'SELECT') === 0) {
+            $res = new __Result__($r);
+            return $res;
+        } else {
+            return $r;
+        }
+    }
 
-	public function error(){
-		return pg_last_error($this->conex);
-	}
+    public function error()
+    {
+        return pg_last_error($this->conex);
+    }
 
-	public function escape($val) {
-		$val = trim($val);
-		if ($val === NULL || $val === '') {
-			return 'NULL';
-		}
-		if (get_magic_quotes_gpc()) {
-        	$val = stripslashes($val);
-		}
-		$val = "'" . pg_escape_string($val) . "'";
-		return $val;
-	}
+    public function escape($val)
+    {
+        $val = trim($val);
+        if ($val === NULL || $val === '') {
+            return 'NULL';
+        }
+        if (get_magic_quotes_gpc()) {
+            $val = stripslashes($val);
+        }
+        $val = "'" . pg_escape_string($val) . "'";
+        return $val;
+    }
 
-	public function lastId() {
-		return $this->query('SELECT lastval()')->result(0);
-	}
+    public function lastId()
+    {
+        return $this->query('SELECT lastval()')->result(0);
+    }
 
 }
 
 //**********************************************************************************
 
 final class __Result__ {
-	private $res;
+    private $res;
 
-	public function __construct($res) {
-		$this->res = $res;
-	}
+    public function __construct($res)
+    {
+        $this->res = $res;
+    }
 
-	public function __destruct() {
-		if($this->res){
-			pg_free_result($this->res);
-		}
-	}
+    public function __destruct()
+    {
+        if($this->res) {
+            pg_free_result($this->res);
+        }
+    }
 
-	/*abstraccion de los metodos independiente del DBMS*/
-	public function numRows() {
-		return pg_num_rows($this->res);
-	}
+    /*abstraccion de los metodos independiente del DBMS*/
+    public function numRows()
+    {
+        return pg_num_rows($this->res);
+    }
 
-	public function toObject() {
-		return pg_fetch_object($this->res);
-	}
+    public function toObject()
+    {
+        return pg_fetch_object($this->res);
+    }
 
-	public function toArray() {
-		return pg_fetch_array($this->res);
-	}
+    public function toArray()
+    {
+        return pg_fetch_array($this->res);
+    }
 
-	public function toAssoc() {
-		return pg_fetch_assoc($this->res);
-	}
+    public function toAssoc()
+    {
+        return pg_fetch_assoc($this->res);
+    }
 
-	public function toRow () {
-		return pg_fetch_row($this->res);
-	}
+    public function toRow()
+    {
+        return pg_fetch_row($this->res);
+    }
 
-	public function result($row=0, $field=0) {
-		return pg_fetch_result($this->res,$row, $field);
-	}
+    public function result($row=0, $field=0)
+    {
+        return pg_fetch_result($this->res,$row, $field);
+    }
 
-	public function reset() {
-		pg_result_seek($this->res, 0);
-	}
+    public function reset()
+    {
+        pg_result_seek($this->res, 0);
+    }
 }

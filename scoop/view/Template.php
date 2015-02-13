@@ -1,27 +1,29 @@
 <?php
-namespace scoop\view;
+namespace Scoop\View;
 
-final class Template {
+final class Template
+{
 	//ruta donde se encuentran las platillas
 	const ROOT = 'app/views/templates/';
 	//extensión de los archivos que funcionan como plantillas
 	const EXT = '.sdt.php';
 	//clase para el manejo de herencia
-	const HERITAGE = '\scoop\view\Heritage';
+	const HERITAGE = '\Scoop\View\Heritage';
 	//clases añadidas al template
 	private static $classes = array();
 
-	public static function parse ($name) {
+	public static function parse($name)
+	{
 		$template = self::ROOT.$name.self::EXT;
-		$view = \scoop\View::ROOT . $name . \scoop\View::EXT;
+		$view = \Scoop\View::ROOT . $name . \Scoop\View::EXT;
 
-		if ( is_readable($template) &&
-			( !is_readable($view) || filemtime($template) > filemtime($view) ) ) {
+		if (is_readable($template) &&
+			(!is_readable($view) || filemtime($template) > filemtime($view))) {
 			$content = '';
 			$flagPHP = FALSE;
 			$lastLine = '';
 			$file = fopen($template, 'r');
-			while ( !feof($file) ) {
+			while (!feof($file)) {
 				$line = fgets($file);
 				$flag = self::replace($line);
 
@@ -47,15 +49,17 @@ final class Template {
 			if ($flagPHP) {
 				$content .= ' ?>';
 			}
-			self::create( $view, $content );
+			self::create($view, $content);
 		}
 	}
 
-	public static function addClass ($key, $class) {
+	public static function addClass($key, $class)
+	{
 		self::$classes[$key] = $class;
 	}
 
-	private static function formatObj (&$line) {
+	private static function formatObj(&$line)
+	{
 		if ( strpos($line, '->') !== -1 ) {
 			$objs = explode('->', $line);
 			$init = array_shift($objs);
@@ -66,8 +70,9 @@ final class Template {
 		}
 	}
 
-	private static function replace (&$line) {
-		$line = preg_replace( array(
+	private static function replace(&$line)
+	{
+		$line = preg_replace(array(
 				'/@expand\s\'([\w\/-]+)\'/',
 				'/@if\s([\w\s\.\&\|\$!=<>\-]+)/',
 				'/@elseif\s([\w\s\.\&\|\$!=<>\-]+)/',
@@ -82,9 +87,9 @@ final class Template {
 				'for(${1}):',
 				'while(${1}):'
 			), $line, 1, $count);
-		if ($count != 0) return TRUE;
+		if ($count !== 0) return TRUE;
 
-		$line = str_replace( array(
+		$line = str_replace(array(
 				':if',
 				':foreach',
 				':for',
@@ -99,17 +104,18 @@ final class Template {
 				'else:',
 				self::HERITAGE.'::output()'
 			), $line, $count);
-		if ($count != 0) return TRUE;
+		if ($count !== 0) return TRUE;
 
-		$line = preg_replace( '/\{([\w\s\.\$\[\]\(\)\'\"\-\?:=!<>]+)\}/',
+		$line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\-\?:=!<>]+)\}/',
 			'<?php echo ${1} ?>',
 			$line, -1, $count);
-		if ($count != 0) self::formatObj($line);
+		if ($count !== 0) self::formatObj($line);
 		return FALSE;
 	}
 
-	private static function clearHTML ($html) {
-		return preg_replace( array(
+	private static function clearHTML($html)
+	{
+		return preg_replace(array(
 			'/<!--.*?-->/s',
 			'/>\s*\n\s*</',
 			'/;\s*(\"|\')/',
@@ -126,9 +132,10 @@ final class Template {
 		), $html);
 	}
 
-	private static function create ( $viewName, &$content ) {
+	private static function create($viewName, &$content)
+	{
 		//normalizar las etiquetas
-		$content = preg_replace( array(
+		$content = preg_replace(array(
 			'/<\/\s+/',
 			'/\s+\/>/',
 			'/<\s+/',
@@ -143,11 +150,13 @@ final class Template {
 		preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
 		$match = $match[0];
 		$content = self::clearHTML($content);
-		$search = array_map( array('\scoop\view\Template', 'clearHTML'), $match);
+		$search = array_map(array('\scoop\view\Template', 'clearHTML'), $match);
+		$search += array(" ?><?php ");
+		$match += array(";");
 		$content = str_replace($search, $match, $content);
 
-		$dir = substr( $viewName, 0, strrpos($viewName, '/') ).'/';
-		if ( !file_exists($dir) ) {
+		$dir = substr($viewName, 0, strrpos($viewName, '/')).'/';
+		if (!file_exists($dir)) {
 			mkdir($dir, 0700);
 		}
 		$view = fopen($viewName, 'w');

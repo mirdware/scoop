@@ -11,17 +11,15 @@
  * Interface: PascalCase
  * Usa PHP como si se tratase de un lenguaje case sensitive.
  *
- * @package Scoop
+ * @package scoop
  * @author  Marlon Ramirez <marlonramirez@outlook.com>
  */
 
 try {
-	require 'scoop/bootstrap/UniversalClassLoader.php';
-	$loader = new UniversalClassLoader();
-	$loader->useIncludePath( TRUE );
-	$loader->register();
+	require 'scoop/bootstrap/Loader.php';
+	Loader::get();
 
-	\scoop\view\Template::addClass('View', '\scoop\view\Helper');
+	\scoop\view\Template::addClass('View', '\Scoop\View\Helper');
 	\scoop\bootstrap\App::run();
 
 } catch (\scoop\http\Exception $ex) {

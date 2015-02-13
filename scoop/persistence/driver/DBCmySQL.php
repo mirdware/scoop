@@ -1,5 +1,5 @@
 <?php
-namespace scoop\persistence\driver;
+namespace Scoop\Persistence\Driver;
 /**
 	* Clase conexion que sirve para enlazar la base de datos con
 	* la aplicación y abstraer las funciones que dependen de cada
@@ -9,25 +9,28 @@ namespace scoop\persistence\driver;
 	* DBMS: MySQL
 **/
 
-class DBC extends Mysqli {
+class DBC extends \Mysqli
+{
 	private static $instances = array();
 
 	/*constructor*/
-	private function __construct($db, $user, $pass, $host) {
+	private function __construct($db, $user, $pass, $host)
+	{
 		parent::__construct($host, $user, $pass, $db) or die($this->connect_error);
 		//selecciona el cotejamiento de la base de datos
 		$this->query('SET NAMES \'utf8\'');
 	}
 
-	private function __clone(){ }
+	private function __clone() {}
 
-	public static function get ($conf = NULL) {
+	public static function get($conf = NULL)
+	{
 		$bundle = 'db.default';
-		if ( is_string($conf) ) {
+		if (is_string($conf)) {
 			$bundle = $conf;
 		}
-		$config = \scoop\bootstrap\Config::get($bundle);
-		if ( is_array($conf) ) {
+		$config = \Scoop\Bootstrap\Config::get($bundle);
+		if (is_array($conf)) {
 			$config += $conf;
 		}
 		$key = implode('', $config);

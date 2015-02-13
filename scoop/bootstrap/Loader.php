@@ -15,7 +15,7 @@
  *
  * Example usage:
  *
- *     $loader = new UniversalClassLoader();
+ *     $loader = new Loader();
  *
  *     // register classes with namespaces
  *     $loader->registerNamespaces(array(
@@ -46,8 +46,9 @@
  *
  * @api
  */
-class UniversalClassLoader
+class Loader
 {
+    private $instance;
     private $namespaces = array();
     private $prefixes = array();
     private $namespaceFallbacks = array();
@@ -304,5 +305,19 @@ class UniversalClassLoader
         if ($this->useIncludePath && $file = stream_resolve_include_path($normalizedClass)) {
             return $file;
         }
+    }
+
+    public static function get()
+    {
+        if (!isset($instance)) {
+            if (is_readable('vendor/autoload.php')) {
+                $instance = require 'vendor/autoload.php';
+            } else {
+                $instance = new Loader();
+                $instance->useIncludePath( TRUE );
+                $instance->register();
+            }
+        }
+        return $instance;
     }
 }

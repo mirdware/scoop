@@ -17,7 +17,7 @@
 	</script>
 	<script src="{View::js('project.scoop.min.js')}"></script>
 	<!-- Titulo de la pagina -->
-	<title>{$title} » {View::get('app.name')} MirdWare</title>
+	<title>{$title} » MirdWare</title>
 </head>
 
 <body>

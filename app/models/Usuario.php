@@ -1,30 +1,34 @@
 <?php
-namespace app\Models;
+namespace App\Models;
 
-use scoop\persistence\driver\pg\Conexion;
+use Scoop\Persistence\Driver\DBC;
 
-class Usuario implements \scoop\Model {
+class Usuario implements \Scoop\Model
+{
 	private $con;
 	private $index;
 	
-	public function __construct ($nombre = FALSE) {
-		$this->con = Conexion::get();
+	public function __construct($nombre = FALSE)
+	{
+		$this->con = DBC::get();
 		$this->index = ($nombre)? ' WHERE nom_usuario = '.$this->con->escape($nombre): '';
 	}
 	
-	public static function exist($key, $value) {
+	public static function exist($key, $value)
+	{
 		if ($key != 'nom_usuario' && $key != 'email') {
 			 throw new Exception('exist solo premite el uso de "nom_usuario" o "email" como key, ud a usado "'.$key.'"');
 		}
-		$con = Conexion::get();
+		$con = DBC::get();
 		$res = $con->query ('SELECT nom_usuario FROM usuario WHERE '.$key.' = '.$con->escape($value));
 		if ($res->numRows() == 1) {
 			return new Usuario ($res->result(0));
 		}
 	}
 	
-	public static function create($array){
-		$con = Conexion::get();
+	public static function create($array)
+	{
+		$con = DBC::get();
 		$name = 'INSERT INTO usuario ( ';
 		$value = ') VALUES ( ';
 		if (isset($array['clave'])) {
@@ -40,7 +44,8 @@ class Usuario implements \scoop\Model {
 		return new Usuario ($array['nom_usuario']);
 	}
 	
-	public function read($data=array()){
+	public function read($data=array())
+	{
 		$query = 'SELECT ';
 		if ( !empty($data) ) {
 			$query .= implode ($data, ', ');
@@ -50,7 +55,8 @@ class Usuario implements \scoop\Model {
 		return $this->con->query($query.' FROM usuario'.$this->index);
 	}
 	
-	public function update($array){
+	public function update($array)
+	{
 		$query = 'UPDATE usuario SET ';
 		if (isset($array['clave'])) {
 			$name .= 'clave = md5('.$this->con->escape($array['clave']).'), ';
@@ -63,7 +69,8 @@ class Usuario implements \scoop\Model {
 		return $this->con->error();
 	}
 	
-	public function delete(){
+	public function delete()
+	{
 		$this->con->query ('DELETE FROM usuario'.$this->index);
 		return $this->con->error();
 	}

@@ -1,7 +1,8 @@
 <?php
 return array(
 	'app' => array(
-		'name' => 'SCOOP'
+		'name' => 'scoop',
+		'version' => '0.1.2'
 	),
 	'path' => array(
 		'public' => 'public/',

@@ -1,36 +1,43 @@
 <?php
-namespace scoop\view;
+namespace Scoop\View;
 
-use \scoop\bootstrap\Config as Config;
+use \Scoop\Bootstrap\Config as Config;
 
-abstract class Helper {
+abstract class Helper
+{
 	private static $view;
 
-	public static function init ($array) {
+	public static function init($array)
+	{
 		self::$view =& $array;
 	}
 
-	public static function get ($key) {
-		if ( isset(self::$view[$key]) ) {
+	public static function get($key)
+	{
+		if (isset(self::$view[$key])) {
 			return self::$view[$key];
 		}
 		return Config::get($key);
 	}
 
-	public static function overt ($resource) {
+	public static function overt($resource)
+	{
 		return ROOT.Config::get('path.public').$resource;
 	}
 
-	public static function img ($image) {
-		return self::overt( Config::get('path.img').$image );
+	public static function img($image)
+	{
+		return self::overt(Config::get('path.img').$image);
 	}
 
-	public static function css ($styleSheet) {
-		return self::overt( Config::get('path.css').$styleSheet );
+	public static function css($styleSheet)
+	{
+		return self::overt(Config::get('path.css').$styleSheet);
 	}
 
-	public static function js($javaScript) {
-		return self::overt( Config::get('path.js').$javaScript );
+	public static function js($javaScript)
+	{
+		return self::overt(Config::get('path.js').$javaScript);
 	}
 
 }

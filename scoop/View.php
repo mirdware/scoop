@@ -1,9 +1,10 @@
 <?php
-namespace scoop;
+namespace Scoop;
 /**
  * Clase encargada de manejar la vista
  */
-class View {
+class View
+{
 	//ruta donde se encuentran las vistas
 	const ROOT = 'app/views/php/';
 	//extensión de los archivos que funcionan como vistas
@@ -15,7 +16,8 @@ class View {
 	//Muestra el mensaje, puede ser de tipo error, out, alert
 	public $msg;
 
-	public function __construct ( $viewName ) {
+	public function __construct($viewName)
+	{
 		$this->viewData = array();
 		$this->msg = new __Message__();
 		$this->viewName = $viewName;
@@ -27,8 +29,9 @@ class View {
 	 * @param [type] $value Valor de la variable.
 	 * @return  View retorna para encadenamiento
 	 */
-	public function set ($key, $value=NULL) {
-		if(is_array($key)) {
+	public function set($key, $value=NULL)
+	{
+		if (is_array($key)) {
 			$this->viewData += $key;
 		} else {
 			$this->viewData[$key] = $value;
@@ -42,8 +45,9 @@ class View {
 	 *                                de la vista.
 	 * @return  View retorna para encadenamiento
 	 */
-	public function remove ($key=FALSE) {
-		if($key) {
+	public function remove($key=FALSE)
+	{
+		if ($key) {
 			if ( is_array($key) ) {
 				foreach ($key as &$v) {
 					unset($this->viewData[$k]);
@@ -57,7 +61,8 @@ class View {
 		return $this;
 	}
 
-	public function get () {
+	public function get()
+	{
 		$this->generate();
 		$view = ob_get_contents();
 		ob_end_clean();
@@ -69,7 +74,8 @@ class View {
 	 * @param array Array con los errores a mostrar
 	 * @return View
 	 */
-	public function setErrors ($array) {
+	public function setErrors($array)
+	{
 		foreach ($array as $key=>$value) {
 			$array[$key] = 'style = "visibility: visible" title = "'.$value.'"';
 		}
@@ -78,33 +84,38 @@ class View {
 	}
 
 	/*Renderiza la vista con los datos suminitrados*/
-	public function render () {
+	public function render()
+	{
 		$this->generate();
 		ob_end_flush();
 	}
 
-	private function generate () {
-		\scoop\view\Helper::init( array(
+	private function generate()
+	{
+		\Scoop\View\Helper::init(array(
 			'name' => &$this->viewName,
 			'msg' => $this->msg
-		) );
-		\scoop\view\Heritage::init( $this->viewData );
-		\scoop\view\Template::parse( $this->viewName );
-		extract ($this->viewData);
+		));
+		\Scoop\View\Heritage::init($this->viewData);
+		\Scoop\View\Template::parse($this->viewName);
+		extract($this->viewData);
 		include self::ROOT.$this->viewName.self::EXT;
 	}
 
 }
 
-final class __Message__ {
+final class __Message__
+{
 	private $msg;
 	private $type;
 
-	public function __construct () {
+	public function __construct()
+	{
 		$this->msg = '<div id="msg-not"></div>';
 	}
 
-	private function validate (&$type) {
+	private function validate(&$type)
+	{
 		$this->type = $type;
 		if ($this->type !== 'error' &&
 			$this->type !== 'out' &&
@@ -113,25 +124,29 @@ final class __Message__ {
 		}
 	}
 
-	private function apply () {
+	private function apply()
+	{
 		$this->msg = '<div id="msg-'.$this->type.'">'.$this->msg.'</div>';
 	}
 
 	/* Configura el mensaje que sera mostrado en el sistema de notificaciones interno */
-	public function set ($msg, $type = 'out') {
+	public function set($msg, $type = 'out')
+	{
 		$this->msg = $msg;
 		$this->validate($type);
 		$this->apply();
 		return $this;
 	}
 
-	public function push ($msg, $type = 'out') {
+	public function push($msg, $type = 'out')
+	{
 		$this->validate($type);
 		$_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
 		return $this;
 	}
 
-	public function pull () {
+	public function pull()
+	{
 		if (isset($_SESSION['msg-scoop'])) {
 			$this->type = $_SESSION['msg-scoop']['type'];
 			$this->msg = $_SESSION['msg-scoop']['msg'];
@@ -141,7 +156,8 @@ final class __Message__ {
 		return $this;
 	}
 
-	public function __toString() {
+	public function __toString()
+	{
 		return $this->msg;
 	}
 }

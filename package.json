@@ -1,6 +1,6 @@
 {
   "name": "project.scoop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Scoop project's gruntfile",
   "main": "gruntfile.js",
   "scripts": {

@@ -56,10 +56,11 @@ module.exports = function(grunt) {
 
     watch: {
       scripts: {
-        files: ["<%= srcJS %>compress.json"].concat(jsFiles),
+        files: ["<%= srcJS %>compress.json", "gruntfile.js"].concat(jsFiles),
         tasks: ["uglify"],
         options: {
-           livereload: 35729
+           livereload: 35729,
+           reload: true
         }
       },
       stylesheets: {

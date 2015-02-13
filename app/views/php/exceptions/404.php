@@ -1,1 +1,1 @@
-<?php \scoop\view\Maker::expand('layers/layer') ?><h1>The page you requested was not found</h1>
+<?php \scoop\view\Heritage::expand('layers/layer') ?><h1>The page you requested was not found</h1>

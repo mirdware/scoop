@@ -41,7 +41,7 @@ class DBC
     private function __clone() {}
 
     /*Patron Multiton*/
-    public static function get($conf = NULL))
+    public static function get($conf = null))
     {
         $bundle = 'db.default';
         if (is_string($conf)) {
@@ -68,7 +68,7 @@ class DBC
     public function query($consulta)
     {
         if(!$this->conex) {
-            return FALSE;
+            return false;
         }
 
         $consulta = trim($consulta);
@@ -94,8 +94,8 @@ class DBC
     public function escape($val)
     {
         $val = trim($val);
-        if ($val === NULL || $val === '') {
-            return 'NULL';
+        if ($val === null || $val === '') {
+            return 'null';
         }
         if (get_magic_quotes_gpc()) {
             $val = stripslashes($val);

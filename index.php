@@ -1,10 +1,10 @@
 <?php
 /**
- * Scoop (Simple Characteristics of Object Oriented PHP) apoya el uso de convenciones PHP.
+ * Scoop (Simple Characteristics of Object Oriented PHP) apoya el uso de convenciones PSR.
  * Clases: PascalCase <http://localhost/class-to-pascal-case/>
  * Métodos: camelCase <http://localhost/class-to-pascal-case/method-to-camel-case/>
  * constantes: ALL_CAPS
- * Namespace / Package: small_caps
+ * Namespace / Package: PascalCase
  * Propiedades: camelCase
  * Párametro: camelCase
  * Variable: camelCase
@@ -16,12 +16,12 @@
  */
 
 try {
-	require 'scoop/bootstrap/Loader.php';
-	Loader::get();
+    require 'scoop/bootstrap/Loader.php';
+    Loader::get();
 
-	\scoop\view\Template::addClass('View', '\Scoop\View\Helper');
-	\scoop\bootstrap\App::run();
+    \Scoop\View\Template::addClass('View', '\Scoop\View\Helper');
+    \Scoop\Bootstrap\App::run();
 
-} catch (\scoop\http\Exception $ex) {
-	$ex->handler();
+} catch (\Scoop\Http\Exception $ex) {
+    $ex->handler();
 }

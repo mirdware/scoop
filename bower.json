@@ -1,16 +1,16 @@
 {
-  "name": "scoop",
-  "version": "0.0.0",
-  "description": "Simple Characteristics of Object Oriented PHP",
-  "authors": [
-    "Marlon Ramirez"
-  ],
-  "license": "MIT",
-  "homepage": "http://getscoop.org",
-  "private": true,
-  "devDependencies": {
-    "modernizr": "~2.8.3",
-    "font-awesome-stylus": "~4.2.0",
-    "jetro": "*"
-  }
+    "name": "scoop",
+    "version": "0.0.0",
+    "description": "Simple Characteristics of Object Oriented PHP",
+    "authors": [
+        "Marlon Ramirez"
+    ],
+    "license": "MIT",
+    "homepage": "http://getscoop.org",
+    "private": true,
+    "devDependencies": {
+        "modernizr": "~2.8.3",
+        "font-awesome-stylus": "~4.2.0",
+        "jetro": "*"
+    }
 }

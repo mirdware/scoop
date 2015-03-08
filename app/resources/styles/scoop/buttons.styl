@@ -1,101 +1,101 @@
 /*** botones ***/
 
 .btn
-	background #222 url($url-images+"btn-overlay.png") repeat-x
-	border 0
-	border-bottom 1px solid rgba(0,0,0,0.25)
-	border-radius 5px
-	box-shadow 0 1px 3px rgba(0,0,0,0.6)
-	color #FFF
-	cursor pointer
-	display inline-block
-	font-weight 700
-	padding 5px 10px
-	position relative
-	text-shadow 0 -1px 1px rgba(0,0,0,0.25)
-	&:hover
-		background-color #111
-	&:active 
-		top 1px
-	&.blue
-		background-color #2981E4
-		&:hover
-			background-color #2575CF
-	&.red
-		background-color #E62727
-		&:hover
-			background-color #CF2525
-	&.green
-		background-color #91BD09
-		&:hover
-			background-color #749A02
-	&.orange
-		background-color #FF5C00
-		&:hover
-			background-color #D45500
-	&.yellow
-		background-color #FFB515
-		&:hover
-			background-color #FC9200
+    background #222 url($url-images+"btn-overlay.png") repeat-x
+    border 0
+    border-bottom 1px solid rgba(0,0,0,0.25)
+    border-radius 5px
+    box-shadow 0 1px 3px rgba(0,0,0,0.6)
+    color #FFF
+    cursor pointer
+    display inline-block
+    font-weight 700
+    padding 5px 10px
+    position relative
+    text-shadow 0 -1px 1px rgba(0,0,0,0.25)
+    &:hover
+        background-color #111
+    &:active 
+        top 1px
+    &.blue
+        background-color #2981E4
+        &:hover
+            background-color #2575CF
+    &.red
+        background-color #E62727
+        &:hover
+            background-color #CF2525
+    &.green
+        background-color #91BD09
+        &:hover
+            background-color #749A02
+    &.orange
+        background-color #FF5C00
+        &:hover
+            background-color #D45500
+    &.yellow
+        background-color #FFB515
+        &:hover
+            background-color #FC9200
 
 .custom-input-file
-	overflow hidden
-	position relative
-	cursor pointer
-	.input-file
-		outline 0
-		font-size 10000px
-		border 10000px solid transparent
-		opacity 0
-		filter unquote("alpha(opacity=50)")
-		position absolute
-		right -1000px
-		top -1000px
-		cursor pointer
-		z-index 1
+    overflow hidden
+    position relative
+    cursor pointer
+    .input-file
+        outline 0
+        font-size 10000px
+        border 10000px solid transparent
+        opacity 0
+        filter unquote("alpha(opacity=50)")
+        position absolute
+        right -1000px
+        top -1000px
+        cursor pointer
+        z-index 1
 
 .input-text
-	border-radius 3px
-	border solid 1px #96A6C5
-	margin 5px
-	padding 5px
-	vertical-align middle
+    border-radius 3px
+    border solid 1px #96A6C5
+    margin 5px
+    padding 5px
+    vertical-align middle
 
 /* FORM */
 .form-scoop
-	input[type="checkbox"]
-	input[type="radio"]
-		position absolute
-		opacity 0
-		position static\9//fallback for IE6, IE7 and IE8
-		& + span::before
-			content ""
-			display inline-block
-			width 13px
-			height 13px
-			vertical-align middle
-			background-repeat  no-repeat
-			background-position 0px -13px
-			margin-left -10px
-			background-image url($url-images+"sprite-control-pick.png")
-	input[type="checkbox"]:checked + span::before
-		background-position 0 -26px
-	input[type="radio"] + span::before
-		background-position -13px -13px
-	input[type="radio"]:checked + span::before
-		background-position -13px -26px
-	/* disabled form elements */
-	input[type="checkbox"]:disabled + span
-	input[type="checkbox"]:disabled + span::before
-		background-position 0 0
-	input[type="radio"]:disabled + span
-	input[type="radio"]:disabled + span::before
-		background-position -13px 0
-	/*prevent the entire page from scrolling if there is overflow 
-	and checkbox or radio button are clicked */
-	label
-		position relative
-		cursor pointer
-	input[type="text"]
-	textarea
-		@extend .input-text
+    input[type="checkbox"]
+    input[type="radio"]
+        position absolute
+        opacity 0
+        position static\9//fallback for IE6, IE7 and IE8
+        & + span::before
+            content ""
+            display inline-block
+            width 13px
+            height 13px
+            vertical-align middle
+            background-repeat  no-repeat
+            background-position 0px -13px
+            margin-left -10px
+            background-image url($url-images+"sprite-control-pick.png")
+    input[type="checkbox"]:checked + span::before
+        background-position 0 -26px
+    input[type="radio"] + span::before
+        background-position -13px -13px
+    input[type="radio"]:checked + span::before
+        background-position -13px -26px
+    /* disabled form elements */
+    input[type="checkbox"]:disabled + span
+    input[type="checkbox"]:disabled + span::before
+        background-position 0 0
+    input[type="radio"]:disabled + span
+    input[type="radio"]:disabled + span::before
+        background-position -13px 0
+    /*prevent the entire page from scrolling if there is overflow 
+    and checkbox or radio button are clicked */
+    label
+        position relative
+        cursor pointer
+    input[type="text"]
+    textarea
+        @extend .input-text

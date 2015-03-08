@@ -1,22 +1,21 @@
 <?php
 return array(
-	'app' => array(
-		'name' => 'scoop',
-		'version' => '0.1.2'
-	),
-	'path' => array(
-		'public' => 'public/',
-		'css' => 'css/',
-		'js' => 'js/',
-		'img' => 'images/'
-	),
-	'db' => array(
-		'default' => array(
-			'database' => '',
-			'user' => '',
-			'password' => '',
-			'host' => '',
-			'driver' => ''
-		)
-	)
+    'app' => json_decode(file_get_contents(
+            __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'package.json'
+        ), true),
+    'path' => array(
+        'public' => 'public/',
+        'css' => 'css/',
+        'js' => 'js/',
+        'img' => 'images/'
+    ),
+    'db' => array(
+        'default' => array(
+            'database' => '',
+            'user' => '',
+            'password' => '',
+            'host' => '',
+            'driver' => ''
+        )
+    )
 );

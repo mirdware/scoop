@@ -1,4 +1,4 @@
 {
-	"directory": "app/resources/vendor",
-	"json": "bower.json"
+    "directory": "app/resources/vendor",
+    "json": "bower.json"
 }

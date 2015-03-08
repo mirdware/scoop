@@ -53,7 +53,7 @@ class Loader
     private $prefixes = array();
     private $namespaceFallbacks = array();
     private $prefixFallbacks = array();
-    private $useIncludePath = FALSE;
+    private $useIncludePath = false;
 
     /**
      * Turns on searching the include for class files. Allows easy loading
@@ -222,9 +222,9 @@ class Loader
      *
      * @api
      */
-    public function register($prepend = FALSE)
+    public function register($prepend = false)
     {
-        spl_autoload_register(array($this, 'loadClass'), TRUE, $prepend);
+        spl_autoload_register(array($this, 'loadClass'), true, $prepend);
     }
 
     /**
@@ -239,7 +239,7 @@ class Loader
         if ($file = $this->findFile($class)) {
             require $file;
 
-            return TRUE;
+            return true;
         }
     }
 
@@ -252,7 +252,7 @@ class Loader
      */
     public function findFile($class)
     {
-        if (FALSE !== $pos = strrpos($class, '\\')) {
+        if (false !== $pos = strrpos($class, '\\')) {
             // namespaced class name
             $namespace = substr($class, 0, $pos);
             $className = substr($class, $pos + 1);
@@ -314,7 +314,7 @@ class Loader
                 $instance = require 'vendor/autoload.php';
             } else {
                 $instance = new Loader();
-                $instance->useIncludePath( TRUE );
+                $instance->useIncludePath(true);
                 $instance->register();
             }
         }

@@ -14,9 +14,9 @@ abstract class Config
         /*configuración*/
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
-        set_error_handler(function ($code, $error, $file = null, $line = null) {
+        /*set_error_handler(function ($code, $error, $file = null, $line = null) {
             throw new \Exception( $error );
-        });
+        });*/
     }
 
     public static function get($name)

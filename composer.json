@@ -11,8 +11,12 @@
             "email": "marlonramirez@outlook.com"
         }
     ],
-    "config": {
-        "use-include-path": true
+    "autoload": {
+        "psr-4": {
+            "Scoop\\": "scoop/",
+            "Controller\\": "app/controllers/",
+            "Model\\": "app/models"
+        }
     },
     "minimum-stability": "stable"
 }

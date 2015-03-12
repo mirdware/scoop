@@ -61,14 +61,6 @@ class View
         return $this;
     }
 
-    public function get()
-    {
-        $this->generate();
-        $view = ob_get_contents();
-        ob_end_clean();
-        return $view;
-    }
-
     /**
      * @deprecated
      * @param array Array con los errores a mostrar
@@ -83,14 +75,7 @@ class View
         return $this;
     }
 
-    /*Renderiza la vista con los datos suminitrados*/
     public function render()
-    {
-        $this->generate();
-        ob_end_flush();
-    }
-
-    private function generate()
     {
         \Scoop\View\Helper::init(array(
             'name' => &$this->viewName,
@@ -100,6 +85,9 @@ class View
         \Scoop\View\Template::parse($this->viewName);
         extract($this->viewData);
         include self::ROOT.$this->viewName.self::EXT;
+        $view = ob_get_contents();
+        ob_end_clean();
+        return $view;
     }
 
 }

@@ -39,6 +39,6 @@ abstract class Exception extends \Exception
         foreach ($this->headers as &$header) {
             header($header);
         }
-        $view->render();
+        exit($view->render());
     }
 }

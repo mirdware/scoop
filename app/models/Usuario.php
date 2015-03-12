@@ -1,5 +1,5 @@
 <?php
-namespace App\Models;
+namespace Model;
 
 use Scoop\Persistence\Driver\DBC;
 

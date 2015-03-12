@@ -3,8 +3,7 @@ namespace Scoop\Bootstrap;
 
 abstract class App
 {
-    const MAIN_CONTROLLER = 'Home';
-    const MAIN_METHOD = 'main';
+    const MAIN_METHOD = 'get';
 
     public static function run()
     {
@@ -16,12 +15,12 @@ abstract class App
 
         Config::init();
         Config::add('app/config');
+        $router = new Router();
+        $router->register('app/routes');
 
-        /*Ruta por defecto*/
-        $class = self::MAIN_CONTROLLER;
-        $method = self::MAIN_METHOD;
-        $params = array();
-        $validURL = true;
+        /*saneo las variables que vienen por url y libero route del array $_GET*/
+        $url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
+        unset($_GET['route']);
 
         /*Sanear variables por POST y GET*/
         if ($_POST) {
@@ -31,59 +30,58 @@ abstract class App
             self::purgeGET($_GET);
         }
 
-        if (isset($_GET['route'])) {
-            /*saneo las variables que vienen por url y libero route del array $_GET*/
-            $url = filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
-            unset( $_GET['route'] );
-            if (strtolower($url) !== $url) {
-                throw new \Scoop\Http\NotFoundException();
-            }
-            $url = array_filter(explode('/', $url));
-
-            /*Configurando clase, metodo y parametros según la url*/
-            $class = str_replace(' ', '', //une las palabras
-                ucwords( //convierte las primeras letras de las palabras a mayúscula
-                    str_replace('-', ' ', //convierte cada - a un espacio
-                        array_shift($url) //obtiene el primer parámetro
-                    )
-                )
-            );
-
-            if ($url) {
-                $method = explode('-',
-                    array_shift($url)
-                );
-                //uso a $params como auxiliar
-                $params = array_shift($method);
-                if (empty($method)) {
-                    $method = $params;
-                } else {
-                    $method = $params.implode(array_map('ucfirst', $method));
-                }
-
-                $validURL = ($method !== self::MAIN_METHOD);
-            } elseif ($class === self::MAIN_CONTROLLER) {
-                \Scoop\Controller::redirect(ROOT);
-            }
-
-            $params = $url;
-            unset ($url);
+        if (strtolower($url) !== $url) {
+            throw new \Scoop\Http\NotFoundException();
         }
+        
+        $controller = $router->instance($url);
 
-        /*generando la reflexión sobre el controlador*/
-        if ( $validURL && is_readable(\Scoop\Controller::ROOT.$class.'.php') ) {
+        if ($controller) {
+            $url = str_replace($router->url(get_class($controller)), '', $url);
+            $params = array_filter(explode('/', $url));
+            unset ($url);
+
+            if ($params) {
+                $method = explode('-',
+                    array_shift($params)
+                );
+
+                $aux = array_shift($method);
+                if (empty($method)) {
+                    $method = $aux;
+                } else {
+                    $method = $aux.implode(array_map('ucfirst', $method));
+                }
+                unset($aux);
+            }
+
             //$auxReflection = la reflexión de la clase para poder explorarla
-            $class = str_replace('/', '\\', \Scoop\Controller::ROOT).$class;
-            $auxReflection = new \ReflectionClass($class);
-            if ($auxReflection->hasMethod($method)) {
-                $method = $auxReflection->getMethod($method);
-                /*$auxReflection = el número de elementos de $param,
-                para no tener que llamar 2 veces la funcion count*/
-                $auxReflection = count($params);
-                if ($auxReflection >= $method->getNumberOfRequiredParameters() && $auxReflection <= $method->getNumberOfParameters()) {
-                    //$auxReflection = lo que se mostrara al finalizar aplicación
-                    $auxReflection = $method->invokeArgs(new $class, $params);
-                    exit($auxReflection);
+            $auxReflection = new \ReflectionClass($controller);
+            if (!isset($method)) {
+                $method = self::MAIN_METHOD;
+            } elseif ($method === self::MAIN_METHOD || !$auxReflection->hasMethod($method)) {
+                array_unshift($params, $method);
+                $method = self::MAIN_METHOD;
+            }
+            if ($method === self::MAIN_METHOD) {
+                $params = array($params);
+            }
+            
+            $method = $auxReflection->getMethod($method);
+            $numParams = count($params);
+            $numRequiredParams = $method->getNumberOfRequiredParameters();
+
+            if ($numParams >= $numRequiredParams && $numParams <= $numRequiredParams) {
+                unset($numParams, $numRequiredParams);
+                $response = $method->invokeArgs($controller, $params);
+                if ($response) {
+                    if ($response instanceof \Scoop\View) {
+                        $response = $response->render();
+                    } elseif (is_array($response)) {
+                        header('Content-Type: application/json');
+                        $response = json_encode($response);
+                    }
+                    exit($response);
                 }
             }
         }

@@ -1,5 +1,5 @@
 <?php
-namespace App\Controllers;
+namespace Controller;
 
 class Home extends \Scoop\Controller
 {
@@ -14,8 +14,10 @@ class Home extends \Scoop\Controller
         ));
     }
 
-    public function main()
+    public function get(array $args)
     {
-        $this->view->render();
+        if (!$args) {
+            return $this->view;
+        }
     }
 }

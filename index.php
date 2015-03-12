@@ -16,7 +16,7 @@
  */
 
 try {
-    require 'scoop/bootstrap/Loader.php';
+    require 'scoop/Bootstrap/Loader.php';
     Loader::get();
 
     \Scoop\View\Template::addClass('View', '\Scoop\View\Helper');

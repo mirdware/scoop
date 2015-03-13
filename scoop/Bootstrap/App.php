@@ -74,15 +74,15 @@ abstract class App
             if ($numParams >= $numRequiredParams && $numParams <= $numRequiredParams) {
                 unset($numParams, $numRequiredParams);
                 $response = $method->invokeArgs($controller, $params);
-                if ($response) {
-                    if ($response instanceof \Scoop\View) {
-                        $response = $response->render();
-                    } elseif (is_array($response)) {
-                        header('Content-Type: application/json');
-                        $response = json_encode($response);
-                    }
-                    exit($response);
+                if ($response === null) {
+                    header('HTTP/1.0 204 No Response');
+                } elseif ($response instanceof \Scoop\View) {
+                    $response = $response->render();
+                } elseif (is_array($response)) {
+                    header('Content-Type: application/json');
+                    $response = json_encode($response);
                 }
+                exit($response);
             }
         }
 

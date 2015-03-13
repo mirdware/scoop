@@ -16,13 +16,19 @@ class Router implements IoC
         }
 
         $this->routes[$class] = $route;
-        $this->instances[$class] = new $class();
 
         return $this;
     }
 
     public function single($class)
     {
+        if (!isset($this->instances[$class])) {
+            if (get_parent_class($class) !== 'Scoop\Controller') {
+                throw new \Exception('The '.$class.' class is not an instance of controller');
+            }
+            $this->instances[$class] = new $class();
+            $this->instances[$class]->setRouter($this);
+        }
         return $this->instances[$class];
     }
 
@@ -37,7 +43,7 @@ class Router implements IoC
             asort($matches);
             $key = array_keys($matches);
             $key = array_pop($key);
-            return $this->instances[$key];
+            return $this->single($key);
         }
     }
 

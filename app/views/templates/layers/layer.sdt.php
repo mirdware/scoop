@@ -10,12 +10,12 @@
     <!-- Icono de la aplicación -->
     <link rel="shortcut icon" type="image/x-icon" href="{View::overt('favicon.ico')}" />
     <!-- Enlace a la hoja de estilos general -->
-    <link rel="stylesheet" href="{View::css('project.scoop.min.css')}" />
+    <link rel="stylesheet" href="{View::css(View::get('app.name').'.min.css')}" />
     <!-- trabajar las rutas absolutas dentro de javascript -->
     <script type="text/javascript">
         var root = "{ROOT}";
     </script>
-    <script src="{View::js('project.scoop.min.js')}" async></script>
+    <script src="{View::js(View::get('app.name').'.min.js')}" async></script>
     <!-- Titulo de la pagina -->
     <title>{$title} » {View::get('app.name')}</title>
 </head>

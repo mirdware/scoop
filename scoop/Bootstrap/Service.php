@@ -14,19 +14,22 @@ class Service implements IoC
 
         $this->services[$key] = array(
             'callback' => $callback,
-            'instance' => call_user_func_array($callback, $params),
             'params' => $params
         );
     }
 
     public function single($key)
     {
-        return $this->services[$key]['instance'];
+        $serv = &$this->services[$key]; 
+        if (!isset($serv['instance'])) {
+            $serv['instance'] = call_user_func_array($serv['callback'], $serv['params']);
+        }
+        return $serv['instance'];
     }
 
     public function instance($key)
     {
-        $serv = $this->services[$key];
+        $serv = &$this->services[$key];
         return call_user_func_array($serv['callback'], $serv['params']);
     }
 

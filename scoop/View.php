@@ -85,7 +85,7 @@ class View
         \Scoop\View\Template::parse($this->viewName);
         extract($this->viewData);
         include self::ROOT.$this->viewName.self::EXT;
-        $view = ob_get_contents();
+        $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
         ob_end_clean();
         return $view;
     }

@@ -9,7 +9,7 @@ namespace Scoop\Persistence\Driver;
     * DBMS: postgreSQL
 **/
 
-class DBC
+class DBCpgSQL
 {
     //conexion persistente a la base de datos
     private $conex;
@@ -54,7 +54,7 @@ class DBC
         $key = implode('', $config);
 
         if (!isset(self::$instances[$key])) {
-            self::$instances[$key] = new DBC(
+            self::$instances[$key] = new DBCpgSQL(
                 $config['database'],
                 $config['user'],
                 $config['password'],

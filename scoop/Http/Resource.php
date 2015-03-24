@@ -1,4 +1,6 @@
 <?php
+namespace Scoop\Http;
+
 Interface Resource
 {
 	public function post();

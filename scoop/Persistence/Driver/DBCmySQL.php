@@ -9,7 +9,7 @@ namespace Scoop\Persistence\Driver;
     * DBMS: MySQL
 **/
 
-class DBC extends \Mysqli
+class DBCmySQL extends \Mysqli
 {
     private static $instances = array();
 
@@ -36,7 +36,7 @@ class DBC extends \Mysqli
         $key = implode('', $config);
 
         if (!isset(self::$instances[$key])) {
-            self::$instances[$key] = new DBC(
+            self::$instances[$key] = new DBCmySQL(
                 $config['database'],
                 $config['user'],
                 $config['password'],

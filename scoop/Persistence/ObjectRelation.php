@@ -12,9 +12,9 @@ class ObjectRelation {
 
     public function __construct($self, $methodRel, $type = self::ONE_TO_MANY, $objRel = null)
     {
-        $this->self =& $self;
-        $this->objRel =& $objRel;
-        $this->methodRel = $methodRel;
+        $this->self = &$self;
+        $this->objRel = &$objRel;
+        $this->methodRel = ucwords($methodRel);
         $this->type = $type;
     }
 
@@ -22,7 +22,7 @@ class ObjectRelation {
     {
         if ($remove) {
             $method = 'remove'.$this->methodRel;
-            $arg =& $this->self;
+            $arg = &$this->self;
         } else {
             $method = 'set'.$this->methodRel;
             $arg = null;
@@ -35,7 +35,7 @@ class ObjectRelation {
         if (!$this->objRel) {
             $this->objRel = new ObjectCollector();
         }
-        if ( !$this->objRel->search($child) ) {
+        if ($this->objRel->search($child) === false) {
             $method = ($this->type === self::MANY_TO_MANY?'add':'set').$this->methodRel;
             $this->objRel->add($child);
             $child->$method($this->self);
@@ -55,7 +55,7 @@ class ObjectRelation {
     public function set(&$parent)
     {
         $isSettable = $parent !== null && $this->objRel !== $parent;
-        if ( $isSettable) {
+        if ($isSettable) {
             $method = ($this->type !== self::ONE_TO_ONE?'add':'set').$this->methodRel;
             $this->objRel && $this->delete($this->objRel, $this->type !== self::ONE_TO_ONE);
         }
@@ -65,8 +65,13 @@ class ObjectRelation {
 
     public function get()
     {
-        return $this->objRel instanceOf ObjectCollector?
-                    $this->objRel->toArray():
-                    $this->objRel;
+        return $this->objRel;
+    }
+
+    public function persist()
+    {
+        if ($this->objRel) {
+
+        }
     }
 }

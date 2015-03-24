@@ -22,22 +22,22 @@ abstract class Helper
 
     public static function overt($resource)
     {
-        return ROOT.Config::get('path.public').$resource;
+        return ROOT.Config::get('asset.path').$resource;
     }
 
     public static function img($image)
     {
-        return self::overt(Config::get('path.img').$image);
+        return self::overt(Config::get('asset.img').$image);
     }
 
     public static function css($styleSheet)
     {
-        return self::overt(Config::get('path.css').$styleSheet);
+        return self::overt(Config::get('asset.css').$styleSheet);
     }
 
     public static function js($javaScript)
     {
-        return self::overt(Config::get('path.js').$javaScript);
+        return self::overt(Config::get('asset.js').$javaScript);
     }
 
 }

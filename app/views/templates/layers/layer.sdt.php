@@ -26,7 +26,7 @@
     </a>
     <div id="main">
         {View::get('msg')}
-        @output
+        @beam
     </div>
 </body>
 </html>

@@ -73,13 +73,15 @@ final class Template
     {
         $line = preg_replace(array(
                 '/@expand\s\'([\w\/-]+)\'/',
-                '/@if\s([\w\s\.\&\|\$!=<>\-]+)/',
-                '/@elseif\s([\w\s\.\&\|\$!=<>\-]+)/',
+                '/@include\s\'([\w\/-]+)\'/',
+                '/@if\s([\w\s\.\&\|\$!=<>\/\+\*\\-]+)/',
+                '/@elseif\s([\w\s\.\&\|\$!=<>\/\+\*\\-]+)/',
                 '/@foreach\s([\w\s\.\&\|\$\->:]+)/',
                 '/@for\s([\w\s\.\&\|\$;\(\)!=<>\+\-]+)/',
                 '/@while\s([\w\s\.\&\|\$\(\)!=<>\+\-]+)/'
             ), array(
                 self::HERITAGE.'::expand(\'${1}\')',
+                'include \Scoop\View::ROOT.\'${1}\'.\Scoop\View::EXT',
                 'if(${1}):',
                 'elseif(${1}):',
                 'foreach(${1}):',
@@ -94,18 +96,18 @@ final class Template
                 ':for',
                 ':while',
                 '@else',
-                '@output'
+                '@beam'
             ), array(
                 'endif',
                 'endforeach',
                 'endfor',
                 'endwhile',
                 'else:',
-                self::HERITAGE.'::output()'
+                self::HERITAGE.'::beam()'
             ), $line, $count);
         if ($count !== 0) return true;
 
-        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\-\?:=!<>]+)\}/',
+        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>]+)\}/',
             '<?php echo ${1} ?>',
             $line, -1, $count);
         if ($count !== 0) self::formatObj($line);
@@ -154,9 +156,14 @@ final class Template
         $match += array(';');
         $content = str_replace($search, $match, $content);
 
-        $dir = substr($viewName, 0, strrpos($viewName, '/')).'/';
-        if (!file_exists($dir)) {
-            mkdir($dir, 0700);
+        $path = explode('/', $viewName);
+        $count = count($path)-1;
+        $dir = '';
+        for ($i=0; $i<$count; $i++) {
+            $dir .= $path[$i].'/';
+            if (!file_exists($dir)) {
+                mkdir($dir, 0700);
+            }
         }
         $view = fopen($viewName, 'w');
         fwrite($view, $content);

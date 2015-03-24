@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Persistence;
 
-class SQO extends __SQOFactory__
+class SQO extends __SQO__
 {
     private $table;
     private $aliasTable;
@@ -13,7 +13,26 @@ class SQO extends __SQOFactory__
     {
         $this->table = $table;
         $this->aliasTable = $table.' '.$alias;
-        $this->con = $connexion === null? \Scoop\Persistence\Driver\DBC::get(): $connexion;
+        $this->con = $connexion === null? DBC::get(): $connexion;
+    }
+
+    public static function exec() {
+        $args = func_get_args();
+        $exec = '';
+
+        foreach ($args as &$sqo) {
+            if (!($sqo instanceof __SQOResult__)) {
+                throw new \Exception('one parameter sent is not a valid SQO');
+            }
+            if (!isset($connexion)) {
+                $connexion = $sqo->getConnexion();
+            } elseif ($connexion !== $sqo->getConnexion()) {
+                throw new \Exception('you can not run on different connections');
+            }
+            $exec .= $sqo.';';
+        }
+
+        return $connexion->exec($exec);
     }
 
     public function create($fields)
@@ -30,30 +49,28 @@ class SQO extends __SQOFactory__
         return new __SQOCreate__($query, $keys, $this->con);
     }
 
-    public function read()
+    public function read($args = null)
     {
         $fields = '*';
-        $args = func_get_args();
 
         if ($args) {
             foreach ($args as $key => &$value) {
                 $alias = '';
-                if (is_array($value)) {                 
-                    $alias = ' AS '.$value[1];
-                    $value = $value[0];
+                if (!is_numeric($key)) {                 
+                    $alias = ' AS '.$key;
                 }
                 if (is_object($value) && 
-                    get_class($value) === '__SQOResult__' && 
+                    $value instanceof __SQOResult__ && 
                     $value->getType() === SQO::READ ) {
-                    $value = '('.$value.')'.$alias;
+                    $value = '('.$value.')';
                 }
+                $value .= $alias;
             }
             $fields = implode(', ', $args);
         }
 
         return new __SQOResult__('SELECT '.$fields.' FROM '.$this->aliasTable, 
-                                self::READ,
-                                $this->con);
+                                    self::READ, $this->con);
     }
 
     public function update($fields)
@@ -75,7 +92,7 @@ class SQO extends __SQOFactory__
 
 }
 
-final class __SQOCreate__ extends __SQOFactory__
+final class __SQOCreate__ extends __SQO__
 {
     private $query;
     private $keys;
@@ -99,8 +116,7 @@ final class __SQOCreate__ extends __SQOFactory__
 
     public function run()
     {
-        echo $this->query;
-        $this->con->query($this);
+        return $this->con->exec($this);
     }
 
     public function __toString()
@@ -109,17 +125,17 @@ final class __SQOCreate__ extends __SQOFactory__
     }
 }
 
-abstract class __SQOFactory__
+abstract class __SQO__
 {
     protected $con;
 
     protected function escape(&$value)
     {
-        if ( is_array($value) ) {
-            $value = str_replace('?', $this->con->escape($value[1]), $value[0]);
-        } elseif ( is_object($value) && 
-            get_class($value) === '__SQOResult__' && 
-            $value->getType() === SQO::READ ) {
+        if (is_array($value)) {
+            $value = str_replace('?', $this->con->quote($value[1]), $value[0]);
+        } elseif (is_object($value) && 
+            $value instanceof __SQOResult__ && 
+            $value->getType() === SQO::READ) {
             $value = '('.$value.') ';
         } else {
             $value = $this->con->quote($value);
@@ -150,22 +166,29 @@ final class __SQOResult__
         return $this->filter;
     }
 
+    public function getConnexion()
+    {
+        return $this->con;
+    }
+
     public function join($table, $using = null, $type = 'INNER')
     {
+        $join = ', '.$table;
         if ($type === 'LEFT' || $type === 'RIGHT' || $type === 'FULL') {
             $type .= ' OUTER';
         }
-        if ($using === null) {
-            $this->from[] = ', '.$table; 
-        } elseif (strpos($using, '=') !== false || 
-            strpos($using, '<') !== false || 
-            strpos($using, '>') !== false || 
-            strpos($using, '!') !== false || 
-            strpos($using, ' LIKE ') !== false) {
-            $this->from[] = ' '.$type.' JOIN '.$table.' ON ('.$using.')';
-        } else {
-            $this->from[] = ' '.$type.' JOIN '.$table.' USING ('.$using.')';
+
+        if ($using !== null) {
+            $join = ' '.$type.' JOIN '.$table
+                .((strpos($using, '=') !== false || 
+                   strpos($using, '<') !== false || 
+                   strpos($using, '>') !== false || 
+                   strpos($using, '!') !== false || 
+                   strpos($using, ' LIKE ') !== false)?
+                        ' ON('.$using.')':
+                        ' USING('.$using.')');
         }
+        $this->from[] = $join;
 
         return $this;
     }
@@ -182,16 +205,19 @@ final class __SQOResult__
 
     public function __call($name, $args)
     {
-        if (method_exists ($this->filter, $name)) {
-            call_user_func_array(array($this->filter, $name), $args);
-            return $this;
-        }
+        call_user_func_array(array($this->filter, $name), $args);
+        return $this;
+    }
+
+    public function __clone()
+    {
+        $this->filter = clone $this->filter;
     }
 
     public function __toString()
     {
         return $this->query
-            .implode ('', $this->from)
+            .implode('', $this->from)
             .$this->filter->getRules()
             .$this->filter->getGroup()
             .$this->filter->getOrder()
@@ -222,13 +248,12 @@ final class __SQOFilter__
             $search = array();
 
             foreach ($replace as $key => &$value) {
-
                 if (is_object($value) && 
-                    get_class($value) === '__SQOResult__' && 
+                    $value instanceof __SQOResult__ && 
                     $value->getType( ) === SQO::READ) {
                     $value = '('.$value.')';
                 } else {
-                    $value = $this->con->quote ($value);
+                    $value = $this->con->quote($value);
                 }
 
                 $search[] = ':'.$key;
@@ -244,12 +269,12 @@ final class __SQOFilter__
     public function order()
     {
         $args = func_get_args();
-        $lastItem = func_num_args()-1;
-        $desc = $args[ $lastItem ];
+        $desc = array_pop($args);
 
         if (is_bool($desc)) {
             $this->orderType = $desc? ' DESC': ' ASC';
-            unset($args[$lastItem]);
+        } else {
+            $args[] = $desc;
         }
 
         $this->order += $args;
@@ -264,14 +289,7 @@ final class __SQOFilter__
 
     public function limit($offset, $limit = null)
     {
-        if ($offset === null) {
-            $this->limit = '';
-        } elseif ($limit === null) {
-            $this->limit = ' LIMIT '.$offset;
-        } else {
-            $this->limit = ' LIMIT '.$limit.' OFFSET '.$offset;
-        }
-
+        $this->limit = ' LIMIT '.($limit === null? $offset: $limit.' OFFSET '.$offset);
         return $this;
     }
 

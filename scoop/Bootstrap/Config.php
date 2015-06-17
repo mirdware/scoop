@@ -26,10 +26,10 @@ abstract class Config
     private static function init()
     {
         session_start();
-        //definición global de constantes
+        // Definición global de constantes
         define ('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
 
-        //configuración
+        // Configuración
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
         \Scoop\View\Template::addClass('View', '\Scoop\View\Helper');

@@ -4,6 +4,16 @@ namespace Scoop;
 abstract class Controller
 {
     private $router;
+    private static $redirects = array(
+        300 => 'HTTP/1.1 300 Multiple Choices',
+        301 => 'HTTP/1.1 301 Moved Permanently',
+        302 => 'HTTP/1.1 302 Found',
+        303 => 'HTTP/1.1 303 See Other',
+        304 => 'HTTP/1.1 304 Not Modified',
+        305 => 'HTTP/1.1 305 Use Proxy',
+        306 => 'HTTP/1.1 306 Not Used',
+        307 => 'HTTP/1.1 307 Temporary Redirect'
+    );
 
     /**
      * Verifica si la pagina fue llamada via ajax o normalmente
@@ -34,7 +44,7 @@ abstract class Controller
     }
 
     /**
-     * Obtiene la instancia de un controlador diferente al actual
+     * Obtiene la instancia del controlador ligado a la ruta
      * @param  String $controller Nombre del controlador a obtener
      * @return Controller             Controlador a obtener
      */
@@ -44,28 +54,28 @@ abstract class Controller
     }
 
     /**
-     * Inyeccta la dependencia por set para el router
+     * Inyecta la dependencia router al controlador
      * @param Bootstrap\Router $router Router que se encargara de obtener los controladores
      */
-    public function setRouter (Bootstrap\Router $router)
+    public function setRouter(Bootstrap\Router $router)
     {
         $this->router = $router;
     }
 
     /**
-     * Realiza la redirección permanente de ciertas páginas
+     * Realiza la redirección a la página pasada como parámetro
      * @param  String $url Dirección a la que se redirecciona la página
      */
-    public static function redirect($url)
+    public static function redirect($url, $status = 301)
     {
-        header('HTTP/1.0 301 Moved Permanently');
-        header ( 'Location:'.$url );
+        header(self::$redirects[$status], true, $status);
+        header('Location:'.$url);
         exit;
     }
 
     /**
      * Debe ser implementado en cada controlador y se encarga  de realizar 
-     * la tarea por defecto cuando no se encuentra un método de dicho controlador
+     * la tarea por defecto cuando no se encuentra el método
      * @param  array  $args Argumentos pasados al controlador
      */
     public abstract function get(array $args);

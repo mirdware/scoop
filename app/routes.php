@@ -1,4 +1,4 @@
 <?php
 return array(
-	'/' => 'Controller\Home'
+    '/' => 'Controller\Home'
 );

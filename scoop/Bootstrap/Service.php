@@ -5,7 +5,7 @@ class Service implements IoC
 {
     public $services = array();
 
-    public function register ($key, $callback, $params = array())
+    public function register($key, $callback, $params = array())
     {
         if (is_string($callback)) {
             $params = array($callback, $params);
@@ -33,7 +33,7 @@ class Service implements IoC
         return call_user_func_array($serv['callback'], $serv['params']);
     }
 
-    private function construct ($class, $params)
+    private function construct($class, $params)
     {
         $reflectionClass = new \ReflectionClass($class);
         if ($reflectionClass->getConstructor()) {

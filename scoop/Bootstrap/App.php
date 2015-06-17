@@ -15,21 +15,18 @@ abstract class App
         
         $router = new Router();
         $router->register('app/routes');
-
-        /*saneo las variables que vienen por url y libero route del array $_GET*/
         $url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
         unset($_GET['route']);
 
-        /*Sanear variables por POST y GET*/
+        if (strtolower($url) !== $url) {
+            throw new \Scoop\Http\NotFoundException();
+        }
+        // Sanear variables por POST y GET
         if ($_POST) {
             self::purgePOST($_POST);
         }
         if ($_GET) {
             self::purgeGET($_GET);
-        }
-
-        if (strtolower($url) !== $url) {
-            throw new \Scoop\Http\NotFoundException();
         }
         
         $controller = $router->instance($url);
@@ -40,24 +37,20 @@ abstract class App
             unset ($url);
 
             if ($params) {
-                $method = explode('-',
-                    array_shift($params)
-                );
+                $aux = explode('-', array_shift($params));
 
-                $aux = array_shift($method);
-                if (empty($method)) {
-                    $method = $aux;
-                } else {
-                    $method = $aux.implode(array_map('ucfirst', $method));
+                $method = array_shift($aux);
+                if (!empty($aux)) {
+                    $method .= implode(array_map('ucfirst', $aux));
                 }
                 unset($aux);
             }
 
-            //$auxReflection = la reflexión de la clase para poder explorarla
-            $auxReflection = new \ReflectionClass($controller);
+            // Normalizar el método y parámetros enviados al controlador
+            $controllerReflection = new \ReflectionClass($controller);
             if (!isset($method)) {
                 $method = self::MAIN_METHOD;
-            } elseif ($method === self::MAIN_METHOD || !$auxReflection->hasMethod($method)) {
+            } elseif ($method === self::MAIN_METHOD || !$controllerReflection->hasMethod($method)) {
                 array_unshift($params, $method);
                 $method = self::MAIN_METHOD;
             }
@@ -65,7 +58,7 @@ abstract class App
                 $params = array($params);
             }
             
-            $method = $auxReflection->getMethod($method);
+            $method = $controllerReflection->getMethod($method);
             $numParams = count($params);
 
             if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
@@ -103,7 +96,7 @@ abstract class App
             if (is_array($value)) {
                 self::purgeGET($value);
             } else {
-                //<htmlentities> dentro del POST va a ser suprimida en proximas versiones
+                // <htmlentities> dentro del POST va a ser suprimida en proximas versiones
                 $get[$key] = htmlspecialchars(trim($value) , ENT_QUOTES, 'UTF-8');
             }
         }

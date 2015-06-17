@@ -1,5 +1,6 @@
 <?php
 namespace Scoop;
+
 /**
  * La función principal de esta clase es la de asociar los controladores 
  * con sus respectivos templates.
@@ -30,7 +31,7 @@ class View
      * si es un array se ejecuta el par clave => valor
      * @param Mixed $value Dato a procesar por la vista
      */
-    public function set($key, $value=null)
+    public function set($key, $value = null)
     {
         if (is_array($key)) {
             $this->viewData += $key;
@@ -45,7 +46,7 @@ class View
      * @param  String|Array|null $key dependiendo del tipo elimina uno o varios datos
      * de la vista.
      */
-    public function remove($key=false)
+    public function remove($key = null)
     {
         if ($key) {
             if ( is_array($key) ) {

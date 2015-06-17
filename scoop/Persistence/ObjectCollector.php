@@ -7,7 +7,7 @@ class ObjectCollector
     private static $fromDB = false;
     private $objects = array();
 
-    public function __construct($array=array())
+    public function __construct($array = array())
     {
         if ($array) {
             self::$fromDB = true;
@@ -26,14 +26,14 @@ class ObjectCollector
         return $obj;
     }
 
-    private static function internalSearch(&$obj, &$type, $delete = false)
+    private static function internalSearch(&$obj, &$array, $delete = false)
     {
-        foreach ($type as $key => &$object) {
+        foreach ($array as $key => &$object) {
             if ($obj == $object || (self::$fromDB && 
                 get_class($obj) === get_class($object) && 
                 $obj->getPK() === $object->getPK())) {
                 if ($delete) {
-                    unset($type[$key]);
+                    unset($array[$key]);
                 }
                 return $object;
             }
@@ -52,8 +52,7 @@ class ObjectCollector
 
     public function add(Model &$obj)
     {
-        $obj = self::notify($obj);
-        $this->objects[] = $obj;
+        $this->objects[] = self::notify($obj);
     }
 
     public function get($i)

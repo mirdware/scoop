@@ -1,15 +1,7 @@
 <?php
-namespace Scoop\Persistence\Driver;
-/**
-    * Clase conexion que sirve para enlazar la base de datos con
-    * la aplicación y abstraer las funciones que dependen de cada
-    * DBMS.
-    * Autor: Marlon Ramirez
-    * Version: 0.6
-    * DBMS: MySQL
-**/
+namespace Scoop\Persistence\MySQL;
 
-class DBCmySQL extends \Mysqli
+class DBC extends \Mysqli
 {
     private static $instances = array();
 

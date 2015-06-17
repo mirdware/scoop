@@ -1,7 +1,8 @@
 <?php
 namespace Scoop\Persistence;
 
-class ObjectRelation {
+class ObjectRelation
+{
     const ONE_TO_ONE = 1;
     const ONE_TO_MANY = 2;
     const MANY_TO_MANY = 3;

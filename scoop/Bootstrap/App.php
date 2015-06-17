@@ -12,9 +12,7 @@ abstract class App
                 str_replace('index.php', '', $_SERVER['REQUEST_URI'])
             );
         }
-
-        Config::init();
-        Config::add('app/config');
+        
         $router = new Router();
         $router->register('app/routes');
 
@@ -69,10 +67,9 @@ abstract class App
             
             $method = $auxReflection->getMethod($method);
             $numParams = count($params);
-            $numRequiredParams = $method->getNumberOfRequiredParameters();
 
-            if ($numParams >= $numRequiredParams && $numParams <= $numRequiredParams) {
-                unset($numParams, $numRequiredParams);
+            if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
+                unset($numParams);
                 $response = $method->invokeArgs($controller, $params);
                 if ($response === null) {
                     header('HTTP/1.0 204 No Response');

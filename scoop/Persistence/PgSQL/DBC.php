@@ -1,15 +1,7 @@
 <?php
-namespace Scoop\Persistence\Driver;
-/**
-    * Clase conexion que sirve para enlazar la base de datos con
-    * la aplicación y abstraer las funciones que dependen de cada
-    * DBMS.
-    * Autor: Marlon Ramirez
-    * Version: 0.8
-    * DBMS: postgreSQL
-**/
+namespace Scoop\Persistence\PgSQL;
 
-class DBCpgSQL
+class DBC
 {
     //conexion persistente a la base de datos
     private $conex;
@@ -75,7 +67,7 @@ class DBCpgSQL
         //echo $consulta;
         $r = pg_query($this->conex, $consulta);
         if ( !$r ) {
-            throw new \Scoop\Persistence\Driver\SQLException($this->error(), 1);
+            throw new \Exception($this->error(), 1);
         }
 
         if(strpos(strtoupper($consulta), 'SELECT') === 0) {

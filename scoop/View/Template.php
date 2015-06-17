@@ -96,14 +96,14 @@ final class Template
                 ':for',
                 ':while',
                 '@else',
-                '@beam'
+                '@sprout'
             ), array(
                 'endif',
                 'endforeach',
                 'endfor',
                 'endwhile',
                 'else:',
-                self::HERITAGE.'::beam()'
+                self::HERITAGE.'::sprout()'
             ), $line, $count);
         if ($count !== 0) return true;
 

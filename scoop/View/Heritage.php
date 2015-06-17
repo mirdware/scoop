@@ -21,7 +21,7 @@ abstract class Heritage {
         ob_clean();
     }
 
-    public static function beam()
+    public static function sprout()
     {
         ob_start();
     }

@@ -100,8 +100,8 @@ final class __SQOCreate__ extends __SQO__
     public function __construct($query, &$keys, &$connexion)
     {
         $this->query = $query;
-        $this->keys =& $keys;
-        $this->con =& $connexion;
+        $this->keys = &$keys;
+        $this->con = &$connexion;
     }
 
     public function join($fields)
@@ -157,7 +157,7 @@ final class __SQOResult__
     {
         $this->query = $query;
         $this->type = $type;
-        $this->con =& $connexion;
+        $this->con = &$connexion;
         $this->filter = new __SQOFilter__($connexion);
     }
 
@@ -239,7 +239,7 @@ final class __SQOFilter__
 
     public function __construct(&$connexion)
     {
-        $this->con =& $connexion;
+        $this->con = &$connexion;
     }
 
     public function find($rule, $replace = null)

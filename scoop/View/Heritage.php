@@ -28,6 +28,6 @@ abstract class Heritage {
 
     public static function getFooter()
     {
-    	return self::$footer;
+        return self::$footer;
     }
 }

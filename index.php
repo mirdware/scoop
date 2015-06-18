@@ -6,13 +6,12 @@
  * Constantes: ALL_CAPS
  * Namespaces/Packages: PascalCase
  * Propiedades/Párametro/Variable: camelCase
- * Usa PHP como si se tratase de un lenguaje case sensitive.
  *
  * @package scoop
  * @license http://opensource.org/licenses/MIT MIT
- * @author  Marlon Ramirez <marlonramirez@outlook.com>
+ * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
- * @version 0.1.2 Modificaciones en el ruteo y configuración del bootstrap
+ * @version 0.1.3 Estabilización de estandares PSR
  */
 
 try {

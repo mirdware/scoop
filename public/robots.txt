@@ -2,8 +2,4 @@
 Sitemap: http://localhost/sitemap/sitemap.xml
 
 User-agent: *
-Disallow: /core/
-Disallow: /library/
-Disallow: /model/
-Disallow: /views/
-Disallow: /controllers/
+Disallow: /public/

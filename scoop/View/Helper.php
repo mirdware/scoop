@@ -9,7 +9,7 @@ abstract class Helper
 
     public static function init($array)
     {
-        self::$view =& $array;
+        self::$view = &$array;
     }
 
     public static function get($key)

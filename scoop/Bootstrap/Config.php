@@ -10,6 +10,9 @@ abstract class Config
         $name = explode('.', $name);
         $res = self::$conf;
         foreach ($name as &$key) {
+            if (!isset($res[$key])) {
+                return false;
+            }
             $res = $res[$key];
         }
         return $res;

@@ -30,10 +30,10 @@
 
     #Forzar a usar la barra o slash (/) final dentro de la URL  
     RewriteCond %{REQUEST_URI} /+[^\.]+$
-        RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]
+        RewriteRule ^(.*[^/])$ %{REQUEST_URI}/ [R=301,L]
 
-    RewriteCond %{HTTP_HOST} ^www.(.*) [NC]
-        RewriteRule ^(.*) http://%1/$1 [R=301,L]
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+        RewriteRule ^ %{ENV:PROTO}://%1%{REQUEST_URI} [R=301,L]
 
     #Redirigir cualquier petición a index.php
     #Si la url solicitada no es un fichero(existente), continuar...

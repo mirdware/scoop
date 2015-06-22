@@ -3,6 +3,11 @@ namespace Controller;
 
 class Home extends \Scoop\Controller
 {
+    public function hola()
+    {
+        return '';
+    }
+    
     public function get(array $args)
     {
         if ($args) {

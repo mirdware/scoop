@@ -5,6 +5,7 @@ abstract class Exception extends \Exception
 {
     private $statusCode;
     private $headers;
+    private $title;
 
     public function __construct(
         $statusCode, 
@@ -15,6 +16,10 @@ abstract class Exception extends \Exception
     {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
+        $this->title = \Scoop\Bootstrap\Config::get('exception.'.$statusCode);
+        if (!$this->title) {
+            $this->title = 'Error '.$statusCode.'!!!';
+        }
 
         parent::__construct($message, $code, $previous);
     }
@@ -31,14 +36,17 @@ abstract class Exception extends \Exception
 
     public function handler()
     {
-        $view = new \Scoop\View('exceptions/'.$this->statusCode);
-        $view->set( array(
-            'ex' => $this,
-            'title' => 'Error '.$this->statusCode.'!!!'
-        ));
         foreach ($this->headers as &$header) {
             header($header);
         }
-        exit($view->render());
+        $view = new \Scoop\View('exceptions/'.$this->statusCode);
+        if ($view->there()) {
+            $view->set( array(
+                'ex' => $this,
+                'title' => $this->title
+            ));
+            exit ($view->render());
+        }
+        exit ($this->getMessage());
     }
 }

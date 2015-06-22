@@ -43,6 +43,11 @@ abstract class Controller
         throw new \Scoop\Http\AccessDeniedException($msg);
     }
 
+    protected function error($msg)
+    {
+        throw new \Scoop\Http\BadRequestException($msg);
+    }
+
     /**
      * Obtiene la instancia del controlador ligado a la ruta
      * @param  String $controller Nombre del controlador a obtener

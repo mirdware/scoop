@@ -25,6 +25,10 @@ class View
         $this->viewName = $viewName;
     }
 
+    public function there() {
+        return is_readable(self::ROOT.$this->viewName.self::EXT);
+    }
+
     /**
      * Modifica los datos que va a procesar la vista
      * @param String|Array $key   Identificador del dato en la vista,
@@ -59,20 +63,6 @@ class View
         } else {
             $this->viewData = array();
         }
-        return $this;
-    }
-
-    /**
-     * @deprecated
-     * @param array Array con los errores a mostrar
-     * @return View
-     */
-    public function setErrors($array)
-    {
-        foreach ($array as $key=>$value) {
-            $array[$key] = 'style = "visibility: visible" title = "'.$value.'"';
-        }
-        $this->set($array);
         return $this;
     }
 

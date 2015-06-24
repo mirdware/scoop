@@ -1,5 +1,5 @@
 <?php
-namespace Scoop\Persistence\PgSQL;
+namespace Scoop\Storage\PgSQL;
 
 class DBC
 {

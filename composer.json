@@ -15,7 +15,7 @@
         "psr-4": {
             "Scoop\\": "scoop/",
             "Controller\\": "app/controllers/",
-            "Model\\": "app/models"
+            "Beam\\": "app/beams"
         }
     },
     "minimum-stability": "stable"

@@ -414,9 +414,11 @@ class Loader
                 $instance = require 'vendor/autoload.php';
             } else {
                 $instance = new Loader();
-                $instance->setPsr4('Scoop\\', 'scoop/');
-                $instance->setPsr4('Controller\\', 'app/controllers/');
-                $instance->setPsr4('Model\\', 'app/models/');
+                $conf = json_decode(file_get_contents('composer.json'), true);
+                $psr4 = $conf['autoload']['psr-4'];
+                foreach ($psr4 as $key => &$value) {
+                    $instance->setPsr4($key, $value);
+                }
                 $instance->register(true);
             }
         }

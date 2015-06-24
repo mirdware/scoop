@@ -5,7 +5,7 @@ namespace Scoop;
  * La función principal de esta clase es la de asociar los controladores 
  * con sus respectivos templates.
  */
-class View
+final class View
 {
     //ruta donde se encuentran las vistas
     const ROOT = 'app/views/php/';

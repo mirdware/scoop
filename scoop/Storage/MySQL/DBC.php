@@ -1,16 +1,16 @@
 <?php
-namespace Scoop\Persistence;
+namespace Scoop\Storage\MySQL;
 
-class DBC extends \PDO
+class DBC extends \Mysqli
 {
     private static $instances = array();
 
-    public function __construct($db, $user, $pass, $host, $engine)
+    /*constructor*/
+    private function __construct($db, $user, $pass, $host)
     {
-        parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass);
-        parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC); 
-        parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        parent::exec('SET NAMES \'utf8\'');
+        parent::__construct($host, $user, $pass, $db) or die($this->connect_error);
+        //selecciona el cotejamiento de la base de datos
+        $this->query('SET NAMES \'utf8\'');
     }
 
     private function __clone() {}
@@ -28,14 +28,14 @@ class DBC extends \PDO
         $key = implode('', $config);
 
         if (!isset(self::$instances[$key])) {
-            self::$instances[$key] = new DBC(
+            self::$instances[$key] = new DBCmySQL(
                 $config['database'],
                 $config['user'],
                 $config['password'],
-                $config['host'],
-                $config['driver']
+                $config['host']
             );
         }
         return self::$instances[$key];
     }
+
 }

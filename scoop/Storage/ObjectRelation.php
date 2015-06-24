@@ -1,5 +1,5 @@
 <?php
-namespace Scoop\Persistence;
+namespace Scoop\Storage;
 
 class ObjectRelation
 {

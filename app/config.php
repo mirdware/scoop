@@ -11,11 +11,11 @@ return array(
     ),
     'db' => array(
         'default' => array(
-            'database' => '',
-            'user' => '',
-            'password' => '',
-            'host' => '',
-            'driver' => ''
+            'database' => 'postgres',
+            'user' => 'postgres',
+            'password' => 'postgres',
+            'host' => 'localhost',
+            'driver' => 'pgsql'
         )
     )
 );

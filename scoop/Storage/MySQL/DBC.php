@@ -11,6 +11,22 @@ class DBC extends \Mysqli
         parent::__construct($host, $user, $pass, $db) or die($this->connect_error);
         //selecciona el cotejamiento de la base de datos
         $this->query('SET NAMES \'utf8\'');
+        parent::autocommit(false);
+    }
+
+    public function beginTransaction()
+    {
+        return parent::begin_transaction();
+    }
+
+    public function quote($val)
+    {
+        return parent::real_escape_string($val);
+    }
+
+    public function __destruct()
+    {
+        parent::commit();
     }
 
     private function __clone() {}

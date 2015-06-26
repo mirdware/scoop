@@ -19,12 +19,13 @@ class DBC
             'host='.$host.' port=5432 dbname='.$db.
             ' user='.$user.' password='.$pass
         ) or die();
-        $this->query('SET NAMES \'utf8\'');
+        $this->query('SET NAMES \'utf8\';BEGIN');
     }
 
     public function __destruct()
     {
         if ($this->conex) {
+            $this->query('COMMIT');
             pg_close($this->conex);
         }
     }
@@ -83,7 +84,7 @@ class DBC
         return pg_last_error($this->conex);
     }
 
-    public function escape($val)
+    public function quote($val)
     {
         $val = trim($val);
         if ($val === null || $val === '') {

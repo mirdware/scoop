@@ -49,11 +49,15 @@ class SQO extends __SQO__
         return new __SQOCreate__($query, $keys, $this->con);
     }
 
-    public function read($args = null)
+    public function read()
     {
+        $args = func_get_args();
         $fields = '*';
 
-        if ($args) {
+        if (isset($args[0])) {
+            if (is_array($args[0])) {
+                $args = $args[0];
+            }
             foreach ($args as $key => &$value) {
                 $alias = '';
                 if (!is_numeric($key)) {                 
@@ -88,6 +92,12 @@ class SQO extends __SQO__
     public function delete()
     {
         return new __SQOResult__('DELETE FROM '.$this->aliasTable, self::DELETE, $this->con);
+    }
+
+    public function flush()
+    {
+        $this->con->commit();
+        $this->con->beginTransaction();
     }
 
 }
@@ -269,12 +279,11 @@ final class __SQOFilter__
     public function order()
     {
         $args = func_get_args();
-        $desc = array_pop($args);
+        $type = strtoupper($args[func_num_args()-1]);
 
-        if (is_bool($desc)) {
-            $this->orderType = $desc? ' DESC': ' ASC';
-        } else {
-            $args[] = $desc;
+        if ($type === 'ASC' || $type === 'DESC') {
+            $this->orderType = ' '.$type;
+            array_pop($args);
         }
 
         $this->order += $args;

@@ -11,6 +11,12 @@ class DBC extends \PDO
         parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC); 
         parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         parent::exec('SET NAMES \'utf8\'');
+        parent::beginTransaction();
+    }
+
+    public function __destruct()
+    {
+        parent::commit();
     }
 
     private function __clone() {}

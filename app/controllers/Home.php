@@ -2,7 +2,7 @@
 namespace Controller;
 
 class Home extends \Scoop\Controller
-{    
+{
     public function get(array $args)
     {
         if ($args) {

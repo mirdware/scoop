@@ -1,4 +1,4 @@
-@expand 'layers/layer'
+@extends 'layers/layer'
 <a href="http://getscoop.org" target="_blank">
     <img src="{View::img('scoop.png')}" alt="scoop" width="200" />
 </a>

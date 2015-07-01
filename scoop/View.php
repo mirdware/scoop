@@ -26,7 +26,8 @@ final class View
     }
 
     public function there() {
-        return is_readable(self::ROOT.$this->viewName.self::EXT);
+        return is_readable(self::ROOT.$this->viewName.self::EXT) || 
+                is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT);
     }
 
     /**

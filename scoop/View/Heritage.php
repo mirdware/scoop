@@ -11,7 +11,7 @@ abstract class Heritage {
         self::$data = $data;
     }
 
-    public static function expand($parent)
+    public static function extend($parent)
     {
         Template::parse($parent);
         extract(self::$data);
@@ -19,6 +19,12 @@ abstract class Heritage {
         require \Scoop\View::ROOT.$parent.\Scoop\View::EXT;
         self::$footer = trim(ob_get_contents()).self::$footer;
         ob_clean();
+    }
+
+    public static function includ($path)
+    {
+        Template::parse($path);
+        include \Scoop\View::ROOT.$path.\Scoop\View::EXT;
     }
 
     public static function sprout()

@@ -28,7 +28,7 @@ final class Template
                 $flag = self::replace($line);
 
                 if ($flagPHP) {
-                    $lastChar = ';';
+                    $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1? '': ';';
                     if (!$flag) {
                         $lastChar = ' ?>';
                         $flagPHP = false;
@@ -40,7 +40,7 @@ final class Template
                 }
 
                 $content .= $lastLine;
-                $lastLine = $line;
+                $lastLine = trim($line);
             }
 
             fclose($file);
@@ -72,22 +72,23 @@ final class Template
     private static function replace(&$line)
     {
         $line = preg_replace(array(
-                '/@expand\s\'([\w\/-]+)\'/',
-                '/@include\s\'([\w\/-]+)\'/',
-                '/@if\s([\w\s\.\&\|\$!=<>\/\+\*\\-]+)/',
-                '/@elseif\s([\w\s\.\&\|\$!=<>\/\+\*\\-]+)/',
-                '/@foreach\s([\w\s\.\&\|\$\->:]+)/',
-                '/@for\s([\w\s\.\&\|\$;\(\)!=<>\+\-]+)/',
-                '/@while\s([\w\s\.\&\|\$\(\)!=<>\+\-]+)/'
+                '/@extends \'([\w\/-]+)\'/',
+                '/@include \'([\w\/-]+)\'/',
+                '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
+                '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
+                '/@foreach ([ \w\.\&\|\$\->:]+)/',
+                '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-]+)/',
+                '/@while ([ \w\.\&\|\$\(\)!=<>\+\-]+)/'
             ), array(
-                self::HERITAGE.'::expand(\'${1}\')',
-                'include \Scoop\View::ROOT.\'${1}\'.\Scoop\View::EXT',
+                self::HERITAGE.'::extend(\'${1}\')',
+                self::HERITAGE.'::includ(\'${1}\')',
                 'if(${1}):',
                 'elseif(${1}):',
                 'foreach(${1}):',
                 'for(${1}):',
                 'while(${1}):'
             ), $line, 1, $count);
+
         if ($count !== 0) return true;
 
         $line = str_replace(array(
@@ -107,7 +108,7 @@ final class Template
             ), $line, $count);
         if ($count !== 0) return true;
 
-        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>]+)\}/',
+        $line = preg_replace('/\{([ \w\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>]+)\}/',
             '<?php echo ${1} ?>',
             $line, -1, $count);
         if ($count !== 0) self::formatObj($line);

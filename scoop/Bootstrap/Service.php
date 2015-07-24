@@ -37,8 +37,15 @@ class Service implements IoC
     {
         $reflectionClass = new \ReflectionClass($class);
         if ($reflectionClass->getConstructor()) {
+            foreach ($params as &$value) {
+                if (is_string($value) && strpos($value, '@') === 0) {
+                    $value = $this->instance(substr($value, 1));
+                } elseif (class_exists($value)) {
+                    $value = new $value();
+                }
+            }
             return $reflectionClass->newInstance($params);
         }
-        return $reflectionClass->newInstanceWithoutConstructor($params);
+        return $reflectionClass->newInstanceWithoutConstructor();
     }
 }

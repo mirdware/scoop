@@ -354,5 +354,5 @@
         });
 
         $.extend($.ajax, {submit: submit});
-
-})(std, window);
+        module.exports = $;
+})(require("jetro"), window);

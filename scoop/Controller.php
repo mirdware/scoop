@@ -55,14 +55,14 @@ abstract class Controller
      */
     protected function getController($controller)
     {
-        return $this->router->single($controller);
+        return $this->router->getInstance($controller);
     }
 
     /**
      * Inyecta la dependencia router al controlador
-     * @param Bootstrap\Router $router Router que se encargara de obtener los controladores
+     * @param IoC\Router $router Router que se encargara de obtener los controladores
      */
-    public function setRouter(Bootstrap\Router $router)
+    public function setRouter(IoC\Router $router)
     {
         $this->router = $router;
     }

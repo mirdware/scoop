@@ -13,9 +13,9 @@
     ],
     "autoload": {
         "psr-4": {
-            "Scoop\\": "scoop/",
+            "App\\": "app/beams",
             "Controller\\": "app/controllers/",
-            "Beam\\": "app/beams"
+            "Scoop\\": "scoop/"
         }
     },
     "minimum-stability": "stable"

@@ -10,7 +10,7 @@ var gulp = require('gulp'),
     app = require('./package.json');
 
 gulp.task('css', function() {
-    return gulp.src(['app/resources/styles/app.styl'])
+    return gulp.src(['resources/styles/app.styl'])
         .pipe(sourcemaps.init())
         .pipe(stylus())
         .pipe(mincss())
@@ -21,7 +21,7 @@ gulp.task('css', function() {
 
 gulp.task('js', function() {
     browserify({
-            entries: 'app/resources/javascript/app.js',
+            entries: 'resources/javascript/app.js',
             debug: true
         })
         .bundle()
@@ -34,8 +34,8 @@ gulp.task('js', function() {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['app/resources/styles/**/*.styl'], ['css']);
-    gulp.watch(['app/resources/javascript/**/*.js'], ['js']);
+    gulp.watch(['resources/styles/**/*.styl'], ['css']);
+    gulp.watch(['resources/javascript/**/*.js'], ['js']);
 });
 
 gulp.task('default', ['watch', 'css', 'js']);

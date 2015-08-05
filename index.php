@@ -11,12 +11,12 @@
  * @license http://opensource.org/licenses/MIT MIT
  * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
- * @version 0.1.3 Estabilización de estandares PSR
+ * @version 0.1.4 using Inversion of Control
  */
 
 try {
     require 'scoop/Bootstrap/Loader.php';
-    Loader::get();
+    Loader::getInstance();
     \Scoop\Bootstrap\Config::add('app/config');
     \Scoop\Bootstrap\App::run();
 } catch (\Scoop\Http\Exception $ex) {

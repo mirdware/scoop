@@ -1,7 +1,7 @@
 <?php
-namespace Scoop\Bootstrap;
+namespace Scoop\IoC;
 
-class Router implements IoC
+class Router
 {
     private $routes = array();
     private $instances = array();
@@ -16,23 +16,10 @@ class Router implements IoC
         }
 
         $this->routes[$class] = $route;
-
         return $this;
     }
 
-    public function single($class)
-    {
-        if (!isset($this->instances[$class])) {
-            if (get_parent_class($class) !== 'Scoop\Controller') {
-                throw new \Exception('The '.$class.' class is not an instance of controller');
-            }
-            $this->instances[$class] = new $class();
-            $this->instances[$class]->setRouter($this);
-        }
-        return $this->instances[$class];
-    }
-
-    public function instance($route)
+    public function route($route)
     {
         self::$route = $route;
         $matches = array_filter($this->routes, function ($route) {
@@ -43,24 +30,36 @@ class Router implements IoC
             asort($matches);
             $key = array_keys($matches);
             $key = array_pop($key);
-            return $this->single($key);
+            return $this->getInstance($key);
         }
     }
 
-    public function url($class)
+    public function getInstance($class)
+    {
+        if (!isset($this->instances[$class])) {
+            if (get_parent_class($class) !== 'Scoop\Controller') {
+                throw new \Exception('The '.$class.' class is not an instance of controller');
+            }
+            $this->instances[$class] = Injector::create($class);
+            $this->instances[$class]->setRouter($this);
+        }
+        return $this->instances[$class];
+    }
+
+    public function getURL($class)
     {
         return $this->routes[$class];
     }
 
-    private function load ($array, $oldRoute = '')
+    private function load($array, $oldRoute = '')
     {
         foreach ($array as $route => $class) {
             $currentRoute = $oldRoute.$route;
             if (is_array($class)) {
                 $this->load($class, $currentRoute);
-                continue;
+            } else {
+                $this->register($currentRoute, $class);
             }
-            $this->register($currentRoute, $class);
         }
     }
 }

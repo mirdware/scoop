@@ -1,7 +1,7 @@
 <?php
-namespace Scoop\Storage;
+namespace Scoop\Storage\Entity;
 
-class ObjectCollector
+class Collector
 {
     private static $totalObjects = array();
     private static $fromDB = false;

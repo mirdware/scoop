@@ -1,7 +1,7 @@
 <?php
-namespace Scoop\Storage;
+namespace Scoop\Storage\Entity;
 
-class ObjectRelation
+class Relation
 {
     const ONE_TO_ONE = 1;
     const ONE_TO_MANY = 2;

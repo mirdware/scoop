@@ -13,7 +13,7 @@ abstract class App
             );
         }
         
-        $router = new Router();
+        $router = new \Scoop\IoC\Router();
         $router->register('app/routes');
         $url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
         unset($_GET['route']);
@@ -29,10 +29,10 @@ abstract class App
             self::purgeGET($_GET);
         }
         
-        $controller = $router->instance($url);
+        $controller = $router->route($url);
 
         if ($controller) {
-            $url = str_replace($router->url(get_class($controller)), '', $url);
+            $url = str_replace($router->getURL(get_class($controller)), '', $url);
             $params = array_filter(explode('/', $url));
             unset ($url);
 

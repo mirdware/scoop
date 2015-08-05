@@ -407,7 +407,7 @@ class Loader
         }
     }
 
-    public static function get()
+    public static function getInstance()
     {
         if (!isset($instance)) {
             if (is_readable('vendor/autoload.php')) {

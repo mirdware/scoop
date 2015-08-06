@@ -5,7 +5,7 @@ return array(
     ), true),
     'db' => array(
         'default' => array(
-            'database' => 'postgres',
+            'database' => 'scoop',
             'user' => 'postgres',
             'password' => 'postgres',
             'host' => 'localhost',

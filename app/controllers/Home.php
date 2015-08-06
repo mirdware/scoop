@@ -3,11 +3,11 @@ namespace Controller;
 
 class Home extends \Scoop\Controller
 {
-    private $message;
+    private $quotes;
 
-    public function __construct(\App\Repository\Message $message)
+    public function __construct(\App\Repository\Quote $quote)
     {
-        $this->message = $message;
+        $this->quotes = $quote->publish();
     }
 
     public function get(array $args)
@@ -16,7 +16,8 @@ class Home extends \Scoop\Controller
             $this->notFound();
         }
         $view = new \Scoop\View('home');
+        $index = rand(0, count($this->quotes)-1);
         return $view->set('title', 'MirdWare')
-                    ->set($this->message->publish());
+                    ->set($this->quotes[$index]);
     }
 }

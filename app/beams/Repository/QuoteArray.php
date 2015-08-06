@@ -1,11 +1,11 @@
 <?php
 namespace App\Repository;
 
-class MessageArray implements Message
+class QuoteArray implements Quote
 {
     public function publish()
     {
-        $quotes = array(
+        return array(
             array('quote' => 'When you do things right, people won\'t be sure you\'ve done anything at all.', 'author' => 'God'),
             array('quote' => 'Walking on water and developing software from a specification are easy if both are frozen.', 'author' => 'Edward Berard'),
             array('quote' => 'Considering the current sad state of our computer programs, software development is clearly still a black art, and cannot yet be called an engineering discipline.', 'author' => 'Bill Clinton'),
@@ -16,7 +16,5 @@ class MessageArray implements Message
             array('quote' => 'Most of you are familiar with the virtues of a programmer. There are three, of course: laziness, impatience, and hubris', 'author' => 'Larry Wall'),
             array('quote' => 'Always code as if the guy who ends up maintaining your code will be a violent psychopath who knows where you live.', 'author' => 'Martin Golding')
         );
-        $amount = count($quotes)-1;
-        return $quotes[rand(0, $amount)];
     }
 }

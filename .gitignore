@@ -2,5 +2,5 @@
 /node_modules
 /public/css
 /public/js
-/app/resources/vendor
+composer.lock
 Thumbs.db

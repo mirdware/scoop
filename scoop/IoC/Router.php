@@ -28,8 +28,7 @@ class Router
 
         if ($matches) {
             asort($matches);
-            $key = array_keys($matches);
-            $key = array_pop($key);
+            $key = array_pop(array_keys($matches));
             return $this->getInstance($key);
         }
     }

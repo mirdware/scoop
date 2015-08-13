@@ -2,20 +2,19 @@
 namespace Scoop;
 
 /**
- * La función principal de esta clase es la de asociar los controladores 
- * con sus respectivos templates.
+ * La función principal de esta clase es la de asociar los controladores con sus respectivos templates.
  */
 final class View
 {
     //ruta donde se encuentran las vistas
     const ROOT = 'app/views/php/';
-    //extensión de los archivos que funcionan como vistas
+    //extensión de los archivos que funcionan como vistas.
     const EXT = '.php';
-    //viewData que contiene los datos a ser procesados por la vista
+    //viewData que contiene los datos a ser procesados por la vista.
     private $viewData;
     //Nombre de la vista
     private $viewName;
-    //Muestra el mensaje, puede ser de tipo error, out, alert
+    //Muestra el mensaje, puede ser de tipo error, out, alert.
     public $msg;
 
     public function __construct($viewName)
@@ -25,48 +24,46 @@ final class View
         $this->viewName = $viewName;
     }
 
-    public function there() {
-        return is_readable(self::ROOT.$this->viewName.self::EXT) || 
-                is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT);
-    }
-
     /**
-     * Modifica los datos que va a procesar la vista
-     * @param String|Array $key   Identificador del dato en la vista,
-     * si es un array se ejecuta el par clave => valor
-     * @param Mixed $value Dato a procesar por la vista
+     * Modifica los datos que va a procesar la vista.
+     * @param string|array $key   Identificador del dato en la vista, si es un array se ejecuta el par clave => valor.
+     * @param mixed        $value Dato a procesar por la vista
+     * @return \Scoop\View        La instancia de la clase para encadenamiento.
      */
     public function set($key, $value = null)
     {
         if (is_array($key)) {
             $this->viewData += $key;
-        } else {
-            $this->viewData[$key] = $value;
+            return $this;
         }
+        $this->viewData[$key] = $value;
         return $this;
     }
 
     /**
-     * Remueve un dato de la vista o en su defecto, reinicia la misma.
-     * @param  String|Array|null $key dependiendo del tipo elimina uno o varios datos
-     * de la vista.
+     * Remueve un dato de la vista o en su defecto reinicia la misma.
+     * @param  string|array|null $arrayKeys Dependiendo del tipo elimina uno o varios datos.
+     * @return \Scoop\View                  La instancia de la clase para encadenamiento.
      */
-    public function remove($key = null)
+    public function remove($arrayKeys = null)
     {
-        if ($key) {
-            if ( is_array($key) ) {
-                foreach ($key as &$v) {
-                    unset($this->viewData[$k]);
-                }
-            } else {
+        if ($arrayKeys) {
+            if (!is_array($arrayKeys)) {
+                $arrayKeys = array($arrayKeys);
+            }
+            foreach ($arrayKeys as &$key) {
                 unset($this->viewData[$key]);
             }
-        } else {
-            $this->viewData = array();
+            return $this;
         }
+        $this->viewData = array();
         return $this;
     }
 
+    /**
+     * Compila la vista para devolver un String formateado en HTML.
+     * @return string Formato en HTML.
+     */
     public function render()
     {
         \Scoop\View\Helper::init(array(
@@ -82,62 +79,84 @@ final class View
         return $view;
     }
 
+    /**
+     * Verifica si existe la vista, ya sea template o vista compilada.
+     * @return boolean Existe la vista o no.
+     */
+    public function there() {
+        return is_readable(self::ROOT.$this->viewName.self::EXT) || 
+                is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT);
+    }
 }
 
 final class __Message__
 {
     private $msg;
-    private $type;
 
     public function __construct()
     {
         $this->msg = '<div id="msg-not"></div>';
     }
 
-    private function validate(&$type)
-    {
-        $this->type = $type;
-        if ($this->type !== 'error' &&
-            $this->type !== 'out' &&
-            $this->type !== 'alert') {
-            throw new Exception("Error building only accepted message types: error, out and alert.", 1);
-        }
-    }
-
-    private function apply()
-    {
-        $this->msg = '<div id="msg-'.$this->type.'">'.$this->msg.'</div>';
-    }
-
-    /* Configura el mensaje que sera mostrado en el sistema de notificaciones interno */
-    public function set($msg, $type = 'out')
-    {
-        $this->msg = $msg;
-        $this->validate($type);
-        $this->apply();
-        return $this;
-    }
-
+    /**
+     * Valida y guarda el mensaje suministrado por el usuario.
+     * @param  string              $msg  Mensaje a ser mostrado por la aplicación.
+     * @param  string              $type Tipo de mensaje a mostrar (out, alert, error).
+     * @return \Scoop\__Message__        La instancia de la clase para encadenamiento.
+     */
     public function push($msg, $type = 'out')
     {
-        $this->validate($type);
+        self::validate($type);
         $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
         return $this;
     }
 
+    /**
+     * Muestra y elimina el mensjae suministrado por el usuario
+     * @return \Scoop\__Message__ La instancia de la clase para encadenamiento.
+     */
     public function pull()
     {
         if (isset($_SESSION['msg-scoop'])) {
-            $this->type = $_SESSION['msg-scoop']['type'];
-            $this->msg = $_SESSION['msg-scoop']['msg'];
-            $this->apply();
+            $this->setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
             unset($_SESSION['msg-scoop']);
         }
         return $this;
     }
 
+    /**
+     * Valida y muestra el mensaje suministrado por el usuario
+     * @param string               $msg  Mensaje a ser mostrado por la aplicación.
+     * @param string               $type Tipo de mensaje a mostrar.
+     * @return \Scoop\__Message__        La instancia de la clase para encadenamiento.
+     */
+    public function set($msg, $type = 'out')
+    {
+        self::validate($type);
+        $this->setMsg($type, $msg);
+        return $this;
+    }
+
+    /**
+     * Muestra el mensaje
+     * @return string Mensaje usado por el usuario
+     */
     public function __toString()
     {
         return $this->msg;
+    }
+
+    private function setMsg($type, $msg)
+    {
+        $this->msg = '<div id="msg-'.$type.'">'.$msg.'</div>';
+    }
+
+    private static function validate($type)
+    {
+        if ($this->type !== 'error' &&
+            $this->type !== 'out' &&
+            $this->type !== 'alert') {
+            throw new Exception("Error building only accepted message types: error, out and alert.", 1);
+        }
     }
 }

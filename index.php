@@ -16,9 +16,12 @@
 
 try {
     require 'scoop/Bootstrap/Loader.php';
-    Loader::getInstance();
     \Scoop\Bootstrap\Config::add('app/config');
-    \Scoop\Bootstrap\App::run();
+    $router = new \Scoop\IoC\Router();
+    $router->register('app/routes');
+    $app = new \Scoop\Bootstrap\App();
+    $app->setRouter($router)
+        ->run();
 } catch (\Scoop\Http\Exception $ex) {
     $ex->handler();
 }

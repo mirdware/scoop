@@ -1,82 +1,114 @@
 <?php
 namespace Scoop\Bootstrap;
 
-abstract class App
+class App
 {
     const MAIN_METHOD = 'get';
 
-    public static function run()
+    private $router;
+    private $url;
+    private $controller;
+
+    public function run()
     {
         if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
             \Scoop\Controller::redirect(
                 str_replace('index.php', '', $_SERVER['REQUEST_URI'])
             );
         }
-        
-        $router = new \Scoop\IoC\Router();
-        $router->register('app/routes');
-        $url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
-        unset($_GET['route']);
+        $response = $this->invoke();
 
-        if (strtolower($url) !== $url) {
-            throw new \Scoop\Http\NotFoundException();
+        if ($response === null) {
+            header('HTTP/1.0 204 No Response');
+        } elseif ($response instanceof \Scoop\View) {
+            $response = $response->render();
+        } elseif (is_array($response)) {
+            header('Content-Type: application/json');
+            $response = json_encode($response);
         }
-        // Sanear variables por POST y GET
+        exit($response);
+    }
+
+    protected function invoke()
+    {
+        $url = $this->getURL();
+
         if ($_POST) {
             self::purgePOST($_POST);
         }
         if ($_GET) {
             self::purgeGET($_GET);
         }
-        
-        $controller = $router->route($url);
+        $this->controller = $this->router->route($url);
 
-        if ($controller) {
-            $url = str_replace($router->getURL(get_class($controller)), '', $url);
-            $params = array_filter(explode('/', $url));
-            unset ($url);
-
-            if ($params) {
-                $aux = explode('-', array_shift($params));
-
-                $method = array_shift($aux);
-                if (!empty($aux)) {
-                    $method .= implode(array_map('ucfirst', $aux));
-                }
-                unset($aux);
-            }
-
-            // Normalizar el método y parámetros enviados al controlador
-            $controllerReflection = new \ReflectionClass($controller);
-            if (!isset($method)) {
-                $method = self::MAIN_METHOD;
-            } elseif ($method === self::MAIN_METHOD || !$controllerReflection->hasMethod($method)) {
-                array_unshift($params, $method);
-                $method = self::MAIN_METHOD;
-            }
-            if ($method === self::MAIN_METHOD) {
-                $params = array($params);
-            }
-            
-            $method = $controllerReflection->getMethod($method);
+        if ($this->controller) {
+            $params = $this->getParams($url);
+            $method = $this->getMethod($params);
             $numParams = count($params);
 
             if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
-                unset($numParams);
-                $response = $method->invokeArgs($controller, $params);
-                if ($response === null) {
-                    header('HTTP/1.0 204 No Response');
-                } elseif ($response instanceof \Scoop\View) {
-                    $response = $response->render();
-                } elseif (is_array($response)) {
-                    header('Content-Type: application/json');
-                    $response = json_encode($response);
-                }
-                exit($response);
+                return $method->invokeArgs($this->controller, $params);
             }
         }
-
         throw new \Scoop\Http\NotFoundException();
+    }
+
+    public function setRouter(\Scoop\IoC\Router $router)
+    {
+        $this->router = $router;
+        return $this;
+    }
+
+    public function setURL(String $url)
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    private function getURL()
+    {
+        if (!isset($this->url)) {
+            $this->url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
+            unset($_GET['route']);
+        }
+        return $this->url;
+    }
+
+    private function getParams($url)
+    {
+        $urlController = $this->router->getURL(get_class($this->controller));
+        $url = substr($url, strlen($urlController));
+
+        if (strtolower($urlController) !== $urlController) {
+            throw new \Scoop\Http\NotFoundException();
+        }
+        return array_filter(explode('/', $url));
+    }
+
+    private function getMethod(&$params)
+    {
+        $controllerReflection = new \ReflectionClass($this->controller);
+        $method = self::MAIN_METHOD;
+
+        if ($params) {
+            $aux = explode('-', array_shift($params));
+            $method = array_shift($aux);
+
+            if (strtolower($method) !== $method) {
+                throw new \Scoop\Http\NotFoundException();
+            }
+            if (!empty($aux)) {
+                $method .= implode(array_map('ucfirst', $aux));
+            }
+            if ($method === self::MAIN_METHOD || !$controllerReflection->hasMethod($method)) {
+                array_unshift($params, $method);
+                $method = self::MAIN_METHOD;
+            }
+        }
+        if ($method === self::MAIN_METHOD) {
+            $params = array($params);
+        }
+        return $controllerReflection->getMethod($method);
     }
 
     private static function purgePOST(&$post)

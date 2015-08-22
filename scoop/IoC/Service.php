@@ -1,35 +1,34 @@
 <?php
 namespace Scoop\IoC;
 
-class Service
+abstract class Service
 {
-    private $services = array();
+    private static $services = array();
 
-    public function register($key, $callback, $params = array())
+    public static function register($key, $callback, $params = array())
     {
         if (is_string($callback)) {
             $params = array($callback, $params);
             $callback = array('\Scoop\IoC\Injector', 'create');
         }
-        $this->services[$key] = array(
+        self::$services[$key] = array(
             'callback' => $callback,
             'params' => $params
         );
-        return $this;
     }
 
-    public function getInstance($key)
+    public static function getInstance($key)
     {
-        $serv = &$this->services[$key];
+        $serv = &self::$services[$key];
         if (!isset($serv['instance'])) {
             $serv['instance'] = call_user_func_array($serv['callback'], $serv['params']);
         }
         return $serv['instance'];
     }
 
-    public function create($key)
+    public static function create($key)
     {
-        $serv = &$this->services[$key];
+        $serv = &self::$services[$key];
         return call_user_func_array($serv['callback'], $serv['params']);
     }
 }

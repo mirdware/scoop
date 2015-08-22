@@ -7,7 +7,7 @@
  * Namespaces/Packages: PascalCase
  * Propiedades/Párametro/Variable: camelCase
  *
- * @package scoop
+ * @package Scoop
  * @license http://opensource.org/licenses/MIT MIT
  * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
@@ -16,12 +16,10 @@
 
 try {
     require 'scoop/Bootstrap/Loader.php';
-    \Scoop\Bootstrap\Config::add('app/config');
-    $router = new \Scoop\IoC\Router();
-    $router->register('app/routes');
-    $app = new \Scoop\Bootstrap\App();
-    $app->setRouter($router)
-        ->run();
+    $environment = new \Environment\Production();
+    $app = new \Scoop\Bootstrap\App($environment);
+    $environment->configure();
+    $app->run();
 } catch (\Scoop\Http\Exception $ex) {
     $ex->handler();
 }

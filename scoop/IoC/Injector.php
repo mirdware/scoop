@@ -15,7 +15,7 @@ abstract class Injector
         self::$rules[$interface] = $class;
     }
 
-    private static function getParams(\ReflectionMethod $method)
+    private static function getParams(\ReflectionMethod &$method)
     {
         $params = $method->getParameters();
         $args = array();
@@ -31,13 +31,13 @@ abstract class Injector
         return $args;
     }
 
-    private static function replaceRule($class)
+    private static function replaceRule(&$class)
     {
         $className = self::$rules[$class->getName()];
         return new \ReflectionClass($className);
     }
 
-    private static function instantiate(\ReflectionClass $class, $args = array())
+    private static function instantiate(\ReflectionClass &$class, $args = array())
     {
         $constructor = $class->getConstructor();
         if ($constructor) {

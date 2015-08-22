@@ -21,14 +21,14 @@
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    #Descomentar si tu servidor web está realmente siendo servido desde un directorio de usuario 
+    #Descomentar si tu servidor web está realmente siendo servido desde un directorio de usuario
     #que ya utiliza mod_rewrite:
     #RewriteBase /
 
     #ocultar las carpetas de la app
     RewriteRule ^(app|vendor|scoop|resources|tests)/ - [F]
 
-    #Forzar a usar la barra o slash (/) final dentro de la URL  
+    #Forzar a usar la barra o slash (/) final dentro de la URL
     RewriteCond %{REQUEST_URI} /+[^\.]+$
         RewriteRule ^(.*[^/])$ %{REQUEST_URI}/ [R=301,L]
     RewriteCond %{REQUEST_URI} ^(.*)//(.*)$

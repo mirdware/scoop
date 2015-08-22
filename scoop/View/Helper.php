@@ -1,8 +1,6 @@
 <?php
 namespace Scoop\View;
 
-use \Scoop\Bootstrap\Config as Config;
-
 abstract class Helper
 {
     private static $view;
@@ -10,8 +8,9 @@ abstract class Helper
 
     public static function init($array)
     {
+        $config = \Scoop\IoC\Service::getInstance('config');
         self::$view = &$array;
-        self::$assets = (array) Config::get('asset') + array(
+        self::$assets = (array) $config->get('asset') + array(
             'path' => 'public/',
             'img' => 'images/',
             'css' => 'css/',
@@ -21,10 +20,11 @@ abstract class Helper
 
     public static function get($key)
     {
+        $config = \Scoop\IoC\Service::getInstance('config');
         if (isset(self::$view[$key])) {
             return self::$view[$key];
         }
-        return Config::get($key);
+        return $config->get($key);
     }
 
     public static function overt($resource)

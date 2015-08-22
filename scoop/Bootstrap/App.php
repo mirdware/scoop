@@ -7,7 +7,12 @@ class App
 
     private $router;
     private $url;
-    private $controller;
+    private $environment;
+
+    public function __construct(Environment $environment)
+    {
+        $this->environment = $environment;
+    }
 
     public function run()
     {
@@ -29,7 +34,7 @@ class App
         exit($response);
     }
 
-    protected function invoke()
+    public function invoke()
     {
         $url = $this->getURL();
 
@@ -39,6 +44,7 @@ class App
         if ($_GET) {
             self::purgeGET($_GET);
         }
+        $this->router = $this->environment->getRouter();
         $this->controller = $this->router->route($url);
 
         if ($this->controller) {
@@ -51,12 +57,6 @@ class App
             }
         }
         throw new \Scoop\Http\NotFoundException();
-    }
-
-    public function setRouter(\Scoop\IoC\Router $router)
-    {
-        $this->router = $router;
-        return $this;
     }
 
     public function setURL(String $url)
@@ -172,5 +172,4 @@ class App
         // we are done...
         return $data;
     }
-
 }

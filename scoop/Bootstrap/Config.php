@@ -1,14 +1,22 @@
 <?php
 namespace Scoop\Bootstrap;
 
-abstract class Config
+class Config
 {
-    private static $conf = array();
+    private $conf = array();
+    private static $init = false;
 
-    public static function get($name)
+    public function __construct()
+    {
+        if (!self::$init) {
+            self::init();
+        }
+    }
+
+    public function get($name)
     {
         $name = explode('.', $name);
-        $res = self::$conf;
+        $res = $this->conf;
         foreach ($name as &$key) {
             if (!isset($res[$key])) {
                 return false;
@@ -18,12 +26,9 @@ abstract class Config
         return $res;
     }
 
-    public static function add($name)
+    public function add($name)
     {
-        if (!self::$conf) {
-            self::init();
-        }
-        self::$conf += require $name.'.php';
+        $this->conf += require $name.'.php';
     }
 
     private static function init()
@@ -36,5 +41,6 @@ abstract class Config
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
         \Scoop\View\Template::addClass('View', '\Scoop\View\Helper');
+        self::$init = true;
     }
 }

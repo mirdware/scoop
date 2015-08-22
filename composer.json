@@ -15,6 +15,7 @@
         "psr-4": {
             "App\\": "app/beams/",
             "Controller\\": "app/controllers/",
+            "Environment\\": "app/environments/",
             "Scoop\\": "scoop/"
         }
     },

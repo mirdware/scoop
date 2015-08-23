@@ -16,6 +16,26 @@ abstract class Controller
     );
 
     /**
+     * Inyecta la dependencia router al controlador
+     * @param IoC\Router $router Router que se encargara de obtener los controladores
+     */
+    public function setRouter(IoC\Router $router)
+    {
+        $this->router = $router;
+    }
+
+    /**
+     * Realiza la redirección a la página pasada como parámetro
+     * @param  String $url Dirección a la que se redirecciona la página
+     */
+    public static function redirect($url, $status = 301)
+    {
+        header(self::$redirects[$status], true, $status);
+        header('Location:'.$url);
+        exit;
+    }
+
+    /**
      * Verifica si la pagina fue llamada via ajax o normalmente
      * @return boolean Devuelve true si la página fue llamada via ajax y false en caso contrario
      */
@@ -58,24 +78,9 @@ abstract class Controller
         return $this->router->getInstance($controller);
     }
 
-    /**
-     * Inyecta la dependencia router al controlador
-     * @param IoC\Router $router Router que se encargara de obtener los controladores
-     */
-    public function setRouter(IoC\Router $router)
+    protected function getService($serviceName)
     {
-        $this->router = $router;
-    }
-
-    /**
-     * Realiza la redirección a la página pasada como parámetro
-     * @param  String $url Dirección a la que se redirecciona la página
-     */
-    public static function redirect($url, $status = 301)
-    {
-        header(self::$redirects[$status], true, $status);
-        header('Location:'.$url);
-        exit;
+        return \Scoop\IoC\Service::get($serviceName);
     }
 
     /**

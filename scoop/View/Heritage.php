@@ -21,7 +21,7 @@ abstract class Heritage {
         ob_clean();
     }
 
-    public static function includ($path)
+    public static function import($path)
     {
         Template::parse($path);
         include \Scoop\View::ROOT.$path.\Scoop\View::EXT;

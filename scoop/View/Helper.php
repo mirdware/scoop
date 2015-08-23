@@ -1,16 +1,18 @@
 <?php
 namespace Scoop\View;
 
-abstract class Helper
+class Helper
 {
-    private static $view;
-    private static $assets;
+    private $name;
+    private $msg;
+    private $assets;
 
-    public static function init($array)
+    public function __construct($name, $msg)
     {
         $config = \Scoop\IoC\Service::getInstance('config');
-        self::$view = &$array;
-        self::$assets = (array) $config->get('asset') + array(
+        $this->name = $name;
+        $this->msg = $msg;
+        $this->assets = (array) $config->get('asset') + array(
             'path' => 'public/',
             'img' => 'images/',
             'css' => 'css/',
@@ -18,33 +20,34 @@ abstract class Helper
         );
     }
 
-    public static function get($key)
+    public function getName()
     {
-        $config = \Scoop\IoC\Service::getInstance('config');
-        if (isset(self::$view[$key])) {
-            return self::$view[$key];
-        }
-        return $config->get($key);
+        return $this->name;
     }
 
-    public static function overt($resource)
+    public function getMsg()
     {
-        return ROOT.self::$assets['path'].$resource;
+        return $this->msg;
     }
 
-    public static function img($image)
+    public function overt($resource)
     {
-        return self::overt(self::$assets['img'].$image);
+        return ROOT.$this->assets['path'].$resource;
     }
 
-    public static function css($styleSheet)
+    public function img($image)
     {
-        return self::overt(self::$assets['css'].$styleSheet);
+        return $this->overt($this->assets['img'].$image);
     }
 
-    public static function js($javaScript)
+    public function css($styleSheet)
     {
-        return self::overt(self::$assets['js'].$javaScript);
+        return $this->overt($this->assets['css'].$styleSheet);
+    }
+
+    public function js($javaScript)
+    {
+        return $this->overt($this->assets['js'].$javaScript);
     }
 
 }

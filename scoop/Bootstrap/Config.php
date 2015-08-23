@@ -40,7 +40,6 @@ class Config
         // Configuración
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
-        \Scoop\View\Template::addClass('View', '\Scoop\View\Helper');
         self::$init = true;
     }
 }

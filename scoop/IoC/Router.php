@@ -22,9 +22,7 @@ class Router
     public function route($route)
     {
         self::$route = $route;
-        $matches = array_filter($this->routes, function ($route) {
-            return strpos(self::$route, $route) === 0;
-        });
+        $matches = array_filter($this->routes, array($this, 'filter'));
 
         if ($matches) {
             asort($matches);
@@ -60,5 +58,10 @@ class Router
                 $this->register($currentRoute, $class);
             }
         }
+    }
+
+    private static function filter($route)
+    {
+        return strpos(self::$route, $route) === 0;
     }
 }

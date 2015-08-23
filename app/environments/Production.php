@@ -7,13 +7,10 @@ class Production extends \Scoop\Bootstrap\Environment
     {
         $router = new \Scoop\IoC\Router();
         $router->register('app/routes');
+        $config = new \Scoop\Bootstrap\Config();
+        $config->add('app/config');
         $this->setRouter($router)
-             ->registerService('config', function ()
-             {
-                 $config = new \Scoop\Bootstrap\Config();
-                 $config->add('app/config');
-                 return $config;
-             })
+             ->registerService('config', $config)
              ->bind('App\Repository\Quote', 'App\Repository\QuoteArray');
     }
 }

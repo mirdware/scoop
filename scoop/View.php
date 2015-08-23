@@ -66,10 +66,9 @@ final class View
      */
     public function render()
     {
-        \Scoop\View\Helper::init(array(
-            'name' => &$this->viewName,
-            'msg' => $this->msg
-        ));
+        \Scoop\IoC\Service::register('view',
+            new \Scoop\View\Helper($this->viewName, $this->msg)
+        );
         \Scoop\View\Heritage::init($this->viewData);
         \Scoop\View\Template::parse($this->viewName);
         extract($this->viewData);

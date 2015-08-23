@@ -9,8 +9,6 @@ final class Template
     const EXT = '.sdt.php';
     //clase para el manejo de herencia
     const HERITAGE = '\Scoop\View\Heritage';
-    //clases añadidas al template
-    private static $classes = array();
 
     public static function parse($name)
     {
@@ -52,28 +50,11 @@ final class Template
         }
     }
 
-    public static function addClass($key, $class)
-    {
-        self::$classes[$key] = $class;
-    }
-
-    private static function formatObj(&$line)
-    {
-        if ( strpos($line, '->') !== -1 ) {
-            $objs = explode('->', $line);
-            $init = array_shift($objs);
-            $objs = array_map('ucfirst', $objs);
-            $line = $init.implode('->get', $objs);
-            $line = preg_replace('/->get(\w+)(->|\s)/', '->get${1}()${2}', $line);
-            $line = str_replace(array_keys(self::$classes), self::$classes, $line);
-        }
-    }
-
     private static function replace(&$line)
     {
         $line = preg_replace(array(
                 '/@extends \'([\w\/-]+)\'/',
-                '/@include \'([\w\/-]+)\'/',
+                '/@import \'([\w\/-]+)\'/',
                 '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
                 '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
                 '/@foreach ([ \w\.\&\|\$\->:]+)/',
@@ -81,7 +62,7 @@ final class Template
                 '/@while ([ \w\.\&\|\$\(\)!=<>\+\-]+)/'
             ), array(
                 self::HERITAGE.'::extend(\'${1}\')',
-                self::HERITAGE.'::includ(\'${1}\')',
+                self::HERITAGE.'::import(\'${1}\')',
                 'if(${1}):',
                 'elseif(${1}):',
                 'foreach(${1}):',
@@ -111,7 +92,7 @@ final class Template
         $line = preg_replace('/\{([ \w\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>]+)\}/',
             '<?php echo ${1} ?>',
             $line, -1, $count);
-        if ($count !== 0) self::formatObj($line);
+        if ($count !== 0) \Scoop\IoC\Service::compileView($line);
         return false;
     }
 

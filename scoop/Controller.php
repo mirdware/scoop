@@ -70,21 +70,26 @@ abstract class Controller
 
     /**
      * Obtiene la instancia del controlador ligado a la ruta
-     * @param  String $controller Nombre del controlador a obtener
-     * @return Controller             Controlador a obtener
+     * @param  String            $controller Nombre del controlador a obtener
+     * @return \Scoop\Controller             Controlador a obtener
      */
     protected function getController($controller)
     {
         return $this->router->getInstance($controller);
     }
 
+    /**
+     * Obtiene el servicio especificado por el usuario
+     * @param String $serviceName Nombre del servicio a obtener
+     * @return Object Servicio a obtener
+     */
     protected function getService($serviceName)
     {
-        return \Scoop\IoC\Service::get($serviceName);
+        return \Scoop\IoC\Service::getInstance($serviceName);
     }
 
     /**
-     * Debe ser implementado en cada controlador y se encarga  de realizar 
+     * Debe ser implementado en cada controlador y se encarga  de realizar
      * la tarea por defecto cuando no se encuentra el método
      * @param  array  $args Argumentos pasados al controlador
      */

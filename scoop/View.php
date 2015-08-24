@@ -83,7 +83,7 @@ final class View
      * @return boolean Existe la vista o no.
      */
     public function there() {
-        return is_readable(self::ROOT.$this->viewName.self::EXT) || 
+        return is_readable(self::ROOT.$this->viewName.self::EXT) ||
                 is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT);
     }
 }
@@ -136,10 +136,6 @@ final class __Message__
         return $this;
     }
 
-    /**
-     * Muestra el mensaje
-     * @return string Mensaje usado por el usuario
-     */
     public function __toString()
     {
         return $this->msg;

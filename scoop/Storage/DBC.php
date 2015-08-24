@@ -8,7 +8,7 @@ class DBC extends \PDO
     public function __construct($db, $user, $pass, $host, $engine)
     {
         parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass);
-        parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC); 
+        parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
         parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         parent::exec('SET NAMES \'utf8\'');
         parent::beginTransaction();
@@ -27,7 +27,7 @@ class DBC extends \PDO
         if (is_string($conf)) {
             $bundle = $conf;
         }
-        $config = \Scoop\Bootstrap\Config::get($bundle);
+        $config = \Scoop\IoC\Service::getInstance('config')->get($bundle);
         if (is_array($conf)) {
             $config += $conf;
         }

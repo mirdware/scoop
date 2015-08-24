@@ -7,6 +7,7 @@ var gulp = require('gulp'),
     buffer = require('vinyl-buffer'),
     uglify = require('gulp-uglify'),
     sourcemaps = require('gulp-sourcemaps'),
+    livereload = require('gulp-livereload'),
     app = require('./package.json');
 
 gulp.task('css', function() {
@@ -16,7 +17,8 @@ gulp.task('css', function() {
         .pipe(mincss())
         .pipe(rename(app.name+'.min.css'))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('public/css/'));
+        .pipe(gulp.dest('public/css/'))
+        .pipe(livereload());
 });
 
 gulp.task('js', function() {
@@ -30,12 +32,13 @@ gulp.task('js', function() {
         .pipe(sourcemaps.init())
             .pipe(uglify())
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('public/js/'));
+        .pipe(gulp.dest('public/js/'))
+        .pipe(livereload());
 });
 
-gulp.task('watch', function() {
-    gulp.watch(['resources/styles/**/*.styl'], ['css']);
-    gulp.watch(['resources/javascript/**/*.js'], ['js']);
+gulp.task('default', ['css', 'js'], function() {
+    livereload.listen();
+    gulp.watch('resources/styles/**/*.styl', ['css']);
+    gulp.watch('resources/javascript/**/*.js', ['js']);
+    gulp.watch('./**/*.php').on('change', livereload.changed);
 });
-
-gulp.task('default', ['watch', 'css', 'js']);

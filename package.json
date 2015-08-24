@@ -13,6 +13,7 @@
     "browserify": "^11.0.1",
     "font-awesome-stylus": "^4.3.0",
     "gulp": "^3.9.0",
+    "gulp-livereload": "^3.8.0",
     "gulp-minify-css": "^1.2.0",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.5.2",

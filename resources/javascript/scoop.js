@@ -86,7 +86,7 @@
                         paddingBottom: "5px"
                     });
                 }
-                
+
                 msgHeight = (divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2);
                 divMsg.style.height = 0;
                 $.sfx.anim(divMsg, {
@@ -233,7 +233,7 @@
 
             total = (len*7)+ucChar+lcChar+(numChar*4)+(spChar*5)
                     -only-(charRep*3)-(cucChar*2)-(cnumChar*2)-(clcChar*2)-(cons*5);
-            
+
             if (total<=0) {
                 total = 0;
                 nivel = "Nivel de seguridad";
@@ -335,7 +335,7 @@
                                 error.style.visibility = "visible";
                             }
                         }
-                        
+
                         trouble && trouble(form, res);
                         return;
                     }
@@ -354,5 +354,5 @@
         });
 
         $.extend($.ajax, {submit: submit});
-        
+
 })(jetro, window);

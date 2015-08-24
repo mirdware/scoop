@@ -7,6 +7,7 @@ class App
 
     private $router;
     private $url;
+    private $controller;
     private $environment;
 
     public function __construct(Environment $environment)

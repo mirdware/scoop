@@ -12,7 +12,7 @@
 
 /* SITE */
     Last Update: 2015/08/12
-    Language: Español
+    Language: EspaÃ±ol
     Standards: HTML5, CSS3, JavaScript
     Components: jetro, font-awesome, browserify, stylus, gulp
     Software: Sublime Text 2, Gimp, NodeJS

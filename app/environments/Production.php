@@ -7,7 +7,7 @@ class Production extends \Scoop\Bootstrap\Environment
     {
         $router = new \Scoop\IoC\Router();
         $router->register('app/routes');
-        $config = new \Scoop\Bootstrap\Config();
+        $config = new \Scoop\Bootstrap\Configuration();
         $config->add('app/config');
         $this->setRouter($router)
              ->registerService('config', $config)

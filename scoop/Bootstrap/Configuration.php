@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Bootstrap;
 
-class Config
+class Configuration
 {
     private $conf = array();
     private static $init = false;
@@ -26,18 +26,15 @@ class Config
         return $res;
     }
 
-    public function add($name)
+    public function add($config)
     {
-        $this->conf += require $name.'.php';
+        $this->conf += require $config.'.php';
     }
 
     private static function init()
     {
         session_start();
-        // Definición global de constantes
         define ('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
-
-        // Configuración
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
         self::$init = true;

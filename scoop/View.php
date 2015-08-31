@@ -61,14 +61,52 @@ final class View
     }
 
     /**
+     * Valida y muestra el mensaje suministrado por el usuario
+     * @param string            $msg  Mensaje a ser mostrado por la aplicación.
+     * @param string            $type Tipo de mensaje a mostrar.
+     * @return \Scoop\View     La instancia de la clase para encadenamiento.
+     */
+    public function setMessage($msg, $type = 'out')
+    {
+        $this->msg->set($msg, $type);
+        return $this;
+    }
+
+    /**
+     * Valida y guarda el mensaje suministrado por el usuario.
+     * @param  string               $msg   Mensaje a ser mostrado por la aplicación.
+     * @param  string               $type  Tipo de mensaje a mostrar (out, alert, error).
+     * @return \Scoop\View          La instancia de la clase para encadenamiento.
+     */
+    public function pushMessage($msg, $type = 'out')
+    {
+        $this->msg->push($msg, $type);
+        return $this;
+    }
+
+    /**
+     * Muestra y elimina el mensjae suministrado por el usuario
+     * @return \Scoop\View La instancia de la clase para encadenamiento.
+     */
+    public function pullMessage()
+    {
+        $this->msg->pull();
+        return $this;
+    }
+
+    /**
      * Compila la vista para devolver un String formateado en HTML.
      * @return string Formato en HTML.
+     * @throws \Exception si no se existe la platilla o la vista.
      */
     public function render()
     {
-        \Scoop\IoC\Service::register('view',
-            new \Scoop\View\Helper($this->viewName, $this->msg)
-        );
+        if (!is_readable(self::ROOT.$this->viewName.self::EXT) &&
+        !is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT)) {
+            throw new \Exception('It has not been possible to load the template or view');
+        }
+        $helperView = new \Scoop\View\Helper($this->viewName, $this->msg);
+        \Scoop\IoC\Service::register('view', $helperView);
         \Scoop\View\Heritage::init($this->viewData);
         \Scoop\View\Template::parse($this->viewName);
         extract($this->viewData);
@@ -77,17 +115,11 @@ final class View
         ob_end_clean();
         return $view;
     }
-
-    /**
-     * Verifica si existe la vista, ya sea template o vista compilada.
-     * @return boolean Existe la vista o no.
-     */
-    public function there() {
-        return is_readable(self::ROOT.$this->viewName.self::EXT) ||
-                is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT);
-    }
 }
 
+/**
+ * @ignore clase interna de View
+ */
 final class __Message__
 {
     private $msg;
@@ -97,43 +129,24 @@ final class __Message__
         $this->msg = '<div id="msg-not"></div>';
     }
 
-    /**
-     * Valida y guarda el mensaje suministrado por el usuario.
-     * @param  string              $msg  Mensaje a ser mostrado por la aplicación.
-     * @param  string              $type Tipo de mensaje a mostrar (out, alert, error).
-     * @return \Scoop\__Message__        La instancia de la clase para encadenamiento.
-     */
-    public function push($msg, $type = 'out')
+    public function push($msg, $type)
     {
         self::validate($type);
         $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
-        return $this;
     }
 
-    /**
-     * Muestra y elimina el mensjae suministrado por el usuario
-     * @return \Scoop\__Message__ La instancia de la clase para encadenamiento.
-     */
     public function pull()
     {
         if (isset($_SESSION['msg-scoop'])) {
             $this->setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
             unset($_SESSION['msg-scoop']);
         }
-        return $this;
     }
 
-    /**
-     * Valida y muestra el mensaje suministrado por el usuario
-     * @param string               $msg  Mensaje a ser mostrado por la aplicación.
-     * @param string               $type Tipo de mensaje a mostrar.
-     * @return \Scoop\__Message__        La instancia de la clase para encadenamiento.
-     */
-    public function set($msg, $type = 'out')
+    public function set($msg, $type)
     {
         self::validate($type);
         $this->setMsg($type, $msg);
-        return $this;
     }
 
     public function __toString()
@@ -148,9 +161,9 @@ final class __Message__
 
     private static function validate($type)
     {
-        if ($this->type !== 'error' &&
-            $this->type !== 'out' &&
-            $this->type !== 'alert') {
+        if ($type !== 'error' &&
+            $type !== 'out' &&
+            $type !== 'alert') {
             throw new Exception("Error building only accepted message types: error, out and alert.", 1);
         }
     }

@@ -49,5 +49,4 @@ class Helper
     {
         return $this->overt($this->assets['js'].$javaScript);
     }
-
 }

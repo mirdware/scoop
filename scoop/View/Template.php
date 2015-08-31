@@ -151,5 +151,4 @@ final class Template
         fwrite($view, $content);
         fclose($view);
     }
-
 }

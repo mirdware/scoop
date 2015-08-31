@@ -8,10 +8,10 @@ abstract class Exception extends \Exception
     private $title;
 
     public function __construct(
-        $statusCode, 
-        $message = null, 
-        \Exception $previous = null, 
-        array $headers = array(), 
+        $statusCode,
+        $message = null,
+        \Exception $previous = null,
+        array $headers = array(),
         $code = 0)
     {
         $this->statusCode = $statusCode;
@@ -39,14 +39,15 @@ abstract class Exception extends \Exception
         foreach ($this->headers as &$header) {
             header($header);
         }
-        $view = new \Scoop\View('exceptions/'.$this->statusCode);
-        if ($view->there()) {
-            $view->set( array(
+        try {
+            $view = new \Scoop\View('exceptions/'.$this->statusCode);
+            $output = $view->set(array(
                 'ex' => $this,
                 'title' => $this->title
-            ));
-            exit ($view->render());
+            ))->render();
+        } catch (\Exception $ex) {
+            $output = $this->getMessage();
         }
-        exit ($this->getMessage());
+        exit($output);
     }
 }

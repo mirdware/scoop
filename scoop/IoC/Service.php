@@ -43,12 +43,18 @@ abstract class Service
     public static function compileView(&$line)
     {
         $serviceNames = array_keys(self::$services);
-        $serviceFormats = array_map(array('\Scoop\IoC\Service', 'format'),$serviceNames);
-        $line = str_replace($serviceNames, $serviceFormats, $line);
+        $search = array_map(array('\Scoop\IoC\Service', 'getSearch'),$serviceNames);
+        $replace = array_map(array('\Scoop\IoC\Service', 'getReplace'),$serviceNames);
+        $line = str_replace($search, $replace, $line);
     }
 
-    private static function format($serviceName)
+    private static function getSearch($serviceName)
     {
-        return '\Scoop\IoC\Service::getInstance(\''.$serviceName.'\')';
+        return $serviceName.'->';
+    }
+
+    private static function getReplace($serviceName)
+    {
+        return '\Scoop\IoC\Service::getInstance(\''.$serviceName.'\')->';
     }
 }

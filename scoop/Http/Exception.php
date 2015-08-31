@@ -16,7 +16,7 @@ abstract class Exception extends \Exception
     {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
-        $this->title = \Scoop\Bootstrap\Config::get('exception.'.$statusCode);
+        $this->title = \Scoop\IoC\Service::getInstance('config')->get('exception.'.$statusCode);
         if (!$this->title) {
             $this->title = 'Error '.$statusCode.'!!!';
         }

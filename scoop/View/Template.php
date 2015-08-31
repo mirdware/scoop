@@ -38,7 +38,7 @@ final class Template
                 }
 
                 $content .= $lastLine;
-                $lastLine = trim($line);
+                $lastLine = $line;
             }
 
             fclose($file);
@@ -102,15 +102,15 @@ final class Template
             '/<!--.*?-->/s',
             '/>\s*\n\s*</',
             '/;\s*(\"|\')/',
-            '/\s*:\s*/',
-            '/s*;\s*/',
+            '/<\?php(.*)\s*:\s*(.*)\?>/',
+            '/<\?php(.*)\s*;\s*\?>/',
             '/\s+/'
         ), array(
             '',
             '><',
             '${1}',
-            ':',
-            ';',
+            '<?php${1}:${2}?>',
+            '<?php${1};${2}?>',
             ' '
         ), $html);
     }

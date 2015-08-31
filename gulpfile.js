@@ -11,7 +11,7 @@ var gulp = require('gulp'),
     app = require('./package.json');
 
 gulp.task('css', function() {
-    return gulp.src(['resources/styles/app.styl'])
+    return gulp.src('resources/styles/app.styl')
         .pipe(sourcemaps.init())
         .pipe(stylus())
         .pipe(mincss())
@@ -38,7 +38,7 @@ gulp.task('js', function() {
 
 gulp.task('default', ['css', 'js'], function() {
     livereload.listen();
-    gulp.watch('resources/styles/**/*.styl', ['css']);
-    gulp.watch('resources/javascript/**/*.js', ['js']);
+    gulp.watch('resources/styles/**/*', ['css']);
+    gulp.watch('resources/javascript/**/*', ['js']);
     gulp.watch('./**/*.php').on('change', livereload.changed);
 });

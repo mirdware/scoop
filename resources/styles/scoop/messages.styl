@@ -1,39 +1,34 @@
 #msg-out
 #msg-error
-#msg-alert
+#msg-warning
 #msg-not
-    background #FFF no-repeat 5px center
+    background white no-repeat 5px center
     font 700 1em Arial, Helvetica, sans-serif
     padding 5px
-    padding-left 25px
     position relative
+    top 0
     width 100%
     z-index 1005
-    top 0
+    &::before
+        font-family "FontAwesome"
+        font-size 1.3em
+        padding-right .5em
 
 #msg-not
     height 0
     display none
 
 #msg-out
-    background-image url($images+"success.png")
-    color #45B339
+    color $green
+    &::before
+        content "\f00c"
 
 #msg-error
-    background-image url($images+"error.png")
-    color #C00
+    color $red
+    &::before
+        content "\f057"
 
-#msg-alert
-    background-image url($images+"alert.png")
-    color #F7B81C
-
-.center
-    text-align center
-
-.error
-    background url($images+"error.png")
-    display inline-block
-    height 16px
-    text-indent -999em
-    visibility hidden
-    width 16px
+#msg-warning
+    color $yellow
+    &::before
+        content "\f071"

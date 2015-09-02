@@ -44,7 +44,7 @@
             }
 
             $(function () {
-                divMsg = $("#msg-error") || $("#msg-out") || $("#msg-alert");
+                divMsg = $("#msg-error") || $("#msg-out") || $("#msg-warning");
                 if (divMsg) {
                     cssMsg = $.css(divMsg);
                     msgHeight = divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2;
@@ -57,13 +57,13 @@
                 } else {
                     divMsg = $("#msg-not");
                     cssMsg = $.css(divMsg);
-                    //$.css("#msg-out, #msg-error, #msg-alert, #msg-not").set("opacity", 0);
+                    //$.css("#msg-out, #msg-error, #msg-warning, #msg-not").set("opacity", 0);
                 }
                 $.evt.add(window, "scroll", onScroll);
             });
 
             return function (type, msg) {
-                if (type != "error" && type != "out" && type != "alert") {
+                if (type != "error" && type != "out" && type != "warning") {
                     throw new Error(type+" no es un tipo de mensaje valido");
                 }
                 divMsg.id = "msg-"+type;
@@ -266,7 +266,7 @@
             var form = evt.target,
                 data = $.ajax.form(form),
                 url = opt.url || form.action,
-                container = $("#msg-error") || $("#msg-out") || $("#msg-alert"),
+                container = $("#msg-error") || $("#msg-out") || $("#msg-warning"),
                 success = opt.success,
                 trouble = opt.trouble,
                 error,

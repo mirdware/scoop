@@ -3,11 +3,17 @@ namespace Scoop\View;
 
 final class Template
 {
-    //ruta donde se encuentran las platillas
+    /**
+     * Ruta donde se encuentran las platillas.
+     */
     const ROOT = 'app/views/templates/';
-    //extensión de los archivos que funcionan como plantillas
+    /**
+     * Extensión de los archivos que funcionan como plantillas.
+     */
     const EXT = '.sdt.php';
-    //clase para el manejo de herencia
+    /**
+     * Nombre de la clase para el manejo de herencia.
+     */
     const HERITAGE = '\Scoop\View\Heritage';
 
     public static function parse($name)
@@ -117,7 +123,6 @@ final class Template
 
     private static function create($viewName, &$content)
     {
-        //normalizar las etiquetas
         $content = preg_replace(array(
             '/<\/\s+/',
             '/\s+\/>/',

@@ -60,7 +60,7 @@ class App
         throw new \Scoop\Http\NotFoundException();
     }
 
-    public function setURL(String $url)
+    public function setURL($url)
     {
         $this->url = $url;
         return $this;
@@ -136,9 +136,9 @@ class App
     }
 
     /**
-     * Función para filtrar XSS tomada de https://gist.github.com/mbijon/1098477
-     * @param string $data
-     * @return Datos filtrados
+     * Método para filtrar XSS tomado de https://gist.github.com/mbijon/1098477
+     * @param string $data Datos en crudo, tal cual lo ingreso el usuario
+     * @return string Datos filtrados
      */
     private static function filterXSS($data)
     {

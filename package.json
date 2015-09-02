@@ -2,7 +2,6 @@
   "name": "scoop",
   "version": "0.2.1",
   "description": "scoop project",
-  "main": "gulpfile.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/mirdware/scoop"

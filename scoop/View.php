@@ -2,33 +2,47 @@
 namespace Scoop;
 
 /**
- * La función principal de esta clase es la de asociar los controladores con sus respectivos templates.
+ * La función principal de esta clase es la de asociar los controladores con
+ * sus respectivos templates.
  */
 final class View
 {
-    //ruta donde se encuentran las vistas
+    /** Ruta donde se encuentran las vistas. */
     const ROOT = 'app/views/php/';
-    //extensión de los archivos que funcionan como vistas.
+    /**
+     * Extensión de los archivos que funcionan como vistas.
+     */
     const EXT = '.php';
-    //viewData que contiene los datos a ser procesados por la vista.
+    /**
+     * @var string Contiene los datos a ser procesados por la vista.
+     */
     private $viewData;
-    //Nombre de la vista
+    /**
+     * @var string Nombre de la vista.
+     */
     private $viewName;
-    //Muestra el mensaje, puede ser de tipo error, out, alert.
-    public $msg;
+    /**
+     * @var View\Message Muestra el mensaje, puede ser de tipo out, warning, error.
+     */
+    private $msg;
 
+    /**
+     * Genera la vista partiendo desde el nombre de la misma.
+     * @param $viewName nombre de la vista.
+     */
     public function __construct($viewName)
     {
         $this->viewData = array();
-        $this->msg = new __Message__();
+        $this->msg = new View\Message();
         $this->viewName = $viewName;
     }
 
     /**
      * Modifica los datos que va a procesar la vista.
-     * @param string|array $key   Identificador del dato en la vista, si es un array se ejecuta el par clave => valor.
-     * @param mixed        $value Dato a procesar por la vista
-     * @return \Scoop\View        La instancia de la clase para encadenamiento.
+     * @param string|array $key   Identificador del dato en la vista, si es un
+     * array se ejecuta el par clave => valor.
+     * @param mixed $value Dato a procesar por la vista.
+     * @return View La instancia de la clase para encadenamiento.
      */
     public function set($key, $value = null)
     {
@@ -42,8 +56,9 @@ final class View
 
     /**
      * Remueve un dato de la vista o en su defecto reinicia la misma.
-     * @param  string|array|null $arrayKeys Dependiendo del tipo elimina uno o varios datos.
-     * @return \Scoop\View                  La instancia de la clase para encadenamiento.
+     * @param  string|array|null $arrayKeys Dependiendo del tipo elimina uno o
+     * varios datos.
+     * @return View La instancia de la clase para encadenamiento.
      */
     public function remove($arrayKeys = null)
     {
@@ -61,12 +76,12 @@ final class View
     }
 
     /**
-     * Valida y muestra el mensaje suministrado por el usuario
-     * @param string            $msg  Mensaje a ser mostrado por la aplicación.
-     * @param string            $type Tipo de mensaje a mostrar.
-     * @return \Scoop\View     La instancia de la clase para encadenamiento.
+     * Valida y muestra el mensaje suministrado por el usuario.
+     * @param string $msg  Mensaje a ser mostrado por la aplicación.
+     * @param string $type Tipo de mensaje a mostrar.
+     * @return View La instancia de la clase para encadenamiento.
      */
-    public function setMessage($msg, $type = 'out')
+    public function setMessage($msg, $type = View\Message::OUT)
     {
         $this->msg->set($msg, $type);
         return $this;
@@ -74,19 +89,19 @@ final class View
 
     /**
      * Valida y guarda el mensaje suministrado por el usuario.
-     * @param  string               $msg   Mensaje a ser mostrado por la aplicación.
-     * @param  string               $type  Tipo de mensaje a mostrar (out, alert, error).
-     * @return \Scoop\View          La instancia de la clase para encadenamiento.
+     * @param  string $msg Mensaje a ser mostrado por la aplicación.
+     * @param  string $type Tipo de mensaje a mostrar (out, warning, error).
+     * @return View La instancia de la clase para encadenamiento.
      */
-    public function pushMessage($msg, $type = 'out')
+    public function pushMessage($msg, $type = View\Message::OUT)
     {
         $this->msg->push($msg, $type);
         return $this;
     }
 
     /**
-     * Muestra y elimina el mensjae suministrado por el usuario
-     * @return \Scoop\View La instancia de la clase para encadenamiento.
+     * Muestra y elimina el mensjae suministrado por el usuario.
+     * @return View La instancia de la clase para encadenamiento.
      */
     public function pullMessage()
     {
@@ -97,7 +112,7 @@ final class View
     /**
      * Compila la vista para devolver un String formateado en HTML.
      * @return string Formato en HTML.
-     * @throws \Exception si no se existe la platilla o la vista.
+     * @throws \Exception Si no se existe la platilla o la vista.
      */
     public function render()
     {
@@ -114,57 +129,5 @@ final class View
         $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
         ob_end_clean();
         return $view;
-    }
-}
-
-/**
- * @ignore clase interna de View
- */
-final class __Message__
-{
-    private $msg;
-
-    public function __construct()
-    {
-        $this->msg = '<div id="msg-not"></div>';
-    }
-
-    public function push($msg, $type)
-    {
-        self::validate($type);
-        $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
-    }
-
-    public function pull()
-    {
-        if (isset($_SESSION['msg-scoop'])) {
-            $this->setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
-            unset($_SESSION['msg-scoop']);
-        }
-    }
-
-    public function set($msg, $type)
-    {
-        self::validate($type);
-        $this->setMsg($type, $msg);
-    }
-
-    public function __toString()
-    {
-        return $this->msg;
-    }
-
-    private function setMsg($type, $msg)
-    {
-        $this->msg = '<div id="msg-'.$type.'">'.$msg.'</div>';
-    }
-
-    private static function validate($type)
-    {
-        if ($type !== 'error' &&
-            $type !== 'out' &&
-            $type !== 'alert') {
-            throw new Exception("Error building only accepted message types: error, out and alert.", 1);
-        }
     }
 }

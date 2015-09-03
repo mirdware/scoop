@@ -11,9 +11,20 @@ abstract class Environment
         return $this->router;
     }
 
+    public function get($name)
+    {
+        return $this->config->get($name);
+    }
+
     protected function setRouter(\Scoop\IoC\Router $router)
     {
         $this->router = $router;
+        return $this;
+    }
+
+    protected function setConfig(Configuration $config)
+    {
+        $this->config = $config;
         return $this;
     }
 

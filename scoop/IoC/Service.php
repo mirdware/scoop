@@ -15,7 +15,6 @@ abstract class Service
             $params = array($callback, $params);
             $callback = array('\Scoop\IoC\Injector', 'create');
         }
-
         self::$services[$key] = array(
             'callback' => $callback,
             'params' => $params

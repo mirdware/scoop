@@ -19,6 +19,7 @@ abstract class Injector
     {
         $params = $method->getParameters();
         $args = array();
+
         foreach ($params as $param) {
             $class = $param->getClass();
             if ($class) {
@@ -33,13 +34,13 @@ abstract class Injector
 
     private static function replaceRule(&$class)
     {
-        $className = self::$rules[$class->getName()];
-        return new \ReflectionClass($className);
+        return new \ReflectionClass(self::$rules[$class->getName()]);
     }
 
     private static function instantiate(\ReflectionClass &$class, $args = array())
     {
         $constructor = $class->getConstructor();
+
         if ($constructor) {
             $args = array_merge(self::getParams($constructor), $args);
             return $class->newInstanceArgs($args);

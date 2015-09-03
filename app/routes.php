@@ -1,4 +1,7 @@
 <?php
 return array(
-    '/' => 'Controller\Home'
+    'home' => array(
+        'url' => '/',
+        'controller' => 'Controller\Home:get'
+    )
 );

@@ -11,7 +11,7 @@
  * @license http://opensource.org/licenses/MIT MIT
  * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
- * @version 0.2.1 Services and environments
+ * @version 0.2.2 new system of routing
  */
 
 try {

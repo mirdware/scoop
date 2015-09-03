@@ -3,11 +3,8 @@ namespace Scoop\Bootstrap;
 
 class App
 {
-    const MAIN_METHOD = 'get';
-
     private $router;
     private $url;
-    private $controller;
     private $environment;
 
     public function __construct(Environment $environment)
@@ -45,19 +42,9 @@ class App
         if ($_GET) {
             self::purgeGET($_GET);
         }
-        $this->router = $this->environment->getRouter();
-        $this->controller = $this->router->route($url);
-
-        if ($this->controller) {
-            $params = $this->getParams($url);
-            $method = $this->getMethod($params);
-            $numParams = count($params);
-
-            if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
-                return $method->invokeArgs($this->controller, $params);
-            }
-        }
-        throw new \Scoop\Http\NotFoundException();
+        $router = $this->environment->getRouter();
+        $router->intercept($url);
+        return $router->route($url);
     }
 
     public function setURL($url)
@@ -73,43 +60,6 @@ class App
             unset($_GET['route']);
         }
         return $this->url;
-    }
-
-    private function getParams($url)
-    {
-        $urlController = $this->router->getURL(get_class($this->controller));
-        $url = substr($url, strlen($urlController));
-
-        if (strtolower($urlController) !== $urlController) {
-            throw new \Scoop\Http\NotFoundException();
-        }
-        return array_filter(explode('/', $url));
-    }
-
-    private function getMethod(&$params)
-    {
-        $controllerReflection = new \ReflectionClass($this->controller);
-        $method = self::MAIN_METHOD;
-
-        if ($params) {
-            $aux = explode('-', array_shift($params));
-            $method = array_shift($aux);
-
-            if (strtolower($method) !== $method) {
-                throw new \Scoop\Http\NotFoundException();
-            }
-            if (!empty($aux)) {
-                $method .= implode(array_map('ucfirst', $aux));
-            }
-            if ($method === self::MAIN_METHOD || !$controllerReflection->hasMethod($method)) {
-                array_unshift($params, $method);
-                $method = self::MAIN_METHOD;
-            }
-        }
-        if ($method === self::MAIN_METHOD) {
-            $params = array($params);
-        }
-        return $controllerReflection->getMethod($method);
     }
 
     private static function purgePOST(&$post)

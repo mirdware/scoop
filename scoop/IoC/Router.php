@@ -7,61 +7,128 @@ class Router
     private $instances = array();
     private static $route;
 
-    public function register($route, $class = null)
+    public function __construct($fileName)
     {
-        if ($class === null) {
-            $route = require $route.'.php';
-            $this->load($route);
-            return $this;
-        }
-
-        $this->routes[$class] = $route;
-        return $this;
+        $routes = require $fileName.'.php';
+        array_walk($routes, array($this, 'load'));
     }
 
-    public function route($route)
+    public function route($url)
     {
-        self::$route = $route;
-        $matches = array_filter($this->routes, array($this, 'filter'));
+        self::$route = $url;
+        $matches = array_filter($this->routes, array($this, 'filterRoute'));
 
         if ($matches) {
-            asort($matches);
-            $key = array_pop(array_keys($matches));
-            return $this->getInstance($key);
+            usort($matches, array($this, 'sortByURL'));
+            $route = array_pop($matches);
+            if (isset($route['controller'])) {
+                $controller = explode(':', $route['controller']);
+                $method = array_pop($controller);
+                $controller = array_shift($controller);
+
+                if (get_parent_class($controller) !== 'Scoop\Controller') {
+                    throw new \Exception('The '.$controller.' class is not an instance of controller');
+                }
+                $controller =  $this->getInstance($controller);
+                $controller->setRouter($this);
+
+                if ($controller) {
+                    array_shift($route['params']);
+                    $params = array_filter($route['params']);
+                    $params = array_map(array($this, 'formatParam'), $params);
+                    $controllerReflection = new \ReflectionClass($controller);
+                    $method = $controllerReflection->getMethod($method);
+                    $numParams = count($params);
+
+                    if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
+                        return $method->invokeArgs($controller, $params);
+                    }
+                }
+            }
+        }
+        throw new \Scoop\Http\NotFoundException();
+    }
+
+    public function getURL($key, $params)
+    {
+        $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
+        $count = count($path)-1;
+        $url = '';
+
+        for ($i=0; $i<$count; $i++) {
+            $url .= urlencode($params[$i]).$path[$i];
+        }
+        return $url;
+    }
+
+    public function intercept($url)
+    {
+        self::$route = $url;
+        $matches = array_filter($this->routes, array($this, 'filterInterceptor'));
+
+        if ($matches) {
+            usort($matches, array($this, 'sortByURL'));
+            foreach ($matches as &$route) {
+                if (isset($route['interceptor'])) {
+                    $interceptor = explode(':', $route['interceptor']);
+                    $method = array_pop($interceptor);
+                    $interceptor = array_shift($interceptor);
+                    $interceptor =  $this->getInstance($interceptor);
+                    $interceptor->$method();
+                }
+            }
         }
     }
 
     public function getInstance($class)
     {
         if (!isset($this->instances[$class])) {
-            if (get_parent_class($class) !== 'Scoop\Controller') {
-                throw new \Exception('The '.$class.' class is not an instance of controller');
-            }
             $this->instances[$class] = Injector::create($class);
-            $this->instances[$class]->setRouter($this);
         }
         return $this->instances[$class];
     }
 
-    public function getURL($class)
+    private function load($route, $key, $oldURL = '')
     {
-        return $this->routes[$class];
-    }
+        $url = $oldURL.$route['url'];
 
-    private function load($array, $oldRoute = '')
-    {
-        foreach ($array as $route => $class) {
-            $currentRoute = $oldRoute.$route;
-            if (is_array($class)) {
-                $this->load($class, $currentRoute);
-            } else {
-                $this->register($currentRoute, $class);
-            }
+        if (isset($route['routes'])) {
+            array_walk($route['routes'], array($this, 'load'), $url);
+            unset($route['routes']);
         }
+        $this->routes[$key] = $route;
     }
 
-    private static function filter($route)
+    private static function sortByURL($a, $b)
     {
-        return strpos(self::$route, $route) === 0;
+        return $a['url'] - $b['url'];
+    }
+
+    private static function filterRoute(&$route)
+    {
+        return preg_match('/^'.self::normalizeURL($route['url']).'$/', self::$route, $route['params']);
+    }
+
+    private static function filterInterceptor(&$route)
+    {
+
+        return preg_match('/^'.self::normalizeURL($route['url']).'/', self::$route);
+    }
+
+    private static function normalizeURL($url)
+    {
+        $url = str_replace(array(
+            '/[var]',
+            '/[int]'
+        ), array(
+            '(/?[\w\s]*)',
+            '(/?\d*)'
+        ), $url);
+        return addcslashes($url, '/');
+    }
+
+    private static function formatParam($param)
+    {
+        return substr($param, 1);
     }
 }

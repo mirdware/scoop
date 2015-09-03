@@ -106,11 +106,4 @@ abstract class Controller
     {
         return \Scoop\IoC\Service::getInstance($serviceName);
     }
-
-    /**
-     * Debe ser implementado en cada controlador y se encarga  de realizar.
-     * la tarea por defecto cuando no se encuentra el método.
-     * @param  array  $args Argumentos pasados al controlador.
-     */
-    public abstract function get(array $args);
 }

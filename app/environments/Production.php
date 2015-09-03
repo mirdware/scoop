@@ -3,14 +3,30 @@ namespace Environment;
 
 class Production extends \Scoop\Bootstrap\Environment
 {
+
     public function configure()
     {
-        $router = new \Scoop\IoC\Router();
-        $router->register('app/routes');
-        $config = new \Scoop\Bootstrap\Configuration();
-        $config->add('app/config');
-        $this->setRouter($router)
-             ->registerService('config', $config)
-             ->bind('App\Repository\Quote', 'App\Repository\QuoteArray');
+        self::defineConstants();
+        $this->setRouter(new \Scoop\IoC\Router('app/routes'))
+             ->setConfig(new \Scoop\Bootstrap\Configuration('app/config'))
+             ->registerServices()
+             ->bindInterfaces();
+    }
+
+    private function bindInterfaces()
+    {
+        return $this
+                ->bind('App\Repository\Quote', 'App\Repository\QuoteArray');
+    }
+
+    private function registerServices()
+    {
+        return $this
+                ->registerService('config', $this);
+    }
+
+    private static function defineConstants()
+    {
+        define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
     }
 }

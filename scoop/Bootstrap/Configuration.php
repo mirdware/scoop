@@ -3,20 +3,21 @@ namespace Scoop\Bootstrap;
 
 class Configuration
 {
-    private $conf = array();
+    private $config = array();
     private static $init = false;
 
-    public function __construct()
+    public function __construct($fileName)
     {
         if (!self::$init) {
             self::init();
         }
+        $this->add($fileName);
     }
 
     public function get($name)
     {
         $name = explode('.', $name);
-        $res = $this->conf;
+        $res = $this->config;
         foreach ($name as &$key) {
             if (!isset($res[$key])) {
                 return false;
@@ -26,15 +27,14 @@ class Configuration
         return $res;
     }
 
-    public function add($config)
+    public function add($fileName)
     {
-        $this->conf += require $config.'.php';
+        $this->config += require $fileName.'.php';
     }
 
     private static function init()
     {
         session_start();
-        define ('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
         self::$init = true;

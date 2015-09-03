@@ -10,11 +10,8 @@ class Home extends \Scoop\Controller
         $this->quotes = $quote->publish();
     }
 
-    public function get(array $args)
+    public function get()
     {
-        if ($args) {
-            $this->notFound();
-        }
         $view = new \Scoop\View('home');
         $index = rand(0, count($this->quotes)-1);
         return $view->set('title', 'MirdWare')

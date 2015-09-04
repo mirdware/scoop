@@ -1,6 +1,10 @@
 <?php
 namespace Scoop\View;
 
+/**
+ * Se encarga de convertir las plantillas dadas en formato nombre.sdt.php a
+ * vistas PHP
+ */
 final class Template
 {
     /**
@@ -12,10 +16,15 @@ final class Template
      */
     const EXT = '.sdt.php';
     /**
-     * Nombre de la clase para el manejo de herencia.
+     * Nombre de la clase para que se encarga del manejo de la herencia.
      */
     const HERITAGE = '\Scoop\View\Heritage';
 
+    /**
+     * Convierte las platillas sdt a vistas php, en caso que la vista sea más
+     * antiguas que el template.
+     * @param string $name Nombre de la plantilla en formato name.sdt.php.
+     */
     public static function parse($name)
     {
         $template = self::ROOT.$name.self::EXT;
@@ -56,6 +65,12 @@ final class Template
         }
     }
 
+    /**
+     * Reglas de reemplazo para cada uno de los comandos de la plantilla.
+     * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
+     * @param string $line Linea que se encuentra analizando el parseador.
+     * @return boolean Existio o no reemplazo dentro de la linea.
+     */
     private static function replace(&$line)
     {
         $line = preg_replace(array(
@@ -102,6 +117,11 @@ final class Template
         return false;
     }
 
+    /**
+     * Reglas para limpiar y minificar la vista.
+     * @param string $html Contenido completo de la plantilla.
+     * @return string Plantilla limpia y minificada.
+     */
     private static function clearHTML($html)
     {
         return preg_replace(array(
@@ -121,19 +141,17 @@ final class Template
         ), $html);
     }
 
+    /**
+     * Almacena la vista PHP en el disco.
+     * @param string $viewName Nombre de la vista a almacenar.
+     * @param string $content Contenido de la plantilla aplicando los reemplazos.
+     */
     private static function create($viewName, &$content)
     {
-        $content = preg_replace(array(
-            '/<\/\s+/',
-            '/\s+\/>/',
-            '/<\s+/',
-            '/\s+>/'
-        ), array(
-            '</',
-            '/>',
-            '<',
-            '>'
-        ), $content);
+        $content = preg_replace(
+            array('/<\/\s+/', '/\s+\/>/', '/<\s+/', '/\s+>/'),
+            array('</', '/>', '<', '>'),
+            $content);
 
         preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
         $match = $match[0];

@@ -38,13 +38,11 @@ class SQO
     public function create($fields)
     {
         ksort($fields);
-        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'));
+        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'), $this->con);
         $keys = array_keys($fields);
+        $query = 'INSERT INTO '.$this->table.' ('.implode(', ', $keys).
+            ') VALUES ('.implode(', ', $fields).')';
 
-        $query = 'INSERT INTO '.$this->table.' ('.
-            implode(', ', $keys).
-            ') VALUES ('.
-            implode(', ', $fields).')';
         return new SQO\Factory($query, $keys, $this->con);
     }
 
@@ -58,26 +56,23 @@ class SQO
                 $args = $args[0];
             }
             foreach ($args as $key => &$value) {
-                $alias = '';
-                if (!is_numeric($key)) {
-                    $alias = ' AS '.$key;
-                }
-                if (is_object($value) &&
-                    $value instanceof SQO\Result &&
-                    $value->getType() === SQO::READ ) {
+                if (is_object($value) && $value instanceof SQO\Result &&
+                    $value->getType() === SQO::READ) {
                     $value = '('.$value.')';
                 }
-                $value .= $alias;
+                if (!is_numeric($key)) {
+                    $value .= ' AS '.$key;
+                }
             }
             $fields = implode(', ', $args);
         }
-        return new SQO\Result('SELECT '.$fields.' FROM '.$this->aliasTable,
-                                    self::READ, $this->con);
+        $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
+        return new SQO\Result($query, self::READ, $this->con);
     }
 
     public function update($fields)
     {
-        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'));
+        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'), $this->con);
         $query = 'UPDATE '.$this->aliasTable.' SET ';
 
         foreach ($fields as $key => &$value) {
@@ -88,7 +83,8 @@ class SQO
 
     public function delete()
     {
-        return new SQO\Result('DELETE FROM '.$this->aliasTable, self::DELETE, $this->con);
+        $query = 'DELETE FROM '.$this->aliasTable;
+        return new SQO\Result($query, self::DELETE, $this->con);
     }
 
     public function flush()

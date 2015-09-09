@@ -29,8 +29,8 @@ class Collector
     private static function internalSearch(&$obj, &$array, $delete = false)
     {
         foreach ($array as $key => &$object) {
-            if ($obj == $object || (self::$fromDB && 
-                get_class($obj) === get_class($object) && 
+            if ($obj == $object || (self::$fromDB &&
+                get_class($obj) === get_class($object) &&
                 $obj->getPK() === $object->getPK())) {
                 if ($delete) {
                     unset($array[$key]);
@@ -40,7 +40,7 @@ class Collector
         }
     }
 
-    public function search(Model &$obj)
+    public function search(&$obj)
     {
         return array_search($obj, $this->objects);
     }
@@ -50,7 +50,7 @@ class Collector
         return $this->objects;
     }
 
-    public function add(Model &$obj)
+    public function add(&$obj)
     {
         $this->objects[] = self::notify($obj);
     }
@@ -60,12 +60,8 @@ class Collector
         return $this->objects[$i];
     }
 
-    public function remove(Model &$obj)
+    public function remove(&$obj)
     {
         self::internalSearch($obj, $this->objects, true);
-    }
-
-    public function persist()
-    {
     }
 }

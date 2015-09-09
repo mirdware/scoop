@@ -22,7 +22,7 @@ final class Filter
             foreach ($replace as $key => &$value) {
                 if (is_object($value) &&
                     $value instanceof Result &&
-                    $value->getType( ) === SQO::READ) {
+                    $value->getType() === \Scoop\Storage\SQO::READ) {
                     $value = '('.$value.')';
                 } else {
                     $value = $this->con->quote($value);

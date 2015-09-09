@@ -34,7 +34,7 @@ class Relation
     public function add(&$child)
     {
         if (!$this->objRel) {
-            $this->objRel = new ObjectCollector();
+            $this->objRel = new Collector();
         }
         if ($this->objRel->search($child) === false) {
             $method = ($this->type === self::MANY_TO_MANY?'add':'set').$this->methodRel;
@@ -46,11 +46,10 @@ class Relation
     public function remove(&$child)
     {
         if (!$this->objRel) {
-            $this->objRel = new ObjectCollector();
+            $this->objRel = new Collector();
         }
         $this->delete($child, $this->type === self::MANY_TO_MANY);
         $this->objRel->remove($child);
-        
     }
 
     public function set(&$parent)
@@ -67,12 +66,5 @@ class Relation
     public function get()
     {
         return $this->objRel;
-    }
-
-    public function persist()
-    {
-        if ($this->objRel) {
-
-        }
     }
 }

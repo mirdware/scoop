@@ -17,7 +17,7 @@ final class Factory
     public function join($fields)
     {
         ksort($fields);
-        array_walk($fields, array($this, 'quote'));
+        array_walk($fields, array($this, 'quote'), $this->con);
         if (!array_diff($this->keys, array_keys($fields))) {
             $this->query .= ', ('.implode(', ', $fields).')';
         }
@@ -34,16 +34,16 @@ final class Factory
         return $this->query;
     }
 
-    public static function quote(&$value)
+    public static function quote(&$value, $key, &$con)
     {
         if (is_array($value)) {
-            $value = str_replace('?', $this->con->quote($value[1]), $value[0]);
+            $value = str_replace('?', $con->quote($value[1]), $value[0]);
         } elseif (is_object($value) &&
             $value instanceof Result &&
-            $value->getType() === SQO::READ) {
+            $value->getType() === \Scoop\Storage\SQO::READ) {
             $value = '('.$value.') ';
         } else {
-            $value = $this->con->quote($value);
+            $value = $con->quote($value);
         }
         return $value;
     }

@@ -112,7 +112,7 @@ final class View
     /**
      * Compila la vista para devolver un String formateado en HTML.
      * @return string Formato en HTML.
-     * @throws \Exception Si no se existe la platilla o la vista.
+     * @throws \Exception Si no se existe la plantilla o la vista.
      */
     public function render()
     {

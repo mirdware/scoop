@@ -101,9 +101,9 @@ class Helper
     }
 
     /**
-     * Obtiene la URL formateada según la ruta y parametros envuiados.
+     * Obtiene la URL formateada según la ruta y parametros enviados.
      * @param mixed $args Recibe como parametros ($nombreRuta, $params...).
-     * @return string URL formateada según el nombre de la ruta y los parametros
+     * @return string URL formateada según el nombre de la ruta y los parámetros
      * enviados.
      */
     public function route()

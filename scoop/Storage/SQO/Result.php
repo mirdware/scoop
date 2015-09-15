@@ -1,11 +1,11 @@
 <?php
 namespace Scoop\Storage\SQO;
 
-final class Result
+class Result
 {
-    private $from = array();
+    protected $from = array();
+    protected $con;
     private $query;
-    private $con;
     private $type;
     private $filter;
 
@@ -27,35 +27,14 @@ final class Result
         return $this->con;
     }
 
-    public function join($table, $using = null, $type = 'INNER')
+    public function getType()
     {
-        $join = ', '.$table;
-        if ($type === 'LEFT' || $type === 'RIGHT' || $type === 'FULL') {
-            $type .= ' OUTER';
-        }
-
-        if ($using !== null) {
-            $join = ' '.$type.' JOIN '.$table
-                .((strpos($using, '=') !== false ||
-                   strpos($using, '<') !== false ||
-                   strpos($using, '>') !== false ||
-                   strpos($using, '!') !== false ||
-                   strpos($using, ' LIKE ') !== false)?
-                        ' ON('.$using.')':
-                        ' USING('.$using.')');
-        }
-        $this->from[] = $join;
-        return $this;
+        return $this->type;
     }
 
     public function run()
     {
         return $this->con->query($this);
-    }
-
-    public function getType()
-    {
-        return $this->type;
     }
 
     public function __call($name, $args)

@@ -17,24 +17,6 @@ class SQO
         $this->con = $connexion === null? DBC::get(): $connexion;
     }
 
-    public static function exec() {
-        $args = func_get_args();
-        $exec = '';
-
-        foreach ($args as &$sqo) {
-            if (!($sqo instanceof SQO\Result)) {
-                throw new \Exception('one parameter sent is not a valid SQO');
-            }
-            if (!isset($connexion)) {
-                $connexion = $sqo->getConnexion();
-            } elseif ($connexion !== $sqo->getConnexion()) {
-                throw new \Exception('you can not run on different connections');
-            }
-            $exec .= $sqo.';';
-        }
-        return $connexion->exec($exec);
-    }
-
     public function create($fields)
     {
         ksort($fields);
@@ -56,8 +38,7 @@ class SQO
                 $args = $args[0];
             }
             foreach ($args as $key => &$value) {
-                if (is_object($value) && $value instanceof SQO\Result &&
-                    $value->getType() === SQO::READ) {
+                if ($value instanceof SQO\Result && $value->getType() === SQO::READ) {
                     $value = '('.$value.')';
                 }
                 if (!is_numeric($key)) {
@@ -67,29 +48,47 @@ class SQO
             $fields = implode(', ', $args);
         }
         $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
-        return new SQO\Result($query, self::READ, $this->con);
+        return new SQO\Expander($query, SQO::READ, $this->con);
     }
 
     public function update($fields)
     {
         array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'), $this->con);
-        $query = 'UPDATE '.$this->aliasTable.' SET ';
+        $query = 'UPDATE '.$this->table.' SET ';
 
         foreach ($fields as $key => &$value) {
             $query .= $key.' = '.$value.', ';
         }
-        return new SQO\Result(substr($query, 0, -2), self::UPDATE, $this->con);
+        return new SQO\Result(substr($query, 0, -2), SQO::UPDATE, $this->con);
     }
 
     public function delete()
     {
-        $query = 'DELETE FROM '.$this->aliasTable;
-        return new SQO\Result($query, self::DELETE, $this->con);
+        $query = 'DELETE FROM '.$this->table;
+        return new SQO\Result($query, SQO::DELETE, $this->con);
     }
 
     public function flush()
     {
         $this->con->commit();
         $this->con->beginTransaction();
+    }
+
+    public static function exec() {
+        $args = func_get_args();
+        $exec = '';
+
+        foreach ($args as &$sqo) {
+            if (!($sqo instanceof SQO\Result)) {
+                throw new \Exception('one parameter sent is not a valid SQO');
+            }
+            if (!isset($connexion)) {
+                $connexion = $sqo->getConnexion();
+            } elseif ($connexion !== $sqo->getConnexion()) {
+                throw new \Exception('you can not run on different connections');
+            }
+            $exec .= $sqo.';';
+        }
+        return $connexion->exec($exec);
     }
 }

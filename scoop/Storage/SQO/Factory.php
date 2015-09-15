@@ -38,13 +38,13 @@ final class Factory
     {
         if (is_array($value)) {
             $value = str_replace('?', $con->quote($value[1]), $value[0]);
-        } elseif (is_object($value) &&
-            $value instanceof Result &&
-            $value->getType() === \Scoop\Storage\SQO::READ) {
+        } elseif ($value instanceof Result) {
+            if ($value->getType() !== \Scoop\Storage\SQO::READ) {
+                throw new Exception('unsupported data type for the query');
+            }
             $value = '('.$value.') ';
         } else {
             $value = $con->quote($value);
         }
-        return $value;
     }
 }

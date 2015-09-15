@@ -20,13 +20,7 @@ final class Filter
         if ($replace !== null) {
             $search = array();
             foreach ($replace as $key => &$value) {
-                if (is_object($value) &&
-                    $value instanceof Result &&
-                    $value->getType() === \Scoop\Storage\SQO::READ) {
-                    $value = '('.$value.')';
-                } else {
-                    $value = $this->con->quote($value);
-                }
+                Factory::quote($value, $key, $this->con);
                 $search[] = ':'.$key;
             }
             $rule = str_replace($search, $replace, $rule);

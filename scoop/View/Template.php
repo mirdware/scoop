@@ -31,15 +31,15 @@ final class Template
         $view = \Scoop\View::ROOT . $name . \Scoop\View::EXT;
 
         if (is_readable($template) &&
-            (!is_readable($view) || filemtime($template) > filemtime($view))) {
+        (!is_readable($view) || filemtime($template) > filemtime($view))) {
             $content = '';
             $flagPHP = false;
             $lastLine = '';
             $file = fopen($template, 'r');
+
             while (!feof($file)) {
                 $line = fgets($file);
                 $flag = self::replace($line);
-
                 if ($flagPHP) {
                     $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1? '': ';';
                     if (!$flag) {
@@ -51,11 +51,9 @@ final class Template
                     $line = '<?php '.$line;
                     $flagPHP = true;
                 }
-
                 $content .= $lastLine;
                 $lastLine = $line;
             }
-
             fclose($file);
             $content .= $lastLine;
             if ($flagPHP) {
@@ -74,45 +72,43 @@ final class Template
     private static function replace(&$line)
     {
         $line = preg_replace(array(
-                '/@extends \'([\w\/-]+)\'/',
-                '/@import \'([\w\/-]+)\'/',
-                '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
-                '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
-                '/@foreach ([ \w\.\&\|\$\->:]+)/',
-                '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-]+)/',
-                '/@while ([ \w\.\&\|\$\(\)!=<>\+\-]+)/'
-            ), array(
-                self::HERITAGE.'::extend(\'${1}\')',
-                self::HERITAGE.'::import(\'${1}\')',
-                'if(${1}):',
-                'elseif(${1}):',
-                'foreach(${1}):',
-                'for(${1}):',
-                'while(${1}):'
-            ), $line, 1, $count);
-
+            '/@extends \'([\w\/-]+)\'/',
+            '/@import \'([\w\/-]+)\'/',
+            '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
+            '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
+            '/@foreach ([ \w\.\&\|\$\->:]+)/',
+            '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-]+)/',
+            '/@while ([ \w\.\&\|\$\(\)!=<>\+\-]+)/'
+        ), array(
+            self::HERITAGE.'::extend(\'${1}\')',
+            self::HERITAGE.'::import(\'${1}\')',
+            'if(${1}):',
+            'elseif(${1}):',
+            'foreach(${1}):',
+            'for(${1}):',
+            'while(${1}):'
+        ), $line, 1, $count);
         if ($count !== 0) return true;
 
         $line = str_replace(array(
-                ':if',
-                ':foreach',
-                ':for',
-                ':while',
-                '@else',
-                '@sprout'
-            ), array(
-                'endif',
-                'endforeach',
-                'endfor',
-                'endwhile',
-                'else:',
-                self::HERITAGE.'::sprout()'
-            ), $line, $count);
+            ':if',
+            ':foreach',
+            ':for',
+            ':while',
+            '@else',
+            '@sprout'
+        ), array(
+            'endif',
+            'endforeach',
+            'endfor',
+            'endwhile',
+            'else:',
+            self::HERITAGE.'::sprout()'
+        ), $line, $count);
         if ($count !== 0) return true;
 
         $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,]+)\}/',
-            '<?php echo ${1} ?>',
-            $line, -1, $count);
+        '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) \Scoop\IoC\Service::compileView($line);
         return false;
     }
@@ -152,7 +148,6 @@ final class Template
             array('/<\/\s+/', '/\s+\/>/', '/<\s+/', '/\s+>/'),
             array('</', '/>', '<', '>'),
             $content);
-
         preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
         $match = $match[0];
         $content = self::clearHTML($content);
@@ -160,10 +155,10 @@ final class Template
         $search += array(' ?><?php ');
         $match += array(';');
         $content = str_replace($search, $match, $content);
-
         $path = explode('/', $viewName);
         $count = count($path)-1;
         $dir = '';
+
         for ($i=0; $i<$count; $i++) {
             $dir .= $path[$i].'/';
             if (!file_exists($dir)) {

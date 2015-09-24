@@ -22,12 +22,11 @@ class Router
             usort($matches, array($this, 'sortByURL'));
             $route = array_pop($matches);
             if (isset($route['controller'])) {
-                $controller = explode(':', $route['controller']);
-                $method = array_pop($controller);
-                $controller = array_shift($controller);
+                $method = explode(':', $route['controller']);
+                $controller = array_shift($method);
 
                 if (get_parent_class($controller) !== 'Scoop\Controller') {
-                    throw new \Exception($controller.' class isn\'t an instance of \Scoop\Controller');
+                    throw new \UnexpectedValueException($controller.' class isn\'t an instance of \Scoop\Controller');
                 }
                 $controller =  $this->getInstance($controller);
                 $controller->setRouter($this);
@@ -37,6 +36,12 @@ class Router
                     $params = array_filter($route['params']);
                     $params = array_map(array($this, 'formatParam'), $params);
                     $controllerReflection = new \ReflectionClass($controller);
+                    $interfaces = $controllerReflection->getInterfaces();
+                    if (isset($interfaces['Scoop\Http\Resource'])) {
+                        $method = strtolower($_SERVER['REQUEST_METHOD']);
+                    } else {
+                        $method = array_shift($method);
+                    }
                     $method = $controllerReflection->getMethod($method);
                     $numParams = count($params);
 
@@ -60,7 +65,7 @@ class Router
                 $url .= urlencode($params[$i]).$path[$i];
             }
         }
-        return substr($url, 1);
+        return ROOT.substr($url, 1);
     }
 
     public function intercept($url)
@@ -118,8 +123,8 @@ class Router
     private static function normalizeURL($url)
     {
         $url = str_replace(
-            array('/[var]', '/[int]'),
-            array('(/?[\w\s]*)', '(/?\d*)'),
+            array('[var]/', '[int]/'),
+            array('([\w\s]*/?)', '(\d*/?)'),
             $url);
         return addcslashes($url, '/');
     }

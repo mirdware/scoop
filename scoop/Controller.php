@@ -42,6 +42,10 @@ abstract class Controller
     public static function redirect($url, $status = 301)
     {
         header(self::$redirects[$status], true, $status);
+        if (is_array($url)) {
+            $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
+            $url = $router->getURL(array_shift($url), $url);
+        }
         header('Location:'.$url);
         exit;
     }

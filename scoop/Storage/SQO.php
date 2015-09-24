@@ -24,7 +24,6 @@ class SQO
         $keys = array_keys($fields);
         $query = 'INSERT INTO '.$this->table.' ('.implode(', ', $keys).
             ') VALUES ('.implode(', ', $fields).')';
-
         return new SQO\Factory($query, $keys, $this->con);
     }
 

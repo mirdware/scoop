@@ -34,7 +34,7 @@ abstract class Service
     {
         $serv = &self::$services[$key];
         if (!isset($serv['callback'])) {
-            throw new Exception('Service use unsupported');
+            throw new \UnderflowException('Service use unsupported');
         }
         return call_user_func_array($serv['callback'], $serv['params']);
     }

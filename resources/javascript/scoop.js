@@ -11,23 +11,21 @@
                 msgTop,
                 msgHeight;
 
-            function hide ( ) {
-                timer = setTimeout(function () {
-                    $.sfx.anim(divMsg, {
-                        opacity: 0,
-                        height: "0px",
-                        paddingTop: "0px",
-                        paddingBottom: "0px"
-                    }, {
-                        duration: duration,
-                        onComplete: function () {
-                            divMsg.id = "msg-not";
-                        }
-                    });
-                }, 10000);
+            function hide() {
+                $.sfx.anim(divMsg, {
+                    opacity: 0,
+                    height: "0px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px"
+                }, {
+                    duration: duration,
+                    onComplete: function () {
+                        divMsg.id = "msg-not";
+                    }
+                });
             }
 
-            function onScroll (e) {
+            function onScroll(e) {
                 if (divMsg.id !== "msg-not") {
                     if (window.pageYOffset > msgHeight) {
                         cssMsg.set({
@@ -53,13 +51,13 @@
                         opacity: 1,
                         height: msgHeight+"px"
                     });
-                    hide( );
                 } else {
                     divMsg = $("#msg-not");
                     cssMsg = $.css(divMsg);
                     //$.css("#msg-out, #msg-error, #msg-warning, #msg-not").set("opacity", 0);
                 }
                 $.evt.add(window, "scroll", onScroll);
+                $.evt.add($("i", divMsg)[0], "click", hide);
             });
 
             return function (type, msg) {
@@ -67,7 +65,7 @@
                     throw new Error(type+" no es un tipo de mensaje valido");
                 }
                 divMsg.id = "msg-"+type;
-                divMsg.innerHTML = msg;
+                $("span", divMsg)[0].innerHTML = msg;
                 msgTop = divMsg.offsetTop;
                 clearTimeout(timer);
 
@@ -95,8 +93,6 @@
                     paddingTop: "5px",
                     paddingBottom: "5px"
                 }, {duration: duration});
-
-                hide( );
             };
         })(),
         /*
@@ -119,22 +115,22 @@
                 }
             }
 
-            function revert () {
+            function revert() {
                 if (this.value == "") {
                     this.value = originInput[getData(this, "sph")];
                 }
             }
 
-            function getData (el, id) {
+            function getData(el, id) {
                 return el.getAttribute("data-"+id);
             }
 
-            function setData (el, id, value) {
+            function setData(el, id, value) {
                 el.setAttribute("data-"+id, value);
             }
 
             return {
-                add: function (input) {
+                add: function(input) {
                     if (input) {
                         if (input.length) {
                             for (var i=0, inp; inp=input[i]; i++) {
@@ -149,13 +145,13 @@
                         }
                     }
                 },
-                reset: function () {
+                reset: function() {
                     originInput = {};
                 }
             };
         })();
 
-        function safePassword (e) {
+        function safePassword(e) {
             var clave = typeof e === "string"? e: this.value,
                 color = 'rgb(173,255,47)',
                 len = clave.length,
@@ -193,35 +189,33 @@
                     cons++;
                 }
 
-                if ( chars.indexOf(charc,0) == -1 ) {
+                if (chars.indexOf(charc,0) == -1) {
                     chars += charc;
                 } else {
                     charRep++;
                 }
-
-                if ( numbers.indexOf(charc,0) != -1 ) {
-                    if ( numbers.indexOf(prev,0) != -1 ) {
+                if (numbers.indexOf(charc,0) != -1) {
+                    if (numbers.indexOf(prev,0) != -1) {
                         cnumChar++;
                     }
                     numChar++;
-                } else if ( lcLetters.indexOf(charc,0) != -1 ) {
+                } else if (lcLetters.indexOf(charc,0) != -1) {
                     if ( lcLetters.indexOf(prev,0) != -1 ) {
                         clcChar++;
                     }
                     lcChar++;
-                } else if ( ucLetters.indexOf(charc,0) != -1 ) {
-                    if ( ucLetters.indexOf(prev,0) != -1 ) {
+                } else if (ucLetters.indexOf(charc,0) != -1) {
+                    if (ucLetters.indexOf(prev,0) != -1) {
                         cucChar++;
                     }
                     ucChar++;
                 } else {
                     spChar++;
                 }
-
                 prev = charc;
             }
 
-            if ( (lcChar+ucChar) == len || numChar == len ) {
+            if ((lcChar+ucChar) == len || numChar == len) {
                 only = len;
             }
             if (ucChar) {
@@ -253,14 +247,14 @@
                 total = 100;
             }
 
-            $.css( $("b", container)[0] ).set({
+            $.css($("b", container)[0]).set({
                 backgroundColor: color,
                 width: total+"%"
             });
             $("span", container)[0].innerHTML = nivel;
         }
 
-        function submit (evt, opt) { //opt = {success: function(){}, trouble: function() {}, url: String}
+        function submit(evt, opt) { //opt = {success: function(){}, trouble: function() {}, url: String}
             opt || (opt = {});
             evt.preventDefault();
             var form = evt.target,
@@ -282,11 +276,11 @@
                 }
             }
 
-            if ( !blockSubmit ) {
+            if (!blockSubmit) {
                 blockSubmit = TRUE;
-                if ( form.enctype === "multipart/form-data" ) {
+                if (form.enctype === "multipart/form-data") {
                     var frame = $("#frame-scoop-ajax");
-                    if ( !frame ) {
+                    if (!frame) {
                         frame = document.createElement("iframe");
                         frame.style.display = "none";
                         frame.name = "frame-scoop-ajax";
@@ -316,7 +310,7 @@
                 var res = FALSE;
                 try { res = JSON.parse(r); } catch (ex) {}
 
-                if ( res ) {
+                if (res) {
                     if (res.redirect) {
                         window.location = res.redirect;
                     }
@@ -335,13 +329,11 @@
                                 error.style.visibility = "visible";
                             }
                         }
-
                         trouble && trouble(form, res);
                         return;
                     }
                     r = res;
                 }
-
                 success && success(form, r);
             };
 
@@ -352,7 +344,6 @@
             placeholder: placeholder,
             password: {safe: safePassword}
         });
-
         $.extend($.ajax, {submit: submit});
 
 })(jetro, window);

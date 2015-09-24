@@ -40,7 +40,7 @@ final class Factory
             $value = str_replace('?', $con->quote($value[1]), $value[0]);
         } elseif ($value instanceof Result) {
             if ($value->getType() !== \Scoop\Storage\SQO::READ) {
-                throw new Exception('unsupported data type for the query');
+                throw new \UnexpectedValueException('unsupported data type for the query');
             }
             $value = '('.$value.') ';
         } else {

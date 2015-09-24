@@ -28,7 +28,7 @@ final class Message
      */
     public function __construct()
     {
-        $this->msg = '<div id="msg-not"></div>';
+        $this->msg = '<div id="msg-not"><i class="fa fa-times"></i><span></span></div>';
     }
 
     /**
@@ -43,7 +43,7 @@ final class Message
     }
 
     /**
-     * Muestra y elimina el mensjae suministrado por el usuario.
+     * Muestra y elimina el mensaje suministrado por el usuario.
      */
     public function pull()
     {
@@ -80,7 +80,7 @@ final class Message
      */
     private function setMsg($type, $msg)
     {
-        $this->msg = '<div id="msg-'.$type.'">'.$msg.'</div>';
+        $this->msg = '<div id="msg-'.$type.'"><i class="fa fa-times"></i><span>'.$msg.'</span></div>';
     }
 
     /**
@@ -91,7 +91,7 @@ final class Message
     private static function validate($type)
     {
         if ($type !== self::OUT && $type !== self::ERROR && $type !== self::WARNING) {
-            throw new \Exception('Error building only accepted message types: out, warning and error.');
+            throw new \UnexpectedValueException('Error building only accepted message types: out, warning and error.');
         }
     }
 }

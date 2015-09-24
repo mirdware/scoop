@@ -118,7 +118,7 @@ final class View
     {
         if (!is_readable(self::ROOT.$this->viewName.self::EXT) &&
         !is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT)) {
-            throw new \Exception('It has not been possible to load the template or view');
+            throw new \UnderflowException('It has not been possible to load the template or view');
         }
         $helperView = new \Scoop\View\Helper($this->viewName, $this->msg);
         \Scoop\IoC\Service::register('view', $helperView);

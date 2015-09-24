@@ -109,9 +109,9 @@ class Helper
     public function route()
     {
         if (func_num_args() === 0) {
-            throw new \Exception('Unsoported number of arguments');
+            throw new \InvalidArgumentException('Unsoported number of arguments');
         }
         $args = func_get_args();
-        return ROOT.$this->router->getURL(array_shift($args), $args);
+        return $this->router->getURL(array_shift($args), $args);
     }
 }

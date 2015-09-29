@@ -1,6 +1,17 @@
-/*** botones ***/
+scoopInputs = '.input,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="time"],
+input[type="datetime"],
+input[type="search"],
+textarea'
+
 .btn
-    background $gray url($images+"btn-overlay.png") repeat-x
+    background $gray url($images+"common/btn-overlay.png") repeat-x
     border 0
     border-bottom 1px solid rgba(0,0,0,0.25)
     border-radius 5px
@@ -14,6 +25,14 @@
     text-shadow 0 -1px 1px rgba(0,0,0,0.25)
     &:hover
         background-color $gray-hover
+
+.input
+    border-radius 3px
+    border solid 1px $border-text
+    margin 5px
+    padding 5px
+    vertical-align middle
+    max-width 100%
 
 .custom-input-file
     overflow hidden
@@ -31,15 +50,14 @@
         cursor pointer
         z-index 1
 
-.input-text
-    border-radius 3px
-    border solid 1px $border-text
-    margin 5px
-    padding 5px
-    vertical-align middle
+.input-block
+    display inline-block
+    margin-right 20px
+    {scoopInputs}
+        width 100%
 
 /* forms */
-.form-scoop
+.scoop-form
     input[type="checkbox"]
     input[type="radio"]
         position absolute
@@ -55,35 +73,58 @@
             background-repeat  no-repeat
             background-position 0px -13px
             margin-left -10px
-            background-image url($images+"sprite-control-pick.png")
-
+            background-image url($images+"common/sprite-control-pick.png")
     input[type="checkbox"]:checked + span::before
         background-position 0 -26px
-
     input[type="radio"] + span::before
         background-position -13px -13px
-
     input[type="radio"]:checked + span::before
         background-position -13px -26px
-
     /* disabled form elements */
     input[type="checkbox"]:disabled + span
     input[type="checkbox"]:disabled + span::before
         background-position 0 0
-
     input[type="radio"]:disabled + span
     input[type="radio"]:disabled + span::before
         background-position -13px 0
-
     /*prevent the entire page from scrolling if there is overflow
     and checkbox or radio button are clicked */
     label
         position relative
+        margin 0 5px
         cursor pointer
-
+    i::after
+        cursor help
+        font 1em "FontAwesome"
+        margin-left .3em
+        vertical-align middle
     input[type="text"]
+    input[type="email"]
+    input[type="number"]
     textarea
-        @extend .input-text
-
-.center
-    text-align center
+        @extend .input
+    .error
+        label, i
+            color $red
+        i::after
+            content "\f057"
+        {scoopInputs}
+            border-color $red
+    .success
+        label, i
+            color $green
+        i::after
+            content "\f058"
+        {scoopInputs}
+            border-color $green
+    .warning
+        label, i
+            color $yellow
+        i::after
+            content "\f06a"
+        {scoopInputs}
+            border-color $yellow
+    textarea
+        height 120px
+    div
+        margin-right 20px

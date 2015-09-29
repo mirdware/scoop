@@ -3,4 +3,10 @@
 /public/css
 /public/js
 composer.lock
+
+# Windows detritus
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

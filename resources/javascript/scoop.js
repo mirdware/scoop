@@ -43,6 +43,7 @@
 
             $(function () {
                 divMsg = $("#msg-error") || $("#msg-out") || $("#msg-warning");
+
                 if (divMsg) {
                     cssMsg = $.css(divMsg);
                     msgHeight = divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2;
@@ -56,6 +57,7 @@
                     cssMsg = $.css(divMsg);
                     //$.css("#msg-out, #msg-error, #msg-warning, #msg-not").set("opacity", 0);
                 }
+                if (!divMsg) return;
                 $.evt.add(window, "scroll", onScroll);
                 $.evt.add($("i", divMsg)[0], "click", hide);
             });
@@ -67,15 +69,14 @@
                 divMsg.id = "msg-"+type;
                 $("span", divMsg)[0].innerHTML = msg;
                 msgTop = divMsg.offsetTop;
-                clearTimeout(timer);
 
+                clearTimeout(timer);
                 cssMsg.set({
                     opacity: 0,
                     height: "",
                     position: "",
                     top: ""
                 });
-
                 if (window.pageYOffset > 0) {
                     cssMsg.set({
                         position: "fixed",
@@ -84,9 +85,9 @@
                         paddingBottom: "5px"
                     });
                 }
-
                 msgHeight = (divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2);
                 divMsg.style.height = 0;
+
                 $.sfx.anim(divMsg, {
                     opacity: 1,
                     height: msgHeight+"px",
@@ -188,7 +189,6 @@
                     || iLcLetters.indexOf(union,0) != -1 ) {
                     cons++;
                 }
-
                 if (chars.indexOf(charc,0) == -1) {
                     chars += charc;
                 } else {
@@ -214,7 +214,6 @@
                 }
                 prev = charc;
             }
-
             if ((lcChar+ucChar) == len || numChar == len) {
                 only = len;
             }
@@ -224,10 +223,8 @@
             if (lcChar) {
                 lcChar = ((len-lcChar)*3);
             }
-
             total = (len*7)+ucChar+lcChar+(numChar*4)+(spChar*5)
                     -only-(charRep*3)-(cucChar*2)-(cnumChar*2)-(clcChar*2)-(cons*5);
-
             if (total<=0) {
                 total = 0;
                 nivel = "Nivel de seguridad";
@@ -246,7 +243,6 @@
             } else if (total >100) {
                 total = 100;
             }
-
             $.css($("b", container)[0]).set({
                 backgroundColor: color,
                 width: total+"%"
@@ -275,7 +271,6 @@
                     error.style.visibility = "hidden";
                 }
             }
-
             if (!blockSubmit) {
                 blockSubmit = TRUE;
                 if (form.enctype === "multipart/form-data") {
@@ -336,7 +331,6 @@
                 }
                 success && success(form, r);
             };
-
         }
 
         $.extend($, {
@@ -345,5 +339,4 @@
             password: {safe: safePassword}
         });
         $.extend($.ajax, {submit: submit});
-
 })(jetro, window);

@@ -8,13 +8,19 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     sourcemaps = require('gulp-sourcemaps'),
     livereload = require('gulp-livereload'),
+    nib = require('nib'),
     app = require('./package.json');
 
 gulp.task('css', function() {
     return gulp.src('resources/styles/app.styl')
         .pipe(sourcemaps.init())
-        .pipe(stylus())
-        .pipe(mincss())
+        .pipe(stylus({
+            use: [nib()],
+            import: ['nib']
+        }))
+        .pipe(mincss({
+            keepSpecialComments: 0
+        }))
         .pipe(rename(app.name+'.min.css'))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('public/css/'))
@@ -30,7 +36,7 @@ gulp.task('js', function() {
         .pipe(source(app.name+'.min.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init())
-            .pipe(uglify())
+        .pipe(uglify())
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('public/js/'))
         .pipe(livereload());

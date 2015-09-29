@@ -166,7 +166,7 @@ final class Template
             }
         }
         $view = fopen($viewName, 'w');
-        fwrite($view, $content);
+        fwrite($view, trim($content));
         fclose($view);
     }
 }

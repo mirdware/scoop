@@ -1,8 +1,2 @@
-require(url)
-    @import $node-modules + url
-
-display(type)
-    display type
-    if type == "inline-block"
-        *display inline
-        *zoom 1
+include(url)
+    @require $node-modules + url

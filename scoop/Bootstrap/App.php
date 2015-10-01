@@ -57,7 +57,7 @@ class App
     {
         if (!isset($this->url)) {
             $this->url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
-            unset($_GET['route']);
+            unset($_GET['route'], $_REQUEST['route']);
         }
         return $this->url;
     }

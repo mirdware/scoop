@@ -1,2 +1,19 @@
-include(url)
-    @require $node-modules + url
+include($url)
+    @require $node-modules-path + $url
+
+font-url($url)
+    url($fonts-path + $url)
+
+image-url($url)
+    url($images-path + $url)
+
+font-face($family, $file, $weight = 'normal')
+      @font-face
+        font-family $family
+        src font-url($file + '.eot')
+        src font-url($file + '.eot?#iefix') format('embedded-opentype'),
+            font-url($file + '.woff') format('woff'),
+            font-url($file + '.ttf') format('truetype'),
+            font-url($file + '.svg#'+ $family) format('svg')
+        font-weight $weight
+        font-style normal

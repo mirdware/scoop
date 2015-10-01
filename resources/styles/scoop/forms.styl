@@ -11,7 +11,7 @@ input[type="search"],
 textarea'
 
 .btn
-    background $gray url($images+"common/btn-overlay.png") repeat-x
+    background $gray image-url('common/btn-overlay.png') repeat-x
     border 0
     border-bottom 1px solid rgba(0,0,0,0.25)
     border-radius 5px
@@ -73,7 +73,7 @@ textarea'
             background-repeat  no-repeat
             background-position 0px -13px
             margin-left -10px
-            background-image url($images+"common/sprite-control-pick.png")
+            background-image image-url('common/sprite-control-pick.png')
     input[type="checkbox"]:checked + span::before
         background-position 0 -26px
     input[type="radio"] + span::before

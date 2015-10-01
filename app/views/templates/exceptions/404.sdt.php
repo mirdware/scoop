@@ -1,2 +1,4 @@
 @extends 'layers/layer'
-<h1>The page you requested was not found</h1>
+<div class="jumbotron">
+    <h1>The page you requested was not found</h1>
+</div>

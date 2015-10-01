@@ -1,2 +1,2 @@
-global.jetro = require("jetro");
-require("./scoop.js");
+global.jetro = require('jetro');
+require('./scoop/scoop.js');

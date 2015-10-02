@@ -11,7 +11,7 @@ input[type="search"],
 textarea'
 
 .btn
-    background $gray image-url('common/btn-overlay.png') repeat-x
+    background $gray image-url("common/btn-overlay.png") repeat-x
     border 0
     border-bottom 1px solid rgba(0,0,0,0.25)
     border-radius 5px
@@ -25,6 +25,12 @@ textarea'
     text-shadow 0 -1px 1px rgba(0,0,0,0.25)
     &:hover
         background-color $gray-hover
+    &:disabled
+        background-color $bg-disable
+        color $gray
+        cursor not-allowed
+        &:hover
+            background-color $bg-disable
 
 .input
     border-radius 3px
@@ -33,6 +39,9 @@ textarea'
     padding 5px
     vertical-align middle
     max-width 100%
+    &:disabled
+        cursor not-allowed
+        background-color lighten($bg-disable, 60%)
 
 .custom-input-file
     overflow hidden
@@ -53,6 +62,7 @@ textarea'
 .input-block
     display inline-block
     margin-right 20px
+    vertical-align top
     {scoopInputs}
         width 100%
 
@@ -73,7 +83,7 @@ textarea'
             background-repeat  no-repeat
             background-position 0px -13px
             margin-left -10px
-            background-image image-url('common/sprite-control-pick.png')
+            background-image image-url("common/sprite-control-pick.png")
     input[type="checkbox"]:checked + span::before
         background-position 0 -26px
     input[type="radio"] + span::before
@@ -94,7 +104,6 @@ textarea'
         margin 0 5px
         cursor pointer
     i::after
-        cursor help
         font 1em "FontAwesome"
         margin-left .3em
         vertical-align middle

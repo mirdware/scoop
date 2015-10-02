@@ -7,13 +7,13 @@ font-url($url)
 image-url($url)
     url($images-path + $url)
 
-font-face($family, $file, $weight = 'normal')
+font-face($family, $file, $weight = "normal")
       @font-face
         font-family $family
-        src font-url($file + '.eot')
-        src font-url($file + '.eot?#iefix') format('embedded-opentype'),
-            font-url($file + '.woff') format('woff'),
-            font-url($file + '.ttf') format('truetype'),
-            font-url($file + '.svg#'+ $family) format('svg')
+        src font-url($file + ".eot")
+        src font-url($file + ".eot?#iefix") format("embedded-opentype"),
+            font-url($file + ".woff") format("woff"),
+            font-url($file + ".ttf") format("truetype"),
+            font-url($file + ".svg#"+ $family) format("svg")
         font-weight $weight
         font-style normal

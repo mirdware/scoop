@@ -5,7 +5,6 @@ class Router
 {
     private $routes = array();
     private $instances = array();
-    private static $route;
 
     public function __construct($fileName)
     {
@@ -15,8 +14,7 @@ class Router
 
     public function route($url)
     {
-        self::$route = $url;
-        $matches = array_filter($this->routes, array($this, 'filterRoute'));
+        $matches = self::filterRoute($this->routes, $url);
 
         if ($matches) {
             usort($matches, array($this, 'sortByURL'));
@@ -34,14 +32,11 @@ class Router
                 if ($controller) {
                     array_shift($route['params']);
                     $params = array_filter($route['params']);
-                    $params = array_map(array($this, 'formatParam'), $params);
                     $controllerReflection = new \ReflectionClass($controller);
                     $interfaces = $controllerReflection->getInterfaces();
-                    if (isset($interfaces['Scoop\Http\Resource'])) {
-                        $method = strtolower($_SERVER['REQUEST_METHOD']);
-                    } else {
-                        $method = array_shift($method);
-                    }
+                    $method = isset($interfaces['Scoop\Http\Resource'])?
+                    		strtolower($_SERVER['REQUEST_METHOD']):
+                    		array_shift($method);
                     $method = $controllerReflection->getMethod($method);
                     $numParams = count($params);
 
@@ -70,8 +65,7 @@ class Router
 
     public function intercept($url)
     {
-        self::$route = $url;
-        $matches = array_filter($this->routes, array($this, 'filterInterceptor'));
+        $matches = self::filterInterceptor($this->routes, $url);
 
         if ($matches) {
             usort($matches, array($this, 'sortByURL'));
@@ -110,27 +104,34 @@ class Router
         return strcmp($a['url'], $b['url']) > 0;
     }
 
-    private static function filterRoute(&$route)
+    private static function filterRoute($routes, $url)
     {
-        return preg_match('/^'.self::normalizeURL($route['url']).'$/', self::$route, $route['params']);
+        $matches = array();
+        foreach ($routes as &$route) {
+            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
+                $matches[] = $route;
+            }
+        }
+        return $matches;
     }
 
-    private static function filterInterceptor(&$route)
+    private static function filterInterceptor($routes, $url)
     {
-        return preg_match('/^'.self::normalizeURL($route['url']).'/', self::$route);
+        $matches = array();
+        foreach ($routes as &$route) {
+            if (preg_match('/^'.self::normalizeURL($route['url']).'/', $url)) {
+                $matches[] = $route;
+            }
+        }
+        return $matches;
     }
 
     private static function normalizeURL($url)
     {
         $url = str_replace(
-            array('[var]/', '[int]/'),
-            array('([\w\s]*/?)', '(\d*/?)'),
+            array('{var}', '{int}'),
+            array('([\w\+\-\s\.]*)', '(\d*)'),
             $url);
         return addcslashes($url, '/');
-    }
-
-    private static function formatParam($param)
-    {
-        return substr($param, 1);
     }
 }

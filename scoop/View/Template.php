@@ -16,7 +16,7 @@ final class Template
      */
     const EXT = '.sdt.php';
     /**
-     * Nombre de la clase para que se encarga del manejo de la herencia.
+     * Nombre de la clase que se encarga del manejo de la herencia.
      */
     const HERITAGE = '\Scoop\View\Heritage';
 

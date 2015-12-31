@@ -80,7 +80,7 @@ class App
                 self::purgeGET($value);
             } else {
                 // <htmlentities> dentro del POST va a ser suprimida en proximas versiones
-                $get[$key] = htmlspecialchars(trim($value) , ENT_QUOTES, 'UTF-8');
+                $get[$key] = htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
             }
         }
     }

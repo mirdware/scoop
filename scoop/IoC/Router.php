@@ -14,11 +14,12 @@ class Router
 
     public function route($url)
     {
-        $matches = self::filterRoute($this->routes, $url);
+        $matches = $this->filter($url);
 
         if ($matches) {
             usort($matches, array($this, 'sortByURL'));
             $route = array_pop($matches);
+
             if (isset($route['controller'])) {
                 $method = explode(':', $route['controller']);
                 $controller = array_shift($method);
@@ -30,6 +31,7 @@ class Router
                 $controller->setRouter($this);
 
                 if ($controller) {
+                    $this->intercept($url);
                     array_shift($route['params']);
                     $params = array_filter($route['params']);
                     $controllerReflection = new \ReflectionClass($controller);
@@ -49,6 +51,43 @@ class Router
         throw new \Scoop\Http\NotFoundException();
     }
 
+    public function intercept($url)
+    {
+        $matches = $this->filterProxy($url);
+
+        if ($matches) {
+            usort($matches, array($this, 'sortByURL'));
+            foreach ($matches as &$route) {
+                if (isset($route['proxy'])) {
+                    $proxy = explode(':', $route['proxy']);
+                    $method = array_pop($proxy);
+                    $proxy = array_shift($proxy);
+                    $proxy =  $this->getInstance($proxy);
+                    $proxy->$method();
+                }
+            }
+        }
+    }
+
+    public function filter($url)
+    {
+        $matches = array();
+        foreach ($this->routes as &$route) {
+            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
+                $matches[] = $route;
+            }
+        }
+        return $matches;
+    }
+
+    public function getInstance($class)
+    {
+        if (!isset($this->instances[$class])) {
+            $this->instances[$class] = Injector::create($class);
+        }
+        return $this->instances[$class];
+    }
+
     public function getURL($key, $params)
     {
         $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
@@ -63,32 +102,6 @@ class Router
         return ROOT.substr($url, 1);
     }
 
-    public function intercept($url)
-    {
-        $matches = self::filterInterceptor($this->routes, $url);
-
-        if ($matches) {
-            usort($matches, array($this, 'sortByURL'));
-            foreach ($matches as &$route) {
-                if (isset($route['interceptor'])) {
-                    $interceptor = explode(':', $route['interceptor']);
-                    $method = array_pop($interceptor);
-                    $interceptor = array_shift($interceptor);
-                    $interceptor =  $this->getInstance($interceptor);
-                    $interceptor->$method();
-                }
-            }
-        }
-    }
-
-    public function getInstance($class)
-    {
-        if (!isset($this->instances[$class])) {
-            $this->instances[$class] = Injector::create($class);
-        }
-        return $this->instances[$class];
-    }
-
     private function load($route, $key, $oldURL = '')
     {
         $route['url'] = $oldURL.$route['url'];
@@ -99,31 +112,20 @@ class Router
         $this->routes[$key] = $route;
     }
 
-    private static function sortByURL($a, $b)
-    {
-        return strcmp($a['url'], $b['url']) > 0;
-    }
-
-    private static function filterRoute($routes, $url)
+    private function filterProxy($url)
     {
         $matches = array();
-        foreach ($routes as &$route) {
-            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
-                $matches[] = $route;
-            }
-        }
-        return $matches;
-    }
-
-    private static function filterInterceptor($routes, $url)
-    {
-        $matches = array();
-        foreach ($routes as &$route) {
+        foreach ($this->routes as &$route) {
             if (preg_match('/^'.self::normalizeURL($route['url']).'/', $url)) {
                 $matches[] = $route;
             }
         }
         return $matches;
+    }
+
+    private static function sortByURL($a, $b)
+    {
+        return strcmp($a['url'], $b['url']) > 0;
     }
 
     private static function normalizeURL($url)

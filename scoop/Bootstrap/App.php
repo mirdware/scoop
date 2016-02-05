@@ -43,7 +43,6 @@ class App
             self::purgeGET($_GET);
         }
         $router = $this->environment->getRouter();
-        $router->intercept($url);
         return $router->route($url);
     }
 

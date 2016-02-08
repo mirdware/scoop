@@ -3,7 +3,7 @@ var gulp = require('gulp'),
     source = require('vinyl-source-stream'),
     stylus = require('gulp-stylus'),
     rename = require('gulp-rename'),
-    mincss = require('gulp-minify-css'),
+    mincss = require('gulp-cssnano'),
     buffer = require('vinyl-buffer'),
     uglify = require('gulp-uglify'),
     sourcemaps = require('gulp-sourcemaps'),
@@ -18,9 +18,7 @@ gulp.task('css', function() {
             use: [nib()],
             import: ['nib']
         }))
-        .pipe(mincss({
-            keepSpecialComments: 0
-        }))
+        .pipe(mincss())
         .pipe(rename(app.name+'.min.css'))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('public/css/'))

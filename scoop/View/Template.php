@@ -10,7 +10,7 @@ final class Template
     /**
      * Ruta donde se encuentran las platillas.
      */
-    const ROOT = 'app/views/templates/';
+    const ROOT = 'app/views/';
     /**
      * Extensión de los archivos que funcionan como plantillas.
      */

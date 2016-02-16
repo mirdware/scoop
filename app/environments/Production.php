@@ -3,10 +3,9 @@ namespace Environment;
 
 class Production extends \Scoop\Bootstrap\Environment
 {
-
     public function configure()
     {
-        self::defineConstants();
+        self::defineConfig();
         $this->setRouter(new \Scoop\IoC\Router('app/routes'))
              ->setConfig(new \Scoop\Bootstrap\Configuration('app/config'))
              ->registerServices()
@@ -25,8 +24,10 @@ class Production extends \Scoop\Bootstrap\Environment
                 ->registerService('config', $this);
     }
 
-    private static function defineConstants()
+    private static function defineConfig()
     {
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+        setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
+        date_default_timezone_set('America/Bogota');
     }
 }

@@ -37,8 +37,8 @@ class Router
                     $controllerReflection = new \ReflectionClass($controller);
                     $interfaces = $controllerReflection->getInterfaces();
                     $method = isset($interfaces['Scoop\Http\Resource'])?
-                    		strtolower($_SERVER['REQUEST_METHOD']):
-                    		array_shift($method);
+                            strtolower($_SERVER['REQUEST_METHOD']):
+                            array_shift($method);
                     $method = $controllerReflection->getMethod($method);
                     $numParams = count($params);
 

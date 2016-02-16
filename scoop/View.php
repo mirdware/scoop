@@ -8,7 +8,7 @@ namespace Scoop;
 final class View
 {
     /** Ruta donde se encuentran las vistas. */
-    const ROOT = 'app/views/php/';
+    const ROOT = 'resources/cache/views/';
     /**
      * Extensión de los archivos que funcionan como vistas.
      */

@@ -64,10 +64,10 @@ class App
     {
         foreach ($array as &$value) {
             if (is_array($value)) {
-                self::purgePOST($value);
+                self::purge($value);
             } else {
                 $value = self::filterXSS(trim($value));
-                $value = htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
+                $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
             }
         }
     }

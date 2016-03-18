@@ -1,16 +1,22 @@
+label
+    position relative
+    margin 0 .5em
+    cursor pointer
+
 .btn
     background $gray image-url("common/btn-overlay.png") repeat-x
     border 0
-    border-bottom 1px solid rgba(0,0,0,0.25)
+    border-bottom 1px solid rgba(0, 0, 0, .25)
     border-radius .5em
-    box-shadow 0 1px 3px rgba(0,0,0,0.6)
+    box-shadow 0 1px 3px rgba(0, 0, 0, .6)
     color white
     cursor pointer
     display inline-block
     font-weight 700
     padding .5em 1em
+    margin 0 .5em
     position relative
-    text-shadow 0 -1px 1px rgba(0,0,0,0.25)
+    text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
     &:hover
         background-color $gray-hover
     &:disabled
@@ -23,7 +29,7 @@
 .input
     border-radius .3em
     border solid 1px $border-text
-    margin .5em 0 .5em -.5em
+    margin 0 .5em
     padding .5em
     vertical-align middle
     max-width 100%
@@ -47,12 +53,15 @@
         cursor pointer
         z-index 1
 
-.input-block
+.group-box
     display inline-block
     margin 0 1em
     vertical-align top
+    text-align left
     {scoopInputs}
         width 100%
+    .btn
+        margin-top 1.5em
 
 /* forms */
 .scoop-form
@@ -85,18 +94,10 @@
     input[type="radio"]:disabled + span
     input[type="radio"]:disabled + span::before
         background-position -13px 0
-    /*prevent the entire page from scrolling if there is overflow
-    and checkbox or radio button are clicked */
-    label
-        position relative
-        margin 0 1em 0 -.5em
-        cursor pointer
     i::after
         font 1em "FontAwesome"
         margin-left .3em
         vertical-align middle
-    {formInputs}
-        @extend .input
     .error
         label, i
             color $red

@@ -2,7 +2,7 @@
 /node_modules
 /public/css
 /public/js
-/resources/cache
+/app/cache
 composer.lock
 
 # Windows detritus

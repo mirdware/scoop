@@ -8,7 +8,7 @@ namespace Scoop;
 final class View
 {
     /** Ruta donde se encuentran las vistas. */
-    const ROOT = 'resources/cache/views/';
+    const ROOT = 'app/cache/views/';
     /**
      * Extensión de los archivos que funcionan como vistas.
      */
@@ -120,10 +120,10 @@ final class View
         !is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT)) {
             throw new \UnderflowException('It has not been possible to load the template or view');
         }
-        $helperView = new \Scoop\View\Helper($this->viewName, $this->msg);
-        \Scoop\IoC\Service::register('view', $helperView);
-        \Scoop\View\Heritage::init($this->viewData);
-        \Scoop\View\Template::parse($this->viewName);
+        $helperView = new View\Helper($this->viewName, $this->msg);
+        IoC\Service::register('view', $helperView);
+        View\Heritage::init($this->viewData);
+        View\Template::parse($this->viewName);
         extract($this->viewData);
         include self::ROOT.$this->viewName.self::EXT;
         $view = ob_get_contents().\Scoop\View\Heritage::getFooter();

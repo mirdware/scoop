@@ -12,11 +12,12 @@ var gulp = require('gulp'),
     app = require('./package.json');
 
 gulp.task('css', function() {
-    return gulp.src('resources/styles/app.styl')
+    return gulp.src('app/styles/app.styl')
         .pipe(sourcemaps.init())
         .pipe(stylus({
-            use: [nib()],
-            import: ['nib']
+            'use': [nib()],
+            'import': ['nib'],
+            'include css': true
         }))
         .pipe(mincss())
         .pipe(rename(app.name+'.min.css'))
@@ -27,8 +28,8 @@ gulp.task('css', function() {
 
 gulp.task('js', function() {
     browserify({
-            entries: 'resources/javascript/app.js',
-            debug: true
+            'entries': 'app/javascript/app.js',
+            'debug': true
         })
         .bundle()
         .pipe(source(app.name+'.min.js'))
@@ -42,7 +43,7 @@ gulp.task('js', function() {
 
 gulp.task('default', ['css', 'js'], function() {
     livereload.listen();
-    gulp.watch('resources/styles/**/*', ['css']);
-    gulp.watch('resources/javascript/**/*', ['js']);
+    gulp.watch('app/styles/**/*', ['css']);
+    gulp.watch('app/javascript/**/*', ['js']);
     gulp.watch('./**/*.php').on('change', livereload.changed);
 });

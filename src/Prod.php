@@ -1,15 +1,15 @@
 <?php
-namespace Environment;
+namespace App;
 
-class Production extends \Scoop\Bootstrap\Environment
+class Prod extends \Scoop\Bootstrap\Environment
 {
-    public function configure()
+    public function __construct()
     {
-        self::defineConfig();
-        $this->setRouter(new \Scoop\IoC\Router('app/routes'))
-             ->setConfig(new \Scoop\Bootstrap\Configuration('app/config'))
-             ->registerServices()
-             ->bindInterfaces();
+        parent::__construct('app/config');
+        self::configure();
+        $this->registerServices()
+             ->bindInterfaces()
+             ->injectParameters();
     }
 
     private function bindInterfaces()
@@ -24,7 +24,13 @@ class Production extends \Scoop\Bootstrap\Environment
                 ->registerService('config', $this);
     }
 
-    private static function defineConfig()
+    private function injectParameters()
+    {
+        \Scoop\View\Helper::setAssets($this->get('assets'));
+        \Scoop\Validator::setMessages($this->get('messages.error'));
+    }
+
+    private static function configure()
     {
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');

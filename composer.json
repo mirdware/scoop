@@ -13,9 +13,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "App\\": "app/domain/",
-            "Controller\\": "app/controllers/",
-            "Environment\\": "app/environments/",
+            "App\\": "src/",
             "Scoop\\": "scoop/"
         }
     },

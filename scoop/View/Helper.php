@@ -17,11 +17,12 @@ class Helper
     /**
      * @var array Ubicación de los assets dentro de la aplicación
      */
-    private $assets;
-    /**
-     * Objeto que se encarga del enrutamiento dentro de la aplicación.
-     */
-    private $router;
+    private static $assets = array(
+        'path' => 'public/',
+        'img' => 'images/',
+        'css' => 'css/',
+        'js' => 'js/'
+    );
 
     /**
      * Establece la configuración inicial de los atributos del Helper
@@ -30,16 +31,13 @@ class Helper
      */
     public function __construct($name, $msg)
     {
-        $config = \Scoop\IoC\Service::getInstance('config');
         $this->name = $name;
         $this->msg = $msg;
-        $this->router = $config->getRouter();
-        $this->assets = (array) $config->get('asset') + array(
-            'path' => 'public/',
-            'img' => 'images/',
-            'css' => 'css/',
-            'js' => 'js/'
-        );
+    }
+
+    public static function setAssets($assets)
+    {
+        self::$assets = (array) $assets + self::$assets;
     }
 
     /**
@@ -67,7 +65,7 @@ class Helper
      */
     public function overt($resource)
     {
-        return ROOT.$this->assets['path'].$resource;
+        return ROOT.self::$assets['path'].$resource;
     }
 
     /**
@@ -77,7 +75,7 @@ class Helper
      */
     public function img($image)
     {
-        return $this->overt($this->assets['img'].$image);
+        return $this->overt(self::$assets['img'].$image);
     }
 
     /**
@@ -87,7 +85,7 @@ class Helper
      */
     public function css($styleSheet)
     {
-        return $this->overt($this->assets['css'].$styleSheet);
+        return $this->overt(self::$assets['css'].$styleSheet);
     }
 
     /**
@@ -97,7 +95,7 @@ class Helper
      */
     public function js($javaScript)
     {
-        return $this->overt($this->assets['js'].$javaScript);
+        return $this->overt(self::$assets['js'].$javaScript);
     }
 
     /**
@@ -112,6 +110,7 @@ class Helper
             throw new \InvalidArgumentException('Unsoported number of arguments');
         }
         $args = func_get_args();
-        return $this->router->getURL(array_shift($args), $args);
+        $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
+        return $router->getURL(array_shift($args), $args);
     }
 }

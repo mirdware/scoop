@@ -1,75 +1,190 @@
 <?php
 namespace Scoop;
 
-class Validator {
-    private $data;
-    private $errors;
+class Validator
+{
+    const SIMPLE_VALIDATION = 0;
+    const FULL_VALIDATION = 1;
+    const DEFAULT_MSG = 'Invalid field';
+    private static $msg;
+    protected $data;
+    private $rules;
+    private $typeValidation;
 
-    public function __construct($data) {
-        $this->data = $data;
-        $this->errors = array();
-    }
-    
-    protected function validateRequired($field)
+    public function __construct($typeValidation = self::SIMPLE_VALIDATION)
     {
-        if (empty($this->data[$field])) {
-            $this->errors[$field][] = 'Complete este campo';
-        }
+        $this->rules = array();
+        $this->typeValidation = $typeValidation;
     }
-    
-    protected function validateLength($field, $max, $min)
+
+    public static function setMessages($messages)
     {
-        if (isset($this->data[$field])) {
-            $length = strlen($this->data[$field]);
-            if ($length < $min || $length > $max) {
-                $this->errors[$field][] = 'El campo no cumple con los tamaños de longitud establecidos';
+        self::$msg = (array) $messages;
+    }
+
+    public function validate($data)
+    {
+        $this->data = &$data;
+        $errors = array();
+
+        foreach ($this->rules as &$rule) {
+            if (is_array($rule['fields'])) {
+                foreach ($rule['fields'] as $key => &$field) {
+                    $rule['params'] = array('label' => $field) + $rule['params'];
+                    if (!is_numeric($key)) {
+                        $field = $key;
+                    }
+                    $this->executeRule($rule['rule'], $field, $rule['params'], $errors);
+                }
+            } else {
+                $rule['params'] = array('label' => $rule['fields']) + $rule['params'];
+                $this->executeRule($rule['rule'], $rule['fields'], $rule['params'], $errors);
             }
         }
+        return $errors;
+    }
+
+    public function required($fields)
+    {
+        return $this->addRule('required', $fields);
+    }
+
+    public function length($fields, $min, $max)
+    {
+        return $this->addRule('length', $fields, array('min' => $min, 'max' => $max));
+    }
+
+    public function maxLength($fields, $max)
+    {
+        return $this->addRule('maxLength', $fields, array('max' => $max));
+    }
+
+    public function minLength($fields, $min)
+    {
+        return $this->addRule('minLength', $fields, array('min' => $min));
+    }
+
+    public function range($fields, $min, $max)
+    {
+        return $this->addRule('range', $fields, array('min' => $min, 'max' => $max));
+    }
+
+    public function max($fields, $max)
+    {
+        return $this->addRule('max', $fields, array('max' => $max));
+    }
+
+    public function min($fields, $min)
+    {
+        return $this->addRule('min', $fields, array('min' => $min));
+    }
+
+    public function number($fields)
+    {
+        return $this->addRule('number', $fields);
+    }
+
+    public function email($fields)
+    {
+        return $this->addRule('email', $fields);
+    }
+
+    public function pattern($fields, $pattern, $mask = '')
+    {
+        return $this->addRule('pattern', $fields, array('pattern' => $pattern, 'mask' => $mask));
+    }
+
+    protected function addRule($rule, $fields, $params = array())
+    {
+        $this->rules[] = array('rule' => $rule, 'fields' => $fields, 'params' => $params);
+        return $this;
     }
     
-    protected function validateMax($field, $max)
+    protected function validateRequired(&$params)
     {
-        if (isset($this->data[$field]) && is_numeric($this->data[$field])) {
-            if ($this->data[$field] > $max) {
-                $this->errors[$field][] = 'El campo es mayor al valor maximo establecido';
+        return !empty($params['value']);
+    }
+
+    protected function validateLength(&$params)
+    {
+        $params['length'] = strlen($params['value']);
+        return $params['length'] > $params['min'] && $params['length'] < $params['max'];
+    }
+
+    protected function validateMaxLength(&$params)
+    {
+        $params['length'] = strlen($params['value']);
+        return $params['length'] < $params['max'];
+    }
+
+    protected function validateMinLength(&$params)
+    {
+        $params['length'] = strlen($params['value']);
+        return $params['length'] > $params['min'];
+    }
+
+    protected function validateRange(&$params)
+    {
+        if (is_numeric($params['value'])) {
+            return $params['value'] > $params['min'] && $params['value'] < $params['max'];
+        }
+    }
+
+    protected function validateMax(&$params)
+    {
+        if (is_numeric($params['value'])) {
+            return $params['value'] < $params['max'];
+        }
+    }
+
+    protected function validateMin(&$params)
+    {
+        if (is_numeric($params['value'])) {
+            return $params['value'] < $params['min'];
+        }
+    }
+
+    protected function validateNumber(&$params)
+    {
+        return is_numeric($params['value']);
+    }
+
+    protected function validateEmail(&$params)
+    {
+        return filter_var($params['value'], FILTER_VALIDATE_EMAIL);
+    }
+
+    protected function validatePattern(&$params)
+    {
+        return preg_match('/'.$params['pattern'].'/', $params['value']);
+    }
+
+    private function executeRule($rule, $field, $params, &$errors)
+    {
+        if ($rule !== 'required' && !isset($this->data[$field])){
+            return;
+        }
+        $method = 'validate'.ucfirst($rule);
+        $params = array('value' => $this->data[$field]) + $params;
+
+        if ($this->typeValidation === self::SIMPLE_VALIDATION) {
+            if (!isset($errors[$field]) && !$this->$method($params)) {
+                $errors[$field] = self::formatMessage($rule, $params);
             }
+        } elseif (!$this->$method($params)) {
+            $errors[$field][] = self::formatMessage($rule, $params);
         }
     }
 
-    public function required($field)
+    private static function formatMessage($rule, $params)
     {
-        if (is_array($field)) {
-            array_walk($field, array($this, 'validateRequired'));
-            return $this;
-        }
-        $this->validateRequired($field);
-        return $this;
-    }
-
-    public function length($field, $max, $min)
-    {
-        if (is_array($field)) {
-            foreach ($f as &$field) {
-                $this->validateLength($f, $max, $min);
+        if (isset(self::$msg[$rule])) {
+            $keys = array_keys($params);
+            foreach ($keys as &$key) {
+                $key = '{'.$key.'}';
             }
-            return $this;
+            return str_replace($keys, $params, self::$msg[$rule]);
         }
-        $this->validateLength($field, $max, $min);
-        return $this;
-    }
-    
-    public function max($field, $max)
-    {
-        if (is_array($field)) {
-            array_walk($field, array($this, 'validateMax'), $max);
-            return $this;
-        }
-        $this->validateMax($field, $max);
-        return $this;
-    }
-
-    public function validate()
-    {
-        return $this->errors;
+        return self::DEFAULT_MSG;
     }
 }

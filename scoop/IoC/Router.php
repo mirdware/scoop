@@ -6,9 +6,8 @@ class Router
     private $routes = array();
     private $instances = array();
 
-    public function __construct($fileName)
+    public function __construct($routes)
     {
-        $routes = require $fileName.'.php';
         array_walk($routes, array($this, 'load'));
     }
 
@@ -35,11 +34,14 @@ class Router
                 $controllerReflection = new \ReflectionClass($controller);
                 $interfaces = $controllerReflection->getInterfaces();
                 $method = isset($interfaces['Scoop\Http\Resource'])?
-                        strtolower($_SERVER['REQUEST_METHOD']):
-                        array_shift($method);
+                    strtolower($_SERVER['REQUEST_METHOD']):
+                    array_shift($method);
+                if (!$controllerReflection->hasMethod($method)) {
+                    throw new \Scoop\Http\MethodNotAllowedException();
+                }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($params);
-
+                
                 if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
                     return $method->invokeArgs($controller, $params);
                 }
@@ -131,7 +133,7 @@ class Router
     private static function normalizeURL($url)
     {
         $url = str_replace(
-            array('{var}', '{int}'),
+            array(':var', ':int'),
             array('([\w\+\-\s\.]*)', '(\d*)'),
             $url);
         if (substr($url, -1) !== '/') {

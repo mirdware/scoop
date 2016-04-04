@@ -26,7 +26,7 @@
     #RewriteBase /
 
     #ocultar las carpetas de la app
-    RewriteRule ^(app|vendor|scoop|resources)/ - [F]
+    RewriteRule ^(app|vendor|scoop|src)/ - [F]
 
     #Forzar a usar la barra o slash (/) final dentro de la URL
     RewriteCond %{REQUEST_URI} /+[^\.]+$

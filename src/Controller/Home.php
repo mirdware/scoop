@@ -1,5 +1,5 @@
 <?php
-namespace Controller;
+namespace App\Controller;
 
 class Home extends \Scoop\Controller
 {

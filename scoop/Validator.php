@@ -99,7 +99,7 @@ class Validator
         $this->rules[] = array('rule' => $rule, 'fields' => $fields, 'params' => $params);
         return $this;
     }
-    
+
     protected function validateRequired(&$params)
     {
         return !empty($params['value']);

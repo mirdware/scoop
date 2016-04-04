@@ -1,7 +1,4 @@
-#msg-out
-#msg-error
-#msg-warning
-#msg-not
+#msg
     background white no-repeat 5px center
     font 700 1em Arial, Helvetica, sans-serif
     position relative
@@ -19,25 +16,25 @@
         margin-right .5em
         cursor pointer
         color #AAA
-
-#msg-not
-    height 0
-    display none
-
-#msg-out
-    color $green
-    &::before
-        content "\f00c"
-
-#msg-error
-    color $red
-    &::before
-        content "\f057"
-
-#msg-warning
-    color $yellow
-    &::before
-        content "\f071"
+    &.not
+        height 0
+        display none
+    &.success
+        color $green-hover
+        &::before
+            content "\f00c"
+    &.error
+        color $red-hover
+        &::before
+            content "\f057"
+    &.warning
+        color $yellow-hover
+        &::before
+            content "\f071"
+    &.info
+        color $blue-hover
+        &::before
+            content "\f05a"
 
 .center
     text-align center

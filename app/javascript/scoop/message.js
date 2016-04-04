@@ -15,13 +15,13 @@
         }, {
             duration: duration,
             onComplete: function () {
-                divMsg.id = "msg-not";
+                divMsg.className = "not";
             }
         });
     }
 
     function onScroll(e) {
-        if (divMsg.id !== "msg-not") {
+        if (divMsg.className !== "not") {
             if (window.pageYOffset > msgHeight) {
                 cssMsg.set({
                     position: "fixed",
@@ -37,8 +37,7 @@
     }
 
     $(function () {
-        divMsg = $("#msg-error") || $("#msg-out") || $("#msg-warning");
-
+        divMsg = $("#msg");
         if (divMsg) {
             cssMsg = $.css(divMsg);
             msgHeight = divMsg.offsetHeight-parseInt(cssMsg.get("paddingTop"))*2;
@@ -47,10 +46,6 @@
                 opacity: 1,
                 height: msgHeight+"px"
             });
-        } else {
-            divMsg = $("#msg-not");
-            cssMsg = $.css(divMsg);
-            //$.css("#msg-out, #msg-error, #msg-warning, #msg-not").set("opacity", 0);
         }
         if (!divMsg) return;
         $.evt.add(window, "scroll", onScroll);
@@ -59,10 +54,10 @@
 
     $.extend($, {
         message: function (type, msg) {
-            if (type != "error" && type != "out" && type != "warning") {
+            if (type != "error" && type != "success" && type != "warning" && type != "info") {
                 throw new Error(type+" no es un tipo de mensaje valido");
             }
-            divMsg.id = "msg-"+type;
+            divMsg.className = type;
             $("span", divMsg)[0].innerHTML = msg;
             msgTop = divMsg.offsetTop;
 

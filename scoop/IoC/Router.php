@@ -8,13 +8,14 @@ class Router
 
     public function __construct($routes)
     {
-        array_walk($routes, array($this, 'load'));
+        foreach ($routes as $key => &$route) {
+            $this->load($route, $key);
+        }
     }
 
     public function route($url)
     {
         $matches = $this->filter($url);
-
         if ($matches) {
             usort($matches, array($this, 'sortByURL'));
             $route = array_pop($matches);
@@ -41,7 +42,7 @@ class Router
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($params);
-                
+
                 if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
                     return $method->invokeArgs($controller, $params);
                 }
@@ -53,7 +54,6 @@ class Router
     public function intercept($url)
     {
         $matches = $this->filterProxy($url);
-
         if ($matches) {
             usort($matches, array($this, 'sortByURL'));
             foreach ($matches as &$route) {
@@ -92,7 +92,6 @@ class Router
         $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
         $url = array_shift($path);
         $count = count($path);
-
         for ($i=0; $i<$count; $i++) {
             if (isset($params[$i])) {
                 $url .= urlencode($params[$i]).$path[$i];
@@ -119,7 +118,9 @@ class Router
         }
         $route['url'] = $oldURL.$route['url'];
         if (isset($route['routes'])) {
-            array_walk($route['routes'], array($this, 'load'), $route['url']);
+            foreach ($route['routes'] as $k => &$r) {
+                $this->load($r, $k, $route['url']);
+            }
             unset($route['routes']);
         }
         $this->routes[$key] = $route;
@@ -132,13 +133,17 @@ class Router
 
     private static function normalizeURL($url)
     {
-        $url = str_replace(
-            array(':var', ':int'),
-            array('([\w\+\-\s\.]*)', '(\d*)'),
-            $url);
-        if (substr($url, -1) !== '/') {
-            $url .= '/';
-        }
+        $url = str_replace(array(
+            '/{var}/',
+            '/{int}/',
+            '{var}',
+            '{int}'
+        ), array(
+            '/([\w\+\-\s\.]*)/?',
+            '/(\d*)/?',
+            '([\w\+\-\s\.]*)',
+            '(\d*)'
+        ),$url).((substr($url, -1) === '/')? '?': '/?');
         return addcslashes($url, '/');
     }
 }

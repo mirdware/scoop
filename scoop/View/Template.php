@@ -71,6 +71,24 @@ final class Template
      */
     private static function replace(&$line)
     {
+        $line = str_replace(array(
+            ':if',
+            ':foreach',
+            ':for',
+            ':while',
+            '@else',
+            '@sprout'
+        ), array(
+            'endif',
+            'endforeach',
+            'endfor',
+            'endwhile',
+            'else:',
+            self::HERITAGE.'::sprout()'
+        ), $line, $count);
+        if ($count !== 0) {
+            return true;
+        }
         $line = preg_replace(array(
             '/@extends \'([\w\/-]+)\'/',
             '/@import \'([\w\/-]+)\'/',
@@ -88,28 +106,15 @@ final class Template
             'for(${1}):',
             'while(${1}):'
         ), $line, 1, $count);
-        if ($count !== 0) return true;
-
-        $line = str_replace(array(
-            ':if',
-            ':foreach',
-            ':for',
-            ':while',
-            '@else',
-            '@sprout'
-        ), array(
-            'endif',
-            'endforeach',
-            'endfor',
-            'endwhile',
-            'else:',
-            self::HERITAGE.'::sprout()'
-        ), $line, $count);
-        if ($count !== 0) return true;
-
+        if ($count !== 0) {
+            \Scoop\IoC\Service::compileView($line);
+            return true;
+        }
         $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,]+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
-        if ($count !== 0) \Scoop\IoC\Service::compileView($line);
+        if ($count !== 0) {
+            \Scoop\IoC\Service::compileView($line);
+        }
         return false;
     }
 

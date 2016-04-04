@@ -9,7 +9,11 @@ final class Message
     /**
      * Tipo de salida estandar de los mensajes.
      */
-    const OUT = 'out';
+    const INFO = 'info';
+     /**
+     * Tipo de salida como exito
+     */
+    const SUCCESS = 'success';
     /**
      * Tipo de salida como error.
      */
@@ -28,7 +32,7 @@ final class Message
      */
     public function __construct()
     {
-        $this->msg = '<div id="msg-not"><i class="fa fa-times"></i><span></span></div>';
+        $this->msg = '<div id="msg" class="not"><i class="fa fa-times"></i><span></span></div>';
     }
 
     /**
@@ -80,7 +84,7 @@ final class Message
      */
     private function setMsg($type, $msg)
     {
-        $this->msg = '<div id="msg-'.$type.'"><i class="fa fa-times"></i><span>'.$msg.'</span></div>';
+        $this->msg = '<div id="msg" class="'.$type.'"><i class="fa fa-times"></i><span>'.$msg.'</span></div>';
     }
 
     /**
@@ -90,8 +94,11 @@ final class Message
      */
     private static function validate($type)
     {
-        if ($type !== self::OUT && $type !== self::ERROR && $type !== self::WARNING) {
-            throw new \UnexpectedValueException('Error building only accepted message types: out, warning and error.');
+        if ($type !== self::SUCCESS &&
+            $type !== self::ERROR &&
+            $type !== self::WARNING &&
+            $type !== self::INFO) {
+            throw new \UnexpectedValueException('Error building the message [type rejected].');
         }
     }
 }

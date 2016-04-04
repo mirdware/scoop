@@ -56,22 +56,23 @@ final class View
 
     /**
      * Remueve un dato de la vista o en su defecto reinicia la misma.
-     * @param  string|array|null $arrayKeys Dependiendo del tipo elimina uno o
+     * @param  string|array|null $keys Dependiendo del tipo elimina uno o
      * varios datos.
      * @return View La instancia de la clase para encadenamiento.
      */
-    public function remove($arrayKeys = null)
+    public function remove($keys = null)
     {
-        if ($arrayKeys) {
-            if (!is_array($arrayKeys)) {
-                $arrayKeys = array($arrayKeys);
-            }
-            foreach ($arrayKeys as &$key) {
+        if (!$keys) {
+            $this->viewData = array();
+            return $this;
+        }
+        if (is_array($keys)) {
+            foreach ($keys as &$key) {
                 unset($this->viewData[$key]);
             }
             return $this;
         }
-        $this->viewData = array();
+        unset($this->viewData[$keys]);
         return $this;
     }
 
@@ -81,7 +82,7 @@ final class View
      * @param string $type Tipo de mensaje a mostrar.
      * @return View La instancia de la clase para encadenamiento.
      */
-    public function setMessage($msg, $type = View\Message::OUT)
+    public function setMessage($msg, $type = View\Message::SUCCESS)
     {
         $this->msg->set($msg, $type);
         return $this;
@@ -90,10 +91,10 @@ final class View
     /**
      * Valida y guarda el mensaje suministrado por el usuario.
      * @param  string $msg Mensaje a ser mostrado por la aplicación.
-     * @param  string $type Tipo de mensaje a mostrar (out, warning, error).
+     * @param  string $type Tipo de mensaje a mostrar.
      * @return View La instancia de la clase para encadenamiento.
      */
-    public function pushMessage($msg, $type = View\Message::OUT)
+    public function pushMessage($msg, $type = View\Message::SUCCESS)
     {
         $this->msg->push($msg, $type);
         return $this;

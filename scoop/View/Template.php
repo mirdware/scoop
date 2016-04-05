@@ -29,38 +29,43 @@ final class Template
     {
         $template = self::ROOT.$name.self::EXT;
         $view = \Scoop\View::ROOT . $name . \Scoop\View::EXT;
-
-        if (is_readable($template) &&
-        (!is_readable($view) || filemtime($template) > filemtime($view))) {
-            $content = '';
-            $flagPHP = false;
-            $lastLine = '';
-            $file = fopen($template, 'r');
-
-            while (!feof($file)) {
-                $line = fgets($file);
-                $flag = self::replace($line);
-                if ($flagPHP) {
-                    $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1? '': ';';
-                    if (!$flag) {
-                        $lastChar = ' ?>';
-                        $flagPHP = false;
-                    }
-                    $lastLine .= $lastChar;
-                } elseif ($flag) {
-                    $line = '<?php '.$line;
-                    $flagPHP = true;
-                }
-                $content .= $lastLine;
-                $lastLine = $line;
+        $existView = is_readable($view);
+        $existTemplate = is_readable($template);
+        if ($existView) {
+            if (!$existTemplate || filemtime($template) < filemtime($view)) {
+                return;
             }
-            fclose($file);
-            $content .= $lastLine;
-            if ($flagPHP) {
-                $content .= ' ?>';
-            }
-            self::create($view, $content);
+        } elseif (!$existTemplate) {
+            throw new \UnderflowException('Unable to load view or template');
         }
+        $content = '';
+        $flagPHP = false;
+        $lastLine = '';
+        $file = fopen($template, 'r');
+
+        while (!feof($file)) {
+            $line = fgets($file);
+            $flag = self::replace($line);
+            if ($flagPHP) {
+                $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1? '': ';';
+                if (!$flag) {
+                    $lastChar = ' ?>';
+                    $flagPHP = false;
+                }
+                $lastLine .= $lastChar;
+            } elseif ($flag) {
+                $line = '<?php '.$line;
+                $flagPHP = true;
+            }
+            $content .= $lastLine;
+            $lastLine = $line;
+        }
+        fclose($file);
+        $content .= $lastLine;
+        if ($flagPHP) {
+            $content .= ' ?>';
+        }
+        self::create($view, $content);
     }
 
     /**

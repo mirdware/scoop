@@ -117,10 +117,6 @@ final class View
      */
     public function render()
     {
-        if (!is_readable(self::ROOT.$this->viewName.self::EXT) &&
-        !is_readable(View\Template::ROOT.$this->viewName.View\Template::EXT)) {
-            throw new \UnderflowException('It has not been possible to load the template or view');
-        }
         $helperView = new View\Helper($this->viewName, $this->msg);
         IoC\Service::register('view', $helperView);
         View\Heritage::init($this->viewData);

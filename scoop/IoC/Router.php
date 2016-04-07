@@ -15,23 +15,18 @@ class Router
 
     public function route($url)
     {
-        $matches = $this->filter($url);
-        if ($matches) {
-            usort($matches, array($this, 'sortByURL'));
-            $route = array_pop($matches);
+        $route = $this->getRoute($url);
+        if ($route) {
             $method = explode(':', $route['controller']);
             $controller = array_shift($method);
-
             if (get_parent_class($controller) !== 'Scoop\Controller') {
                 throw new \UnexpectedValueException($controller.' class isn\'t an instance of \Scoop\Controller');
             }
             $controller =  $this->getInstance($controller);
             $controller->setRouter($this);
-
             if ($controller) {
                 $this->intercept($url);
-                array_shift($route['params']);
-                $params = array_filter($route['params']);
+                $params = &$route['params'];
                 $controllerReflection = new \ReflectionClass($controller);
                 $interfaces = $controllerReflection->getInterfaces();
                 $method = isset($interfaces['Scoop\Http\Resource'])?
@@ -42,7 +37,6 @@ class Router
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($params);
-
                 if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
                     return $method->invokeArgs($controller, $params);
                 }
@@ -68,17 +62,6 @@ class Router
         }
     }
 
-    public function filter($url)
-    {
-        $matches = array();
-        foreach ($this->routes as &$route) {
-            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
-                $matches[] = $route;
-            }
-        }
-        return $matches;
-    }
-
     public function getInstance($class)
     {
         if (!isset($this->instances[$class])) {
@@ -98,6 +81,36 @@ class Router
             }
         }
         return ROOT.substr($url, 1);
+    }
+
+    private function getRoute($url)
+    {
+        $matches = $this->filterRoute($url);
+        if ($matches) {
+            usort($matches, array($this, 'sortByURL'));
+            $route = array_pop($matches);
+            $length = 0;
+            array_shift($route['params']);
+            foreach ($route['params'] as $key => &$param) {
+                if ($param !== '') {
+                    $length = $key + 1;
+                    $param = urldecode($param);
+                }
+            }
+            $route['params'] = array_splice($route['params'], 0, $length);
+            return $route;
+        }
+    }
+
+    private function filterRoute($url)
+    {
+        $matches = array();
+        foreach ($this->routes as &$route) {
+            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
+                $matches[] = $route;
+            }
+        }
+        return $matches;
     }
 
     private function filterProxy($url)

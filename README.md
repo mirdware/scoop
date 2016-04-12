@@ -20,4 +20,4 @@ Antes que nada deberia agradecerte por querer contribuir al proyecto. Si has enc
 
 Licencia
 --------
-El código de scoop esta liberado bajo una [licencia MIT](https://raw.githubusercontent.com/mirdware/Jetro/master/LICENSE).
+El código de scoop esta liberado bajo una [licencia MIT](https://opensource.org/licenses/MIT).

@@ -14,7 +14,7 @@
 
 try {
     require 'scoop/Bootstrap/Loader.php';
-    $environment = new \App\Prod();
+    $environment = new \App\Production();
     $app = new \Scoop\Bootstrap\App($environment);
     $app->run();
 } catch (\Scoop\Http\Exception $ex) {

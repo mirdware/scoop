@@ -12,6 +12,7 @@ abstract class Environment
         if (!self::$sessionInit) {
             self::$sessionInit = session_start();
         }
+        define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         $this->config = require $fileConfig.'.php';
         $this->router = new \Scoop\IoC\Router($this->config['routes']);
     }

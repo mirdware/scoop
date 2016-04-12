@@ -1,7 +1,7 @@
 <?php
 namespace App;
 
-class Prod extends \Scoop\Bootstrap\Environment
+class Production extends \Scoop\Bootstrap\Environment
 {
     public function __construct()
     {
@@ -32,7 +32,6 @@ class Prod extends \Scoop\Bootstrap\Environment
 
     private static function configure()
     {
-        define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         setlocale(LC_ALL, 'es_ES@euro', 'es_ES', 'esp');
         date_default_timezone_set('America/Bogota');
     }

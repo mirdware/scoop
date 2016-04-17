@@ -63,72 +63,6 @@ label
         margin-top .2em
     .btn
         margin-top 1.6em
-
-/* forms */
-.scoop-form
-    input[type=checkbox]
-    input[type=radio]
-        opacity 0
-        position absolute
-        z-index 12
-        width 18px
-        height 18px
-        &:checked
-        &:focus
-            outline none !important
-        &+.lbl
-            position relative
-            z-index 11
-            display inline-block
-            margin 0
-            line-height 20px
-            min-height 14px
-            min-width 14px
-            font-weight normal
-            &::before
-                font-family fontAwesome
-                font-weight normal
-                font-size 11px
-                color $check-color
-                content "\a0"
-                background-color #FAFAFA
-                border 1px solid #CCC
-                box-shadow 0 1px 2px rgba(0, 0, 0, .05)
-                border-radius 0
-                display inline-block
-                text-align center
-                vertical-align middle
-                height 13px
-                line-height 13px
-                min-width 13px
-                margin-right 0px
-                margin-right 1px
-                margin-top -5px
-        &:checked+.lbl::before
-            display inline-block
-            content '\f00c'
-            background-color #F5F8FC
-            border-color $border-text
-            box-shadow 0 1px 2px rgba(0, 0, 0, .05), inset 0px -15px 10px -12px rgba(0, 0, 0, .05), inset 15px 10px -12px rgba(255, 255, 255, .1)
-        &:hover+.lbl::before
-        &+.lbl:hover::before
-            border-color $check-color
-        &:active+.lbl::before
-        &:checked:active+.lbl::before
-            box-shadow 0 1px 2px rgba(0, 0, 0, .05), inset 0px 1px 3px rgba(0, 0, 0, .1)
-        &:disabled+.lbl::before
-        &[disabled]+.lbl::before
-        &.disabled+.lbl::before
-            background-color #DDD !important
-            border-color #CCC !important
-            box-shadow none !important
-            color #BBB
-    input[type=radio]+.lbl::before
-        border-radius 32px
-        font-family Arial, Helvetica, sans-serif
-        font-size 36px
-    input[type=radio]:checked+.lbl::before
-        content "\2022"
     i::after
         font 1em "FontAwesome"
         margin-left .3em
@@ -156,3 +90,36 @@ label
             border-color $yellow
     textarea
         height 120px
+
+.radio
+.checkbox
+    input[type=radio]
+    input[type='checkbox']
+        display none
+        & + label:before
+            display inline-block
+            color $border-text
+            font-family FontAwesome
+            font-style normal
+            font-weight normal
+            line-height 1
+            padding-right .5em
+            width 1em
+            text-align left
+        &:checked + label:before
+        & + label:hover:before
+            color $check-color
+        &:disabled + label:before
+            color $bg-disable
+    input[type=radio]
+        & + label:before
+            content "\f10c"
+        &:checked + label:before
+            content "\f05d"
+    input[type="checkbox"]
+        & + label:before
+            content "\f096"
+        &:checked + label:before
+            content "\f046"
+    label
+        padding-left 0

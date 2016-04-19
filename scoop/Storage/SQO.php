@@ -19,19 +19,16 @@ class SQO
 
     public function create($fields)
     {
-        ksort($fields);
-        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'), $this->con);
         $keys = array_keys($fields);
-        $query = 'INSERT INTO '.$this->table.' ('.implode(', ', $keys).
-            ') VALUES ('.implode(', ', $fields).')';
-        return new SQO\Factory($query, $keys, $this->con);
+        sort($keys);
+        $query = 'INSERT INTO '.$this->table.' ('.implode(',', $keys).') VALUES ';
+        return new SQO\Factory($query, $keys, $fields, $this->con);
     }
 
     public function read()
     {
         $args = func_get_args();
         $fields = '*';
-
         if (isset($args[0])) {
             if (is_array($args[0])) {
                 $args = $args[0];
@@ -44,50 +41,30 @@ class SQO
                     $value .= ' AS '.$key;
                 }
             }
-            $fields = implode(', ', $args);
+            $fields = implode(',', $args);
         }
         $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
-        return new SQO\Expander($query, SQO::READ, $this->con);
+        return new SQO\Expander($query, SQO::READ, array(), $this->con);
     }
 
     public function update($fields)
     {
-        array_walk($fields, array('\Scoop\Storage\SQO\Factory', 'quote'), $this->con);
         $query = 'UPDATE '.$this->table.' SET ';
-
         foreach ($fields as $key => &$value) {
-            $query .= $key.' = '.$value.', ';
+            $query .= $key.' = :'.$key.', ';
         }
-        return new SQO\Result(substr($query, 0, -2), SQO::UPDATE, $this->con);
+        return new SQO\Filter(substr($query, 0, -2), SQO::UPDATE, $fields, $this->con);
     }
 
     public function delete()
     {
         $query = 'DELETE FROM '.$this->table;
-        return new SQO\Result($query, SQO::DELETE, $this->con);
+        return new SQO\Filter($query, SQO::DELETE, array(), $this->con);
     }
 
     public function flush()
     {
         $this->con->commit();
         $this->con->beginTransaction();
-    }
-
-    public static function exec() {
-        $args = func_get_args();
-        $exec = '';
-
-        foreach ($args as &$sqo) {
-            if (!($sqo instanceof SQO\Result)) {
-                throw new \Exception('one parameter sent is not a valid SQO');
-            }
-            if (!isset($connexion)) {
-                $connexion = $sqo->getConnexion();
-            } elseif ($connexion !== $sqo->getConnexion()) {
-                throw new \Exception('you can not run on different connections');
-            }
-            $exec .= $sqo.';';
-        }
-        return $connexion->exec($exec);
     }
 }

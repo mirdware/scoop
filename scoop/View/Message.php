@@ -32,7 +32,7 @@ final class Message
      */
     public function __construct()
     {
-        $this->msg = '<div id="msg" class="not"><i class="fa fa-times"></i><span></span></div>';
+        $this->msg = '<div id="msg" class="not"><i class="close"></i><span></span></div>';
     }
 
     /**
@@ -84,7 +84,7 @@ final class Message
      */
     private function setMsg($type, $msg)
     {
-        $this->msg = '<div id="msg" class="'.$type.'"><i class="fa fa-times"></i><span>'.$msg.'</span></div>';
+        $this->msg = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
     }
 
     /**

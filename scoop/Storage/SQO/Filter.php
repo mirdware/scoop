@@ -1,31 +1,48 @@
 <?php
 namespace Scoop\Storage\SQO;
 
-final class Filter
+class Filter
 {
+    protected $from = array();
+    protected $params = array();
+    protected $con;
     private $rules = array();
     private $order = array();
     private $group = array();
     private $orderType = ' ASC';
     private $limit = '';
-    private $con;
+    private $query = '';
+    private $connector = 'AND';
+    private $type;
 
-    public function __construct(&$connexion)
+    public function __construct($query, $type, $params, $connexion)
     {
-        $this->con = &$connexion;
+        $this->query = $query;
+        $this->type = $type;
+        $this->con = $connexion;
+        $this->params = $params;
     }
 
-    public function find($rule, $replace = null)
+    public function getType()
     {
-        if ($replace !== null) {
-            $search = array();
-            foreach ($replace as $key => &$value) {
-                Factory::quote($value, $key, $this->con);
-                $search[] = ':'.$key;
-            }
-            $rule = str_replace($search, $replace, $rule);
-        }
-        $this->rules[] = '('.$rule.')';
+        return $this->type;
+    }
+
+    public function bindParam($key, $value)
+    {
+        $this->params[$key] = $value;
+        return $this;
+    }
+
+    public function setConnector($connector)
+    {
+        $this->connector = $connector;
+        return $this;
+    }
+
+    public function filter($rule)
+    {
+        $this->rules[] = $rule;
         return $this;
     }
 
@@ -33,7 +50,6 @@ final class Filter
     {
         $args = func_get_args();
         $type = strtoupper($args[func_num_args()-1]);
-
         if ($type === 'ASC' || $type === 'DESC') {
             $this->orderType = ' '.$type;
             array_pop($args);
@@ -54,15 +70,46 @@ final class Filter
         return $this;
     }
 
-    public function getRules()
+    public function run($params = null)
     {
-        if (empty($this->rules)) {
-            return '';
+        if ($params !== null) {
+            $this->params += $params;
         }
-        return ' WHERE '.implode(' AND ', $this->rules);
+        $statement = $this->con->prepare($this);
+        $statement->execute($this->params);
+        return $statement;
     }
 
-    public function getOrder()
+    public function __toString()
+    {
+        return $this->query
+            .implode('', $this->from)
+            .$this->getRules()
+            .$this->getGroup()
+            .$this->getOrder()
+            .$this->limit;
+    }
+
+    private function getRules()
+    {
+        $rules = $this->rules;
+        foreach ($rules as $key => &$rule) {
+            preg_match('/:(\w+)/', $rule, $matches);
+            array_shift($matches);
+            foreach ($matches as &$match) {
+                if (!isset($this->params[$match])) {
+                    unset($rules[$key]);
+                    break;
+                }
+            }
+        }
+        if (empty($rules)) {
+            return '';
+        }
+        return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
+    }
+
+    private function getOrder()
     {
         if (empty($this->order)) {
             return '';
@@ -70,16 +117,11 @@ final class Filter
         return ' ORDER BY '.implode(', ', $this->order).$this->orderType;
     }
 
-    public function getGroup()
+    private function getGroup()
     {
         if (empty($this->group)) {
             return '';
         }
         return ' GROUP BY '.implode(', ', $this->group);
-    }
-
-    public function getLimit()
-    {
-        return $this->limit;
     }
 }

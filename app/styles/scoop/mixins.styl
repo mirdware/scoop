@@ -1,11 +1,11 @@
-include($url)
-    @require $node-modules-path + $url
+load-module($url)
+    @require "../../node_modules/" + $url
 
 font-url($url)
-    url($fonts-path + $url)
+    url("../fonts/" + $url)
 
 image-url($url)
-    url($images-path + $url)
+    url("../images/" + $url)
 
 font-face($family, $file, $weight = "normal")
       @font-face

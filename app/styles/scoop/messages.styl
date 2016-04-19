@@ -7,10 +7,13 @@
     z-index 1005
     padding .2em 0
     border-bottom solid 1px #DDD
-    &::before
-        font 1.5em "FontAwesome"
+    &:before
+        font 1.5em FontAwesome
         padding 0 .5em
         vertical-align middle
+    .close
+        font 1em FontAwesome
+        fa-icon "times"
     i
         float right
         margin-right .5em
@@ -20,21 +23,17 @@
         height 0
         display none
     &.success
-        color $green-hover
-        &::before
-            content "\f00c"
+        color $color-green-hover
+        fa-icon "check"
     &.error
-        color $red-hover
-        &::before
-            content "\f057"
+        color $color-red-hover
+        fa-icon "times-circle"
     &.warning
-        color $yellow-hover
-        &::before
-            content "\f071"
+        color $color-yellow-hover
+        fa-icon "exclamation-circle"
     &.info
-        color $blue-hover
-        &::before
-            content "\f05a"
+        color $color-blue-hover
+        fa-icon "info-circle"
 
 .center
     text-align center

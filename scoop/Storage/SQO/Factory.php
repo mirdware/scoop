@@ -3,48 +3,42 @@ namespace Scoop\Storage\SQO;
 
 final class Factory
 {
-    private $query;
-    private $keys;
+    private $query = '';
     private $con;
+    private $values = array();
+    private $keys = array();
 
-    public function __construct($query, &$keys, &$connexion)
+    public function __construct($query, $keys, $values, $connexion)
     {
         $this->query = $query;
-        $this->keys = &$keys;
-        $this->con = &$connexion;
+        $this->con = $connexion;
+        $this->keys = $keys;
+        $this->insert($values);
     }
 
-    public function join($fields)
+    public function insert($fields)
     {
         ksort($fields);
-        array_walk($fields, array($this, 'quote'), $this->con);
-        if (!array_diff($this->keys, array_keys($fields))) {
-            $this->query .= ', ('.implode(', ', $fields).')';
+        $keys = array_keys($fields);
+        if (array_diff($this->keys, $keys)) {
+            throw new \UnexpectedValueException('Keys ['.implode(',', $keys).'] unsupported');
         }
+        $this->values = array_merge(array_values($fields), $this->values);
         return $this;
     }
 
     public function run()
     {
-        return $this->con->exec($this);
+        $statement = $this->con->prepare($this);
+        return $statement->execute($this->values);
     }
 
     public function __toString()
     {
-        return $this->query;
-    }
-
-    public static function quote(&$value, $key, &$con)
-    {
-        if (is_array($value)) {
-            $value = str_replace('?', $con->quote($value[1]), $value[0]);
-        } elseif ($value instanceof Result) {
-            if ($value->getType() !== \Scoop\Storage\SQO::READ) {
-                throw new \UnexpectedValueException('unsupported data type for the query');
-            }
-            $value = '('.$value.') ';
-        } else {
-            $value = $con->quote($value);
-        }
+        $numFields = count($this->keys);
+        $numRows = count($this->values)/$numFields;
+        $placeholder = '('.implode(',', array_fill(0, $numFields, '?')).')';
+        $values = implode(',', array_fill(0, $numRows, $placeholder));
+        return $this->query.$values;
     }
 }

@@ -1,10 +1,23 @@
+$inputs = 'input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="time"],
+input[type="datetime"],
+input[type="search"],
+textarea,
+.input'
+
 label
     position relative
+    text-align right
     margin 0 .5em
     cursor pointer
 
 .btn
-    background $gray
+    background $color-gray
     border 0
     border-bottom 1px solid rgba(0, 0, 0, .25)
     border-radius .5em
@@ -18,24 +31,24 @@ label
     position relative
     text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
     &:hover
-        background-color $gray-hover
+        background-color $color-gray-hover
     &:disabled
-        background-color $bg-disable
-        color $gray
+        background-color $color-bg-disable
+        color $color-gray
         cursor not-allowed
         &:hover
-            background-color $bg-disable
+            background-color $color-bg-disable
 
 .input
     border-radius .3em
-    border solid 1px $border-text
+    border solid 1px $color-border-text
     margin .5em
     padding .5em
     vertical-align middle
     max-width 100%
     &:disabled
         cursor not-allowed
-        background-color lighten($bg-disable, 60%)
+        background-color lighten($color-bg-disable, 60%)
 
 .custom-input-file
     overflow hidden
@@ -58,47 +71,44 @@ label
     margin 0 1em
     vertical-align top
     text-align left
-    {scoopInputs}
+    {$inputs}
         width 100%
         margin-top .2em
     .btn
         margin-top 1.6em
-    i::after
-        font 1em "FontAwesome"
+    label:after
+        font 1em FontAwesome
         margin-left .3em
         vertical-align middle
-    .error
-        label, i
-            color $red
-        i::after
-            content "\f057"
-        {scoopInputs}
-            border-color $red
-    .success
-        label, i
-            color $green
-        i::after
-            content "\f058"
-        {scoopInputs}
-            border-color $green
-    .warning
-        label, i
-            color $yellow
-        i::after
-            content "\f06a"
-        {scoopInputs}
-            border-color $yellow
+    &.error
+        label
+            color $color-red
+            fa-icon "times-circle" after
+        {$inputs}
+            border-color $color-red
+    &.success
+        label
+            color $color-green
+            fa-icon "check-circle" after
+        {$inputs}
+            border-color $color-green
+    &.warning
+        label
+            color $color-yellow
+            fa-icon "exclamation-circle" after
+        {$inputs}
+            border-color $color-yellow
     textarea
         height 120px
 
 .radio
 .checkbox
     input[type=radio]
-    input[type='checkbox']
+    input[type=checkbox]
         display none
         & + label:before
             display inline-block
-            color $border-text
+            color $color-border-text
             font-family FontAwesome
             font-style normal
             font-weight normal
@@ -108,18 +118,18 @@ label
             text-align left
         &:checked + label:before
         & + label:hover:before
-            color $check-color
+            color $color-check
         &:disabled + label:before
-            color $bg-disable
+            color $color-bg-disable
     input[type=radio]
-        & + label:before
-            content "\f10c"
-        &:checked + label:before
-            content "\f05d"
-    input[type="checkbox"]
-        & + label:before
-            content "\f096"
-        &:checked + label:before
-            content "\f046"
+        & + label
+            fa-icon "circle-o"
+        &:checked + label
+            fa-icon "check-circle-o"
+    input[type=checkbox]
+        & + label
+            fa-icon "square-o"
+        &:checked + label
+            fa-icon "check-square-o"
     label
         padding-left 0

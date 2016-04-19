@@ -49,7 +49,6 @@ class DBC extends \PDO
             $config += $conf;
         }
         $key = implode('', $config);
-
         if (!isset(self::$instances[$key])) {
             self::$instances[$key] = new DBC(
                 $config['database'],

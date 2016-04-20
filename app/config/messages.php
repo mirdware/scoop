@@ -1,4 +1,4 @@
-<?php 
+<?php
 return array(
     'error' => array(
         'required' => 'Complete este campo',
@@ -10,6 +10,7 @@ return array(
         'max' => 'El valor debe ser inferior o igual a {max}',
         'min' => 'El valor debe ser superior o igual a {min}',
         'email' => 'Introduzca una dirección de correo valida',
-        'pattern' => 'Utiliza un formato que coincida con el solicitado'
+        'pattern' => 'Utiliza un formato que coincida con el solicitado',
+        'on' => 'Seleccione este campo si desea continuar'
        )
 );

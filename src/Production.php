@@ -6,28 +6,13 @@ class Production extends \Scoop\Bootstrap\Environment
     public function __construct()
     {
         parent::__construct('app/config');
-        self::configure();
-        $this->registerServices()
-             ->bindInterfaces()
-             ->injectParameters();
+        $this->bindInterfaces()
+            ->configure();
     }
 
     private function bindInterfaces()
     {
-        return $this
-                ->bind('App\Repository\Quote', 'App\Repository\QuoteArray');
-    }
-
-    private function registerServices()
-    {
-        return $this
-                ->registerService('config', $this);
-    }
-
-    private function injectParameters()
-    {
-        \Scoop\View\Helper::setAssets($this->get('assets'));
-        \Scoop\Validator::setMessages($this->get('messages.error'));
+        return $this->bind('App\Repository\Quote', 'App\Repository\QuoteArray');
     }
 
     private static function configure()

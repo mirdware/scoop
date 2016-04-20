@@ -11,6 +11,7 @@ class Router
         foreach ($routes as $key => &$route) {
             $this->load($route, $key);
         }
+        uasort($this->routes, array($this, 'sortByURL'));
     }
 
     public function route($url)
@@ -49,7 +50,6 @@ class Router
     {
         $matches = $this->filterProxy($url);
         if ($matches) {
-            usort($matches, array($this, 'sortByURL'));
             foreach ($matches as &$route) {
                 if (isset($route['proxy'])) {
                     $proxy = explode(':', $route['proxy']);
@@ -80,14 +80,13 @@ class Router
                 $url .= urlencode($params[$i]).$path[$i];
             }
         }
-        return ROOT.substr($url, 1);
+        return ROOT.substr($url, 1).'/';
     }
 
     private function getRoute($url)
     {
         $matches = $this->filterRoute($url);
         if ($matches) {
-            usort($matches, array($this, 'sortByURL'));
             $route = array_pop($matches);
             $length = 0;
             array_shift($route['params']);
@@ -141,7 +140,20 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        return strcmp($a['url'], $b['url']) > 0;
+        return strcasecmp(
+            self::skipParams($a['url']),
+            self::skipParams($b['url'])
+        ) > 0;
+    }
+
+    private static function skipParams($url)
+    {
+        return str_replace(array(
+            '/{var}/',
+            '/{int}/',
+            '{var}',
+            '{int}'
+        ), '', $url);
     }
 
     private static function normalizeURL($url)

@@ -30,7 +30,6 @@ class Validator
 
     public function __call($name, $args)
     {
-        echo $name;
         if (isset(self::$classes[$name])) {
             $class = new \ReflectionClass(self::$classes[$name]);
             $this->rules[] = $class->newInstanceArgs($args);
@@ -46,8 +45,13 @@ class Validator
     public static function addRule($name, $class = null)
     {
         if (is_array($name)) {
-            self::$classes += $name;
+            foreach ($name as $n => $class) {
+                self::addRule($n, $class);
+            }
             return;
+        }
+        if (get_parent_class($class) !== 'Scoop\Validation\Rule') {
+            throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
         }
         self::$classes[$name] = $class;
     }
@@ -76,17 +80,22 @@ class Validator
 
     private function executeRule($rule, $field, $params, &$errors)
     {
-        if (!isset($this->data[$field])){
+        $value = isset($this->data[$field])? $this->data[$field]: null;
+        $name = $rule->getName();
+        if ($name === 'required'){
+            if ($value === null) {
+                $name = 'on';
+            }
+        } elseif (!isset($this->data[$field])) {
             return;
         }
-        $params = array('value' => $this->data[$field]) + $params;
-
+        $params = array('value' => $value) + $params;
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
             if (!isset($errors[$field]) && !$rule->validate($params)) {
-                $errors[$field] = self::formatMessage($rule->getName(), $params);
+                $errors[$field] = self::formatMessage($name, $params);
             }
         } elseif (!$rule->validate($params)) {
-            $errors[$field][] = self::formatMessage($rule->getName(), $params);
+            $errors[$field][] = self::formatMessage($name, $params);
         }
     }
 

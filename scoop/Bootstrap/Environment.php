@@ -15,6 +15,9 @@ abstract class Environment
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         $this->config = require $fileConfig.'.php';
         $this->router = new \Scoop\IoC\Router($this->config['routes']);
+        \Scoop\View\Helper::setAssets($this->get('assets'));
+        \Scoop\Validator::setMessages($this->get('messages.error'));
+        $this->registerService('config', $this);
     }
 
     public function getRouter()

@@ -7,7 +7,7 @@ class Validator
     const FULL_VALIDATION = 1;
     const DEFAULT_MSG = 'Invalid field';
     private static $msg = array();
-    private static $classes = array(
+    private static $customRules = array(
         'required' => '\Scoop\Validation\Required',
         'length' => '\Scoop\Validation\Length',
         'email' => '\Scoop\Validation\Email',
@@ -17,10 +17,12 @@ class Validator
         'minLength' => '\Scoop\Validation\MinLength',
         'number' => '\Scoop\Validation\Number',
         'pattern' => '\Scoop\Validation\Pattern',
-        'range' => '\Scoop\Validation\range'
+        'range' => '\Scoop\Validation\Range',
+        'equals' => '\Scoop\Validation\Equals'
     );
     private $rules = array();
-    protected $data;
+    private $data;
+    private $errors;
     private $typeValidation;
 
     public function __construct($typeValidation = self::SIMPLE_VALIDATION)
@@ -30,10 +32,12 @@ class Validator
 
     public function __call($name, $args)
     {
-        if (isset(self::$classes[$name])) {
-            $class = new \ReflectionClass(self::$classes[$name]);
+        if (isset(self::$customRules[$name])) {
+            $class = new \ReflectionClass(self::$customRules[$name]);
             $this->rules[] = $class->newInstanceArgs($args);
             return $this;
+        } else {
+            throw new \Exception('Call to undefined method Scoop\Validator::'.$name.'()');
         }
     }
 
@@ -53,13 +57,13 @@ class Validator
         if (get_parent_class($class) !== 'Scoop\Validation\Rule') {
             throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
         }
-        self::$classes[$name] = $class;
+        self::$customRules[$name] = $class;
     }
 
     public function validate($data)
     {
         $this->data = &$data;
-        $errors = array();
+        $this->errors = array();
         foreach ($this->rules as &$rule) {
             $fields = $rule->getFields();
             if (is_array($fields)) {
@@ -68,34 +72,53 @@ class Validator
                     if (!is_numeric($key)) {
                         $field = $key;
                     }
-                    $this->executeRule($rule, $field, $params, $errors);
+                    $this->executeRule($rule, $field, $params);
                 }
             } else {
                 $params = array('label' => $fields) + $rule->getParams();
-                $this->executeRule($rule, $fields, $params, $errors);
+                $this->executeRule($rule, $fields, $params);
             }
         }
-        return $errors;
+        return $this->errors;
     }
 
-    private function executeRule($rule, $field, $params, &$errors)
+    private function executeRule($rule, $field, $params)
     {
-        $value = isset($this->data[$field])? $this->data[$field]: null;
         $name = $rule->getName();
-        if ($name === 'required'){
-            if ($value === null) {
-                $name = 'on';
-            }
-        } elseif (!isset($this->data[$field])) {
+        $value = null;
+        if (isset($this->data[$field])) {
+            $value = $this->data[$field];
+        } elseif ($name === 'required') {
+            $name = 'on';
+        } else {
             return;
         }
-        $params = array('value' => $value) + $params;
+        $params += array('value' => $value);
+        if ($rule->isIncludeInputs()) {
+            $this->convertInputs($params['inputs']);
+        }
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
-            if (!isset($errors[$field]) && !$rule->validate($params)) {
-                $errors[$field] = self::formatMessage($name, $params);
+            if (!isset($this->errors[$field]) && !$rule->validate($params)) {
+                $this->errors[$field] = self::formatMessage($name, $params);
             }
         } elseif (!$rule->validate($params)) {
-            $errors[$field][] = self::formatMessage($name, $params);
+            $this->errors[$field][] = self::formatMessage($name, $params);
+        }
+    }
+
+    private function convertInputs(&$inputs)
+    {
+        if (is_array($inputs)) {
+            foreach ($inputs as $key => $value) {
+                $inputs[$value] = is_numeric($key)?
+                    $this->data[$value]:
+                    $this->data[$key];
+                unset($inputs[$key]);
+            }
+        } else {
+            $inputs = array(
+                $inputs => $this->data[$inputs]
+            );
         }
     }
 

@@ -10,6 +10,6 @@ class MinLength extends Rule
     public function validate(&$params)
     {
         $params['length'] = strlen($params['value']);
-        return $params['min'] < $params['length'] ;
+        return $params['min'] <= $params['length'] ;
     }
 }

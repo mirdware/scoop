@@ -10,7 +10,7 @@ class Range extends Rule
     public function validate(&$params)
     {
         if (is_numeric($params['value'])) {
-            return $params['value'] > $params['min'] && $params['value'] < $params['max'];
+            return $params['value'] >= $params['min'] && $params['value'] <= $params['max'];
         }
     }
 }

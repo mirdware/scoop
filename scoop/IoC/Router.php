@@ -148,12 +148,7 @@ class Router
 
     private static function skipParams($url)
     {
-        return str_replace(array(
-            '/{var}/',
-            '/{int}/',
-            '{var}',
-            '{int}'
-        ), '', $url);
+        return str_replace(array('{var}', '{int}'), '', $url);
     }
 
     private static function normalizeURL($url)

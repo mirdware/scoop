@@ -10,7 +10,7 @@ class Min extends Rule
     public function validate(&$params)
     {
         if (is_numeric($params['value'])) {
-            return $params['value'] < $params['min'];
+            return $params['value'] <= $params['min'];
         }
     }
 }

@@ -11,6 +11,7 @@ return array(
         'min' => 'El valor debe ser superior o igual a {min}',
         'email' => 'Introduzca una dirección de correo valida',
         'pattern' => 'Utiliza un formato que coincida con el solicitado',
-        'on' => 'Seleccione este campo si desea continuar'
+        'on' => 'Seleccione este campo si desea continuar',
+        'equals' => 'El campo no coincide con el valor de {inputs}'
        )
 );

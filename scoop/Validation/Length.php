@@ -10,6 +10,6 @@ class Length extends Rule
     public function validate(&$params)
     {
         $params['length'] = strlen($params['value']);
-        return $params['length'] > $params['min'] && $params['length'] < $params['max'];
+        return $params['length'] >= $params['min'] && $params['length'] <= $params['max'];
     }
 }

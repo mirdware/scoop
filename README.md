@@ -1,5 +1,10 @@
 Bootstrap SCOOP
 ===============
+
+[![Latest Stable Version](https://poser.pugx.org/mirdware/scoop/v/stable)](https://packagist.org/packages/mirdware/scoop)
+[![Latest Unstable Version](https://poser.pugx.org/mirdware/scoop/v/unstable)](https://packagist.org/packages/mirdware/scoop)
+[![License](https://poser.pugx.org/mirdware/scoop/license)](https://opensource.org/licenses/MIT)
+
 Scoop es un bootstrap PHP con consumo mínimo, construido para programadores que necesitan un entorno de desarrollo de alta complejidad, con una arquitectura MVC y puramente orientada a objetos. Sí tienes un proyecto que requiere un alto rendimiento que no puede ser cubierto por un framework o simplemente quieres tener el máximo control de código, posiblemente scoop puede ser una opción interesante.
 
 ¿Por que un bootstrap? La filosofía detras de scoop no permite que sea considerado un framework de desarrollo, es más cercano a un motor de software pero teniendo en cuenta sus caracteristicas y herramientas integradas lo convierte en lo que se podria denominar un sistema de bootsrapping PHP.
@@ -8,7 +13,7 @@ Bootstrap es el sistema de arranque de cualquier entorno informático y esta es 
 
 Documentación
 -------------
-La documentación oficial del sistema de bootstraping puede ser encontrado en el [sitio web de scoop](http://getscoop.org/docs/).
+La documentación oficial del sistema de bootstraping puede ser encontrada en el [sitio web de scoop](http://getscoop.org/docs/).
 
 Versiones
 ---------

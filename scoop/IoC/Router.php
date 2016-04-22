@@ -21,7 +21,9 @@ class Router
             $method = explode(':', $route['controller']);
             $controller = array_shift($method);
             if (get_parent_class($controller) !== 'Scoop\Controller') {
-                throw new \UnexpectedValueException($controller.' class isn\'t an instance of \Scoop\Controller');
+                throw new \UnexpectedValueException(
+                    $controller.' class isn\'t an instance of \Scoop\Controller'
+                );
             }
             $controller =  $this->getInstance($controller);
             $controller->setRouter($this);
@@ -38,7 +40,10 @@ class Router
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($params);
-                if ($numParams >= $method->getNumberOfRequiredParameters() && $numParams <= $method->getNumberOfParameters()) {
+                if (
+                    $numParams >= $method->getNumberOfRequiredParameters() &&
+                    $numParams <= $method->getNumberOfParameters()
+                ) {
                     return $method->invokeArgs($controller, $params);
                 }
             }
@@ -105,7 +110,10 @@ class Router
     {
         $matches = array();
         foreach ($this->routes as &$route) {
-            if (preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])) {
+            if (
+                isset($route['controller']) &&
+                preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])
+            ) {
                 $matches[] = $route;
             }
         }
@@ -116,7 +124,10 @@ class Router
     {
         $matches = array();
         foreach ($this->routes as &$route) {
-            if (preg_match('/^'.self::normalizeURL($route['url']).'/', $url)) {
+            if (
+                isset($route['proxy']) &&
+                preg_match('/^'.self::normalizeURL($route['url']).'/', $url)
+            ) {
                 $matches[] = $route;
             }
         }
@@ -125,8 +136,8 @@ class Router
 
     private function load($route, $key, $oldURL = '')
     {
-        if (!isset($route['controller'])) {
-            throw new \OutOfBoundsException('The controller\'s key has not been defined for the route '.$route['url']);
+        if (!isset($route['url'])) {
+            throw new \OutOfBoundsException('url\'s key has not been defined for the route');
         }
         $route['url'] = $oldURL.$route['url'];
         if (isset($route['routes'])) {
@@ -140,10 +151,9 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        return strcasecmp(
-            self::skipParams($a['url']),
-            self::skipParams($b['url'])
-        ) > 0;
+        $a = self::skipParams($a['url']);
+        $b = self::skipParams($b['url']);
+        return strcasecmp($a, $b) > 0;
     }
 
     private static function skipParams($url)

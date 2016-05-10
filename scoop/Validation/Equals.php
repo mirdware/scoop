@@ -10,11 +10,7 @@ class Equals extends Rule
     public function validate(&$params)
     {
         foreach ($params['inputs'] as $key => &$value) {
-            if (empty($value)) {
-                return true;
-            }
-            echo $value.'!=='.$params['value'];
-            if ($value !== $params['value']) {
+            if (!empty($value) && $value !== $params['value']) {
                 $params['inputs'] = $key;
                 return false;
             }

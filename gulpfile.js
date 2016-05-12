@@ -11,12 +11,12 @@ var gulp = require("gulp"),
     nib = require("nib"),
     fontAwesome = require("fa-stylus"),
     app = require("./package.json"),
-    filesToMove = [
-      "./node_modules/fa-stylus/fonts/**/*.*",
-    ];
+    filesToMove = "./node_modules/fa-stylus/fonts/**/*.*",
+    pathScripts = "app/scripts/",
+    pathStyles = "app/styles/";
 
 gulp.task("css", function() {
-    return gulp.src("app/styles/app.styl")
+    return gulp.src(pathStyles + "app.styl")
         .pipe(sourcemaps.init())
         .pipe(stylus({
             "use": [
@@ -27,7 +27,7 @@ gulp.task("css", function() {
             "include css": true
         }))
         .pipe(mincss())
-        .pipe(rename(app.name+".min.css"))
+        .pipe(rename(app.name + ".min.css"))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("public/css/"))
         .pipe(livereload());
@@ -35,11 +35,11 @@ gulp.task("css", function() {
 
 gulp.task("js", function() {
     browserify({
-            "entries": "app/javascript/app.js",
+            "entries": pathScripts + "app.js",
             "debug": true
         })
         .bundle()
-        .pipe(source(app.name+".min.js"))
+        .pipe(source(app.name + ".min.js"))
         .pipe(buffer())
         .pipe(sourcemaps.init())
         .pipe(uglify())
@@ -55,7 +55,7 @@ gulp.task("move", function () {
 
 gulp.task("default", ["css", "js", "move"], function() {
     livereload.listen();
-    gulp.watch("app/styles/**/*", ["css"]);
-    gulp.watch("app/javascript/**/*", ["js"]);
+    gulp.watch(pathStyles + "**/*", ["css"]);
+    gulp.watch(pathScripts + "**/*", ["js"]);
     gulp.watch("./**/*.php").on("change", livereload.changed);
 });

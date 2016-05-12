@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Bootstrap;
 
-class App
+class Application
 {
     private $router;
     private $url;

@@ -17,7 +17,7 @@ label
     cursor pointer
 
 .btn
-    background $color-gray
+    background $color-gray-normal
     border 0
     border-bottom 1px solid rgba(0, 0, 0, .25)
     border-radius .5em
@@ -34,7 +34,7 @@ label
         background-color $color-gray-hover
     &:disabled
         background-color $color-bg-disable
-        color $color-gray
+        color $color-gray-normal
         cursor not-allowed
         &:hover
             background-color $color-bg-disable
@@ -84,22 +84,22 @@ label
         vertical-align middle
     &.error
         label
-            color $color-red
+            color $color-red-normal
             fa-icon "times-circle" after
         {$inputs}
-            border-color $color-red
+            border-color $color-red-normal
     &.success
         label
-            color $color-green
+            color $color-green-normal
             fa-icon "check-circle" after
         {$inputs}
-            border-color $color-green
+            border-color $color-green-normal
     &.warning
         label
-            color $color-yellow
+            color $color-yellow-normal
             fa-icon "exclamation-circle" after
         {$inputs}
-            border-color $color-yellow
+            border-color $color-yellow-normal
     textarea
         height 120px
 

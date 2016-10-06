@@ -8,7 +8,8 @@ abstract class Injector
 
     public static function create($className, $args = array())
     {
-        return self::instantiate(new \ReflectionClass($className), $args);
+        $class = new \ReflectionClass($className);
+        return self::instantiate($class, $args);
     }
 
     public static function bind($interfaceName, $className)

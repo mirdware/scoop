@@ -7,8 +7,8 @@
         var validate = function () {
             var i,
                 myError,
-                invalid = form.querySelectorAll(':invalid'),
-                allErrors = form.querySelectorAll('.error');
+                invalid = form.querySelectorAll(":invalid"),
+                allErrors = form.querySelectorAll(".error");
 
             // removing existing errors
             for (i = 0; myError = allErrors[i]; i++) {
@@ -28,16 +28,16 @@
             }
         };
 
-        /* The 'invalid' event is the one that triggers the
+        /* The "invalid" event is the one that triggers the
            errors. Here we are preventing those errors.*/
-        form.addEventListener('invalid', function (evt) {
+        form.addEventListener("invalid", function (evt) {
             evt.preventDefault();
             validate();
         }, true);
 
         /* Support Safari and Android browser—each of which do not prevent
            form submissions by default */
-        form.addEventListener('submit', function (evt) {
+        form.addEventListener("submit", function (evt) {
             if (!this.checkValidity()) {
                 evt.preventDefault();
                 validate();
@@ -49,15 +49,15 @@
     function deleteRequiredAttr() {
         var i,
             myCheckBox,
-            thisCount = document.querySelectorAll('.options:checked').length;
+            thisCount = document.querySelectorAll(".options:checked").length;
 
         if (thisCount > 0) {
             for (i = 0; myCheckBox = allCheckBox[i]; i++) {
-                myCheckBox.removeAttribute('required');
+                myCheckBox.removeAttribute("required");
             }
         } else {
             for (i = 0; myCheckBox = allCheckBox[i]; i++) {
-                myCheckBox.setAttribute('required', 'required');
+                myCheckBox.setAttribute("required", "required");
             }
         }
     }
@@ -69,12 +69,12 @@
     var i,
         form,
         myCheckBox,
-        forms = document.querySelectorAll('.scoop-form'),
-        allCheckBox = document.querySelectorAll('.options');
+        forms = document.querySelectorAll(".scoop-form"),
+        allCheckBox = document.querySelectorAll(".options");
 
     for (i = 0; myCheckBox = allCheckBox[i]; i++) {
-        myCheckBox.setAttribute('required', 'required');
-        myCheckBox.addEventListener('change', deleteRequiredAttr);
+        myCheckBox.setAttribute("required", "required");
+        myCheckBox.addEventListener("change", deleteRequiredAttr);
     }
 
     for (i = 0; form = forms[i]; i++) {

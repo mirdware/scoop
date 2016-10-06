@@ -1,5 +1,5 @@
 (function($) {
-    var color = 'rgb(173,255,47)',
+    var color = "rgb(173,255,47)",
         numbers = "01234567890",
         lcLetters = "abcdefghijklmnñopqrstuvwxyza",
         ucLetters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZA",
@@ -77,16 +77,16 @@
                     total = 0;
                     nivel = "Nivel de seguridad";
                 } else if (total<=20) {
-                    color = 'rgb(255,69,0)';
+                    color = "rgb(255,69,0)";
                     nivel = "Muy bajo";
                 } else if (total<=40) {
-                    color = 'rgb(255,165,0)';
+                    color = "rgb(255,165,0)";
                     nivel = "Bajo";
                 } else if (total<=60) {
-                    color = 'rgb(255,255,0)';
+                    color = "rgb(255,255,0)";
                     nivel = "Medio";
                 } else if (total<=80) {
-                    color = 'rgb(154,205,50)';
+                    color = "rgb(154,205,50)";
                     nivel = "Alto"
                 } else if (total >100) {
                     total = 100;

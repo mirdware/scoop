@@ -1,6 +1,9 @@
-@import "colors"
+json("colors.json")
 @import "mixins"
 @import "fa-stylus"
 @import "normalize"
 @import "forms"
 @import "messages"
+$beams = json("beams.json", {leave-strings: true})
+for $beam in $beams
+    load-beam($beam)

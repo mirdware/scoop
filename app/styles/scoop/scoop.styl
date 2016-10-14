@@ -6,4 +6,4 @@ json("colors.json")
 @import "messages"
 $beams = json("beams.json", {leave-strings: true})
 for $beam in $beams
-    load-beam($beam)
+    @require "../.." + $url

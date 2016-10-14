@@ -17,7 +17,7 @@ abstract class Environment
         $this->router = new \Scoop\IoC\Router($this->config['routes']);
         \Scoop\View\Helper::setAssets($this->get('assets'));
         \Scoop\Validator::setMessages($this->get('messages.error'));
-        $this->registerService('config', $this);
+        \Scoop\IoC\Service::register('config', $this);
     }
 
     public function getRouter()
@@ -38,15 +38,21 @@ abstract class Environment
         return $res;
     }
 
-    protected function bind($interface, $class)
+    protected function bind($fileInterfaces)
     {
-        \Scoop\IoC\Injector::bind($interface, $class);
+        $interfaces = require $fileInterfaces.'.php';
+        foreach ($interfaces as $interface => &$class) {
+            \Scoop\IoC\Injector::bind($interface, $class);
+        }
         return $this;
     }
 
-    protected function registerService($name, $class)
+    protected function registerService($fileServices)
     {
-        \Scoop\IoC\Service::register($name, $class);
+        $services = require $fileServices.'.php';
+        foreach ($services as $name => &$class) {
+            \Scoop\IoC\Service::register($name, $class);
+        }
         return $this;
     }
 }

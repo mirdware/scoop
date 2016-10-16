@@ -1,2 +1,2 @@
 @extends 'layers/layer'
-    <h1>The page you requested was not found</h1>
+    <h1>Ooops! The page you requested was not found</h1>

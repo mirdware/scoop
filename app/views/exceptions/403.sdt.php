@@ -1,2 +1,2 @@
 @extends 'layers/layer'
-<h1>Can't access the requested page</h1>
+<h1>Sorry! Can't access the requested page</h1>

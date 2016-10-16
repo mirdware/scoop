@@ -1,16 +1,23 @@
-#main
-    width 90%
+html
+body
+    height 100%
+header.main
+    text-align center
+footer.main
+    text-align right
+    width 98%
+    position absolute
+    bottom 0
+.jumbotron
     margin 0 auto
-    margin-top 2em
+    text-align center
+    color #777
     blockquote
         letter-spacing .02em
         max-width 35em
         margin auto
     h1
-    	fa-icon "spoon" after
-    	&:after
-    		font 1em FontAwesome
-    		margin-left .5em
-.jumbotron
-    text-align center
-    color #777
+        fa-icon "spoon"
+        &:before
+            font 1em FontAwesome
+            margin-right .2em

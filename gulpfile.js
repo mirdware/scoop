@@ -19,10 +19,7 @@ gulp.task("css", function() {
     return gulp.src(pathStyles + "app.styl")
         .pipe(sourcemaps.init())
         .pipe(stylus({
-            "use": [
-                nib(),
-                fontAwesome()
-            ],
+            "use": [nib(), fontAwesome()],
             "import": ["nib"],
             "include css": true
         }))
@@ -37,6 +34,9 @@ gulp.task("js", function() {
     browserify({
             "entries": pathScripts + "app.js",
             "debug": true
+        })
+        .transform("babelify", {
+            "presets": ["es2015"]
         })
         .bundle()
         .pipe(source(app.name + ".min.js"))

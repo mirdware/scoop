@@ -1,3 +1,5 @@
+import Jetro from 'jetro';
+
 (function ($, undefined) {
     var sph = 0,
         originInput = {},
@@ -6,13 +8,13 @@
                 if (input) {
                     if (input.length) {
                         for (var i=0, inp; inp=input[i]; i++) {
-                            if (inp.type === "text"|| inp.type === "search" || inp.type === "email") {
-                                setData(inp, "sph", sph++);
+                            if (inp.type === 'text'|| inp.type === 'search' || inp.type === 'email') {
+                                setData(inp, 'sph', sph++);
                                 $.evt.add(inp, {focus: clear, blur: revert});
                             }
                         }
                     } else {
-                        setData(input, "sph", sph++);
+                        setData(input, 'sph', sph++);
                         $.evt.add(input, {focus: clear, blur: revert});
                     }
                 }
@@ -23,28 +25,28 @@
         };
 
     function clear () {
-        var id = getData(this, "sph");
+        var id = getData(this, 'sph');
         if (originInput[id] === undefined) {
             originInput[id] = this.value;
-            this.value = "";
+            this.value = '';
         } else if (this.value == originInput[id]) {
-            this.value = "";
+            this.value = '';
         }
     }
 
     function revert() {
-        if (this.value == "") {
-            this.value = originInput[getData(this, "sph")];
+        if (this.value == '') {
+            this.value = originInput[getData(this, 'sph')];
         }
     }
 
     function getData(el, id) {
-        return el.getAttribute("data-"+id);
+        return el.getAttribute('data-'+id);
     }
 
     function setData(el, id, value) {
-        el.setAttribute("data-"+id, value);
+        el.setAttribute('data-'+id, value);
     }
 
-    $.extend($, {placeholder: core})    
-})(jetro);
+    $.extend($, {placeholder: core})
+})(Jetro);

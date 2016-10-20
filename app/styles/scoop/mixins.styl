@@ -1,5 +1,14 @@
-load-module($url)
-    @require "../../node_modules/" + $url
+$inputs = 'input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="time"],
+input[type="datetime"],
+input[type="search"],
+textarea,
+.input'
 
 font-url($url)
     url("../fonts/" + $url)
@@ -17,3 +26,29 @@ font-face($family, $file, $weight = "normal")
             font-url($file + ".svg#"+ $family) format("svg")
         font-weight $weight
         font-style normal
+
+alert-box($icon, $color)
+    color: $color !important
+    label
+        color $color !important
+    .icon
+        fa-icon $icon
+        color $color
+        visibility visible
+    {$inputs}
+        border-color $color !important
+
+icon-box()
+    .icon
+        vertical-align middle
+        fa-icon "circle"
+        visibility hidden
+        margin 0 .2em
+        font 1em FontAwesome
+        width auto !important
+    &.error
+        alert-box "times-circle" $color-red-normal
+    &.success
+        alert-box "check-circle" $color-green-normal
+    &.warning
+        alert-box "exclamation-circle" $color-yellow-normal

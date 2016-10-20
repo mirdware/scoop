@@ -20,21 +20,21 @@ final class View
     /**
      * @var string Nombre de la vista.
      */
-    private $viewName;
-    /**
-     * @var View\Message Muestra el mensaje, puede ser de tipo out, warning, error.
-     */
-    private $msg;
+    private $viewPath;
+    private $currentComponents = array();
+    private static $components = array();
 
     /**
      * Genera la vista partiendo desde el nombre de la misma.
-     * @param $viewName nombre de la vista.
+     * @param $viewPath nombre de la vista.
      */
-    public function __construct($viewName)
+    public function __construct($viewPath)
     {
         $this->viewData = array();
-        $this->msg = new View\Message();
-        $this->viewName = $viewName;
+        $this->viewPath = $viewPath;
+        foreach (self::$components as $key => &$component) {
+            $this->currentComponents[$key] = new $component();
+        }
     }
 
     /**
@@ -76,38 +76,16 @@ final class View
         return $this;
     }
 
-    /**
-     * Valida y muestra el mensaje suministrado por el usuario.
-     * @param string $msg  Mensaje a ser mostrado por la aplicación.
-     * @param string $type Tipo de mensaje a mostrar.
-     * @return View La instancia de la clase para encadenamiento.
-     */
-    public function setMessage($msg, $type = View\Message::SUCCESS)
+    public function __call($method, $args)
     {
-        $this->msg->set($msg, $type);
-        return $this;
-    }
-
-    /**
-     * Valida y guarda el mensaje suministrado por el usuario.
-     * @param  string $msg Mensaje a ser mostrado por la aplicación.
-     * @param  string $type Tipo de mensaje a mostrar.
-     * @return View La instancia de la clase para encadenamiento.
-     */
-    public function pushMessage($msg, $type = View\Message::SUCCESS)
-    {
-        $this->msg->push($msg, $type);
-        return $this;
-    }
-
-    /**
-     * Muestra y elimina el mensjae suministrado por el usuario.
-     * @return View La instancia de la clase para encadenamiento.
-     */
-    public function pullMessage()
-    {
-        $this->msg->pull();
-        return $this;
+        $array = preg_split('/(?=[A-Z])/', $method);
+        $component = strtolower(array_pop($array));
+        if (isset(self::$components[$component])) {
+            $method = join($array);
+            call_user_func_array(array($this->currentComponents[$component], $method), $args);
+            return $this;
+        }
+        throw new \BadMethodCallException('Component '.$component.' unregistered');
     }
 
     /**
@@ -117,14 +95,19 @@ final class View
      */
     public function render()
     {
-        $helperView = new View\Helper($this->viewName, $this->msg);
+        $helperView = new View\Helper($this->currentComponents);
         IoC\Service::register('view', $helperView);
         View\Heritage::init($this->viewData);
-        View\Template::parse($this->viewName);
+        View\Template::parse($this->viewPath);
         extract($this->viewData);
-        include self::ROOT.$this->viewName.self::EXT;
+        include self::ROOT.$this->viewPath.self::EXT;
         $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
         ob_end_clean();
         return $view;
+    }
+
+    public static function registerComponent($name, $class)
+    {
+        self::$components[$name] = $class;
     }
 }

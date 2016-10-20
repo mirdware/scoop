@@ -1,15 +1,3 @@
-$inputs = 'input[type="text"],
-input[type="email"],
-input[type="number"],
-input[type="password"],
-input[type="tel"],
-input[type="url"],
-input[type="time"],
-input[type="datetime"],
-input[type="search"],
-textarea,
-.input'
-
 label
     position relative
     text-align right
@@ -68,6 +56,7 @@ label
         z-index 1
 
 .group-box
+    icon-box()
     display inline-block
     vertical-align top
     padding 0 .5em
@@ -78,30 +67,13 @@ label
         margin-top .2em
     .btn
         margin-top 1.6em
-    label:after
-        font 1em FontAwesome
-        margin-left .3em
-        vertical-align middle
-    &.error
-        label
-            color $color-red-normal
-            fa-icon "times-circle" after
-        {$inputs}
-            border-color $color-red-normal
-    &.success
-        label
-            color $color-green-normal
-            fa-icon "check-circle" after
-        {$inputs}
-            border-color $color-green-normal
-    &.warning
-        label
-            color $color-yellow-normal
-            fa-icon "exclamation-circle" after
-        {$inputs}
-            border-color $color-yellow-normal
     textarea
         height 120px
+
+.inline-box
+    icon-box()
+    display inline-block
+    padding-left .5em
 
 .radio
 .checkbox

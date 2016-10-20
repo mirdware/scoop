@@ -5,6 +5,7 @@ class Router
 {
     private $routes = array();
     private $instances = array();
+    private $current;
 
     public function __construct($routes)
     {
@@ -88,20 +89,25 @@ class Router
         return ROOT.substr($url, 1).'/';
     }
 
+    public function getCurrentRoute()
+    {
+        return $this->current;
+    }
+
     private function getRoute($url)
     {
         $matches = $this->filterRoute($url);
         if ($matches) {
-            $route = array_pop($matches);
-            $length = 0;
+            $route = end($matches);
+            $this->current = key($matches);
             array_shift($route['params']);
+            $key = 0;
             foreach ($route['params'] as $key => &$param) {
                 if ($param !== '') {
-                    $length = $key + 1;
                     $param = urldecode($param);
                 }
             }
-            $route['params'] = array_splice($route['params'], 0, $length);
+            $route['params'] = array_splice($route['params'], 0, ++$key);
             return $route;
         }
     }
@@ -109,12 +115,12 @@ class Router
     private function filterRoute($url)
     {
         $matches = array();
-        foreach ($this->routes as &$route) {
+        foreach ($this->routes as $key => &$route) {
             if (
                 isset($route['controller']) &&
                 preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])
             ) {
-                $matches[] = $route;
+                $matches[$key] = $route;
             }
         }
         return $matches;

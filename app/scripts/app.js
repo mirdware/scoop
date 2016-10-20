@@ -1,2 +1,1 @@
-global.jetro = require('jetro');
-require('./scoop/scoop.js');
+import scoop from './scoop/scoop.js';

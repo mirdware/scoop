@@ -7,13 +7,9 @@ namespace Scoop\View;
 class Helper
 {
     /**
-     * @var string Nombre de la vista actual.
-     */
-    private $name;
-    /**
      * @var Message Mensaje que maneja la vista
      */
-    private $msg;
+    private $components;
     /**
      * @var array Ubicación de los assets dentro de la aplicación
      */
@@ -26,36 +22,11 @@ class Helper
 
     /**
      * Establece la configuración inicial de los atributos del Helper
-     * @param string $name Nombre de la vista actual.
-     * @param Message $msg Mensaje de la vista actual.
+     * @param array $components colección de componentes usados por la vista.
      */
-    public function __construct($name, $msg)
+    public function __construct($components)
     {
-        $this->name = $name;
-        $this->msg = $msg;
-    }
-
-    public static function setAssets($assets)
-    {
-        self::$assets = (array) $assets + self::$assets;
-    }
-
-    /**
-     * Obtiene el nombre de la vista actual.
-     * @return string Nombre de la vista actual.
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Obtiene el mensaje de la vista actual.
-     * @return Message Mensaje de la vista actual.
-     */
-    public function getMsg()
-    {
-        return $this->msg;
+        $this->components = $components;
     }
 
     /**
@@ -106,11 +77,21 @@ class Helper
      */
     public function route()
     {
+        $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
         if (func_num_args() === 0) {
-            throw new \InvalidArgumentException('Unsoported number of arguments');
+            return $router->getCurrentRoute();
         }
         $args = func_get_args();
-        $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
         return $router->getURL(array_shift($args), $args);
+    }
+
+    public function compose($component)
+    {
+        return $this->components[$component];
+    }
+
+    public static function setAssets($assets)
+    {
+        self::$assets = (array) $assets + self::$assets;
     }
 }

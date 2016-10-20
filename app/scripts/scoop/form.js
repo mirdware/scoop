@@ -1,3 +1,5 @@
+import Jetro from 'jetro';
+
 (function ($, window) {
     var FALSE = false,
         TRUE = true,
@@ -10,33 +12,33 @@
         var form = evt.target,
             data = $.ajax.form(form),
             url = opt.url || form.action,
-            container = $("#msg-error") || $("#msg-out") || $("#msg-warning"),
+            container = $('#msg-error') || $('#msg-out') || $('#msg-warning'),
             success = opt.success,
             trouble = opt.trouble,
             error,
             key;
 
         if (container) {
-            container.id= "msg-not";
+            container.id= 'msg-not';
         }
         for (key in data) {
-            error = $("#error-"+key.replace("_", "-"));
+            error = $('#error-'+key.replace('_', '-'));
             if (error) {
-                error.style.visibility = "hidden";
+                error.style.visibility = 'hidden';
             }
         }
         if (!blockSubmit) {
             blockSubmit = TRUE;
-            if (form.enctype === "multipart/form-data") {
-                var frame = $("#frame-scoop-ajax");
+            if (form.enctype === 'multipart/form-data') {
+                var frame = $('#frame-scoop-ajax');
                 if (!frame) {
-                    frame = document.createElement("iframe");
-                    frame.style.display = "none";
-                    frame.name = "frame-scoop-ajax";
-                    frame.id = "frame-scoop-ajax";
+                    frame = document.createElement('iframe');
+                    frame.style.display = 'none';
+                    frame.name = 'frame-scoop-ajax';
+                    frame.id = 'frame-scoop-ajax';
                     document.body.appendChild(frame);
                 }
-                form.target = "frame-scoop-ajax";
+                form.target = 'frame-scoop-ajax';
                 form.submit();
                 frame.onload = function () {
                     frame = (frame.contentWindow || frame.contentDocument);
@@ -64,18 +66,18 @@
                     window.location = res.redirect;
                 }
                 if (res.out) {
-                    message("out", res.out);
+                    message('out', res.out);
                     success && success(form, res);
                     return;
                 }
                 if (res.error) {
-                    if (typeof res.error === "string") {
-                        message("error", res.error);
+                    if (typeof res.error === 'string') {
+                        message('error', res.error);
                     } else {
                         for (key in res.error) {
-                            var error = $("#error-"+key);
+                            var error = $('#error-'+key);
                             error.title = res.error[key];
-                            error.style.visibility = "visible";
+                            error.style.visibility = 'visible';
                         }
                     }
                     trouble && trouble(form, res);
@@ -88,4 +90,4 @@
     }
 
     $.extend($.ajax, {submit: submit});
-})(jetro, window);
+})(Jetro, window);

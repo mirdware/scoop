@@ -1,10 +1,12 @@
-var beams = require("./beams.json"),
+import Message from './message.js';
+import Placeholder from './placeholder.js';
+import Password from './password.js';
+import Form from './form.js';
+import Validation from './vhtml5.js';
+
+var beams = require('./beams.json'),
     name;
-require("./message.js");
-require("./placeholder.js");
-require("./password.js");
-require("./form.js");
-require("./vhtml5.js");
+
 for (name in beams) {
-    require("../.." + beams[name]);
+    require('../..' + beams[name]);
 }

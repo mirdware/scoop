@@ -23,12 +23,12 @@ final class Template
     /**
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
      * antiguas que el template.
-     * @param string $name Nombre de la plantilla en formato name.sdt.php.
+     * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
      */
-    public static function parse($name)
+    public static function parse($templatePath)
     {
-        $template = self::ROOT.$name.self::EXT;
-        $view = \Scoop\View::ROOT . $name . \Scoop\View::EXT;
+        $template = self::ROOT.$templatePath.self::EXT;
+        $view = \Scoop\View::ROOT . $templatePath . \Scoop\View::EXT;
         $existView = is_readable($view);
         $existTemplate = is_readable($template);
         if ($existView) {

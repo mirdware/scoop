@@ -62,10 +62,20 @@ final class Message
      * @param string $msg  Mensaje a ser mostrado por la aplicación.
      * @param string $type Tipo de mensaje a mostrar.
      */
-    public function set($msg, $type)
+    public function set($msg, $type = self::SUCCESS)
     {
         self::validate($type);
         $this->setMsg($type, $msg);
+    }
+
+    /**
+     * Establece la plantilla para el tipo enviado.
+     * @param string $type Tipo de mensaje: out, warning, error.
+     * @param string $msg Descripción del mensaje enviado por el usuario.
+     */
+    private function setMsg($type, $msg = self::SUCCESS)
+    {
+        $this->msg = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
     }
 
     /**
@@ -75,16 +85,6 @@ final class Message
     public function __toString()
     {
         return $this->msg;
-    }
-
-    /**
-     * Establece la plantilla para el tipo enviado.
-     * @param string $type Tipo de mensaje: out, warning, error.
-     * @param string $msg Descripción del mensaje enviado por el usuario.
-     */
-    private function setMsg($type, $msg)
-    {
-        $this->msg = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
     }
 
     /**

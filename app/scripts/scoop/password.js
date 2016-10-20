@@ -1,18 +1,20 @@
+import Jetro from 'jetro';
+
 (function($) {
-    var color = "rgb(173,255,47)",
-        numbers = "01234567890",
-        lcLetters = "abcdefghijklmnñopqrstuvwxyza",
-        ucLetters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZA",
-        iNumbers = "98765432109",
-        iLcLetters = "zyxwvutsrrqpoñnmlkjihgfedcbaz",
-        iUcLetters = "ZYXWVUTSRRQPOÑNMLKJIHGFEDCBAZ",
+    var color = 'rgb(173,255,47)',
+        numbers = '01234567890',
+        lcLetters = 'abcdefghijklmnñopqrstuvwxyza',
+        ucLetters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZA',
+        iNumbers = '98765432109',
+        iLcLetters = 'zyxwvutsrrqpoñnmlkjihgfedcbaz',
+        iUcLetters = 'ZYXWVUTSRRQPOÑNMLKJIHGFEDCBAZ',
         core = {
             safe: function (e) {
-                var clave = typeof e === "string"? e: this.value,
+                var clave = typeof e === 'string'? e: this.value,
                     len = clave.length,
-                    nivel = "Muy alto",
-                    container = $("#control-pass"),
-                    chars = "",
+                    nivel = 'Muy alto',
+                    container = $('#control-pass'),
+                    chars = '',
                     ucChar = 0,
                     lcChar = 0,
                     numChar = 0,
@@ -75,29 +77,29 @@
                         -only-(charRep*3)-(cucChar*2)-(cnumChar*2)-(clcChar*2)-(cons*5);
                 if (total<=0) {
                     total = 0;
-                    nivel = "Nivel de seguridad";
+                    nivel = 'Nivel de seguridad';
                 } else if (total<=20) {
-                    color = "rgb(255,69,0)";
-                    nivel = "Muy bajo";
+                    color = 'rgb(255,69,0)';
+                    nivel = 'Muy bajo';
                 } else if (total<=40) {
-                    color = "rgb(255,165,0)";
-                    nivel = "Bajo";
+                    color = 'rgb(255,165,0)';
+                    nivel = 'Bajo';
                 } else if (total<=60) {
-                    color = "rgb(255,255,0)";
-                    nivel = "Medio";
+                    color = 'rgb(255,255,0)';
+                    nivel = 'Medio';
                 } else if (total<=80) {
-                    color = "rgb(154,205,50)";
-                    nivel = "Alto"
+                    color = 'rgb(154,205,50)';
+                    nivel = 'Alto'
                 } else if (total >100) {
                     total = 100;
                 }
-                $.css($("b", container)[0]).set({
+                $.css($('b', container)[0]).set({
                     backgroundColor: color,
-                    width: total+"%"
+                    width: total+'%'
                 });
-                $("span", container)[0].innerHTML = nivel;
+                $('span', container)[0].innerHTML = nivel;
             }
         };
 
     $.extend($, {password: core});
-})(jetro);
+})(Jetro);

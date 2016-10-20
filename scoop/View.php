@@ -14,15 +14,16 @@ final class View
      */
     const EXT = '.php';
     /**
-     * @var string Contiene los datos a ser procesados por la vista.
-     */
-    private $viewData;
-    /**
      * @var string Nombre de la vista.
      */
     private $viewPath;
-    private $currentComponents = array();
-    private static $components = array();
+    /**
+     * @var string Contiene los datos a ser procesados por la vista.
+     */
+    private $viewData = array();
+    private static $components = array(
+        'message' => '\Scoop\View\Message'
+    );
 
     /**
      * Genera la vista partiendo desde el nombre de la misma.
@@ -30,11 +31,7 @@ final class View
      */
     public function __construct($viewPath)
     {
-        $this->viewData = array();
         $this->viewPath = $viewPath;
-        foreach (self::$components as $key => &$component) {
-            $this->currentComponents[$key] = new $component();
-        }
     }
 
     /**
@@ -82,7 +79,7 @@ final class View
         $component = strtolower(array_pop($array));
         if (isset(self::$components[$component])) {
             $method = join($array);
-            call_user_func_array(array($this->currentComponents[$component], $method), $args);
+            call_user_func_array(array(self::$components[$component], $method), $args);
             return $this;
         }
         throw new \BadMethodCallException('Component '.$component.' unregistered');
@@ -95,7 +92,7 @@ final class View
      */
     public function render()
     {
-        $helperView = new View\Helper($this->currentComponents);
+        $helperView = new View\Helper(self::$components);
         IoC\Service::register('view', $helperView);
         View\Heritage::init($this->viewData);
         View\Template::parse($this->viewPath);
@@ -108,6 +105,12 @@ final class View
 
     public static function registerComponent($name, $class)
     {
+        $interfaces = class_implements($class);
+        if (!isset($interfaces['Scoop\View\Component'])) {
+            throw new \UnexpectedValueException(
+                $class.' class isn\'t implemented \Scoop\View\Component'
+            );
+        }
         self::$components[$name] = $class;
     }
 }

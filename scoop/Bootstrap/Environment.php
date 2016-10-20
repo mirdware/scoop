@@ -18,7 +18,6 @@ abstract class Environment
         \Scoop\View\Helper::setAssets($this->get('assets'));
         \Scoop\Validator::setMessages($this->get('messages.error'));
         \Scoop\IoC\Service::register('config', $this);
-        \Scoop\View::registerComponent('message', '\Scoop\View\Message');
     }
 
     public function getRouter()
@@ -48,11 +47,20 @@ abstract class Environment
         return $this;
     }
 
-    protected function registerService($servicesPath)
+    protected function registerServices($servicesPath)
     {
         $services = require $servicesPath.'.php';
-        foreach ($services as $name => &$class) {
-            \Scoop\IoC\Service::register($name, $class);
+        foreach ($services as $name => &$service) {
+            \Scoop\IoC\Service::register($name, $service);
+        }
+        return $this;
+    }
+
+    protected function registerComponents($componentPath)
+    {
+        $components = require $componentPath.'.php';
+        foreach ($services as $name => &$component) {
+            \Scoop\View::registerComponent($name, $component);
         }
         return $this;
     }

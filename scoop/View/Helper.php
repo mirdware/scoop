@@ -85,9 +85,15 @@ class Helper
         return $router->getURL(array_shift($args), $args);
     }
 
-    public function compose($component)
+    public function compose()
     {
-        return $this->components[$component];
+        if (func_num_args() === 0) {
+            throw new \InvalidArgumentException('Unsoported number of arguments');
+        }
+        $args = func_get_args();
+        $componentClass = new \ReflectionClass($this->components[array_shift($args)]);
+        $component = $componentClass->newInstanceArgs($args);
+        return $component->render();
     }
 
     public static function setAssets($assets)

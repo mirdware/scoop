@@ -4,7 +4,7 @@ namespace Scoop\View;
 /**
  * Contenedor de los mensajes usados por el Bootstrap.
  */
-final class Message
+class Message implements Component
 {
     /**
      * Tipo de salida estandar de los mensajes.
@@ -25,14 +25,15 @@ final class Message
     /**
      * @var string Contenido del mensaje.
      */
-    private $msg;
+    private static $template = '<div id="msg" class="not"><i class="close"></i><span></span></div>';
 
     /**
-     * Establece la plantilla del mensaje como msg-not
+     * Crea el componente en la vista.
+     * @return string Propiedad $template.
      */
-    public function __construct()
+    public function render()
     {
-        $this->msg = '<div id="msg" class="not"><i class="close"></i><span></span></div>';
+        return self::$template;
     }
 
     /**
@@ -40,7 +41,7 @@ final class Message
      * @param string $msg  Mensaje a ser mostrado por la aplicación.
      * @param string $type Tipo de mensaje a mostrar.
      */
-    public function push($msg, $type)
+    public static function push($msg, $type)
     {
         self::validate($type);
         $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
@@ -49,10 +50,10 @@ final class Message
     /**
      * Muestra y elimina el mensaje suministrado por el usuario.
      */
-    public function pull()
+    public static function pull()
     {
         if (isset($_SESSION['msg-scoop'])) {
-            $this->setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
+            self::setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
             unset($_SESSION['msg-scoop']);
         }
     }
@@ -62,10 +63,10 @@ final class Message
      * @param string $msg  Mensaje a ser mostrado por la aplicación.
      * @param string $type Tipo de mensaje a mostrar.
      */
-    public function set($msg, $type = self::SUCCESS)
+    public static function set($msg, $type = self::SUCCESS)
     {
         self::validate($type);
-        $this->setMsg($type, $msg);
+        self::setMsg($type, $msg);
     }
 
     /**
@@ -73,18 +74,9 @@ final class Message
      * @param string $type Tipo de mensaje: out, warning, error.
      * @param string $msg Descripción del mensaje enviado por el usuario.
      */
-    private function setMsg($type, $msg = self::SUCCESS)
+    private static function setMsg($type, $msg = self::SUCCESS)
     {
-        $this->msg = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
-    }
-
-    /**
-     * Muestra la propiedad $msg cuando se intenta tratar a la clase como us string.
-     * @return string Propiedad $msg.
-     */
-    public function __toString()
-    {
-        return $this->msg;
+        self::$template = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
     }
 
     /**

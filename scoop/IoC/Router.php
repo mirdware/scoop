@@ -32,8 +32,7 @@ class Router
                 $this->intercept($url);
                 $params = &$route['params'];
                 $controllerReflection = new \ReflectionClass($controller);
-                $interfaces = $controllerReflection->getInterfaces();
-                $method = isset($interfaces['Scoop\Http\Resource'])?
+                $method = $controllerReflection->implementsInterface('Scoop\Http\Resource')?
                     strtolower($_SERVER['REQUEST_METHOD']):
                     array_shift($method);
                 if (!$controllerReflection->hasMethod($method)) {

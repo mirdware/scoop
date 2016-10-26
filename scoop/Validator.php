@@ -37,7 +37,7 @@ class Validator
             $this->rules[] = $class->newInstanceArgs($args);
             return $this;
         } else {
-            throw new \Exception('Call to undefined method Scoop\Validator::'.$name.'()');
+            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::'.$name.'()');
         }
     }
 

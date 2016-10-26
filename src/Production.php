@@ -6,7 +6,7 @@ class Production extends \Scoop\Bootstrap\Environment
     public function __construct()
     {
         parent::__construct('app/config');
-        $this->bind('app/config/interfaces')
+        $this->bind('app/config/dependencies')
             ->configure();
     }
 

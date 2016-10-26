@@ -4,11 +4,11 @@
     <!-- Codificación de la pagina a utf-8 para que admita caracteres especiales -->
     <meta charset="utf-8" />
     <!-- Referencia a los datos del autor y material utilizado -->
-    <link rel="author" href="{view->overt('humans.txt')}" />
+    <link rel="author" href="{view->asset('humans.txt')}" />
     <!-- Visualización en cualquier dispositivo utilizando responsive disign -->
     <meta name="viewport" content="width=device-width">
     <!-- Icono de la aplicación -->
-    <link rel="shortcut icon" type="image/x-icon" href="{view->overt('favicon.ico')}" />
+    <link rel="shortcut icon" type="image/x-icon" href="{view->asset('favicon.ico')}" />
     <!-- Enlace a la hoja de estilos general -->
     <link rel="stylesheet" href="{view->css(config->get('app.name').'.min.css')}" />
     <!-- trabajar las rutas absolutas dentro de javascript -->
@@ -28,7 +28,7 @@
     <div class="wrapper">
         <header>
             <a href="http://getscoop.org" target="_blank">
-                <img src="https://lh3.googleusercontent.com/uGQcHjxwiu62I6_J3GNk7FBmJHriUxhJ5vXqA1YpNITAvWdNMKczWvfalUnuK_F_6x5Dt4NE1CfB7xVPlKwqYtKumGlo3lnuyVKeTPCUE2tAPBAKm66mByVvNLh3g57qfVFNsQc4NFUAhzROe5nuacnt5su8oqnrRALJzfcAMDXDNsYI6tiwWhuYYuEWF5QeFl578E-44-sIrMVgwSbrsvUmRo4LeqFt--wub8uI2wcqwZTdvVy1uyaLZDVLuWCzgLcOJhkZE6bqkQwNdXspUxTBnf_tzVa3h7XAN4B7_JwAgQsUshaO1m5sKmuACPw_zUakifLHBvTcnmhfRyujB1HaQgaQ6XvCozZnnDMOmCX-LeF3o6zgi-S-6Z--VYU0-82M-HCdUqmFffGqNqovxVnjzED_J6R1Y4H1GhxTvAwEZ-UbZoOrgcsrD2QvSB8l7PqyV7XGeE00HNRAgMkZzqAcpFGiaf9USWuy3F9hxdUCLWBg0ynbvkHNurpzsPqZa2SB2Al0cjQthsKLnHhneyw3ILkmMOaBVgJ4CnKjkePVwWi256mXgBACnA69_nHwqu-0bIWQIoKY2-eoARomo9fdE507ollfQuiVwxJFNwFGe8gh=w300-h130-no" width="240" height="104" alt="scoop" />
+                <img src="https://lh3.googleusercontent.com/mwmX8XNisMpYzvq3Bgi28XHQEM5Hoogf3r3EaW4tXRBr_Rjd7qOevfh4G351TaoJbdjL8i7vxe8QGI8PyfTsO-Q-zRGkyz9PfauHTs6mkFW2wgcP7WBXF3Cny_krGfkQVx_XCcjS6f7cvftFJAtiORZAGdbhcNM0vWJDWmsrvuF78C8KpAAVCHRaW8Av6-EyaqJuWk1uzX_psdH6mClOAwqfMBIPG3sS7h09KSW7ra180XVA1_a8dpjt4iVBITK7u_zYU_C3w__ONsvYlrZQnXAeVV2k6CY2ObajLSFEQE6x2bEQxBGjRVA76kjgL6C6I367S0RiSbyo8kDtCh4l0G6i3jbcPLcEiyRfrAFUQQn6aiyRYc1DHJh4ocRrnGYeZ2lF8hvjd7G-a7Ya1WS5xatKvcsCCXylRGsji7KrQts5dI1Az63hfi2vZzIAvnCNhkZtToanJr8HbzUrmc2mU9ARYObIcVfK9oCHnMImpm90Mofe9-dtPvYB6jH7q03XFlV5_ERo5rYLkC8yDdX8IwRUIBbVeLtpRfFUlMfIRKL9Kw88x7eEhgSBoLf9fpA3zAvcUHIYGhEqPQ-ubXwTgmrCIt9bbsIJvy3XcNNfum9awp6W=w300-h130-no" width="240" height="104" alt="scoop" />
             </a>
         </header>
         <section class="jumbotron">

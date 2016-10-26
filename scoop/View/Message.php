@@ -23,9 +23,12 @@ class Message implements Component
      */
     const WARNING = 'warning';
     /**
-     * @var string Contenido del mensaje.
+     * @var array Propiedades del mensaje.
      */
-    private static $template = '<div id="msg" class="not"><i class="close"></i><span></span></div>';
+    private static $props = array(
+        'type' => 'not',
+        'msg' => ''
+    );
 
     /**
      * Crea el componente en la vista.
@@ -33,7 +36,8 @@ class Message implements Component
      */
     public function render()
     {
-        return self::$template;
+        extract(self::$props);
+        return "<div id=\"msg\" class=\"$type\"><i class=\"close\"></i><span>$msg</span></div>";
     }
 
     /**
@@ -41,7 +45,7 @@ class Message implements Component
      * @param string $msg  Mensaje a ser mostrado por la aplicación.
      * @param string $type Tipo de mensaje a mostrar.
      */
-    public static function push($msg, $type)
+    public static function push($msg, $type = self::SUCCESS)
     {
         self::validate($type);
         $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
@@ -53,7 +57,7 @@ class Message implements Component
     public static function pull()
     {
         if (isset($_SESSION['msg-scoop'])) {
-            self::setMsg($_SESSION['msg-scoop']['type'], $_SESSION['msg-scoop']['msg']);
+            self::$props = $_SESSION['msg-scoop'];
             unset($_SESSION['msg-scoop']);
         }
     }
@@ -66,30 +70,18 @@ class Message implements Component
     public static function set($msg, $type = self::SUCCESS)
     {
         self::validate($type);
-        self::setMsg($type, $msg);
-    }
-
-    /**
-     * Establece la plantilla para el tipo enviado.
-     * @param string $type Tipo de mensaje: out, warning, error.
-     * @param string $msg Descripción del mensaje enviado por el usuario.
-     */
-    private static function setMsg($type, $msg = self::SUCCESS)
-    {
-        self::$template = '<div id="msg" class="'.$type.'"><i class="close"></i><span>'.$msg.'</span></div>';
+        self::$props = array('type'=>$type, 'msg'=>$msg);
     }
 
     /**
      * Verifica que el tipo de mensaje enviado sea valido.
      * @param string $type Tipo de mensaje.
-     * @throws \Exception Si no es un tipo de mensaje valido.
+     * @throws \UnexpectedValueException Si no es un tipo de mensaje valido.
      */
     private static function validate($type)
     {
-        if ($type !== self::SUCCESS &&
-            $type !== self::ERROR &&
-            $type !== self::WARNING &&
-            $type !== self::INFO) {
+        $class = new \ReflectionClass(get_class());
+        if (!in_array($type, $class->getConstants())) {
             throw new \UnexpectedValueException('Error building the message [type rejected].');
         }
     }

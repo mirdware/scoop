@@ -34,7 +34,7 @@ class Helper
      * @param string $resource Nombre del recurso a obtener.
      * @return string ruta al recurso especificado.
      */
-    public function overt($resource)
+    public function asset($resource)
     {
         return ROOT.self::$assets['path'].$resource;
     }
@@ -46,7 +46,7 @@ class Helper
      */
     public function img($image)
     {
-        return $this->overt(self::$assets['img'].$image);
+        return $this->asset(self::$assets['img'].$image);
     }
 
     /**
@@ -56,7 +56,7 @@ class Helper
      */
     public function css($styleSheet)
     {
-        return $this->overt(self::$assets['css'].$styleSheet);
+        return $this->asset(self::$assets['css'].$styleSheet);
     }
 
     /**
@@ -66,7 +66,7 @@ class Helper
      */
     public function js($javaScript)
     {
-        return $this->overt(self::$assets['js'].$javaScript);
+        return $this->asset(self::$assets['js'].$javaScript);
     }
 
     /**

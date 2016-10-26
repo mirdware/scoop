@@ -115,7 +115,7 @@ final class Template
             \Scoop\IoC\Service::compileView($line);
             return true;
         }
-        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,]+)\}/',
+        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,#]+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {
             \Scoop\IoC\Service::compileView($line);

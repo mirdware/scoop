@@ -59,7 +59,7 @@ abstract class Environment
     protected function registerComponents($componentPath)
     {
         $components = require $componentPath.'.php';
-        foreach ($services as $name => &$component) {
+        foreach ($components as $name => &$component) {
             \Scoop\View::registerComponent($name, $component);
         }
         return $this;

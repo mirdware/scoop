@@ -25,19 +25,27 @@ final class Template
      * antiguas que el template.
      * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
      */
-    public static function parse($templatePath)
+    public static function parse($templatePath, $viewData)
     {
         $template = self::ROOT.$templatePath.self::EXT;
         $view = \Scoop\View::ROOT . $templatePath . \Scoop\View::EXT;
         $existView = is_readable($view);
         $existTemplate = is_readable($template);
         if ($existView) {
-            if (!$existTemplate || filemtime($template) < filemtime($view)) {
-                return;
+            if ($existTemplate && filemtime($template) > filemtime($view)) {
+                self::create($view, self::compile($template));
             }
-        } elseif (!$existTemplate) {
+        } elseif ($existTemplate) {
+            self::create($view, self::compile($template));
+        } else {
             throw new \UnderflowException('Unable to load view or template');
         }
+        extract($viewData);
+        require $view;
+    }
+
+    private static function compile($template)
+    {
         $content = '';
         $flagPHP = false;
         $lastLine = '';
@@ -65,7 +73,7 @@ final class Template
         if ($flagPHP) {
             $content .= ' ?>';
         }
-        self::create($view, $content);
+        return $content;
     }
 
     /**

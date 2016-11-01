@@ -27,7 +27,6 @@ class Router
                 );
             }
             $controller =  $this->getInstance($controller);
-            $controller->setRouter($this);
             if ($controller) {
                 $this->intercept($url);
                 $params = &$route['params'];

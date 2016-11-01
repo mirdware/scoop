@@ -30,12 +30,9 @@ abstract class Heritage {
      */
     public static function extend($parent)
     {
-        Template::parse($parent);
-        extract(self::$data);
-        ob_start();
-        require \Scoop\View::ROOT.$parent.\Scoop\View::EXT;
+        Template::parse($parent, self::$data);
         self::$footer = trim(ob_get_contents()).self::$footer;
-        ob_clean();
+        ob_end_clean();
     }
 
     /**
@@ -44,8 +41,7 @@ abstract class Heritage {
      */
     public static function import($path)
     {
-        Template::parse($path);
-        include \Scoop\View::ROOT.$path.\Scoop\View::EXT;
+        Template::parse($path, self::$data);
     }
 
     /**

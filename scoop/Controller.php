@@ -8,10 +8,6 @@ namespace Scoop;
 abstract class Controller
 {
     /**
-     * @var Ioc\Router Objeto que usa la aplicación para enrutar las peticiones.
-     */
-    private $router;
-    /**
      * @var string Lista de posibles redirecciones del controlador.
      */
     private static $redirects = array(
@@ -24,15 +20,6 @@ abstract class Controller
         306 => 'HTTP/1.1 306 Not Used',
         307 => 'HTTP/1.1 307 Temporary Redirect'
     );
-
-    /**
-     * Inyecta la dependencia router al controlador
-     * @param IoC\Router $router Router que se encargara de obtener los controladores.
-     */
-    public function setRouter(IoC\Router $router)
-    {
-        $this->router = $router;
-    }
 
     /**
      * Realiza la redirección a la página pasada como parámetro.
@@ -98,7 +85,9 @@ abstract class Controller
      */
     protected function getController($controller)
     {
-        return $this->router->getInstance($controller);
+        return $this->getService('config')
+                    ->getRouter()
+                    ->getInstance($controller);
     }
 
     /**

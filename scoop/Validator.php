@@ -30,36 +30,6 @@ class Validator
         $this->typeValidation = $typeValidation;
     }
 
-    public function __call($name, $args)
-    {
-        if (isset(self::$customRules[$name])) {
-            $class = new \ReflectionClass(self::$customRules[$name]);
-            $this->rules[] = $class->newInstanceArgs($args);
-            return $this;
-        } else {
-            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::'.$name.'()');
-        }
-    }
-
-    public static function setMessages($messages)
-    {
-        self::$msg = (array) $messages;
-    }
-
-    public static function addRule($name, $class = null)
-    {
-        if (is_array($name)) {
-            foreach ($name as $n => $class) {
-                self::addRule($n, $class);
-            }
-            return;
-        }
-        if (get_parent_class($class) !== 'Scoop\Validation\Rule') {
-            throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
-        }
-        self::$customRules[$name] = $class;
-    }
-
     public function validate($data)
     {
         $this->data = &$data;
@@ -80,6 +50,36 @@ class Validator
             }
         }
         return $this->errors;
+    }
+
+    public function __call($name, $args)
+    {
+        if (isset(self::$customRules[$name])) {
+            $class = new \ReflectionClass(self::$customRules[$name]);
+            $this->rules[] = $class->newInstanceArgs($args);
+            return $this;
+        } else {
+            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::'.$name.'()');
+        }
+    }
+
+    public static function addRule($name, $class = null)
+    {
+        if (is_array($name)) {
+            foreach ($name as $n => $class) {
+                self::addRule($n, $class);
+            }
+            return;
+        }
+        if (get_parent_class($class) !== 'Scoop\Validation\Rule') {
+            throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
+        }
+        self::$customRules[$name] = $class;
+    }
+
+    public static function setMessages($messages)
+    {
+        self::$msg = (array) $messages;
     }
 
     private function executeRule($rule, $field, $params)

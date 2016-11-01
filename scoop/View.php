@@ -73,6 +73,22 @@ final class View
         return $this;
     }
 
+    /**
+     * Compila la vista para devolver un String formateado en HTML.
+     * @return string Formato en HTML.
+     * @throws \Exception Si no se existe la plantilla o la vista.
+     */
+    public function render()
+    {
+        $helperView = new View\Helper(self::$components);
+        IoC\Service::register('view', $helperView);
+        View\Heritage::init($this->viewData);
+        View\Template::parse($this->viewPath, $this->viewData);
+        $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
+        ob_end_clean();
+        return $view;
+    }
+
     public function __call($method, $args)
     {
         $array = preg_split('/(?=[A-Z])/', $method);
@@ -85,24 +101,6 @@ final class View
         throw new \BadMethodCallException('Component '.$component.' unregistered');
     }
 
-    /**
-     * Compila la vista para devolver un String formateado en HTML.
-     * @return string Formato en HTML.
-     * @throws \Exception Si no se existe la plantilla o la vista.
-     */
-    public function render()
-    {
-        $helperView = new View\Helper(self::$components);
-        IoC\Service::register('view', $helperView);
-        View\Heritage::init($this->viewData);
-        View\Template::parse($this->viewPath);
-        extract($this->viewData);
-        include self::ROOT.$this->viewPath.self::EXT;
-        $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
-        ob_end_clean();
-        return $view;
-    }
-
     public static function registerComponent($name, $class)
     {
         $interfaces = class_implements($class);
@@ -111,6 +109,6 @@ final class View
                 $class.' class isn\'t implemented \Scoop\View\Component'
             );
         }
-        self::$components[$name] = $class;
+        self::$components[$name] = strtolower($class);
     }
 }

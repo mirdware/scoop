@@ -16,7 +16,6 @@ class Loader
         if (!empty($this->prefixesPsr0)) {
             return call_user_func_array('array_merge', $this->prefixesPsr0);
         }
-
         return array();
     }
 
@@ -63,14 +62,12 @@ class Loader
                     (array) $paths
                 );
             }
-
             return;
         }
 
         $first = $prefix[0];
         if (!isset($this->prefixesPsr0[$first][$prefix])) {
             $this->prefixesPsr0[$first][$prefix] = (array) $paths;
-
             return;
         }
         if ($prepend) {
@@ -177,7 +174,6 @@ class Loader
     {
         if ($file = $this->findFile($class)) {
             include $file;
-
             return true;
         }
     }
@@ -187,24 +183,19 @@ class Loader
         if ('\\' == $class[0]) {
             $class = substr($class, 1);
         }
-
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
         }
         if ($this->classMapAuthoritative) {
             return false;
         }
-
         $file = $this->findFileWithExtension($class, '.php');
-
         if ($file === null && defined('HHVM_VERSION')) {
             $file = $this->findFileWithExtension($class, '.hh');
         }
-
         if ($file === null) {
             return $this->classMap[$class] = false;
         }
-
         return $file;
     }
 
@@ -229,7 +220,6 @@ class Loader
     private function findFileWithExtension($class, $ext)
     {
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
-
         $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
             foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
@@ -242,20 +232,17 @@ class Loader
                 }
             }
         }
-
         foreach ($this->fallbackDirsPsr4 as $dir) {
             if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
                 return $file;
             }
         }
-
         if (false !== $pos = strrpos($class, '\\')) {
             $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
                 . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
         } else {
             $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
         }
-
         if (isset($this->prefixesPsr0[$first])) {
             foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
                 if (0 === strpos($class, $prefix)) {
@@ -267,17 +254,14 @@ class Loader
                 }
             }
         }
-
         foreach ($this->fallbackDirsPsr0 as $dir) {
             if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
                 return $file;
             }
         }
-
         if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
             return $file;
         }
     }
 }
-
 return Loader::getInstance();

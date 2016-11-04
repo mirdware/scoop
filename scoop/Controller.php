@@ -8,7 +8,8 @@ namespace Scoop;
 abstract class Controller
 {
     /**
-     * @var string Lista de posibles redirecciones del controlador.
+     * Lista de posibles redirecciones del controlador.
+     * @var array
      */
     private static $redirects = array(
         300 => 'HTTP/1.1 300 Multiple Choices',

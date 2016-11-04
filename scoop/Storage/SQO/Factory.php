@@ -13,10 +13,10 @@ final class Factory
         $this->query = $query;
         $this->con = $connexion;
         $this->keys = $keys;
-        $this->insert($values);
+        $this->create($values);
     }
 
-    public function insert($fields)
+    public function create($fields)
     {
         ksort($fields);
         $keys = array_keys($fields);

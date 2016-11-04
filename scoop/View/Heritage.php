@@ -7,10 +7,12 @@ namespace Scoop\View;
 abstract class Heritage {
     /**
      * Almacena el pie de la página que actua como padre
+     * @var string
      */
     private static $footer;
     /**
      * Almacena los datos que seran pasados a la plantilla hija.
+     * @var array
      */
     private static $data;
 

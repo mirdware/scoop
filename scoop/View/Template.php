@@ -8,14 +8,6 @@ namespace Scoop\View;
 final class Template
 {
     /**
-     * Ruta donde se encuentran las platillas.
-     */
-    const ROOT = 'app/views/';
-    /**
-     * Extensión de los archivos que funcionan como plantillas.
-     */
-    const EXT = '.sdt.php';
-    /**
      * Nombre de la clase que se encarga del manejo de la herencia.
      */
     const HERITAGE = '\Scoop\View\Heritage';
@@ -24,11 +16,12 @@ final class Template
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
      * antiguas que el template.
      * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
+     * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
     public static function parse($templatePath, $viewData)
     {
-        $template = self::ROOT.$templatePath.self::EXT;
-        $view = \Scoop\View::ROOT . $templatePath . \Scoop\View::EXT;
+        $template = 'app/views/'.$templatePath.'.sdt.php';
+        $view = 'app/cache/views/'.$templatePath.'.php';
         $existView = is_readable($view);
         $existTemplate = is_readable($template);
         if ($existView) {
@@ -44,13 +37,18 @@ final class Template
         require $view;
     }
 
+    /**
+     * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera
+     * la vista.
+     * @param  string $template Nombre del template que se usara
+     * @return string           Contenido básico de la vista a ser mostrada
+     */
     private static function compile($template)
     {
         $content = '';
         $flagPHP = false;
         $lastLine = '';
         $file = fopen($template, 'r');
-
         while (!feof($file)) {
             $line = fgets($file);
             $flag = self::replace($line);
@@ -126,7 +124,7 @@ final class Template
         $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,#]+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {
-            \Scoop\IoC\Service::compileView($line);
+            $line = \Scoop\IoC\Service::compileView($line);
         }
         return false;
     }
@@ -160,7 +158,7 @@ final class Template
      * @param string $viewName Nombre de la vista a almacenar.
      * @param string $content Contenido de la plantilla aplicando los reemplazos.
      */
-    private static function create($viewName, &$content)
+    private static function create($viewName, $content)
     {
         $content = preg_replace(
             array('/<\/\s+/', '/\s+\/>/', '/<\s+/', '/\s+>/'),
@@ -176,7 +174,6 @@ final class Template
         $path = explode('/', $viewName);
         $count = count($path)-1;
         $dir = '';
-
         for ($i=0; $i<$count; $i++) {
             $dir .= $path[$i].'/';
             if (!file_exists($dir)) {

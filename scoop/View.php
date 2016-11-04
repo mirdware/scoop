@@ -7,20 +7,20 @@ namespace Scoop;
  */
 final class View
 {
-    /** Ruta donde se encuentran las vistas. */
-    const ROOT = 'app/cache/views/';
     /**
-     * Extensión de los archivos que funcionan como vistas.
-     */
-    const EXT = '.php';
-    /**
-     * @var string Nombre de la vista.
+     * Ruta desde la que se puede ubicar la vista.
+     * @var string
      */
     private $viewPath;
     /**
-     * @var string Contiene los datos a ser procesados por la vista.
+     * Contiene los datos a ser procesados por la vista.
+     * @var array
      */
     private $viewData = array();
+    /**
+     * Colección con los componentes que hacen parte de la vista.
+     * @var array
+     */
     private static $components = array(
         'message' => '\Scoop\View\Message'
     );
@@ -55,7 +55,7 @@ final class View
      * Remueve un dato de la vista o en su defecto reinicia la misma.
      * @param  string|array|null $keys Dependiendo del tipo elimina uno o
      * varios datos.
-     * @return View La instancia de la clase para encadenamiento.
+     * @return Scoop\View La instancia de la clase para encadenamiento.
      */
     public function remove($keys = null)
     {
@@ -76,7 +76,6 @@ final class View
     /**
      * Compila la vista para devolver un String formateado en HTML.
      * @return string Formato en HTML.
-     * @throws \Exception Si no se existe la plantilla o la vista.
      */
     public function render()
     {
@@ -89,6 +88,12 @@ final class View
         return $view;
     }
 
+    /**
+     * Convierte el llamado a un componente previamente registrado.
+     * @param  string $method Nombre del método llamado.
+     * @param  array $args   Argumentos pasados al metodo.
+     * @return \Scoop\View   La instancia de la clase para encadenamiento.
+     */
     public function __call($method, $args)
     {
         $array = preg_split('/(?=[A-Z])/', $method);
@@ -101,6 +106,11 @@ final class View
         throw new \BadMethodCallException('Component '.$component.' unregistered');
     }
 
+    /**
+     * Registra los componentes que seran utilizados en la vista.
+     * @param  string $name  Nombre con el que se identificara el componente internamente.
+     * @param  string $class Refenecia a la clase que sera componentizada.
+     */
     public static function registerComponent($name, $class)
     {
         $interfaces = class_implements($class);

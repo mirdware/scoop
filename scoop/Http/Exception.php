@@ -20,7 +20,6 @@ abstract class Exception extends \Exception
         if (!$this->title) {
             $this->title = 'Error '.$statusCode.'!!!';
         }
-
         parent::__construct($message, $code, $previous);
     }
 

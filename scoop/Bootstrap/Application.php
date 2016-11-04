@@ -20,7 +20,6 @@ class Application
             );
         }
         $response = $this->invoke();
-
         if ($response === null) {
             header('HTTP/1.0 204 No Response');
         } elseif ($response instanceof \Scoop\View) {
@@ -91,7 +90,6 @@ class Application
         $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
         $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
         $data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
-
         do {
             $old_data = $data;
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);

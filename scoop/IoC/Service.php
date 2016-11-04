@@ -39,12 +39,12 @@ abstract class Service
         return call_user_func_array($serv['callback'], $serv['params']);
     }
 
-    public static function compileView(&$line)
+    public static function compileView($line)
     {
         $serviceNames = array_keys(self::$services);
         $search = array_map(array('\Scoop\IoC\Service', 'getSearch'),$serviceNames);
         $replace = array_map(array('\Scoop\IoC\Service', 'getReplace'),$serviceNames);
-        $line = str_replace($search, $replace, $line);
+        return str_replace($search, $replace, $line);
     }
 
     private static function getSearch($serviceName)

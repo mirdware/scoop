@@ -7,11 +7,13 @@ namespace Scoop\View;
 class Helper
 {
     /**
-     * @var Message Mensaje que maneja la vista
+     * Mensaje que maneja la vista.
+     * @var Message
      */
     private $components;
     /**
-     * @var array Ubicación de los assets dentro de la aplicación
+     * Ubicación de los assets dentro de la aplicación.
+     * @var array
      */
     private static $assets = array(
         'path' => 'public/',

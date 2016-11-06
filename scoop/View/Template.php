@@ -2,7 +2,7 @@
 namespace Scoop\View;
 
 /**
- * Se encarga de convertir las plantillas dadas en formato nombre.sdt.php a
+ * Clase encargada de convertir las plantillas en formato nombre.sdt.php a
  * vistas PHP
  */
 final class Template
@@ -16,6 +16,7 @@ final class Template
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
      * antiguas que el template.
      * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
+     * @param  array $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
     public static function parse($templatePath, $viewData)

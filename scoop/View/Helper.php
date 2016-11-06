@@ -2,7 +2,7 @@
 namespace Scoop\View;
 
 /**
- * Sirve como contenedor de funciones utiles a la vista.
+ * Clase que sirve como contenedor de funciones utiles a la vista.
  */
 class Helper
 {

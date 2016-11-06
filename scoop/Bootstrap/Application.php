@@ -16,7 +16,7 @@ class Application
     {
         if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
             \Scoop\Controller::redirect(
-                str_replace('index.php', '', $_SERVER['REQUEST_URI'])
+                str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
             );
         }
         $response = $this->invoke();

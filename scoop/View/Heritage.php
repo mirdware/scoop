@@ -2,7 +2,7 @@
 namespace Scoop\View;
 
 /**
- * Se encarga del manejo de herencia dentro de las vistas.
+ * Clase que se encarga del manejo de herencia dentro de las vistas.
  */
 abstract class Heritage {
     /**

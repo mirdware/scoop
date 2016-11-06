@@ -2,7 +2,7 @@
 namespace Scoop\View;
 
 /**
- * Contenedor de los mensajes usados por el Bootstrap.
+ * Clase componente de los mensajes usados por el Bootstrap.
  */
 class Message implements Component
 {

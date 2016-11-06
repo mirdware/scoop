@@ -19,7 +19,8 @@ abstract class Controller
         304 => 'HTTP/1.1 304 Not Modified',
         305 => 'HTTP/1.1 305 Use Proxy',
         306 => 'HTTP/1.1 306 Not Used',
-        307 => 'HTTP/1.1 307 Temporary Redirect'
+        307 => 'HTTP/1.1 307 Temporary Redirect',
+        308 => 'HTTP/1.1 308 Permanent Redirect'
     );
 
     /**
@@ -27,7 +28,7 @@ abstract class Controller
      * @param string $url Dirección a la que se redirecciona la página.
      * @param integer $status Codigo de la redirección que se va a realizar.
      */
-    public static function redirect($url, $status = 301)
+    public static function redirect($url, $status = 307)
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {

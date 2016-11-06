@@ -2,21 +2,21 @@
 namespace Scoop;
 
 /**
- * Clase encargada de validar datos segun unas reglas prestablecidas o creadas por el
+ * Clase encargada de validar datos segun unas reglas predefinidas o creadas por el
  * mismo desarrollador.
  */
 class Validator
 {
     /**
-     * Validación sencilla que permite una validación por cada regla.
+     * Permite una validación por cada regla.
      */
     const SIMPLE_VALIDATION = 0;
     /**
-     * Validaci´on completa que realiza todas las validaciones necesarias.
+     * Realiza todas las validaciones necesarias.
      */
     const FULL_VALIDATION = 1;
     /**
-     * Mensaje por defecto si no se hubica un mensaje personalizado para la regla.
+     * Mensaje por defecto si no se ubica un mensaje personalizado para la regla.
      */
     const DEFAULT_MSG = 'Invalid field';
     /**
@@ -25,7 +25,7 @@ class Validator
      */
     private static $msg = array();
     /**
-     * Clases de las reglas prestablecidas que maneja el bootstrap.
+     * Clases de las reglas predefinidas que maneja el bootstrap.
      * @var array
      */
     private static $customRules = array(
@@ -116,7 +116,7 @@ class Validator
 
     /**
      * Registra o modifica una regla dentro de $customRules.
-     * @param string|array $name  Nombre con el que se identificara la regla o 
+     * @param string|array $name  Nombre con el que se identificara la regla o
      * par ($name => $class).
      * @param string $class Identificador de la clase que se encargara de resolver la regla.
      */

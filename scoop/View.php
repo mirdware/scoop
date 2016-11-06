@@ -2,8 +2,7 @@
 namespace Scoop;
 
 /**
- * La función principal de esta clase es la de asociar los controladores con
- * sus respectivos templates.
+ * Clase encargada de asociar los controladores con sus respectivos templates.
  */
 final class View
 {

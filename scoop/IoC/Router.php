@@ -76,15 +76,21 @@ class Router
 
     public function getURL($key, $params)
     {
-        $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
+        $path = preg_split('/\{\w+\}/', $this->routes[$key]['url']);
         $url = array_shift($path);
         $count = count($path);
+        if (count($params) !== $count) {
+            throw new \InvalidArgumentException('Unformed URL');
+        }
         for ($i=0; $i<$count; $i++) {
             if (isset($params[$i])) {
                 $url .= urlencode($params[$i]).$path[$i];
             }
         }
-        return ROOT.substr($url, 1).'/';
+        if (strrpos($url, '/') !== strlen($url)-1) {
+            $url .= '/';
+        }
+        return ROOT.substr($url, 1);
     }
 
     public function getCurrentRoute()

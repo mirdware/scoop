@@ -75,7 +75,7 @@ abstract class Controller
      * @param string $msg Mensaje en formato json enviado a la excepción.
      * @throws Http\BadRequestException La excepción bad request.
     */
-    protected function reportErrors($erros, $api = false)
+    protected function reportErrors($errors, $api = false)
     {
         if ($api) {
             $api = json_encode($errors);

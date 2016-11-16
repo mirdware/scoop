@@ -108,7 +108,7 @@ final class View
     /**
      * Registra los componentes que seran utilizados en la vista.
      * @param  string $name  Nombre con el que se identificara el componente internamente.
-     * @param  string $class Refenecia a la clase que sera componentizada.
+     * @param  string $class Referencia a la clase que sera componentizada.
      */
     public static function registerComponent($name, $class)
     {
@@ -118,6 +118,6 @@ final class View
                 $class.' class isn\'t implemented \Scoop\View\Component'
             );
         }
-        self::$components[$name] = strtolower($class);
+        self::$components[strtolower($name)] = $class;
     }
 }

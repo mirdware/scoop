@@ -3,6 +3,7 @@ namespace Scoop\Http;
 
 abstract class Exception extends \Exception
 {
+    private $path;
     private $statusCode;
     private $headers;
     private $title;
@@ -14,13 +15,18 @@ abstract class Exception extends \Exception
         array $headers = array(),
         $code = 0)
     {
+        $config = \Scoop\IoC\Service::getInstance('config');
+        parent::__construct($message, $code, $previous);
         $this->statusCode = $statusCode;
         $this->headers = $headers;
-        $this->title = \Scoop\IoC\Service::getInstance('config')->get('exception.'.$statusCode);
+        $this->title = $config->get('exception.'.$statusCode);
+        $this->path = $config->get('exception.path');
         if (!$this->title) {
             $this->title = 'Error '.$statusCode.'!!!';
         }
-        parent::__construct($message, $code, $previous);
+        if (!$this->path) {
+            $this->path = 'exceptions/';
+        }
     }
 
     public function getStatusCode()
@@ -39,7 +45,7 @@ abstract class Exception extends \Exception
             header($header);
         }
         try {
-            $view = new \Scoop\View('exceptions/'.$this->statusCode);
+            $view = new \Scoop\View($this->path.$this->statusCode);
             $output = $view->set(array(
                 'ex' => $this,
                 'title' => $this->title

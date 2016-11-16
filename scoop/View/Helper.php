@@ -120,8 +120,12 @@ class Helper
      */
     public function input($name)
     {
-        if (isset($_POST[$name])) return $_POST[$name];
-        if (isset($_GET[$name])) return $_GET[$name];
+        if (isset($_POST[$name])) {
+            return $_POST[$name];
+        }
+        if (isset($_GET[$name])) {
+            return $_GET[$name];
+        }
         return '';
     }
 
@@ -135,8 +139,9 @@ class Helper
             throw new \InvalidArgumentException('Unsoported number of arguments');
         }
         $args = func_get_args();
-        $componentClass = new \ReflectionClass($this->components[array_shift($args)]);
-        $component = $componentClass->newInstanceArgs($args);
+        $component = strtolower(array_shift($args));
+        $component = new \ReflectionClass($this->components[$component]);
+        $component = $component->newInstanceArgs($args);
         return $component->render();
     }
 }

@@ -83,6 +83,27 @@ final class Template
      */
     private static function replace(&$line)
     {
+        $line = preg_replace(array(
+            '/@extends \'([\w\/-]+)\'/',
+            '/@import \'([\w\/-]+)\'/',
+            '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-\(\)\[\]%\']+)/',
+            '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-\(\)\[\]%\']+)/',
+            '/@foreach ([ \w\.\&\|\$\->:\(\)\[\]%\']+)/',
+            '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-\(\)\[\]%\']+)/',
+            '/@while ([ \w\.\&\|\$\(\)!=<>\+\-\(\)\[\]%\']+)/'
+        ), array(
+            self::HERITAGE.'::extend(\'${1}\')',
+            self::HERITAGE.'::import(\'${1}\')',
+            'if(${1}):',
+            'elseif(${1}):',
+            'foreach(${1}):',
+            'for(${1}):',
+            'while(${1}):'
+        ), $line, 1, $count);
+        if ($count !== 0) {
+             $line = \Scoop\IoC\Service::compileView($line);
+            return true;
+        }
         $line = str_replace(array(
             ':if',
             ':foreach',
@@ -99,27 +120,6 @@ final class Template
             self::HERITAGE.'::sprout()'
         ), $line, $count);
         if ($count !== 0) {
-            return true;
-        }
-        $line = preg_replace(array(
-            '/@extends \'([\w\/-]+)\'/',
-            '/@import \'([\w\/-]+)\'/',
-            '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
-            '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-]+)/',
-            '/@foreach ([ \w\.\&\|\$\->:]+)/',
-            '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-]+)/',
-            '/@while ([ \w\.\&\|\$\(\)!=<>\+\-]+)/'
-        ), array(
-            self::HERITAGE.'::extend(\'${1}\')',
-            self::HERITAGE.'::import(\'${1}\')',
-            'if(${1}):',
-            'elseif(${1}):',
-            'foreach(${1}):',
-            'for(${1}):',
-            'while(${1}):'
-        ), $line, 1, $count);
-        if ($count !== 0) {
-            \Scoop\IoC\Service::compileView($line);
             return true;
         }
         $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,#]+)\}/',

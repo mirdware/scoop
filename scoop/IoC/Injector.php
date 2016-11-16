@@ -17,6 +17,18 @@ abstract class Injector
         self::$rules[$interfaceName] = $className;
     }
 
+    public static function getInstance($className)
+    {
+        if (!isset(self::$instances[$className])) {
+            $class = new \ReflectionClass($className);
+            if ($class->isInterface()) {
+                $className = self::$rules[$className];
+            }
+            self::$instances[$className] = self::create($className);
+        }
+        return self::$instances[$className];
+    }
+
     private static function instantiate(\ReflectionClass &$class, $args = array())
     {
         $constructor = $class->getConstructor();
@@ -34,21 +46,9 @@ abstract class Injector
         foreach ($params as &$param) {
             $class = $param->getClass();
             if ($class) {
-                $className = $class->getName();
-                if ($class->isInterface()) {
-                    $class = self::replaceRule($className);
-                }
-                if (!isset(self::$instances[$className])) {
-                    self::$instances[$className] = self::instantiate($class);
-                }
-                $args[] = self::$instances[$className];
+                $args[] = self::getInstance($class->getName());
             }
         }
         return $args;
-    }
-
-    private static function replaceRule($className)
-    {
-        return new \ReflectionClass(self::$rules[$className]);
     }
 }

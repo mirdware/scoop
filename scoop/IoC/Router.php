@@ -4,7 +4,6 @@ namespace Scoop\IoC;
 class Router
 {
     private $routes = array();
-    private $instances = array();
     private $current;
 
     public function __construct($routes)
@@ -21,17 +20,17 @@ class Router
         if ($route) {
             $method = explode(':', $route['controller']);
             $controller = array_shift($method);
-            if (get_parent_class($controller) !== 'Scoop\Controller') {
+            if (!is_subclass_of($controller, 'Scoop\Controller')) {
                 throw new \UnexpectedValueException(
                     $controller.' class isn\'t an instance of \Scoop\Controller'
                 );
             }
-            $controller =  $this->getInstance($controller);
+            $controller =  \Scoop\IoC\Injector::getInstance($controller);
             if ($controller) {
                 $this->intercept($url);
                 $params = &$route['params'];
                 $controllerReflection = new \ReflectionClass($controller);
-                $method = $controllerReflection->implementsInterface('Scoop\Http\Resource')?
+                $method = !$method && $controllerReflection->implementsInterface('Scoop\Http\Resource')?
                     strtolower($_SERVER['REQUEST_METHOD']):
                     array_shift($method);
                 if (!$controllerReflection->hasMethod($method)) {
@@ -59,19 +58,11 @@ class Router
                     $proxy = explode(':', $route['proxy']);
                     $method = array_pop($proxy);
                     $proxy = array_shift($proxy);
-                    $proxy =  $this->getInstance($proxy);
+                    $proxy =  \Scoop\IoC\Injector::getInstance($proxy);
                     $proxy->$method();
                 }
             }
         }
-    }
-
-    public function getInstance($class)
-    {
-        if (!isset($this->instances[$class])) {
-            $this->instances[$class] = Injector::create($class);
-        }
-        return $this->instances[$class];
     }
 
     public function getURL($key, $params)
@@ -79,12 +70,12 @@ class Router
         $path = preg_split('/\{\w+\}/', $this->routes[$key]['url']);
         $url = array_shift($path);
         $count = count($path);
-        if (count($params) !== $count) {
+        if (count($params) > $count) {
             throw new \InvalidArgumentException('Unformed URL');
         }
         for ($i=0; $i<$count; $i++) {
             if (isset($params[$i])) {
-                $url .= urlencode($params[$i]).$path[$i];
+                $url .= self::encodeURL($params[$i]).$path[$i];
             }
         }
         if (strrpos($url, '/') !== strlen($url)-1) {
@@ -105,13 +96,14 @@ class Router
             $route = end($matches);
             $this->current = key($matches);
             array_shift($route['params']);
-            $key = 0;
+            $lenght = 0;
             foreach ($route['params'] as $key => &$param) {
                 if ($param !== '') {
                     $param = urldecode($param);
+                    $lenght = ++$key;
                 }
             }
-            $route['params'] = array_splice($route['params'], 0, ++$key);
+            $route['params'] = array_splice($route['params'], 0, $lenght);
             return $route;
         }
     }
@@ -161,14 +153,7 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        $a = self::skipParams($a['url']);
-        $b = self::skipParams($b['url']);
-        return strcasecmp($a, $b) > 0;
-    }
-
-    private static function skipParams($url)
-    {
-        return str_replace(array('{var}', '{int}'), '', $url);
+        return strcasecmp($a['url'], $b['url']) < 0;
     }
 
     private static function normalizeURL($url)
@@ -185,5 +170,28 @@ class Router
             '(\d*)'
         ),$url).((substr($url, -1) === '/')? '?': '/?');
         return addcslashes($url, '/');
+    }
+
+    private static function encodeURL($str)
+    {
+        $str = str_replace(
+            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'), 'a', $str
+        );
+        $str = str_replace(
+            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'), 'e', $str
+        );
+        $str = str_replace(
+            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'), 'i', $str
+        );
+        $str = str_replace(
+            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'), 'o', $str
+        );
+        $str = str_replace(
+            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'), 'u', $str
+        );
+        $str = str_replace(
+            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'), array('-', 'n', 'N', 'c', 'C'), $str
+        );
+        return urlencode(strtolower($str));
     }
 }

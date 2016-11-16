@@ -28,7 +28,7 @@ abstract class Controller
      * @param string $url Dirección a la que se redirecciona la página.
      * @param integer $status Codigo de la redirección que se va a realizar.
      */
-    public static function redirect($url, $status = 307)
+    public static function redirect($url, $status = 302)
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
@@ -75,21 +75,24 @@ abstract class Controller
      * @param string $msg Mensaje en formato json enviado a la excepción.
      * @throws Http\BadRequestException La excepción bad request.
     */
-    protected function error($msg)
+    protected function reportErrors($erros, $api = false)
     {
-        throw new \Scoop\Http\BadRequestException($msg);
+        if ($api) {
+            $api = json_encode($errors);
+            throw new \Scoop\Http\BadRequestException($api? $api: $errors);
+        }
+        $_SESSION['errors-scoop'] = $errors;
+        self::redirect($_SERVER['HTTP_REFERER'], 308);
     }
 
     /**
      * Obtiene la instancia del controlador ligado a la ruta.
-     * @param string $controller Nombre del controlador a obtener.
+     * @param string $className Nombre del controlador a obtener.
      * @return Controller Controlador a obtener.
      */
-    protected function getController($controller)
+    protected function inject($className)
     {
-        return $this->getService('config')
-                    ->getRouter()
-                    ->getInstance($controller);
+        return \Scoop\IoC\Injector::getInstance($className);
     }
 
     /**

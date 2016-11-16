@@ -3,6 +3,9 @@ namespace Scoop\Storage;
 
 class DBC extends \PDO
 {
+    private $db;
+    private $engine;
+    private $host;
     private static $instances = array();
     private static $events = array(
         'pre' => array(),
@@ -11,6 +14,9 @@ class DBC extends \PDO
 
     public function __construct($db, $user, $pass, $host, $engine)
     {
+        $this->db = $db;
+        $this->engine = $engine;
+        $this->host = $host;
         self::executeEvents('pre');
         parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass, array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
@@ -27,6 +33,21 @@ class DBC extends \PDO
     }
 
     private function __clone() {}
+
+    public function getDataBase()
+    {
+        return $this->db;
+    }
+
+    public function getEngine()
+    {
+        return $this->engine;
+    }
+
+    public function getHost()
+    {
+        return $this->host;
+    }
 
     public static function postConnect($fn)
     {

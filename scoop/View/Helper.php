@@ -7,10 +7,20 @@ namespace Scoop\View;
 class Helper
 {
     /**
-     * Mensaje que maneja la vista.
-     * @var Message
+     * Componentes que podra manejar las vistas.
+     * @var array
      */
     private $components;
+    /**
+     * Inyección del servicio config.
+     * @var \Scoop\Bootstrap\Environment
+     */
+    private $config;
+    /**
+     * Errores reportados por el anterior controlador.
+     * @var array
+     */
+    private $errors = array();
     /**
      * Ubicación de los assets dentro de la aplicación.
      * @var array
@@ -29,6 +39,12 @@ class Helper
     public function __construct($components)
     {
         $this->components = $components;
+        $this->config = \Scoop\IoC\Service::getInstance('config');
+        self::$assets = (array) $this->config->get('assets') + self::$assets;
+        if (isset($_SESSION['errors-scoop'])) {
+            $this->errors = $_SESSION['errors-scoop'];
+            unset($_SESSION['errors-scoop']);
+        }
     }
 
     /**
@@ -63,7 +79,7 @@ class Helper
 
     /**
      * Obtiene la ruta configurada hasta el path de javascript.
-     * @param string $image Nombre del archivo javascript a obtener.
+     * @param string $javaScript Nombre del archivo javascript a obtener.
      * @return string ruta al archivo javascript especificada.
      */
     public function js($javaScript)
@@ -79,7 +95,7 @@ class Helper
      */
     public function route()
     {
-        $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
+        $router = $this->config->getRouter();
         if (func_num_args() === 0) {
             return $router->getCurrentRoute();
         }
@@ -87,6 +103,32 @@ class Helper
         return $router->getURL(array_shift($args), $args);
     }
 
+    /**
+     * Obtener la descripción o descripciones del error
+     * @param  string $name Nombre con el que se identifica el error.
+     * @return string|array       Descripción o colección de descripciones para el error.
+     */
+    public function error($name)
+    {
+        return isset($this->errors[$name])? $this->errors[$name]: '';
+    }
+
+    /**
+     * Obtiene un parámetro POST, GET o un string vacio si no se encuentra la variable.
+     * @param  string $name Nombre del parámetro que se busca.
+     * @return string       Contenido del parámetro o un string vacio
+     */
+    public function input($name)
+    {
+        if (isset($_POST[$name])) return $_POST[$name];
+        if (isset($_GET[$name])) return $_GET[$name];
+        return '';
+    }
+
+    /**
+     * Compone la clase dependiendo de los parametros dados.
+     * @return string Estructura HTML del componente generado.
+     */
     public function compose()
     {
         if (func_num_args() === 0) {
@@ -96,10 +138,5 @@ class Helper
         $componentClass = new \ReflectionClass($this->components[array_shift($args)]);
         $component = $componentClass->newInstanceArgs($args);
         return $component->render();
-    }
-
-    public static function setAssets($assets)
-    {
-        self::$assets = (array) $assets + self::$assets;
     }
 }

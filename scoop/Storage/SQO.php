@@ -51,7 +51,15 @@ class SQO
     {
         $query = 'UPDATE '.$this->table.' SET ';
         foreach ($fields as $key => &$value) {
-            $query .= $key.' = :'.$key.', ';
+            $lastChar = substr($key, -1);
+            if ($lastChar === '+' || $lastChar === '-') {
+                unset($fields[$key]);
+                $key = substr($key, 0, -1);
+                $fields[$key] = $value;
+                $query .= $key.' = '.$key.' '.$lastChar.' :'.$key.', ';
+            } else {
+                $query .= $key.' = :'.$key.', ';
+            }
         }
         return new SQO\Filter(substr($query, 0, -2), SQO::UPDATE, $fields, $this->con);
     }
@@ -62,9 +70,8 @@ class SQO
         return new SQO\Filter($query, SQO::DELETE, array(), $this->con);
     }
 
-    public function flush()
+    public function getLastId($nameSeq)
     {
-        $this->con->commit();
-        $this->con->beginTransaction();
+        return $this->con->lastInsertId($nameSeq);
     }
 }

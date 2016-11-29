@@ -17,6 +17,7 @@ abstract class Environment
         $this->router = new \Scoop\IoC\Router($this->config['routes']);
         \Scoop\Validator::setMessages($this->get('messages.error'));
         \Scoop\IoC\Service::register('config', $this);
+        \Scoop\IoC\Service::register('request', 'Scoop\Http\Request');
     }
 
     public function getRouter()

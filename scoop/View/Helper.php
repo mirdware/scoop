@@ -114,22 +114,6 @@ class Helper
     }
 
     /**
-     * Obtiene un parámetro POST, GET o un string vacio si no se encuentra la variable.
-     * @param  string $name Nombre del parámetro que se busca.
-     * @return string       Contenido del parámetro o un string vacio
-     */
-    public function input($name)
-    {
-        if (isset($_POST[$name])) {
-            return $_POST[$name];
-        }
-        if (isset($_GET[$name])) {
-            return $_GET[$name];
-        }
-        return '';
-    }
-
-    /**
      * Compone la clase dependiendo de los parametros dados.
      * @return string Estructura HTML del componente generado.
      */

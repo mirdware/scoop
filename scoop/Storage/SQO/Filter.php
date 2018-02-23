@@ -48,8 +48,11 @@ class Filter
 
     public function order()
     {
+        if (!($numArgs = func_num_args())) {
+            throw new \InvalidArgumentException('Unsoported number of arguments');
+        }
         $args = func_get_args();
-        $type = strtoupper($args[func_num_args()-1]);
+        $type = strtoupper($args[$numArgs - 1]);
         if ($type === 'ASC' || $type === 'DESC') {
             $this->orderType = ' '.$type;
             array_pop($args);
@@ -94,10 +97,9 @@ class Filter
     {
         $rules = $this->rules;
         foreach ($rules as $key => &$rule) {
-            preg_match('/:(\w+)/', $rule, $matches);
-            array_shift($matches);
-            foreach ($matches as &$match) {
-                if (!isset($this->params[$match])) {
+            preg_match_all('/:[\w_]+/', $rule, $matches);
+            foreach ($matches[0] as &$match) {
+                if (!isset($this->params[substr($match, 1)])) {
                     unset($rules[$key]);
                     break;
                 }

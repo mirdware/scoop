@@ -83,25 +83,33 @@ final class Template
      */
     private static function replace(&$line)
     {
+        $quotes = '\'[^\']*\'|"[^"]*"';
+        $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
+        $vars = '\$?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+)\])*';
+        $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
+        $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
+        $safeExp = $quotes.'|'.$conditional.'|'.$fn;
+        $simpleString = '\'([\w\/-]+)\'';
+        $services = \Scoop\IoC\Service::getViewServices();
         $line = preg_replace(array(
-            '/@extends \'([\w\/-]+)\'/',
-            '/@import \'([\w\/-]+)\'/',
-            '/@if ([ \w\.\&\|\$!=<>\/\+\*\\-\(\)\[\]%\']+)/',
-            '/@elseif ([ \w\.\&\|\$!=<>\/\+\*\\-\(\)\[\]%\']+)/',
-            '/@foreach ([ \w\.\&\|\$\->:\(\)\[\]%\']+)/',
-            '/@for ([ \w\.\&\|\$;,\(\)!=<>\+\-\(\)\[\]%\']+)/',
-            '/@while ([ \w\.\&\|\$\(\)!=<>\+\-\(\)\[\]%\']+)/'
+            '/@extends '.$simpleString.'/',
+            '/@import '.$simpleString.'/',
+            '/@if (('.$safeExp.')+)/',
+            '/@elseif (('.$safeExp.')+)/',
+            '/@while (('.$conditional.'|'.$fn.')+)/',
+            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+)/',
+            '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
             self::HERITAGE.'::extend(\'${1}\')',
             self::HERITAGE.'::import(\'${1}\')',
             'if(${1}):',
             'elseif(${1}):',
+            'while(${1}):',
             'foreach(${1}):',
-            'for(${1}):',
-            'while(${1}):'
+            'for(${1}):'
         ), $line, 1, $count);
         if ($count !== 0) {
-             $line = \Scoop\IoC\Service::compileView($line);
+            $line = str_replace($services['std'], $services['php'], $line);
             return true;
         }
         $line = str_replace(array(
@@ -122,10 +130,10 @@ final class Template
         if ($count !== 0) {
             return true;
         }
-        $line = preg_replace('/\{([\w\s\.\$\[\]\(\)\'\"\/\+\*\-\?:=!<>,#]+)\}/',
+        $line = preg_replace('/\{(('.$safeExp.'|:|\?)+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {
-            $line = \Scoop\IoC\Service::compileView($line);
+            $line = str_replace($services['std'], $services['php'], $line);
         }
         return false;
     }

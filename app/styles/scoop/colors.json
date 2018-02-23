@@ -1,39 +1,39 @@
 {
-    "$color": {
-        "blue": {
-            "normal": "#2981E4",
-            "hover": "#337AB7"
-        },
-        "red": {
-            "normal": "#E62727",
-            "hover": "#CF2525"
-        },
-        "green": {
-            "normal": "#91BD09",
-            "hover": "#749A02"
-        },
-        "orange": {
-            "normal": "#FF5C00",
-            "hover": "#D45500"
-        },
-        "yellow": {
-            "normal": "#FFB515",
-            "hover": "#FC9200"
-        },
-        "gray": {
-            "normal": "#333",
-            "hover": "#111"
-        },
-        "border": {
-            "text": "#96A6C5"
-        },
-        "bg": {
-            "success": "#DFF0D8",
-            "info": "#D9EDF7",
-            "warning": "#FCF8E3",
-            "error": "#F2DEDE",
-            "disable": "#E0E0E0"
-        },
-        "check": "#2091CF"
-    }
+  "$color": {
+    "blue": {
+      "normal": "#2981E4",
+      "hover": "#337AB7"
+    },
+    "red": {
+      "normal": "#E62727",
+      "hover": "#CF2525"
+    },
+    "green": {
+      "normal": "#91BD09",
+      "hover": "#749A02"
+    },
+    "orange": {
+      "normal": "#FF5C00",
+      "hover": "#D45500"
+    },
+    "yellow": {
+      "normal": "#FFB515",
+      "hover": "#FC9200"
+    },
+    "gray": {
+      "normal": "#333",
+      "hover": "#111"
+    },
+    "border": {
+      "text": "#96A6C5"
+    },
+    "bg": {
+      "success": "#DFF0D8",
+      "info": "#D9EDF7",
+      "warning": "#FCF8E3",
+      "error": "#F2DEDE",
+      "disable": "#E0E0E0"
+    },
+    "check": "#2091CF"
+  }
 }

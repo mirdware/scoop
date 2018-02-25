@@ -40,17 +40,6 @@ abstract class Controller
     }
 
     /**
-     * Verifica si la pagina fue llamada via ajax o normalmente.
-     * @return boolean Devuelve true si la página fue llamada via ajax y false
-     * en caso contrario.
-     */
-    protected function ajax()
-    {
-        return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
-    }
-
-    /**
      * Emite una excepción 404 desde el controlador.
      * @param string $msg Mensaje enviado a la excepción.
      * @throws Http\NotFoundException La excepción not found.

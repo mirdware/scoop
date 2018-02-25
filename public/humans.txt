@@ -1,6 +1,6 @@
 /* TEAM */
     Creator: Marlon Ramirez
-    Contact: admin [at] getscoop.org
+    Contact: marlonramirez [at] outlook.com
     Site: http://getscoop.org
     Twitter: @marloyramirez
     From: Cali, Colombia
@@ -11,8 +11,8 @@
     MIRDWARE: http://mirdware.com
 
 /* SITE */
-    Last Update: 2015/08/12
+    Last Update: 2018/02/26
     Language: Español
     Standards: HTML5, CSS3, JavaScript
-    Components: jetro, font-awesome, browserify, stylus, gulp
-    Software: Sublime Text 2, Gimp, NodeJS
+    Components: scalar, font-awesome, browserify, stylus, gulp
+    Software: Sublime Text 3, Gimp, NodeJS

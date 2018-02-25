@@ -9,13 +9,14 @@ class Request
 
     public function __construct()
     {
+        $dataJSON = self::getJSON();
         self::$get = self::purge($_GET);
-        self::$post = self::purge($_POST);
-        self::$put = array();
-        $datosPUT = fopen("php://input", "r");
-        while ($datos = fread($datosPUT, 1024)) {
-            $datos = explode('=', $datos);
-            self::$put[$datos[0]] = self::purge($datos[1]);
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'POST':
+                self::$post = self::purge(!$dataJSON? $_POST: $dataJSON);
+                break;
+            case 'PUT':
+                self::$put = self::purge(!$dataJSON? self::getPUT(): $dataJSON);
         }
     }
 
@@ -32,6 +33,17 @@ class Request
     public function put($id = null)
     {
         return self::getByIndex($id, self::$put);
+    }
+
+    /**
+     * Verifica si la pagina fue llamada via ajax o normalmente.
+     * @return boolean Devuelve true si la página fue llamada via ajax y false
+     * en caso contrario.
+     */
+    public function ajax()
+    {
+        return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
     }
 
     private static function getByIndex($name, $res)
@@ -60,7 +72,25 @@ class Request
         $value = self::filterXSS(trim($value));
         $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         return $value;
-}
+    }
+
+    private static function getPUT()
+    {
+        $data = explode('&', file_get_contents("php://input"));
+        $put = array();
+        foreach ($data as &$value) {
+            $value = explode('=', $value);
+            $put[$value[0]] = urldecode($value[1]);
+        }
+        return $put;
+    }
+
+    private static function getJSON() {
+        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+            return json_decode(file_get_contents("php://input"), true);
+        }
+        return null;
+    }
 
     /**
      * Método para filtrar XSS tomado de https://gist.github.com/mbijon/1098477

@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "scoop project",
   "repository": {
     "type": "git",
@@ -12,22 +12,23 @@
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",
   "devDependencies": {
-    "babel-preset-env": "^1.6.0",
-    "babelify": "^7.3.0",
-    "browserify": "^14.4.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
+    "browserify": "^16.1.0",
     "gulp": "^3.9.1",
     "gulp-cssnano": "^2.1.2",
     "gulp-livereload": "^3.8.1",
     "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.6.1",
-    "gulp-stylus": "^2.6.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-stylus": "^2.7.0",
     "gulp-uglify": "^3.0.0",
     "nib": "^1.1.2",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.1.5"
+    "scalar": "^0.1.6"
   }
 }

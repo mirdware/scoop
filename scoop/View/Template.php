@@ -109,7 +109,7 @@ final class Template
             'for(${1}):'
         ), $line, 1, $count);
         if ($count !== 0) {
-            $line = str_replace($services['std'], $services['php'], $line);
+            $line = str_replace($services['sdt'], $services['php'], $line);
             return true;
         }
         $line = str_replace(array(
@@ -133,7 +133,7 @@ final class Template
         $line = preg_replace('/\{(('.$safeExp.'|:|\?)+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {
-            $line = str_replace($services['std'], $services['php'], $line);
+            $line = str_replace($services['sdt'], $services['php'], $line);
         }
         return false;
     }

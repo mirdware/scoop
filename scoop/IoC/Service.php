@@ -48,6 +48,6 @@ abstract class Service
             $templateServices[] = $serviceName.'->';
             $viewServices[] = '\Scoop\IoC\Service::getInstance(\''.$serviceName.'\')->';
         }
-        return array('std' => $templateServices, 'php' => $viewServices);
+        return array('sdt' => $templateServices, 'php' => $viewServices);
     }
 }

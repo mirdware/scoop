@@ -1,7 +1,9 @@
 <?php
 namespace App;
 
-class Production extends \Scoop\Bootstrap\Environment
+use \Scoop\Bootstrap\Environment;
+
+class Production extends Environment
 {
     public function __construct()
     {

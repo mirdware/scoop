@@ -9,15 +9,8 @@ class Request
 
     public function __construct()
     {
-        $dataJSON = self::getJSON();
         self::$get = self::purge($_GET);
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'POST':
-                self::$post = self::purge(!$dataJSON? $_POST: $dataJSON);
-                break;
-            case 'PUT':
-                self::$put = self::purge(!$dataJSON? self::getPUT(): $dataJSON);
-        }
+        self::setBodyData();
     }
 
     public function get($id = null)
@@ -48,14 +41,10 @@ class Request
 
     private static function getByIndex($name, $res)
     {
-        if (!$name) {
-            return $res;
-        }
+        if (!$name) return $res;
         $name = explode('.', $name);
         foreach ($name as $key) {
-            if (!isset($res[$key])) {
-                return '';
-            }
+            if (!isset($res[$key])) return '';
             $res = $res[$key];
         }
         return $res;
@@ -74,22 +63,26 @@ class Request
         return $value;
     }
 
-    private static function getPUT()
+    private static function setBodyData()
     {
-        $data = explode('&', file_get_contents("php://input"));
-        $put = array();
+        $data = file_get_contents("php://input");
+        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+            $data = json_decode($data, true);
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                return self::$post = self::purge($data);
+            }
+            return self::$put = self::purge($data);
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            return self::$post = self::purge($_POST);
+        }
+        self::$put = array();
+        if (!$data) return;
+        $data = explode('&', $data);
         foreach ($data as &$value) {
             $value = explode('=', $value);
-            $put[$value[0]] = urldecode($value[1]);
+            self::$put[$value[0]] = urldecode($value[1]);
         }
-        return $put;
-    }
-
-    private static function getJSON() {
-        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
-            return json_decode(file_get_contents("php://input"), true);
-        }
-        return null;
     }
 
     /**

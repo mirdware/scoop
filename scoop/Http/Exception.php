@@ -7,20 +7,22 @@ abstract class Exception extends \Exception
     private $statusCode;
     private $headers;
     private $title;
+    private $ajax;
 
     public function __construct(
         $statusCode,
         $message = null,
         \Exception $previous = null,
         array $headers = array(),
-        $code = 0)
-    {
+        $code = 0
+    ) {
         $config = \Scoop\IoC\Service::getInstance('config');
         parent::__construct($message, $code, $previous);
         $this->statusCode = $statusCode;
         $this->headers = $headers;
         $this->title = $config->get('exception.'.$statusCode);
         $this->path = $config->get('exception.path');
+        $this->ajax = \Scoop\IoC\Service::getInstance('request')->ajax();
         if (!$this->title) {
             $this->title = 'Error '.$statusCode.'!!!';
         }
@@ -41,18 +43,22 @@ abstract class Exception extends \Exception
 
     public function handler()
     {
+        $error = array(
+            'title' => $this->title,
+            'code' => $this->statusCode,
+            'message' => $this->getMessage()
+        );
         foreach ($this->headers as &$header) {
             header($header);
         }
+        if ($this->ajax) {
+            exit (json_encode($error));
+        }
         try {
             $view = new \Scoop\View($this->path.$this->statusCode);
-            $output = $view->set(array(
-                'ex' => $this,
-                'title' => $this->title
-            ))->render();
+            exit ($view->set($error)->render());
         } catch (\Exception $ex) {
-            $output = $this->getMessage();
+            exit ($this->getMessage());
         }
-        exit($output);
     }
 }

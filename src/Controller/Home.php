@@ -1,18 +1,22 @@
 <?php
 namespace App\Controller;
 
-class Home extends \Scoop\Controller
+use \Scoop\Controller;
+use \Scoop\View;
+use \App\Repository\Quote;
+
+class Home extends Controller
 {
     private $quotes;
 
-    public function __construct(\App\Repository\Quote $quote)
+    public function __construct(Quote $quote)
     {
         $this->quotes = $quote->publish();
     }
 
     public function get()
     {
-        $view = new \Scoop\View('home');
+        $view = new View('home');
         $index = rand(0, count($this->quotes)-1);
         return $view->set('title', 'MirdWare')
                     ->set($this->quotes[$index]);

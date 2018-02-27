@@ -64,24 +64,14 @@ abstract class Controller
      * @param string $msg Mensaje en formato json enviado a la excepción.
      * @throws Http\BadRequestException La excepción bad request.
     */
-    protected function reportErrors($errors, $api = false)
+    protected function fail($errors, $jsonResponse = false)
     {
-        if ($api) {
-            $api = json_encode($errors);
-            throw new \Scoop\Http\BadRequestException($api? $api: $errors);
+        if ($jsonResponse) {
+            $jsonResponse = json_encode($errors);
+            throw new \Scoop\Http\BadRequestException($jsonResponse? $jsonResponse: $errors);
         }
         $_SESSION['errors-scoop'] = $errors;
-        self::redirect($_SERVER['HTTP_REFERER'], 308);
-    }
-
-    /**
-     * Obtiene la instancia del controlador ligado a la ruta.
-     * @param string $className Nombre del controlador a obtener.
-     * @return Controller Controlador a obtener.
-     */
-    protected function inject($className)
-    {
-        return \Scoop\IoC\Injector::getInstance($className);
+        self::redirect($_SERVER['HTTP_REFERER'], 307);
     }
 
     /**
@@ -89,7 +79,7 @@ abstract class Controller
      * @param string $serviceName Nombre del servicio a obtener.
      * @return object Servicio a obtener.
      */
-    protected function getService($serviceName)
+    protected function inject($serviceName)
     {
         return \Scoop\IoC\Service::getInstance($serviceName);
     }

@@ -147,11 +147,11 @@ final class Template
     {
         return preg_replace(array(
             '/<!--.*?-->/s',
-            '/>\s*\n\s*</',
+            '/>\s*</',
             '/;\s*(\"|\')/',
             '/<\?php(.*)\s*:\s*(.*)\?>/',
             '/<\?php(.*)\s*;\s*\?>/',
-            '/\s+/'
+            '/[\t\n\r]+/'
         ), array(
             '',
             '><',

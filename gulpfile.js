@@ -15,47 +15,49 @@ const filesToMove = './node_modules/fa-stylus/fonts/**/*.*';
 const pathScripts = 'app/scripts/';
 const pathStyles = 'app/styles/';
 
-gulp.task('css', function () {
+gulp.task('css', () => {
   return gulp.src(pathStyles + 'app.styl')
-    .pipe(sourcemaps.init())
-    .pipe(stylus({
-      'use': [nib(), fontAwesome()],
-      'import': ['nib'],
-      'include css': true
-    }))
-    .pipe(mincss())
-    .pipe(rename(app.name + '.min.css'))
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('public/css/'))
-    .pipe(livereload());
+  .pipe(sourcemaps.init())
+  .pipe(stylus({
+    'use': [nib(), fontAwesome()],
+    'import': ['nib'],
+    'include css': true
+  }))
+  .pipe(mincss())
+  .pipe(rename(app.name + '.min.css'))
+  .pipe(sourcemaps.write('.'))
+  .pipe(gulp.dest('public/css/'))
+  .pipe(livereload());
 });
 
-gulp.task('js', function () {
-  browserify({
-      'entries': pathScripts + 'app.js',
-      'debug': true
-    })
-    .transform('babelify', {
-      'presets': ['env']
-    })
-    .bundle()
-    .pipe(source(app.name + '.min.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init())
-    .pipe(uglify())
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('public/js/'))
-    .pipe(livereload());
+gulp.task('js', () => {
+  return browserify({
+    'entries': pathScripts + 'app.js',
+    'debug': true
+  })
+  .transform('babelify', {
+    'presets': ['@babel/preset-env']
+  })
+  .bundle()
+  .pipe(source(app.name + '.min.js'))
+  .pipe(buffer())
+  .pipe(sourcemaps.init())
+  .pipe(uglify())
+  .pipe(sourcemaps.write('.'))
+  .pipe(gulp.dest('public/js/'))
+  .pipe(livereload());
 });
 
-gulp.task('move', function () {
+gulp.task('move', () => {
   return gulp.src(filesToMove)
   .pipe(gulp.dest('public/fonts'));
 });
 
-gulp.task('default', ['css', 'js', 'move'], function () {
+gulp.task('default', gulp.series('css', 'js', 'move'));
+
+gulp.task('dev', gulp.series('default', () => {
   livereload.listen();
-  gulp.watch(pathStyles + '**/*', ['css']);
-  gulp.watch(pathScripts + '**/*', ['js']);
+  gulp.watch(pathStyles + '**/*', gulp.parallel('css'));
+  gulp.watch(pathScripts + '**/*', gulp.parallel('js'));
   gulp.watch('./**/*.php').on('change', livereload.changed);
-});
+}));

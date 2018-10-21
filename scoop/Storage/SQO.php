@@ -49,10 +49,11 @@ class SQO
 
     public function update($fields)
     {
+        $operators = array('+', '-', '/', '*', '%');
         $query = 'UPDATE '.$this->table.' SET ';
         foreach ($fields as $key => &$value) {
             $lastChar = substr($key, -1);
-            if ($lastChar === '+' || $lastChar === '-') {
+            if (in_array($lastChar, $operators)) {
                 unset($fields[$key]);
                 $key = substr($key, 0, -1);
                 $fields[$key] = $value;

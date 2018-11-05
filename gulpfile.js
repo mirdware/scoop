@@ -53,11 +53,12 @@ gulp.task('move', () => {
   .pipe(gulp.dest('public/fonts'));
 });
 
-gulp.task('default', gulp.series('css', 'js', 'move'));
+gulp.task('default', gulp.series(gulp.parallel('css', 'js'), 'move'));
 
-gulp.task('dev', gulp.series('default', () => {
+gulp.task('dev', gulp.parallel('default', () => {
   livereload.listen();
   gulp.watch(pathStyles + '**/*', gulp.parallel('css'));
   gulp.watch(pathScripts + '**/*', gulp.parallel('js'));
-  gulp.watch('./**/*.php').on('change', livereload.changed);
+  gulp.watch('src/**/*.php').on('change', livereload.changed);
+  gulp.watch('app/**/*.php').on('change', livereload.changed);
 }));

@@ -1,7 +1,7 @@
 import { Component } from 'scalar';
 
 function close(e) {
-  e.target.parentNode.className = 'not';
+  this.type = 'not';
 }
 
 export class Message extends Component {
@@ -19,9 +19,11 @@ export class Message extends Component {
 
   showError(msg) {
     this.msg = msg;
+    this.type = 'error';
   }
 
   showInfo(msg) {
     this.msg = msg;
+    this.type = 'info';
   }
 }

@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.1.6"
+    "scalar": "^0.1.8"
   }
 }

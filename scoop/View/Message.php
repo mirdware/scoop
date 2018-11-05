@@ -37,7 +37,7 @@ class Message implements Component
     public function render()
     {
         extract(self::$props);
-        return '<div id="msg" class="'.$type.'"><i class="close"></i><span data-bind="msg">'.$msg.'</span></div>';
+        return '<div id="msg" data-attr="className:type" class="'.$type.'"><i class="close"></i><span data-bind="msg">'.$msg.'</span></div>';
     }
 
     /**

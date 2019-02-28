@@ -1,7 +1,9 @@
 <?php
+use App\Controller\Home;
+
 return array(
     'home' => array(
         'url' => '/',
-        'controller' => 'App\Controller\Home:get'
+        'controller' => Home::class
     )
 );

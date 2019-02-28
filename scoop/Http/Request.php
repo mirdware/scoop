@@ -3,29 +3,22 @@ namespace Scoop\Http;
 
 class Request
 {
-    private static $put;
-    private static $post;
-    private static $get;
+    private static $body;
+    private static $query;
 
-    public function __construct()
-    {
-        self::$get = self::purge($_GET);
-        self::setBodyData();
+    public function __construct() {
+        self::$body = self::getBodyData();
+        self::$query = self::purge($_GET);
     }
 
-    public function get($id = null)
+    public function getQuery($id = null) 
     {
-        return self::getByIndex($id, self::$get);
+        return self::getByIndex($id, self::$query);
     }
 
-    public function post($id = null)
+    public function getBody($id = null) 
     {
-        return self::getByIndex($id, self::$post);
-    }
-
-    public function put($id = null)
-    {
-        return self::getByIndex($id, self::$put);
+        return self::getByIndex($id, self::$body);
     }
 
     /**
@@ -33,7 +26,7 @@ class Request
      * @return boolean Devuelve true si la página fue llamada via ajax y false
      * en caso contrario.
      */
-    public function ajax()
+    public function isAjax()
     {
         return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
             $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
@@ -63,26 +56,27 @@ class Request
         return $value;
     }
 
-    private static function setBodyData()
+    private static function getBodyData()
     {
         $data = file_get_contents("php://input");
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                return self::$post = self::purge($data);
+                return self::purge($data);
             }
             return self::$put = self::purge($data);
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            return self::$post = self::purge($_POST);
+            return self::purge($_POST);
         }
-        self::$put = array();
-        if (!$data) return;
+        $put = array();
+        if (!$data) return $put;
         $data = explode('&', $data);
         foreach ($data as &$value) {
             $value = explode('=', $value);
-            self::$put[$value[0]] = urldecode($value[1]);
+            $put[$value[0]] = urldecode($value[1]);
         }
+        return $put;
     }
 
     /**

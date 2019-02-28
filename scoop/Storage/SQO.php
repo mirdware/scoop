@@ -17,12 +17,10 @@ class SQO
         $this->con = $connexion === null? DBC::get(): $connexion;
     }
 
-    public function create($fields)
+    public function create($fields = null)
     {
-        $keys = array_keys($fields);
-        sort($keys);
-        $query = 'INSERT INTO '.$this->table.' ('.implode(',', $keys).') VALUES ';
-        return new SQO\Factory($query, $keys, $fields, $this->con);
+        $query = 'INSERT INTO '.$this->table;
+        return new SQO\Factory($query, $fields, $this->con);
     }
 
     public function read()

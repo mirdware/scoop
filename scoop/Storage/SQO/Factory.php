@@ -6,21 +6,25 @@ final class Factory
     private $query = '';
     private $con;
     private $values = array();
-    private $keys = array();
+    private $keys = null;
 
-    public function __construct($query, $keys, $values, $connexion)
+    public function __construct($query, $values, $connexion)
     {
         $this->query = $query;
         $this->con = $connexion;
-        $this->keys = $keys;
-        $this->create($values);
+        if ($values) {
+            $this->create($values);
+        }
     }
 
     public function create($fields)
     {
         ksort($fields);
         $keys = array_keys($fields);
-        if (array_diff($this->keys, $keys)) {
+        if (!$this->keys) {
+            $this->keys = $keys;
+            $this->query .= ' ('.implode(',', $keys).') VALUES ';
+        } else if (array_diff($this->keys, $keys)) {
             throw new \UnexpectedValueException('Keys ['.implode(',', $keys).'] unsupported');
         }
         $this->values = array_merge(array_values($fields), $this->values);
@@ -29,8 +33,11 @@ final class Factory
 
     public function run()
     {
-        $statement = $this->con->prepare($this);
-        return $statement->execute($this->values);
+        if ($this->keys !== null) {
+            $statement = $this->con->prepare($this);
+            return $statement->execute($this->values);
+        }
+        throw new \DomainException('the SQO expression for create does not have rows');
     }
 
     public function __toString()

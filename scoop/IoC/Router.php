@@ -18,31 +18,28 @@ class Router
     {
         $route = $this->getRoute($url);
         if ($route) {
-            $method = explode(':', $route['controller']);
-            $controller = array_shift($method);
-            if (!is_subclass_of($controller, 'Scoop\Controller')) {
+            if (!is_subclass_of($route['controller'], 'Scoop\Controller')) {
                 throw new \UnexpectedValueException(
-                    $controller.' class isn\'t an instance of \Scoop\Controller'
+                    $route['controller'].' class isn\'t an instance of \Scoop\Controller'
                 );
             }
-            $controller =  \Scoop\IoC\Injector::getInstance($controller);
+            $controller =  \Scoop\IoC\Injector::getInstance($route['controller']);
             if ($controller) {
                 $this->intercept($url);
-                $params = &$route['params'];
+                $method = isset($route['method']) ?
+                    $route['method'] :
+                    strtolower($_SERVER['REQUEST_METHOD']);
                 $controllerReflection = new \ReflectionClass($controller);
-                $method = !$method && $controllerReflection->implementsInterface('Scoop\Http\Resource')?
-                    strtolower($_SERVER['REQUEST_METHOD']):
-                    array_shift($method);
                 if (!$controllerReflection->hasMethod($method)) {
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
                 $method = $controllerReflection->getMethod($method);
-                $numParams = count($params);
+                $numParams = count($route['params']);
                 if (
                     $numParams >= $method->getNumberOfRequiredParameters() &&
                     $numParams <= $method->getNumberOfParameters()
                 ) {
-                    return $method->invokeArgs($controller, $params);
+                    return $method->invokeArgs($controller, $route['params']);
                 }
             }
         }

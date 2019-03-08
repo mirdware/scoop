@@ -39,7 +39,7 @@ class Helper
     public function __construct($components)
     {
         $this->components = $components;
-        $this->config = \Scoop\IoC\Service::getInstance('config');
+        $this->config = \Scoop\Context::getService('config');
         self::$assets = (array) $this->config->get('assets') + self::$assets;
         if (isset($_SESSION['errors-scoop'])) {
             $this->errors = $_SESSION['errors-scoop'];
@@ -127,5 +127,11 @@ class Helper
         $component = new \ReflectionClass($this->components[$component]);
         $component = $component->newInstanceArgs($args);
         return $component->render();
+    }
+
+    public function __get($name) {
+        if ($name === 'request') {
+            return \Scoop\Context::getRequest();
+        }
     }
 }

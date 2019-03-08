@@ -16,13 +16,13 @@ abstract class Exception extends \Exception
         array $headers = array(),
         $code = 0
     ) {
-        $config = \Scoop\IoC\Service::getInstance('config');
         parent::__construct($message, $code, $previous);
+        $config = \Scoop\Context::getService('config');
         $this->statusCode = $statusCode;
         $this->headers = $headers;
         $this->title = $config->get('exception.'.$statusCode);
         $this->path = $config->get('exception.path');
-        $this->ajax = \Scoop\IoC\Service::getInstance('request')->ajax();
+        $this->ajax = \Scoop\Context::getRequest()->isAjax();
         if (!$this->title) {
             $this->title = 'Error '.$statusCode.'!!!';
         }

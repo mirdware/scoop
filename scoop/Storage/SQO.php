@@ -14,7 +14,7 @@ class SQO
     {
         $this->table = $table;
         $this->aliasTable = $table.' '.$alias;
-        $this->con = $connexion === null? DBC::get(): $connexion;
+        $this->con = $connexion === null ? \Scoop\Context::connect() : $connexion;
     }
 
     public function create($fields = null)

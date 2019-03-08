@@ -6,7 +6,8 @@ class Request
     private static $body;
     private static $query;
 
-    public function __construct() {
+    public function __construct()
+    {
         self::$body = self::getBodyData();
         self::$query = self::purge($_GET);
     }

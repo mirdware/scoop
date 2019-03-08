@@ -85,12 +85,11 @@ final class Template
     {
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
-        $vars = '\$?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+)\])*';
+        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+)\])*';
         $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
         $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes.'|'.$conditional.'|'.$fn;
         $simpleString = '\'([\w\/-]+)\'';
-        $services = \Scoop\IoC\Service::getViewServices();
         $line = preg_replace(array(
             '/@extends '.$simpleString.'/',
             '/@import '.$simpleString.'/',
@@ -109,7 +108,7 @@ final class Template
             'for(${1}):'
         ), $line, 1, $count);
         if ($count !== 0) {
-            $line = str_replace($services['sdt'], $services['php'], $line);
+            $line = self::convertViewServices($line);
             return true;
         }
         $line = str_replace(array(
@@ -133,9 +132,18 @@ final class Template
         $line = preg_replace('/\{(('.$safeExp.'|:|\?)+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {
-            $line = str_replace($services['sdt'], $services['php'], $line);
+            $line = self::convertViewServices($line);
         }
         return false;
+    }
+
+    private static function convertViewServices($line)
+    {
+        preg_match_all('/#(\w*)->/is', $line, $servicesFound);
+        for ($i = 0; isset($servicesFound[0][$i]); $i++) {
+            $line = str_replace($servicesFound[0][$i], '\Scoop\Context::getService(\''.$servicesFound[1][$i].'\')->', $line);
+        }
+        return $line;
     }
 
     /**
@@ -146,19 +154,21 @@ final class Template
     private static function clearHTML($html)
     {
         return preg_replace(array(
+            '/\s+/',
+            '/[\t\n\r]+/',
             '/<!--.*?-->/s',
             '/>\s*</',
             '/;\s*(\"|\')/',
             '/<\?php(.*)\s*:\s*(.*)\?>/',
-            '/<\?php(.*)\s*;\s*\?>/',
-            '/[\t\n\r]+/'
+            '/<\?php(.*)\s*;\s*(.*)\?>/'
         ), array(
+            ' ',
+            ' ',
             '',
             '><',
             '${1}',
             '<?php${1}:${2}?>',
-            '<?php${1};${2}?>',
-            ' '
+            '<?php${1};${2}?>'
         ), $html);
     }
 

@@ -13,7 +13,8 @@
  */
 
 try {
-    require 'scoop/Bootstrap/Loader.php';
+    require 'scoop/Context.php';
+    \Scoop\Context::load();
     $environment = new \App\Production();
     $app = new \Scoop\Bootstrap\Application($environment);
     $app->run();

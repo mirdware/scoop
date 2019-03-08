@@ -1,53 +1,32 @@
 <?php
 namespace Scoop\IoC;
 
-abstract class Service
+class Service
 {
-    private static $services = array();
+    private $services = array();
 
-    public static function register($key, $callback, $params = array())
+    public function register($key, $callback, $params)
     {
         if (!is_callable($callback)) {
             if (!is_string($callback)) {
-                self::$services[$key]['instance'] = $callback;
+                $this->services[$key]['instance'] = $callback;
                 return;
             }
             $params = array($callback, $params);
-            $callback = array('\Scoop\IoC\Injector', 'create');
+            $callback = array(\Scoop\Context::getInjector(), 'create');
         }
-        self::$services[$key] = array(
+        $this->services[$key] = array(
             'callback' => $callback,
             'params' => $params
         );
     }
 
-    public static function getInstance($key)
+    public function get($key)
     {
-        $serv = &self::$services[$key];
+        $serv = &$this->services[$key];
         if (!isset($serv['instance'])) {
             $serv['instance'] = call_user_func_array($serv['callback'], $serv['params']);
         }
         return $serv['instance'];
-    }
-
-    public static function create($key)
-    {
-        $serv = &self::$services[$key];
-        if (!isset($serv['callback'])) {
-            throw new \UnderflowException('Service use unsupported');
-        }
-        return call_user_func_array($serv['callback'], $serv['params']);
-    }
-
-    public static function getViewServices()
-    {
-        $serviceNames = array_keys(self::$services);
-        $templateServices = array();
-        $viewServices = array();
-        foreach ($serviceNames as &$serviceName) {
-            $templateServices[] = $serviceName.'->';
-            $viewServices[] = '\Scoop\IoC\Service::getInstance(\''.$serviceName.'\')->';
-        }
-        return array('sdt' => $templateServices, 'php' => $viewServices);
     }
 }

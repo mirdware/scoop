@@ -32,7 +32,7 @@ abstract class Controller
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $router = \Scoop\IoC\Service::getInstance('config')->getRouter();
+            $router = \Scoop\Context::getService('config')->getRouter();
             $url = $router->getURL(array_shift($url), $url);
         }
         header('Location:'.$url);
@@ -81,6 +81,12 @@ abstract class Controller
      */
     protected function inject($serviceName)
     {
-        return \Scoop\IoC\Service::getInstance($serviceName);
+        return \Scoop\Context::getService($serviceName);
+    }
+
+    public function __get($name) {
+        if ($name === 'request') {
+            return \Scoop\Context::getRequest();
+        }
     }
 }

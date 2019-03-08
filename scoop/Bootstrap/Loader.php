@@ -1,7 +1,6 @@
 <?php
 class Loader
 {
-    private static $instance;
     private $prefixLengthsPsr4 = array();
     private $prefixDirsPsr4 = array();
     private $fallbackDirsPsr4 = array();
@@ -199,24 +198,6 @@ class Loader
         return $file;
     }
 
-    public static function getInstance()
-    {
-        if (!isset(self::$instance)) {
-            if (is_readable('vendor/autoload.php')) {
-                self::$instance = require 'vendor/autoload.php';
-            } else {
-                self::$instance = new Loader();
-                $conf = json_decode(file_get_contents('composer.json'), true);
-                $psr4 = $conf['autoload']['psr-4'];
-                foreach ($psr4 as $key => &$value) {
-                    self::$instance->setPsr4($key, $value);
-                }
-                self::$instance->register(true);
-            }
-        }
-        return self::$instance;
-    }
-
     private function findFileWithExtension($class, $ext)
     {
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
@@ -264,4 +245,3 @@ class Loader
         }
     }
 }
-return Loader::getInstance();

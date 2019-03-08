@@ -79,7 +79,7 @@ final class View
     public function render()
     {
         $helperView = new View\Helper(self::$components);
-        IoC\Service::register('view', $helperView);
+        \Scoop\Context::registerService('view', $helperView);
         View\Heritage::init($this->viewData);
         View\Template::parse($this->viewPath, $this->viewData);
         $view = ob_get_contents().\Scoop\View\Heritage::getFooter();

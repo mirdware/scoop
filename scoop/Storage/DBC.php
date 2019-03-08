@@ -6,7 +6,6 @@ class DBC extends \PDO
     private $db;
     private $engine;
     private $host;
-    private static $instances = array();
     private static $events = array(
         'pre' => array(),
         'pos' => array()
@@ -57,29 +56,6 @@ class DBC extends \PDO
     public static function preConnect($fn)
     {
         self::$events['pre'][] = $fn;
-    }
-
-    public static function get($conf = null)
-    {
-        $bundle = 'db.default';
-        if (is_string($conf)) {
-            $bundle = $conf;
-        }
-        $config = \Scoop\IoC\Service::getInstance('config')->get($bundle);
-        if (is_array($conf)) {
-            $config += $conf;
-        }
-        $key = implode('', $config);
-        if (!isset(self::$instances[$key])) {
-            self::$instances[$key] = new DBC(
-                $config['database'],
-                $config['user'],
-                $config['password'],
-                $config['host'],
-                $config['driver']
-            );
-        }
-        return self::$instances[$key];
     }
 
     private static function executeEvents($type, $args = array())

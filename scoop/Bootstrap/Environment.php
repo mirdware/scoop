@@ -3,9 +3,9 @@ namespace Scoop\Bootstrap;
 
 abstract class Environment
 {
+    private static $sessionInit = false;
     private $router;
     private $config;
-    private static $sessionInit = false;
 
     public function __construct($configPath)
     {
@@ -16,8 +16,7 @@ abstract class Environment
         $this->config = require $configPath.'.php';
         $this->router = new \Scoop\IoC\Router($this->config['routes']);
         \Scoop\Validator::setMessages($this->get('messages.error'));
-        \Scoop\IoC\Service::register('config', $this);
-        \Scoop\IoC\Service::register('request', 'Scoop\Http\Request');
+        \Scoop\Context::registerService('config', $this);
     }
 
     public function getRouter()
@@ -41,8 +40,9 @@ abstract class Environment
     protected function bind($interfacesPath)
     {
         $interfaces = require $interfacesPath.'.php';
+        $injector = \Scoop\Context::getInjector();
         foreach ($interfaces as $interface => &$class) {
-            \Scoop\IoC\Injector::bind($interface, $class);
+            $injector->bind($interface, $class);
         }
         return $this;
     }
@@ -51,7 +51,7 @@ abstract class Environment
     {
         $services = require $servicesPath.'.php';
         foreach ($services as $name => &$service) {
-            \Scoop\IoC\Service::register($name, $service);
+            \Scoop\Context::registerService($name, $service);
         }
         return $this;
     }

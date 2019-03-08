@@ -23,7 +23,7 @@ class Router
                     $route['controller'].' class isn\'t an instance of \Scoop\Controller'
                 );
             }
-            $controller =  \Scoop\IoC\Injector::getInstance($route['controller']);
+            $controller =  \Scoop\Context::getInjector()->getInstance($route['controller']);
             if ($controller) {
                 $this->intercept($url);
                 $method = isset($route['method']) ?
@@ -50,12 +50,13 @@ class Router
     {
         $matches = $this->filterProxy($url);
         if ($matches) {
+            $injector = \Scoop\Context::getInjector();
             foreach ($matches as &$route) {
                 if (isset($route['proxy'])) {
                     $proxy = explode(':', $route['proxy']);
                     $method = array_pop($proxy);
                     $proxy = array_shift($proxy);
-                    $proxy =  \Scoop\IoC\Injector::getInstance($proxy);
+                    $proxy =  $injector->getInstance($proxy);
                     $proxy->$method();
                 }
             }

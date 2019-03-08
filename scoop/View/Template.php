@@ -159,16 +159,20 @@ final class Template
             '/<!--.*?-->/s',
             '/>\s*</',
             '/;\s*(\"|\')/',
-            '/<\?php(.*)\s*:\s*(.*)\?>/',
-            '/<\?php(.*)\s*;\s*(.*)\?>/'
+            '/<\/\s+/',
+            '/\s+\/>/',
+            '/<\s+/',
+            '/\s+>/'
         ), array(
             ' ',
             ' ',
             '',
             '><',
             '${1}',
-            '<?php${1}:${2}?>',
-            '<?php${1};${2}?>'
+            '</',
+            '/>',
+            '<',
+            '>'
         ), $html);
     }
 
@@ -179,10 +183,6 @@ final class Template
      */
     private static function create($viewName, $content)
     {
-        $content = preg_replace(
-            array('/<\/\s+/', '/\s+\/>/', '/<\s+/', '/\s+>/'),
-            array('</', '/>', '<', '>'),
-            $content);
         preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
         $match = $match[0];
         $content = self::clearHTML($content);

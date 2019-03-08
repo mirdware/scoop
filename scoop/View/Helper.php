@@ -95,7 +95,7 @@ class Helper
      */
     public function route()
     {
-        $router = $this->config->getRouter();
+        $router = $this->config->router;
         if (func_num_args() === 0) {
             return $router->getCurrentRoute();
         }
@@ -129,7 +129,8 @@ class Helper
         return $component->render();
     }
 
-    public function __get($name) {
+    public function __get($name)
+    {
         if ($name === 'request') {
             return \Scoop\Context::getRequest();
         }

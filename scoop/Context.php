@@ -27,23 +27,27 @@ class Context
         return self::$loader;
     }
 
-    public static function connect($conf = null) {
-        $bundle = 'db.default';
-        if (is_string($conf)) {
-            $bundle = $conf;
+    public static function connect($bundle = null) {
+        if (is_string($bundle)) {
+            $config = self::getService('config')->get('db'.$bundle);
+        } else {
+            $config = self::getService('config')->get('db.default');
+            if (is_array($bundle)) $config += $bundle;
         }
-        $config = self::$service->get('config')->get($bundle);
-        if (is_array($conf)) {
-            $config += $conf;
+        $requireds = array('database', 'user');
+        foreach ($requireds as &$required) {
+            if (!isset($config[$required])) {
+                throw new \Exception('Property '.$required.' not found in database configuration');
+            }
         }
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
             self::$connections[$key] = new Storage\DBC(
                 $config['database'],
                 $config['user'],
-                $config['password'],
-                $config['host'],
-                $config['driver']
+                isset($config['password']) ? $config['password'] : '',
+                isset($config['host']) ? $config['host'] : '127.0.0.1',
+                isset($config['driver']) ? $config['driver'] : 'pgsql'
             );
         }
         return self::$connections[$key];

@@ -32,7 +32,7 @@ abstract class Controller
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $router = \Scoop\Context::getService('config')->getRouter();
+            $router = \Scoop\Context::getService('config')->router;
             $url = $router->getURL(array_shift($url), $url);
         }
         header('Location:'.$url);
@@ -84,7 +84,8 @@ abstract class Controller
         return \Scoop\Context::getService($serviceName);
     }
 
-    public function __get($name) {
+    public function __get($name)
+    {
         if ($name === 'request') {
             return \Scoop\Context::getRequest();
         }

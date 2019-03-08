@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Bootstrap;
 
-abstract class Environment
+class Environment
 {
     private static $sessionInit = false;
     private $router;
@@ -13,15 +13,9 @@ abstract class Environment
             self::$sessionInit = session_start();
         }
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
-        $this->config = require $configPath.'.php';
-        $this->router = new \Scoop\IoC\Router($this->config['routes']);
-        \Scoop\Validator::setMessages($this->get('messages.error'));
-        \Scoop\Context::registerService('config', $this);
-    }
-
-    public function getRouter()
-    {
-        return $this->router;
+        $config = require $configPath.'.php';
+        $this->config = $config;
+        $this->configure();
     }
 
     public function get($name)
@@ -37,9 +31,8 @@ abstract class Environment
         return $res;
     }
 
-    protected function bind($interfacesPath)
+    protected function bind($interfaces)
     {
-        $interfaces = require $interfacesPath.'.php';
         $injector = \Scoop\Context::getInjector();
         foreach ($interfaces as $interface => &$class) {
             $injector->bind($interface, $class);
@@ -47,21 +40,44 @@ abstract class Environment
         return $this;
     }
 
-    protected function registerServices($servicesPath)
+    protected function registerServices($services)
     {
-        $services = require $servicesPath.'.php';
         foreach ($services as $name => &$service) {
             \Scoop\Context::registerService($name, $service);
         }
         return $this;
     }
 
-    protected function registerComponents($componentPath)
+    protected function registerComponents($components)
     {
-        $components = require $componentPath.'.php';
         foreach ($components as $name => &$component) {
             \Scoop\View::registerComponent($name, $component);
         }
         return $this;
+    }
+
+    protected function configure() {
+        $config = $this->config;
+        $this->router = new \Scoop\IoC\Router($config['routes']);
+        \Scoop\Validator::setMessages($this->get('messages.error'));
+        if (isset($config['providers'])) {
+            $this->bind($config['providers']);
+        }
+        if (isset($config['components'])) {
+            $this->registerComponents($config['components']);
+        }
+        $services = array('config' => $this);
+        if (isset($config['services'])) {
+            $services += $config['services'];
+        }
+        $this->registerServices($services);
+        return $this;
+    }
+
+    public function __get($name)
+    {
+        if ($name === 'router') {
+            return $this->router;
+        }
     }
 }

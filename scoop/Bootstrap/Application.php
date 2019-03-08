@@ -25,8 +25,7 @@ class Application
     public function invoke()
     {
         $url = $this->getURL();
-        $router = $this->environment->getRouter();
-        $response = $router->route($url);
+        $response = $this->environment->router->route($url);
         if ($response === null) {
             header('HTTP/1.0 204 No Response');
         } elseif ($response instanceof \Scoop\View) {

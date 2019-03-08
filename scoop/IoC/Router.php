@@ -18,18 +18,21 @@ class Router
     {
         $route = $this->getRoute($url);
         if ($route) {
-            if (!is_subclass_of($route['controller'], 'Scoop\Controller')) {
+            $method = explode(':', $route['controller']);
+            $controller = array_shift($method);
+            $method = array_pop($method);
+            if (!is_subclass_of($controller, 'Scoop\Controller')) {
                 throw new \UnexpectedValueException(
-                    $route['controller'].' class isn\'t an instance of \Scoop\Controller'
+                    $controller.' class isn\'t an instance of \Scoop\Controller'
                 );
             }
-            $controller =  \Scoop\Context::getInjector()->getInstance($route['controller']);
+            $controller =  \Scoop\Context::getInjector()->getInstance($controller);
             if ($controller) {
                 $this->intercept($url);
-                $method = isset($route['method']) ?
-                    $route['method'] :
-                    strtolower($_SERVER['REQUEST_METHOD']);
                 $controllerReflection = new \ReflectionClass($controller);
+                if (!$method) {
+                    $method = strtolower($_SERVER['REQUEST_METHOD']);
+                }
                 if (!$controllerReflection->hasMethod($method)) {
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
@@ -49,16 +52,14 @@ class Router
     public function intercept($url)
     {
         $matches = $this->filterProxy($url);
-        if ($matches) {
-            $injector = \Scoop\Context::getInjector();
-            foreach ($matches as &$route) {
-                if (isset($route['proxy'])) {
-                    $proxy = explode(':', $route['proxy']);
-                    $method = array_pop($proxy);
-                    $proxy = array_shift($proxy);
-                    $proxy =  $injector->getInstance($proxy);
-                    $proxy->$method();
-                }
+        $injector = \Scoop\Context::getInjector();
+        foreach ($matches as &$route) {
+            if (isset($route['proxy'])) {
+                $method = explode(':', $route['proxy']);
+                $proxy = array_shift($method);
+                $method = array_pop($method);
+                $proxy =  $injector->getInstance($proxy);
+                $proxy->$method();
             }
         }
     }

@@ -32,7 +32,7 @@ abstract class Controller
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $router = \Scoop\Context::getService('config')->router;
+            $router = \Scoop\Context::getService('config')->getRouter();
             $url = $router->getURL(array_shift($url), $url);
         }
         header('Location:'.$url);

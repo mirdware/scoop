@@ -10,7 +10,7 @@ class Service
         if (!is_callable($callback)) {
             if (!is_string($callback)) {
                 $this->services[$key]['instance'] = $callback;
-                return;
+                return $this;
             }
             $params = array($callback, $params);
             $callback = array(\Scoop\Context::getInjector(), 'create');
@@ -19,6 +19,7 @@ class Service
             'callback' => $callback,
             'params' => $params
         );
+        return $this;
     }
 
     public function get($key)

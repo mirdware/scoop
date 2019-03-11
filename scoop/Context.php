@@ -37,7 +37,7 @@ class Context
         $requireds = array('database', 'user');
         foreach ($requireds as &$required) {
             if (!isset($config[$required])) {
-                throw new \Exception('Property '.$required.' not found in database configuration');
+                throw new \OutOfBoundsException('Property '.$required.' not found in database configuration');
             }
         }
         $key = implode('', $config);
@@ -55,7 +55,7 @@ class Context
 
     public static function getInjector() {
         if (!self::$injector) {
-            self::$injector = new \Scoop\IoC\Injector();
+            self::$injector = new \Scoop\IoC\BasicInjector();
         }
         return self::$injector;
     }
@@ -69,7 +69,7 @@ class Context
 
     public static function getService($service) {
         if (!self::$service) {
-            self::$service = new \Scoop\IoC\Service();
+            throw new \UnderflowException('No service registered');
         }
         return self::$service->get($service);
     }

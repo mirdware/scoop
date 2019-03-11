@@ -1,35 +1,15 @@
 <?php
 namespace Scoop\IoC;
 
-class Injector
+abstract class Injector
 {
-    private static $rules = array();
-    private static $instances = array();
+    public abstract function create($className, $arguments = array());
 
-    public function create($className, $args = array())
-    {
-        $class = new \ReflectionClass($className);
-        return $this->instantiate($class, $args);
-    }
+    public abstract function bind($interfaceName, $className);
 
-    public function bind($interfaceName, $className)
-    {
-        self::$rules[$interfaceName] = $className;
-    }
+    public abstract function getInstance($className);
 
-    public function getInstance($className)
-    {
-        if (!isset(self::$instances[$className])) {
-            $class = new \ReflectionClass($className);
-            if ($class->isInterface()) {
-                $className = self::$rules[$className];
-            }
-            self::$instances[$className] = $this->create($className);
-        }
-        return self::$instances[$className];
-    }
-
-    private function instantiate(\ReflectionClass &$class, $args = array())
+    protected function instantiate(\ReflectionClass &$class, $args = array())
     {
         $constructor = $class->getConstructor();
         if ($constructor) {
@@ -39,7 +19,7 @@ class Injector
         return $class->newInstanceWithoutConstructor();
     }
 
-    private function getParams(\ReflectionMethod &$method)
+    protected function getParams(\ReflectionMethod &$method)
     {
         $params = $method->getParameters();
         $args = array();

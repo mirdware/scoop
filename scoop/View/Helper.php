@@ -95,7 +95,7 @@ class Helper
      */
     public function route()
     {
-        $router = $this->config->router;
+        $router = $this->config->getRouter();
         if (func_num_args() === 0) {
             return $router->getCurrentRoute();
         }

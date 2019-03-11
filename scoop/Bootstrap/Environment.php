@@ -13,8 +13,7 @@ class Environment
             self::$sessionInit = session_start();
         }
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
-        $config = require $configPath.'.php';
-        $this->config = $config;
+        $this->config = require $configPath.'.php';
         $this->configure();
     }
 
@@ -23,12 +22,15 @@ class Environment
         $name = explode('.', $name);
         $res = $this->config;
         foreach ($name as $key) {
-            if (!isset($res[$key])) {
-                return false;
-            }
+            if (!isset($res[$key])) return false;
             $res = $res[$key];
         }
         return $res;
+    }
+
+    public function getRouter()
+    {
+        return $this->router;
     }
 
     protected function bind($interfaces)
@@ -72,12 +74,5 @@ class Environment
         }
         $this->registerServices($services);
         return $this;
-    }
-
-    public function __get($name)
-    {
-        if ($name === 'router') {
-            return $this->router;
-        }
     }
 }

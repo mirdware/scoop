@@ -47,7 +47,7 @@ abstract class Heritage {
     }
 
     /**
-     * Se aplica a un template en el lugar en donde la vista hija debe ser inluida.
+     * Se aplica a un template en el lugar en donde la vista hija debe ser incluida.
      */
     public static function sprout()
     {
@@ -58,8 +58,10 @@ abstract class Heritage {
      * Obtiene el pie de página del template.
      * @return string Pie de página del template.
      */
-    public static function getFooter()
+    public static function getContent()
     {
-        return self::$footer;
+        $view = ob_get_contents().self::$footer;
+        ob_end_clean();
+        return $view;
     }
 }

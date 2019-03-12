@@ -22,7 +22,7 @@ class Environment
         $name = explode('.', $name);
         $res = $this->config;
         foreach ($name as $key) {
-            if (!isset($res[$key])) return false;
+            if (!isset($res[$key])) return null;
             $res = $res[$key];
         }
         return $res;
@@ -59,19 +59,12 @@ class Environment
     }
 
     protected function configure() {
-        $config = $this->config;
-        $this->router = new \Scoop\IoC\Router($config['routes']);
-        \Scoop\Validator::setMessages($this->get('messages.error'));
-        if (isset($config['providers'])) {
-            $this->bind($config['providers']);
-        }
-        if (isset($config['components'])) {
-            $this->registerComponents($config['components']);
-        }
-        $services = array('config' => $this);
-        if (isset($config['services'])) {
-            $services += $config['services'];
-        }
+        \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
+        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
+        $this->bind((Array) $this->get('providers'));
+        $this->registerComponents((Array) $this->get('components'));
+        $services = (Array) $this->get('services');
+        $services += array('config' => $this);
         $this->registerServices($services);
         return $this;
     }

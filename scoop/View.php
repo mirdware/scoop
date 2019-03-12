@@ -82,9 +82,7 @@ final class View
         \Scoop\Context::registerService('view', $helperView);
         View\Heritage::init($this->viewData);
         View\Template::parse($this->viewPath, $this->viewData);
-        $view = ob_get_contents().\Scoop\View\Heritage::getFooter();
-        ob_end_clean();
-        return $view;
+        return View\Heritage::getContent();
     }
 
     /**

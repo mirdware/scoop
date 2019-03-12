@@ -23,13 +23,11 @@ final class Template
     {
         $template = 'app/views/'.$templatePath.'.sdt.php';
         $view = 'app/cache/views/'.$templatePath.'.php';
-        $existView = is_readable($view);
-        $existTemplate = is_readable($template);
-        if ($existView) {
-            if ($existTemplate && filemtime($template) > filemtime($view)) {
+        if (is_readable($view)) {
+            if (is_readable($template) && filemtime($template) > filemtime($view)) {
                 self::create($view, self::compile($template));
             }
-        } elseif ($existTemplate) {
+        } elseif (is_readable($template)) {
             self::create($view, self::compile($template));
         } else {
             throw new \UnderflowException('Unable to load view or template');
@@ -126,9 +124,7 @@ final class Template
             'else:',
             self::HERITAGE.'::sprout()'
         ), $line, $count);
-        if ($count !== 0) {
-            return true;
-        }
+        if ($count !== 0) return true;
         $line = preg_replace('/\{(('.$safeExp.'|:|\?)+)\}/',
         '<?php echo ${1} ?>', $line, -1, $count);
         if ($count !== 0) {

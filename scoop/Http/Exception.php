@@ -7,7 +7,6 @@ abstract class Exception extends \Exception
     private $statusCode;
     private $headers;
     private $title;
-    private $ajax;
 
     public function __construct(
         $statusCode,
@@ -18,17 +17,12 @@ abstract class Exception extends \Exception
     ) {
         parent::__construct($message, $code, $previous);
         $config = \Scoop\Context::getService('config');
+        $title = $config->get('exception.'.$statusCode);
+        $path =  $config->get('exception.path');
         $this->statusCode = $statusCode;
         $this->headers = $headers;
-        $this->title = $config->get('exception.'.$statusCode);
-        $this->path = $config->get('exception.path');
-        $this->ajax = \Scoop\Context::getRequest()->isAjax();
-        if (!$this->title) {
-            $this->title = 'Error '.$statusCode.'!!!';
-        }
-        if (!$this->path) {
-            $this->path = 'exceptions/';
-        }
+        $this->title = $title ? $title : 'Error '.$statusCode.'!!!';
+        $this->path = ($path ? $path : 'exceptions/').$statusCode;
     }
 
     public function getStatusCode()
@@ -51,11 +45,11 @@ abstract class Exception extends \Exception
         foreach ($this->headers as &$header) {
             header($header);
         }
-        if ($this->ajax) {
+        if (\Scoop\Context::getRequest()->isAjax()) {
             exit (json_encode($error));
         }
         try {
-            $view = new \Scoop\View($this->path.$this->statusCode);
+            $view = new \Scoop\View($this->path);
             exit ($view->set($error)->render());
         } catch (\Exception $ex) {
             exit ($this->getMessage());

@@ -6,23 +6,22 @@ class BasicInjector extends Injector
     private static $rules = array();
     private static $instances = array();
 
-    public function create($className, $args = array())
-    {
-        $class = new \ReflectionClass($className);
-        return $this->instantiate($class, $args);
-    }
-
     public function bind($interfaceName, $className)
     {
-        self::$rules[$interfaceName] = $className;
+        $interfaceName = self::formatClassName($interfaceName);
+        $class = new \ReflectionClass($className);
+        if (!$class->isSubclassOf($interfaceName)) {
+            throw new \UnexpectedValueException('class '.$class->getName().' can not binding to '.$interfaceName);
+        }
+        self::$rules[$interfaceName] = $class->getName();
     }
 
     public function getInstance($className)
     {
+        $className = self::formatClassName($className);
         if (!isset(self::$instances[$className])) {
-            $class = new \ReflectionClass($className);
-            if ($class->isInterface()) {
-                $className = self::$rules[$className];
+            if (isset(self::$rules[$className])) {
+                return self::getInstance(self::$rules[$className]);
             }
             self::$instances[$className] = $this->create($className);
         }

@@ -3,23 +3,21 @@ namespace Scoop\IoC;
 
 abstract class Injector
 {
-    public abstract function create($className, $arguments = array());
-
     public abstract function bind($interfaceName, $className);
 
     public abstract function getInstance($className);
 
-    protected function instantiate(\ReflectionClass &$class, $args = array())
+    public function create($className)
     {
+        $class = new \ReflectionClass($className);
         $constructor = $class->getConstructor();
         if ($constructor) {
-            $args = array_merge($this->getParams($constructor), $args);
-            return $class->newInstanceArgs($args);
+            return $class->newInstanceArgs($this->getArguments($constructor));
         }
         return $class->newInstanceWithoutConstructor();
     }
 
-    protected function getParams(\ReflectionMethod &$method)
+    protected function getArguments(\ReflectionMethod &$method)
     {
         $params = $method->getParameters();
         $args = array();
@@ -30,5 +28,13 @@ abstract class Injector
             }
         }
         return $args;
+    }
+
+    protected static function formatClassName($className)
+    {
+        if (strpos($className, '\\') === 0) {
+            return substr($className, 1);
+        }
+        return $className;
     }
 }

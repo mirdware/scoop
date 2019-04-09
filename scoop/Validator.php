@@ -78,20 +78,17 @@ class Validator
      */
     public function validate($data)
     {
-        $this->data = &$data;
+        $this->data = $data;
         $this->errors = array();
-        foreach ($this->rules as &$rule) {
+        foreach ($this->rules as $rule) {
             $fields = $rule->getFields();
             if (is_array($fields)) {
-                foreach ($fields as $key => &$field) {
-                    $params = array('label' => $field) + $rule->getParams();
-                    if (!is_numeric($key)) {
-                        $field = $key;
-                    }
-                    $this->executeRule($rule, $field, $params);
+                foreach ($fields as $key => $field) {
+                    $params = array('label' => $field);
+                    $this->executeRule($rule, is_numeric($key) ? $field : $key, $params);
                 }
             } else {
-                $params = array('label' => $fields) + $rule->getParams();
+                $params = array('label' => $fields);
                 $this->executeRule($rule, $fields, $params);
             }
         }
@@ -100,6 +97,10 @@ class Validator
 
     /**
      * Se encarga de realizar el llamado dinamico de las reglas definidas.
+     * ->required('input')
+     * ->required(['input', 'input2'])
+     * ->length('input', 1, 5)
+     * ->length(['input', 'input2'], 1, 5)
      * @param  string $name Nombre de la regla que se desea construir.
      * @param  array $args Argumentos pasados al constructor de la regla.
      * @return \Scoop\Validator La instancia de la clase para encadenamiento.
@@ -151,46 +152,24 @@ class Validator
      */
     private function executeRule($rule, $field, $params)
     {
-        $name = $rule->getName();
-        $value = null;
-        if (isset($this->data[$field])) {
-            $value = $this->data[$field];
-        } elseif ($name === 'required') {
-            $name = 'on';
-        } else {
-            return;
-        }
-        $params += array('value' => $value);
-        if ($rule->isIncludeInputs()) {
-            $this->convertInputs($params['inputs']);
-        }
+        $value = isset($this->data[$field]) ? $this->data[$field] : null;
+        $rule->convertInputs($this->data);
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
-            if (!isset($this->errors[$field]) && !$rule->validate($params)) {
-                $this->errors[$field] = self::formatMessage($name, $params);
+            if (!isset($this->errors[$field]) && !$rule->validate($value)) {
+                $this->errors[$field] = $this->getMessage($rule, $params, $value);
             }
-        } elseif (!$rule->validate($params)) {
-            $this->errors[$field][] = self::formatMessage($name, $params);
+        } elseif (!$rule->validate($value)) {
+            $this->errors[$field][] = $this->getMessage($rule, $params, $value);
         }
     }
 
-    /**
-     * Convierte los inputs "Hermanos" que son enviados como parametros.
-     * @param  string|array &$inputs Nombre del campo o campos a ser convertido.
-     */
-    private function convertInputs(&$inputs)
-    {
-        if (is_array($inputs)) {
-            foreach ($inputs as $key => $value) {
-                $inputs[$value] = is_numeric($key)?
-                    $this->data[$value]:
-                    $this->data[$key];
-                unset($inputs[$key]);
-            }
-        } else {
-            $inputs = array(
-                $inputs => $this->data[$inputs]
-            );
+    private function getMessage($rule, $params, $value) {
+        $name = $rule->getName();
+        if ($name === 'required' && $value === null) {
+            $name = 'on';
         }
+        $params += array('value' => $value) + $rule->getParams();
+        return self::formatMessage($name, $params);
     }
 
     /**

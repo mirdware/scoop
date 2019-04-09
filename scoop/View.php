@@ -63,7 +63,7 @@ final class View
             return $this;
         }
         if (is_array($keys)) {
-            foreach ($keys as &$key) {
+            foreach ($keys as $key) {
                 unset($this->viewData[$key]);
             }
             return $this;

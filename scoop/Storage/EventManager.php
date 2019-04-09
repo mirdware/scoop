@@ -3,10 +3,7 @@ namespace Scoop\Storage;
 
 class EventManager
 {
-    public function preConnect() {}
+    public function connect(DBC $connection) {}
 
-    public function posConnect(DBC $connection)
-    {
-        $connection->exec('SET NAMES \'utf8\'');
-    }
+    public function disconnect(DBC $connection) {}
 }

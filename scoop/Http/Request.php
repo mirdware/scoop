@@ -47,7 +47,7 @@ class Request
     private static function purge($value)
     {
         if (is_array($value)) {
-            foreach ($value as $key => &$v) {
+            foreach ($value as $key => $v) {
                 $value[$key] = self::purge($v);
             }
             return $value;
@@ -69,7 +69,7 @@ class Request
         $put = array();
         if (!$data) return $put;
         $data = explode('&', $data);
-        foreach ($data as &$value) {
+        foreach ($data as $value) {
             $value = explode('=', $value);
             $put[$value[0]] = urldecode($value[1]);
         }

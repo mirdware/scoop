@@ -7,25 +7,10 @@ namespace Scoop\Validation;
 abstract class Rule
 {
     /**
-     * Nombre de la regla que se esta validando.
-     * @var string
-     */
-    private $name;
-    /**
      * Campos que seran validados.
      * @var array
      */
     private $fields;
-    /**
-     * Párametros de apoyo para la validación (max, min, etc).
-     * @var array
-     */
-    private $params;
-    /**
-     * Establece si la regla posee inputs "hermanos" o no.
-     * @var [type]
-     */
-    private $includeInputs;
 
     /**
      * Genera la estructura necesaria para la regla
@@ -34,12 +19,9 @@ abstract class Rule
      * @param array   $params        Párametros de apoyo
      * @param boolean $includeInputs Posee inputs "hermanos"
      */
-    public function __construct($name, $fields, $params = array(), $includeInputs = false)
+    public function __construct($fields)
     {
-        $this->name = $name;
         $this->fields = $fields;
-        $this->params = $params;
-        $this->includeInputs = $includeInputs;
     }
 
     /**
@@ -57,7 +39,9 @@ abstract class Rule
      */
     public function getParams()
     {
-        return $this->params;
+        $params = get_object_vars($this);
+        unset($params['fields']);
+        return $params;
     }
 
     /**
@@ -66,23 +50,35 @@ abstract class Rule
      */
     public function getName()
     {
-        return $this->name;
+        $className = get_class($this);
+        $baseClass = substr(strrchr($className, '\\'), 1);
+        return lcfirst($baseClass);
     }
 
     /**
-     * Determina si existen o no inputs "hermanos"
-     * @return boolean existen o no inputs "hermanos"
+     * Convierte los inputs "Hermanos" que son enviados como parametros.
+     * @param  string|array $inputs Nombre del campo o campos a ser convertido.
      */
-    public function isIncludeInputs()
+    public function convertInputs($data)
     {
-        return $this->includeInputs;
+        if (!isset($this->inputs)) return;
+        if (is_array($this->inputs)) {
+            foreach ($this->inputs as $key => $value) {
+                $this->inputs[$value] = is_numeric($key)?
+                    $data[$value]:
+                    $data[$key];
+                unset($this->inputs[$key]);
+            }
+        } else {
+            $this->inputs = array($this->inputs => $data[$this->inputs]);
+        }
     }
 
     /**
      * Valida si se cumple o no con la condición configurada por la clase
      * hija
-     * @param  array &$params Párametros enviados para la validación (apoyo+valor)
+     * @param  array $params Párametros enviados para la validación (apoyo+valor)
      * @return boolean          Pasa o no la validación
      */
-    abstract public function validate(&$params);
+    abstract public function validate($value);
 }

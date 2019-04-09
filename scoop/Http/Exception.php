@@ -42,7 +42,7 @@ abstract class Exception extends \Exception
             'code' => $this->statusCode,
             'message' => $this->getMessage()
         );
-        foreach ($this->headers as &$header) {
+        foreach ($this->headers as $header) {
             header($header);
         }
         if (\Scoop\Context::getRequest()->isAjax()) {

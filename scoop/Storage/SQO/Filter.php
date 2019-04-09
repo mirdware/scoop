@@ -96,9 +96,9 @@ class Filter
     private function getRules()
     {
         $rules = $this->rules;
-        foreach ($rules as $key => &$rule) {
+        foreach ($rules as $key => $rule) {
             preg_match_all('/:[\w_]+/', $rule, $matches);
-            foreach ($matches[0] as &$match) {
+            foreach ($matches[0] as $match) {
                 if (!isset($this->params[substr($match, 1)])) {
                     unset($rules[$key]);
                     break;

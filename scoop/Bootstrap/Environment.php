@@ -36,7 +36,7 @@ class Environment
     protected function bind($interfaces)
     {
         $injector = \Scoop\Context::getInjector();
-        foreach ($interfaces as $interface => &$class) {
+        foreach ($interfaces as $interface => $class) {
             $injector->bind($interface, $class);
         }
         return $this;
@@ -44,7 +44,7 @@ class Environment
 
     protected function registerServices($services)
     {
-        foreach ($services as $name => &$service) {
+        foreach ($services as $name => $service) {
             \Scoop\Context::registerService($name, $service);
         }
         return $this;
@@ -52,7 +52,7 @@ class Environment
 
     protected function registerComponents($components)
     {
-        foreach ($components as $name => &$component) {
+        foreach ($components as $name => $component) {
             \Scoop\View::registerComponent($name, $component);
         }
         return $this;
@@ -64,7 +64,7 @@ class Environment
         $this->bind((Array) $this->get('providers'));
         $this->registerComponents((Array) $this->get('components'));
         $services = (Array) $this->get('services');
-        $services += array('config' => $this);
+        $services += array('config' => $this, 'request' => new \Scoop\Http\Request());
         $this->registerServices($services);
         return $this;
     }

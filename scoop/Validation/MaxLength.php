@@ -3,13 +3,17 @@ namespace Scoop\Validation;
 
 class MaxLength extends Rule
 {
+    protected $max;
+    protected $length;
+
     public function __construct($fields, $max) {
-        parent::__construct('maxLength', $fields, array('max' => $max));
+        parent::__construct($fields);
+        $this->max = $max;
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        $params['length'] = strlen($params['value']);
-        return $params['length'] <= $params['max'];
+        $this->length = strlen($value);
+        return $this->length <= $this->max;
     }
 }

@@ -8,7 +8,7 @@ class Router
 
     public function __construct($routes)
     {
-        foreach ($routes as $key => &$route) {
+        foreach ($routes as $key => $route) {
             $this->load($route, $key);
         }
         uasort($this->routes, array($this, 'sortByURL'));
@@ -53,7 +53,7 @@ class Router
     {
         $matches = $this->filterProxy($url);
         $injector = \Scoop\Context::getInjector();
-        foreach ($matches as &$route) {
+        foreach ($matches as $route) {
             if (isset($route['proxy'])) {
                 $method = explode(':', $route['proxy']);
                 $proxy = array_shift($method);
@@ -96,7 +96,7 @@ class Router
             $this->current = key($matches);
             array_shift($route['params']);
             $lenght = 0;
-            foreach ($route['params'] as $key => &$param) {
+            foreach ($route['params'] as $key => $param) {
                 if ($param !== '') {
                     $param = urldecode($param);
                     $lenght = ++$key;
@@ -110,7 +110,7 @@ class Router
     private function filterRoute($url)
     {
         $matches = array();
-        foreach ($this->routes as $key => &$route) {
+        foreach ($this->routes as $key => $route) {
             if (
                 isset($route['controller']) &&
                 preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])
@@ -124,7 +124,7 @@ class Router
     private function filterProxy($url)
     {
         $matches = array();
-        foreach ($this->routes as &$route) {
+        foreach ($this->routes as $route) {
             if (
                 isset($route['proxy']) &&
                 preg_match('/^'.self::normalizeURL($route['url']).'/', $url)
@@ -142,7 +142,7 @@ class Router
         }
         $route['url'] = $oldURL.$route['url'];
         if (isset($route['routes'])) {
-            foreach ($route['routes'] as $k => &$r) {
+            foreach ($route['routes'] as $k => $r) {
                 $this->load($r, $k, $route['url']);
             }
             unset($route['routes']);

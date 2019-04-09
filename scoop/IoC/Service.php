@@ -24,7 +24,7 @@ class Service
 
     public function get($key)
     {
-        $serv = &$this->services[$key];
+        $serv = $this->services[$key];
         if (!isset($serv['instance'])) {
             $serv['instance'] = call_user_func_array($serv['callback'], $serv['params']);
         }

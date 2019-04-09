@@ -5,11 +5,11 @@ class Required extends Rule
 {
     public function __construct($fields)
     {
-        parent::__construct('required', $fields);
+        parent::__construct($fields);
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        return !empty($params['value']);
+        return !empty($value);
     }
 }

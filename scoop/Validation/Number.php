@@ -5,11 +5,11 @@ class Number extends Rule
 {
     public function __construct($fields)
     {
-        parent::__construct('number', $fields);
+        parent::__construct($fields);
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        return is_numeric($params['value']);
+        return is_numeric($value);
     }
 }

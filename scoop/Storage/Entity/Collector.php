@@ -16,7 +16,7 @@ class Collector
         }
     }
 
-    private static function notify(&$obj)
+    private static function notify($obj)
     {
         $object = self::internalSearch($obj, self::$totalObjects);
         if ($object) {
@@ -26,9 +26,9 @@ class Collector
         return $obj;
     }
 
-    private static function internalSearch(&$obj, &$array, $delete = false)
+    private static function internalSearch($obj, $array, $delete = false)
     {
-        foreach ($array as $key => &$object) {
+        foreach ($array as $key => $object) {
             if ($obj == $object || (self::$fromDB &&
                 get_class($obj) === get_class($object) &&
                 $obj->getPK() === $object->getPK())) {
@@ -40,7 +40,7 @@ class Collector
         }
     }
 
-    public function search(&$obj)
+    public function search($obj)
     {
         return array_search($obj, $this->objects);
     }
@@ -50,7 +50,7 @@ class Collector
         return $this->objects;
     }
 
-    public function add(&$obj)
+    public function add($obj)
     {
         $this->objects[] = self::notify($obj);
     }
@@ -60,7 +60,7 @@ class Collector
         return $this->objects[$i];
     }
 
-    public function remove(&$obj)
+    public function remove($obj)
     {
         self::internalSearch($obj, $this->objects, true);
     }

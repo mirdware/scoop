@@ -3,13 +3,17 @@ namespace Scoop\Validation;
 
 class MinLength extends Rule
 {
+    protected $min;
+    protected $length;
+
     public function __construct($fields, $min) {
-        parent::__construct('minLength', $fields, array('min' => $min));
+        parent::__construct($fields);
+        $this->min = $min;
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        $params['length'] = strlen($params['value']);
-        return $params['min'] <= $params['length'] ;
+        $this->length = strlen($value);
+        return $this->min <= $this->length;
     }
 }

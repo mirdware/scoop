@@ -83,11 +83,4 @@ abstract class Controller
     {
         return \Scoop\Context::getService($serviceName);
     }
-
-    public function __get($name)
-    {
-        if ($name === 'request') {
-            return \Scoop\Context::getRequest();
-        }
-    }
 }

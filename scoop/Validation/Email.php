@@ -5,11 +5,11 @@ class Email extends Rule
 {
     public function __construct($fields)
     {
-        parent::__construct('email', $fields);
+        parent::__construct($fields);
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        return filter_var($params['value'], FILTER_VALIDATE_EMAIL);
+        return filter_var($value, FILTER_VALIDATE_EMAIL);
     }
 }

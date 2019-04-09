@@ -7,21 +7,21 @@ abstract class Injector
 
     public abstract function getInstance($className);
 
-    public function create($className)
+    public function create($className, $args = array())
     {
         $class = new \ReflectionClass($className);
         $constructor = $class->getConstructor();
         if ($constructor) {
-            return $class->newInstanceArgs($this->getArguments($constructor));
+            return $class->newInstanceArgs($this->getArguments($constructor) + $args);
         }
         return $class->newInstanceWithoutConstructor();
     }
 
-    protected function getArguments(\ReflectionMethod &$method)
+    protected function getArguments(\ReflectionMethod $method)
     {
         $params = $method->getParameters();
         $args = array();
-        foreach ($params as &$param) {
+        foreach ($params as $param) {
             $class = $param->getClass();
             if ($class) {
                 $args[] = $this->getInstance($class->getName());

@@ -128,11 +128,4 @@ class Helper
         $component = $component->newInstanceArgs($args);
         return $component->render();
     }
-
-    public function __get($name)
-    {
-        if ($name === 'request') {
-            return \Scoop\Context::getRequest();
-        }
-    }
 }

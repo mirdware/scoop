@@ -3,15 +3,18 @@ namespace Scoop\Validation;
 
 class Equals extends Rule
 {
+    protected $inputs;
+
     public function __construct($fields, $inputs) {
-        parent::__construct('equals', $fields, array('inputs' => $inputs), true);
+        parent::__construct($fields);
+        $this->inputs = $inputs;
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        foreach ($params['inputs'] as $key => &$value) {
-            if (!empty($value) && $value !== $params['value']) {
-                $params['inputs'] = $key;
+        foreach ($this->inputs as $key => $input) {
+            if (!empty($input) && $input !== $value) {
+                $this->inputs = $key;
                 return false;
             }
         }

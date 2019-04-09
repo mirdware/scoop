@@ -3,13 +3,16 @@ namespace Scoop\Validation;
 
 class Pattern extends Rule
 {
+    protected $pattern;
+
     public function __construct($fields, $pattern, $mask = '')
     {
-        parent::__construct('pattern', $fields, array('pattern' => $pattern, 'mask' => $mask));
+        parent::__construct($fields);
+        $this->pattern = $pattern;
     }
 
-    public function validate(&$params)
+    public function validate($value)
     {
-        return preg_match('/'.$params['pattern'].'/', $params['value']);
+        return preg_match('/'.$this->pattern.'/', $value);
     }
 }

@@ -49,7 +49,7 @@ class SQO
     {
         $operators = array('+', '-', '/', '*', '%');
         $query = 'UPDATE '.$this->table.' SET ';
-        foreach ($fields as $key => &$value) {
+        foreach ($fields as $key => $value) {
             $lastChar = substr($key, -1);
             if (in_array($lastChar, $operators)) {
                 unset($fields[$key]);

@@ -13,17 +13,17 @@ class Relation
 
     public function __construct($self, $methodRel, $type = self::ONE_TO_MANY, $objRel = null)
     {
-        $this->self = &$self;
-        $this->objRel = &$objRel;
+        $this->self = $self;
+        $this->objRel = $objRel;
         $this->methodRel = ucwords($methodRel);
         $this->type = $type;
     }
 
-    private function delete(&$obj, $remove)
+    private function delete($obj, $remove)
     {
         if ($remove) {
             $method = 'remove'.$this->methodRel;
-            $arg = &$this->self;
+            $arg = $this->self;
         } else {
             $method = 'set'.$this->methodRel;
             $arg = null;
@@ -31,7 +31,7 @@ class Relation
         $obj->$method($arg);
     }
 
-    public function add(&$child)
+    public function add($child)
     {
         if (!$this->objRel) {
             $this->objRel = new Collector();
@@ -43,7 +43,7 @@ class Relation
         }
     }
 
-    public function remove(&$child)
+    public function remove($child)
     {
         if (!$this->objRel) {
             $this->objRel = new Collector();
@@ -52,7 +52,7 @@ class Relation
         $this->objRel->remove($child);
     }
 
-    public function set(&$parent)
+    public function set($parent)
     {
         $isSettable = $parent !== null && $this->objRel !== $parent;
         if ($isSettable) {

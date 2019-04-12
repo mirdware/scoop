@@ -6,7 +6,8 @@ class MinLength extends Rule
     protected $min;
     protected $length;
 
-    public function __construct($fields, $min) {
+    public function __construct($fields, $min)
+    {
         parent::__construct($fields);
         $this->min = $min;
     }

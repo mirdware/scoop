@@ -153,7 +153,7 @@ class Validator
     private function executeRule($rule, $field, $params)
     {
         $value = isset($this->data[$field]) ? $this->data[$field] : null;
-        $rule->convertInputs($this->data);
+        $rule->setValues($this->data);
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
             if (!isset($this->errors[$field]) && !$rule->validate($value)) {
                 $this->errors[$field] = $this->getMessage($rule, $params, $value);
@@ -185,8 +185,18 @@ class Validator
             foreach ($keys as &$key) {
                 $key = '{'.$key.'}';
             }
-            return str_replace($keys, $params, self::$msg[$rule]);
+            return str_replace($keys, self::formatParams($params), self::$msg[$rule]);
         }
         return self::DEFAULT_MSG;
+    }
+
+    private static function formatParams($params)
+    {
+        foreach ($params as &$param) {
+            if (!is_string($param)) {
+                $param = json_encode($param);
+            }
+        }
+        return $params;
     }
 }

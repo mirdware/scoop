@@ -5,7 +5,6 @@ class Filter
 {
     protected $from = array();
     protected $params = array();
-    protected $con;
     private $rules = array();
     private $order = array();
     private $group = array();
@@ -14,12 +13,13 @@ class Filter
     private $query = '';
     private $connector = 'AND';
     private $type;
+    protected $con;
 
-    public function __construct($query, $type, $params, $connexion)
+    public function __construct($query, $type, $params, $connection)
     {
         $this->query = $query;
         $this->type = $type;
-        $this->con = $connexion;
+        $this->con = $connection;
         $this->params = $params;
     }
 
@@ -48,7 +48,8 @@ class Filter
 
     public function order()
     {
-        if (!($numArgs = func_num_args())) {
+        $numArgs = func_num_args();
+        if (!$numArgs) {
             throw new \InvalidArgumentException('Unsoported number of arguments');
         }
         $args = func_get_args();
@@ -105,25 +106,19 @@ class Filter
                 }
             }
         }
-        if (empty($rules)) {
-            return '';
-        }
+        if (empty($rules)) return '';
         return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
     }
 
     private function getOrder()
     {
-        if (empty($this->order)) {
-            return '';
-        }
+        if (empty($this->order)) return '';
         return ' ORDER BY '.implode(', ', $this->order).$this->orderType;
     }
 
     private function getGroup()
     {
-        if (empty($this->group)) {
-            return '';
-        }
+        if (empty($this->group)) return '';
         return ' GROUP BY '.implode(', ', $this->group);
     }
 }

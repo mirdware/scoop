@@ -7,9 +7,7 @@ return array(
         'default' => array(
             'database' => 'scoop',
             'user' => 'postgres',
-            'password' => 'postgres',
-            'host' => 'localhost',
-            'driver' => 'pgsql'
+            'password' => 'postgres'
         )
     ),
     'messages' => require 'config/messages.php',

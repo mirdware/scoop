@@ -4,14 +4,14 @@ namespace Scoop\Storage\SQO;
 final class Factory
 {
     private $query = '';
-    private $con;
     private $values = array();
     private $keys = null;
+    private $con;
 
-    public function __construct($query, $values, $connexion)
+    public function __construct($query, $values, $connection)
     {
         $this->query = $query;
-        $this->con = $connexion;
+        $this->con = $connection;
         if ($values) {
             $this->create($values);
         }

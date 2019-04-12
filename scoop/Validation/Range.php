@@ -6,7 +6,8 @@ class Range extends Rule
     protected $min;
     protected $max;
 
-    public function __construct($fields, $min, $max) {
+    public function __construct($fields, $min, $max)
+    {
         parent::__construct($fields);
         $this->min = $min;
         $this->max = $max;

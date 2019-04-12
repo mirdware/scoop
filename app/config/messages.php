@@ -12,6 +12,6 @@ return array(
         'email' => 'Introduzca una dirección de correo valida',
         'pattern' => 'Utiliza un formato que coincida con el solicitado',
         'on' => 'Seleccione este campo si desea continuar',
-        'equals' => 'El campo no coincide con el valor de {inputs}'
+        'equals' => 'El campo no coincide con el valor de {failInput}'
     )
 );

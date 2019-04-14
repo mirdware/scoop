@@ -39,6 +39,11 @@ abstract class Controller
         exit;
     }
 
+    protected function goBack()
+    {
+        self::redirect($_SERVER['HTTP_REFERER']);
+    }
+
     /**
      * Emite una excepción 404 desde el controlador.
      * @param string $msg Mensaje enviado a la excepción.
@@ -60,18 +65,25 @@ abstract class Controller
     }
 
     /**
-     * Emite una excepción 400 desde el controlador.
+     * Emite una excepción 400 desde el controlador si la validación no pasa.
      * @param string $msg Mensaje en formato json enviado a la excepción.
      * @throws Http\BadRequestException La excepción bad request.
     */
-    protected function fail($errors, $jsonResponse = false)
+    protected function validate($validator, $data)
     {
-        if ($jsonResponse) {
+        $validation = $validator->validate($data);
+        if (empty($validation)) return;
+        $request = $this->inject('request');
+        if ($request->isAjax()) {
             $jsonResponse = json_encode($errors);
             throw new \Scoop\Http\BadRequestException($jsonResponse? $jsonResponse: $errors);
         }
-        $_SESSION['errors-scoop'] = $errors;
-        self::redirect($_SERVER['HTTP_REFERER'], 307);
+        $_SESSION['data-scoop'] = array(
+            'body' => $request->getBody(),
+            'query' => $request->getQuery(),
+            'error' => $errors
+        );
+        $this->goBack();
     }
 
     /**

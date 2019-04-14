@@ -11,7 +11,6 @@ abstract class Rule
      * @var array
      */
     private $fields;
-    protected $values;
 
     /**
      * Genera la estructura necesaria para la regla
@@ -41,6 +40,7 @@ abstract class Rule
     public function getParams()
     {
         $params = get_object_vars($this);
+        unset($params['fields']);
         return $params;
     }
 
@@ -53,23 +53,6 @@ abstract class Rule
         $className = get_class($this);
         $baseClass = substr(strrchr($className, '\\'), 1);
         return lcfirst($baseClass);
-    }
-
-    /**
-     * Convierte los inputs "Hermanos" que son enviados como parametros.
-     * @param  string|array $inputs Nombre del campo o campos a ser convertido.
-     */
-    public function setValues($data)
-    {
-        if (!isset($this->inputs)) return;
-        $this->values = array();
-        if (is_array($this->inputs)) {
-            foreach ($this->inputs as $key => $value) {
-                $this->values[$value] = is_numeric($key) ? $data[$value] : $data[$key];
-            }
-            return;
-        }
-        $this->values = array($this->inputs => $data[$this->inputs]);
     }
 
     /**

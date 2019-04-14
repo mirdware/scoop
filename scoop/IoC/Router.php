@@ -39,11 +39,12 @@ class Router
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($route['params']);
                 if (
-                    $numParams >= $method->getNumberOfRequiredParameters() &&
-                    $numParams <= $method->getNumberOfParameters()
+                    $numParams < $method->getNumberOfRequiredParameters() ||
+                    $numParams > $method->getNumberOfParameters()
                 ) {
-                    return $method->invokeArgs($controller, $route['params']);
+                    throw new \Scoop\Http\MethodNotAllowedException();
                 }
+                return $method->invokeArgs($controller, $route['params']);
             }
         }
         throw new \Scoop\Http\NotFoundException();

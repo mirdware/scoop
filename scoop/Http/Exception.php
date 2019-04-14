@@ -45,7 +45,7 @@ abstract class Exception extends \Exception
         foreach ($this->headers as $header) {
             header($header);
         }
-        if (\Scoop\Context::getRequest()->isAjax()) {
+        if (\Scoop\Context::getService('request')->isAjax()) {
             exit (json_encode($error));
         }
         try {

@@ -25,10 +25,14 @@ class Message implements Component
     /**
      * @var array Propiedades del mensaje.
      */
-    private static $props = array(
-        'type' => 'not',
-        'msg' => ''
-    );
+    private static $props;
+
+    public function __construct()
+    {
+        self::$props = isset($_SESSION['msg-scoop']) ?
+        $_SESSION['msg-scoop'] :
+        array('type' => 'not', 'msg' => '');
+    }
 
     /**
      * Crea el componente en la vista.
@@ -36,30 +40,10 @@ class Message implements Component
      */
     public function render()
     {
-        extract(self::$props);
+        $type = self::$props['type'];
+        $msg = self::$props['msg'];
+        unset($_SESSION['msg-scoop']);
         return '<div id="msg" data-attr="className:type" class="'.$type.'"><i class="close"></i><span data-bind="msg">'.$msg.'</span></div>';
-    }
-
-    /**
-     * Valida y muestra el mensaje suministrado por el usuario.
-     * @param string $msg  Mensaje a ser mostrado por la aplicación.
-     * @param string $type Tipo de mensaje a mostrar.
-     */
-    public static function push($msg, $type = self::SUCCESS)
-    {
-        self::validate($type);
-        $_SESSION['msg-scoop'] = array('type'=>$type, 'msg'=>$msg);
-    }
-
-    /**
-     * Muestra y elimina el mensaje suministrado por el usuario.
-     */
-    public static function pull()
-    {
-        if (isset($_SESSION['msg-scoop'])) {
-            self::$props = $_SESSION['msg-scoop'];
-            unset($_SESSION['msg-scoop']);
-        }
     }
 
     /**
@@ -69,20 +53,11 @@ class Message implements Component
      */
     public static function set($msg, $type = self::SUCCESS)
     {
-        self::validate($type);
-        self::$props = array('type'=>$type, 'msg'=>$msg);
-    }
-
-    /**
-     * Verifica que el tipo de mensaje enviado sea valido.
-     * @param string $type Tipo de mensaje.
-     * @throws \UnexpectedValueException Si no es un tipo de mensaje valido.
-     */
-    private static function validate($type)
-    {
         $class = new \ReflectionClass(get_class());
         if (!in_array($type, $class->getConstants())) {
             throw new \UnexpectedValueException('Error building the message [type rejected].');
         }
+        self::$props = array('type'=>$type, 'msg'=>$msg);
+        $_SESSION['msg-scoop'] = self::$props;
     }
 }

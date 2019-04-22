@@ -48,9 +48,9 @@ abstract class Rule
      * Obtiene el nombre de la regla
      * @return string Nombre de la regla
      */
-    public function getName()
+    public static function getName()
     {
-        $className = get_class($this);
+        $className = get_called_class();
         $baseClass = substr(strrchr($className, '\\'), 1);
         return lcfirst($baseClass);
     }

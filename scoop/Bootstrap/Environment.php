@@ -60,6 +60,7 @@ class Environment
 
     protected function configure() {
         \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
+        \Scoop\Validator::addRule((Array) $this->get('validators'));
         $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
         $this->bind((Array) $this->get('providers'));
         $this->registerComponents((Array) $this->get('components'));

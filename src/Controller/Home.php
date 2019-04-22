@@ -17,8 +17,8 @@ class Home extends Controller
     public function get()
     {
         $view = new View('home');
-        $index = rand(0, count($this->quotes)-1);
+        $index = rand(0, count($this->quotes) - 1);
         return $view->set('title', 'MirdWare')
-                    ->set($this->quotes[$index]);
+        ->set($this->quotes[$index]);
     }
 }

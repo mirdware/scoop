@@ -12,7 +12,5 @@ return array(
     ),
     'messages' => require 'config/messages.php',
     'routes' => require 'config/routes.php',
-    'providers' => require 'config/providers.php',
-    'services' => require 'config/services.php',
-    'components' => require 'config/components.php'
+    'providers' => require 'config/providers.php'
 );

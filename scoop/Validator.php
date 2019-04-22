@@ -121,17 +121,16 @@ class Validator
      * par ($name => $class).
      * @param string $class Identificador de la clase que se encargara de resolver la regla.
      */
-    public static function addRule($name, $class = null)
+    public static function addRule($className)
     {
-        if (is_array($name)) {
-            foreach ($name as $n => $class) {
-                self::addRule($n, $class);
-            }
-        } else {
-            if (get_parent_class($class) !== 'Scoop\Validation\Rule') {
+        if (is_string($className)) {
+            if (!is_subclass_of($className, 'Scoop\Validation\Rule')) {
                 throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
             }
-            self::$customRules[$name] = $class;
+            return self::$customRules[$className::getName()] = $className;
+        }
+        foreach ($className as $name) {
+            self::addRule($name);
         }
     }
 

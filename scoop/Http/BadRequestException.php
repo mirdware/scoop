@@ -3,8 +3,8 @@ namespace Scoop\Http;
 
 class BadRequestException extends Exception
 {
-    public function __construct($message = null, $code = 0, \Exception $previous = null)
+    public function __construct($message = 'Bad Formatted', \Exception $previous = null)
     {
-        parent::__construct(400, $message, $previous, array('HTTP/1.0 400 Bad Request'), $code);
+        parent::__construct($message, 400, $previous, array('HTTP/1.0 400 Bad Request'));
     }
 }

@@ -2,7 +2,7 @@
 namespace Scoop\View;
 
 /**
- * Clase que se encarga del manejo de herencia dentro de las vistas.
+ * Clase que se encarga del manejo de herencia y relaciones dentro de las vistas.
  */
 abstract class Heritage {
     /**
@@ -11,7 +11,7 @@ abstract class Heritage {
      */
     private static $footer;
     /**
-     * Almacena los datos que seran pasados a la plantilla hija.
+     * Almacena los datos que seran pasados a plantillas relacionadas.
      * @var array
      */
     private static $data;
@@ -27,7 +27,7 @@ abstract class Heritage {
     }
 
     /**
-     * Aplica herencia a una plantilla aplicando un template a la vista.
+     * Invoca una plantilla padre a la vista.
      * @param string $parent Ubicacion del template que sera aplicado a la vista.
      */
     public static function extend($parent)
@@ -38,7 +38,7 @@ abstract class Heritage {
     }
 
     /**
-     * Incluye una vista dentro de otra.
+     * Incluye un template dentro de otro.
      * @param string $path Ruta donde se ubica la vista a ser incluida.
      */
     public static function import($path)
@@ -55,7 +55,7 @@ abstract class Heritage {
     }
 
     /**
-     * Obtiene el pie de página del template.
+     * Obtiene el contenido de la vista y limpia el buffer.
      * @return string Pie de página del template.
      */
     public static function getContent()

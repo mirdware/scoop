@@ -44,30 +44,24 @@ class Request
         return $res;
     }
 
-    private static function purge($value)
+    private static function purge($array)
     {
-        if (is_array($value)) {
-            foreach ($value as $key => $v) {
-                $value[$key] = self::purge($v);
-            }
-            return $value;
+        foreach ($array as &$value) {
+            $value = self::filterXSS($value);
         }
-        $value = self::filterXSS(trim($value));
-        $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-        return $value;
+        return $array;
     }
 
     private static function getBodyData()
     {
         $data = file_get_contents("php://input");
-        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
-            $data = json_decode($data, true);
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($data);
-            return self::$put = self::purge($data);
-        }
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
         $put = array();
         if (!$data) return $put;
+        if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+            $data = json_decode($data, true);
+            return self::purge($data);
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
         $data = explode('&', $data);
         foreach ($data as $value) {
             $value = explode('=', $value);
@@ -99,6 +93,6 @@ class Request
             $old_data = $data;
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
         } while ($old_data !== $data);
-        return $data;
+        return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
     }
 }

@@ -16,7 +16,7 @@ final class Template
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
      * antiguas que el template.
      * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
-     * @param  array $viewData Datos que deben ser reemplazados dentro de la vista.
+     * @param array  $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
     public static function parse($templatePath, $viewData)
@@ -40,7 +40,7 @@ final class Template
      * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera
      * la vista.
      * @param  string $template Nombre del template que se usara
-     * @return string           Contenido básico de la vista a ser mostrada
+     * @return string Contenido básico de la vista a ser mostrada
      */
     private static function compile($template)
     {
@@ -76,7 +76,7 @@ final class Template
     /**
      * Reglas de reemplazo para cada uno de los comandos de la plantilla.
      * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param string $line Linea que se encuentra analizando el parseador.
+     * @param  string  $line Linea que se encuentra analizando el parseador.
      * @return boolean Existio o no reemplazo dentro de la linea.
      */
     private static function replace(&$line)
@@ -144,7 +144,7 @@ final class Template
 
     /**
      * Reglas para limpiar y minificar la vista.
-     * @param string $html Contenido completo de la plantilla.
+     * @param  string $html Contenido completo de la plantilla.
      * @return string Plantilla limpia y minificada.
      */
     private static function clearHTML($html)

@@ -12,14 +12,14 @@ abstract class Injector
         $class = new \ReflectionClass($className);
         $constructor = $class->getConstructor();
         if ($constructor) {
-            return $class->newInstanceArgs($this->getArguments($constructor) + $args);
+            $args = array_merge($this->getArguments($constructor->getParameters()), $args);
+            return $class->newInstanceArgs($args);
         }
         return $class->newInstanceWithoutConstructor();
     }
 
-    protected function getArguments(\ReflectionMethod $method)
+    private function getArguments($params)
     {
-        $params = $method->getParameters();
         $args = array();
         foreach ($params as $param) {
             $class = $param->getClass();
@@ -32,9 +32,7 @@ abstract class Injector
 
     protected static function formatClassName($className)
     {
-        if (strpos($className, '\\') === 0) {
-            return substr($className, 1);
-        }
+        if (strpos($className, '\\') === 0) return substr($className, 1);
         return $className;
     }
 }

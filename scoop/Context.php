@@ -30,15 +30,15 @@ class Context
     public static function connect($bundle = null)
     {
         $config = self::getDBConfig($bundle);
-        self::validateDBConfig($config);
+        $config = self::normalizeDBConfig($config);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
             self::$connections[$key] = new Storage\DBC(
                 $config['database'],
                 $config['user'],
-                isset($config['password']) ? $config['password'] : '',
-                isset($config['host']) ? $config['host'] : '127.0.0.1',
-                isset($config['driver']) ? $config['driver'] : 'pgsql'
+                $config['password'],
+                $config['host'],
+                $config['driver']
             );
         }
         return self::$connections[$key];
@@ -79,13 +79,19 @@ class Context
         return $config;
     }
 
-    private static function validateDBConfig($config)
+    private static function normalizeDBConfig($config)
     {
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {
-                throw new \OutOfBoundsException('Property '.$required.' not found in database configuration');
+                throw new \OutOfBoundsException('Property '.$required.
+                ' not found in database configuration');
             }
         }
+        return array_merge(array(
+            'password' => '',
+            'host' => '127.0.0.1',
+            'driver' => 'pgsql'
+        ), $config);
     }
 }

@@ -9,11 +9,11 @@ class BasicInjector extends Injector
     public function bind($interfaceName, $className)
     {
         $interfaceName = self::formatClassName($interfaceName);
-        $class = new \ReflectionClass($className);
-        if (!$class->isSubclassOf($interfaceName)) {
-            throw new \UnexpectedValueException('class '.$class->getName().' can not binding to '.$interfaceName);
+        $className = self::formatClassName($className);
+        if (!is_subclass_of($className, $interfaceName)) {
+            throw new \UnexpectedValueException('class '.$className.' can not binding to '.$interfaceName);
         }
-        self::$rules[$interfaceName] = $class->getName();
+        self::$rules[$interfaceName] = $className;
     }
 
     public function getInstance($className)

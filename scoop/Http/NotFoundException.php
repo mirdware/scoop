@@ -3,8 +3,8 @@ namespace Scoop\Http;
 
 class NotFoundException extends Exception
 {
-    public function __construct($message = null, $code = 0, \Exception $previous = null)
+    public function __construct($message = 'Not Found', \Exception $previous = null)
     {
-        parent::__construct(404, $message, $previous, array('HTTP/1.0 404 Not Found'), $code);
+        parent::__construct($message, 404, $previous, array('HTTP/1.0 404 Not Found'));
     }
 }

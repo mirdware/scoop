@@ -59,7 +59,7 @@ abstract class Controller
      * @param string $msg Mensaje enviado a la excepción.
      * @throws Http\accessDeniedException La excepción access denied.
      */
-    protected function accessDenied($msg = null)
+    protected function denyAccess($msg = null)
     {
         throw new \Scoop\Http\AccessDeniedException($msg);
     }
@@ -71,19 +71,15 @@ abstract class Controller
     */
     protected function validate($validator, $data)
     {
-        $validation = $validator->validate($data);
-        if (empty($validation)) return;
+        $errors = $validator->validate($data);
+        if (empty($errors)) return;
         $request = $this->inject('request');
-        if ($request->isAjax()) {
-            $jsonResponse = json_encode($errors);
-            throw new \Scoop\Http\BadRequestException($jsonResponse? $jsonResponse: $errors);
-        }
         $_SESSION['data-scoop'] = array(
             'body' => $request->getBody(),
             'query' => $request->getQuery(),
             'error' => $errors
         );
-        $this->goBack();
+        throw new \Scoop\Http\BadRequestException(json_encode($errors));
     }
 
     /**

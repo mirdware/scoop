@@ -12,12 +12,12 @@
  * @version 0.5
  */
 
+require 'scoop/Context.php';
+\Scoop\Context::load();
+$environment = new \Scoop\Bootstrap\Environment('app/config');
+$app = new \Scoop\Bootstrap\Application($environment);
 try {
-    require 'scoop/Context.php';
-    \Scoop\Context::load();
-    $environment = new \Scoop\Bootstrap\Environment('app/config');
-    $app = new \Scoop\Bootstrap\Application($environment);
-    $app->run();
+    echo $app->run();
 } catch (\Scoop\Http\Exception $ex) {
-    $ex->handler();
+    echo $app->showError($ex->handler());
 }

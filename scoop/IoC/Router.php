@@ -174,24 +174,25 @@ class Router
 
     private static function encodeURL($str)
     {
+        $str = strtolower($str);
         $str = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'), 'a', $str
+            array('á', 'à', 'ä', 'â', 'ª'), 'a', $str
         );
         $str = str_replace(
-            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'), 'e', $str
+            array('é', 'è', 'ë', 'ê'), 'e', $str
         );
         $str = str_replace(
-            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'), 'i', $str
+            array('í', 'ì', 'ï', 'î'), 'i', $str
         );
         $str = str_replace(
-            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'), 'o', $str
+            array('ó', 'ò', 'ö', 'ô'), 'o', $str
         );
         $str = str_replace(
-            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'), 'u', $str
+            array('ú', 'ù', 'ü', 'û'), 'u', $str
         );
         $str = str_replace(
-            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'), array('-', 'n', 'N', 'c', 'C'), $str
+            array(' ', 'ñ', 'ç'), array('-', 'n', 'c'), $str
         );
-        return urlencode(strtolower($str));
+        return urlencode($str);
     }
 }

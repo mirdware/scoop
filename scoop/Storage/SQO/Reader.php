@@ -18,8 +18,8 @@ class Reader extends Filter
             }
             $join = ' '.$type.' JOIN '.$table.(
                 preg_match('/\s*([<>!=]{1,2}|NOT ?LIKE)\s*/', $using) ?
-                ' ON('.$using.')' :
-                ' USING('.$using.')'
+                    ' ON('.$using.')' :
+                    ' USING('.$using.')'
             );
         }
         $this->from[] = $join;

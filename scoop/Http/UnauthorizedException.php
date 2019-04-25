@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Http;
 
-class NotFoundException extends Exception
+class UnauthorizedException extends Exception
 {
     public function __construct($message = 'Not authorized', \Exception $previous = null)
     {

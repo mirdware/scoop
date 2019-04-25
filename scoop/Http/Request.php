@@ -5,11 +5,17 @@ class Request
 {
     private static $body;
     private static $query;
+    private static $refererData;
 
     public function __construct()
     {
         self::$body = self::getBodyData();
         self::$query = self::purge($_GET);
+        self::$refererData = array();
+        if (isset($_SESSION['data-scoop'])) {
+            self::$refererData = $_SESSION['data-scoop'];
+            unset($_SESSION['data-scoop']);
+        }
     }
 
     public function getQuery($id = null) 
@@ -20,6 +26,11 @@ class Request
     public function getBody($id = null) 
     {
         return self::getByIndex($id, self::$body);
+    }
+
+    public function reference($id)
+    {
+        return self::getByIndex($id, self::$refererData);
     }
 
     /**

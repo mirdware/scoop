@@ -45,7 +45,9 @@ class Environment
     protected function registerServices($services)
     {
         foreach ($services as $name => $service) {
-            \Scoop\Context::registerService($name, $service);
+            is_array($service) ?
+                \Scoop\Context::registerService($name, array_shift($service), $service) :
+                \Scoop\Context::registerService($name, $service);
         }
         return $this;
     }

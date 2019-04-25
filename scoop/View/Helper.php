@@ -17,11 +17,6 @@ class Helper
      */
     private $config;
     /**
-     * Errores reportados por el anterior controlador.
-     * @var array
-     */
-    private $refererData = array();
-    /**
      * Ubicación de los assets dentro de la aplicación.
      * @var array
      */
@@ -41,10 +36,6 @@ class Helper
         $this->components = $components;
         $this->config = \Scoop\Context::getService('config');
         self::$assets = (array) $this->config->get('assets') + self::$assets;
-        if (isset($_SESSION['data-scoop'])) {
-            $this->refererData = $_SESSION['data-scoop'];
-            unset($_SESSION['data-scoop']);
-        }
     }
 
     /**
@@ -101,22 +92,6 @@ class Helper
         }
         $args = func_get_args();
         return $router->getURL(array_shift($args), $args);
-    }
-
-    /**
-     * Obtener datos de la petición anterior
-     * @param  string $name Nombre con el que se identifica el error.
-     * @return string|array       Descripción o colección de descripciones para el error.
-     */
-    public function reference($name)
-    {
-        $name = explode('.', $name);
-        $data = $this->refererData;
-        foreach ($name as $index) {
-            if (!isset($data[$index])) return '';
-            $data = $data[$index];
-        }
-        return $data;
     }
 
     /**

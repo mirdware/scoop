@@ -14,25 +14,25 @@ class Application
 
     public function run()
     {
-        if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-            \Scoop\Controller::redirect(
-                str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
-            );
-        }
-        exit($this->invoke());
-    }
-
-    public function invoke()
-    {
         $url = $this->getURL();
         $response = $this->environment->getRouter()->route($url);
-        if ($response === null) {
-            header('HTTP/1.0 204 No Response');
-        } elseif ($response instanceof \Scoop\View) {
-            $response = $response->render();
-        } elseif (is_array($response)) {
+        return $this->formatResponse($response);
+    }
+
+    public function showError($error)
+    {
+        try {
+            return $this->formatResponse($error);
+        } catch (\UnderflowException $ex) {}
+    }
+
+    private function formatResponse($response)
+    {
+        if ($response === null) return header('HTTP/1.0 204 No Response');
+        if ($response instanceof \Scoop\View) return $response->render();
+        if (is_array($response)) {
             header('Content-Type: application/json');
-            $response = json_encode($response);
+            return json_encode($response);
         }
         return $response;
     }
@@ -46,6 +46,11 @@ class Application
     private function getURL()
     {
         if (!isset($this->url)) {
+            if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
+                \Scoop\Controller::redirect(
+                    str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
+                );
+            }
             $this->url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
             unset($_GET['route'], $_REQUEST['route']);
         }

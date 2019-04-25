@@ -52,7 +52,7 @@ final class Template
             $line = fgets($file);
             $flag = self::replace($line);
             if ($flagPHP) {
-                $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1? '': ';';
+                $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1 ? '' : ';';
                 if (!$flag) {
                     $lastChar = ' ?>';
                     $flagPHP = false;

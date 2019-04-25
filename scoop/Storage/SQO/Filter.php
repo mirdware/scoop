@@ -70,7 +70,7 @@ class Filter
 
     public function limit($offset, $limit = null)
     {
-        $this->limit = ' LIMIT '.($limit === null? $offset: $limit.' OFFSET '.$offset);
+        $this->limit = ' LIMIT '.($limit === null ? $offset : $limit.' OFFSET '.$offset);
         return $this;
     }
 

@@ -106,16 +106,14 @@ final class View
     /**
      * Registra los componentes que seran utilizados en la vista.
      * @param  string $name  Nombre con el que se identificara el componente internamente.
-     * @param  string $class Referencia a la clase que sera componentizada.
+     * @param  string $className Referencia a la clase que sera componentizada.
      */
-    public static function registerComponent($name, $class)
+    public static function registerComponent($name, $className)
     {
-        $interfaces = class_implements($class);
-        if (!isset($interfaces['Scoop\View\Component'])) {
-            throw new \UnexpectedValueException(
-                $class.' class isn\'t implemented \Scoop\View\Component'
-            );
+        $componentInterface = 'Scoop\View\Component';
+        if (!is_subclass_of($className, $componentInterface)) {
+            throw new \UnexpectedValueException($className.' not implement '.$componentInterface);
         }
-        self::$components[strtolower($name)] = $class;
+        self::$components[strtolower($name)] = $className;
     }
 }

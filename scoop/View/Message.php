@@ -30,8 +30,8 @@ class Message implements Component
     public function __construct()
     {
         self::$props = isset($_SESSION['msg-scoop']) ?
-        $_SESSION['msg-scoop'] :
-        array('type' => 'not', 'msg' => '');
+            $_SESSION['msg-scoop'] :
+            array('type' => 'not', 'msg' => '');
     }
 
     /**

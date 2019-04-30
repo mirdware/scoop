@@ -3,7 +3,7 @@ namespace Scoop\Http;
 
 abstract class Exception extends \Exception
 {
-    protected $headers;
+    private $headers;
     private $path;
     private $title;
 
@@ -18,9 +18,10 @@ abstract class Exception extends \Exception
         $this->path = $path ? 'exceptions/'.$path : 'exceptions/default';
     }
 
-    public function getHeaders()
+    public function addHeader($headers)
     {
-        return $this->headers;
+        $this->headers[] = $headers;
+        return $this;
     }
 
     public function handler()

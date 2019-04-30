@@ -19,12 +19,11 @@ class Router
         $route = $this->getRoute($url);
         if ($route) {
             $method = explode(':', $route['controller']);
+            $classController = '\Scoop\Controller';
             $controller = array_shift($method);
             $method = array_pop($method);
-            if (!is_subclass_of($controller, 'Scoop\Controller')) {
-                throw new \UnexpectedValueException(
-                    $controller.' class isn\'t an instance of \Scoop\Controller'
-                );
+            if (!is_subclass_of($controller, $classController)) {
+                throw new \UnexpectedValueException($controller.' not implement '.$classController);
             }
             $controller =  \Scoop\Context::getInjector()->getInstance($controller);
             if ($controller) {
@@ -174,7 +173,7 @@ class Router
 
     private static function encodeURL($str)
     {
-        $str = strtolower($str);
+        $str = mb_strtolower($str);
         $str = str_replace(
             array('á', 'à', 'ä', 'â', 'ª'), 'a', $str
         );

@@ -6,6 +6,7 @@
 /app/cache
 *.lock
 *.log
+*.architect~
 # Windows detritus
 Thumbs.db
 ehthumbs.db

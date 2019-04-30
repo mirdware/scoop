@@ -124,8 +124,9 @@ class Validator
     public static function addRule($className)
     {
         if (is_string($className)) {
-            if (!is_subclass_of($className, 'Scoop\Validation\Rule')) {
-                throw new \UnexpectedValueException($class.' class isn\'t an instance of \Scoop\Validation\Rule');
+            $classRule = '\Scoop\Validation\Rule';
+            if (!is_subclass_of($className, $classRule)) {
+                throw new \UnexpectedValueException($className.' not implement '.$classRule);
             }
             return self::$customRules[$className::getName()] = $className;
         }

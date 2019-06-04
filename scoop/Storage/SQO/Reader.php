@@ -25,4 +25,24 @@ class Reader extends Filter
         $this->from[] = $join;
         return $this;
     }
+
+    public function page($params)
+    {
+        if (!isset($params['page']) || !isset($params['size'])) {
+            throw new \InvalidArgumentException('Parameters page and size must be supplied');
+        }
+        $page = $params['page'];
+        $size = $params['size'];
+        unset($params['page'], $params['size']);
+        if (!is_numeric($page) || !is_numeric($size)) {
+            throw new \InvalidArgumentException('Parameters page('.$page.') and size('.$size.') must be numerics');
+        }
+        $sql = $this->query;
+        $this->query = preg_replace('/^SELECT (.*) FROM /', 'SELECT COUNT(*) AS total FROM ', $sql);
+        $paginated = $this->run($params)->fetch(\PDO::FETCH_ASSOC);
+        $this->query = $sql;
+        $clone = clone $this;
+        $result = $clone->limit($page * $size, $size)->run($params)->fetchAll();
+        return $paginated + compact('page', 'size', 'result');
+    }
 }

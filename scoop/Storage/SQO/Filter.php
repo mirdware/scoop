@@ -5,15 +5,15 @@ class Filter
 {
     protected $from = array();
     protected $params = array();
+    protected $query = '';
+    protected $con;
     private $rules = array();
     private $order = array();
     private $group = array();
     private $orderType = ' ASC';
     private $limit = '';
-    private $query = '';
     private $connector = 'AND';
     private $type;
-    protected $con;
 
     public function __construct($query, $type, $params, $connection)
     {

@@ -17,10 +17,10 @@ class SQO
         $this->con = $connection === null ? \Scoop\Context::connect() : $connection;
     }
 
-    public function create($fields = null)
+    public function create($fields = null, SQO\Reader $select = null)
     {
         $query = 'INSERT INTO '.$this->table;
-        return new SQO\Factory($query, $fields, $this->con);
+        return new SQO\Factory($query, $fields, $select, $this->con);
     }
 
     public function read()

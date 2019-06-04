@@ -7,6 +7,6 @@ class BasicUnauthorizedException extends UnauthorizedException
     {
         parent::__construct($message, $previous);
         $domain = \Scoop\Context::getService('config')->get('app.name');
-        $this->addHeaders('WWW-Authenticate: Basic realm="'.$domain.'"');
+        $this->addHeader('WWW-Authenticate: Basic realm="'.$domain.'"');
     }
 }

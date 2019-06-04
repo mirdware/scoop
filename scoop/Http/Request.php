@@ -12,6 +12,9 @@ class Request
         self::$body = self::getBodyData();
         self::$query = self::purge($_GET);
         self::$refererData = array();
+        foreach ($_FILES AS $name => $file) {
+            self::$body[$name] = $file;
+        }
         if (isset($_SESSION['data-scoop'])) {
             self::$refererData = $_SESSION['data-scoop'];
             unset($_SESSION['data-scoop']);
@@ -57,8 +60,10 @@ class Request
 
     private static function purge($array)
     {
-        foreach ($array as &$value) {
-            $value = self::filterXSS($value);
+        foreach ($array as $key => $value) {
+            $array[$key] = is_array($value) ?
+            self::purge($value) :
+            self::filterXSS($value);
         }
         return $array;
     }
@@ -67,12 +72,12 @@ class Request
     {
         $data = file_get_contents("php://input");
         $put = array();
-        if (!$data) return $put;
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);
             return self::purge($data);
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
+        if (!$data) return $put;
         $data = explode('&', $data);
         foreach ($data as $value) {
             $value = explode('=', $value);

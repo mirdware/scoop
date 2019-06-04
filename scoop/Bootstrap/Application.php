@@ -15,7 +15,7 @@ class Application
     public function run()
     {
         $url = $this->getURL();
-        $response = $this->environment->getRouter()->route($url);
+        $response = $this->environment->route($url);
         return $this->formatResponse($response);
     }
 
@@ -29,9 +29,12 @@ class Application
     private function formatResponse($response)
     {
         if ($response === null) return header('HTTP/1.0 204 No Response');
-        if ($response instanceof \Scoop\View) return $response->render();
+        if ($response instanceof \Scoop\View) {
+            header('Content-Type:text/html');
+            return $response->render();
+        }
         if (is_array($response)) {
-            header('Content-Type: application/json');
+            header('Content-Type:application/json');
             return json_encode($response);
         }
         return $response;

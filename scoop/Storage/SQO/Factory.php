@@ -15,8 +15,7 @@ final class Factory
         $this->con = $connection;
         $this->select = $select;
         if ($values) {
-            $select ? $this->createInsertSelect($values) :
-            $this->create($values);
+            $select ? $this->createInsertSelect($values) : $this->create($values);
         }
     }
 

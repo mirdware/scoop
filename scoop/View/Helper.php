@@ -86,12 +86,7 @@ class Helper
      */
     public function route()
     {
-        $router = $this->config->getRouter();
-        if (func_num_args() === 0) {
-            return $router->getCurrentRoute();
-        }
-        $args = func_get_args();
-        return $router->getURL(array_shift($args), $args);
+        return $this->config->getURL(func_get_args());
     }
 
     /**

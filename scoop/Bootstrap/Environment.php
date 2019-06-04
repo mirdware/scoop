@@ -14,7 +14,6 @@ class Environment
         }
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         $this->config = require $configPath.'.php';
-        $this->configure();
     }
 
     public function get($name)
@@ -28,9 +27,30 @@ class Environment
         return $res;
     }
 
-    public function getRouter()
+    public function route($url)
     {
-        return $this->router;
+        $this->configure();
+        return $this->router->route($url);
+    }
+
+    public function getURL($args)
+    {
+        if (empty($args)) {
+            return $this->router->getCurrentRoute();
+        }
+        return $this->router->getURL(array_shift($args), $args);
+    }
+
+    protected function configure() {
+        \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
+        \Scoop\Validator::addRule((Array) $this->get('validators'));
+        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
+        $this->bind((Array) $this->get('providers'));
+        $this->registerComponents((Array) $this->get('components'));
+        $services = (Array) $this->get('services');
+        $services += array('config' => $this, 'request' => new \Scoop\Http\Request());
+        $this->registerServices($services);
+        return $this;
     }
 
     protected function bind($interfaces)
@@ -57,18 +77,6 @@ class Environment
         foreach ($components as $name => $component) {
             \Scoop\View::registerComponent($name, $component);
         }
-        return $this;
-    }
-
-    protected function configure() {
-        \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
-        \Scoop\Validator::addRule((Array) $this->get('validators'));
-        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
-        $this->bind((Array) $this->get('providers'));
-        $this->registerComponents((Array) $this->get('components'));
-        $services = (Array) $this->get('services');
-        $services += array('config' => $this, 'request' => new \Scoop\Http\Request());
-        $this->registerServices($services);
         return $this;
     }
 }

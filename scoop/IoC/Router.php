@@ -64,7 +64,7 @@ class Router
         }
     }
 
-    public function getURL($key, $params)
+    public function getURL($key, $params, $query)
     {
         $path = preg_split('/\{\w+\}/', $this->routes[$key]['url']);
         $url = array_shift($path);
@@ -80,7 +80,16 @@ class Router
         if (strrpos($url, '/') !== strlen($url)-1) {
             $url .= '/';
         }
-        return ROOT.substr($url, 1);
+        return ROOT.substr($url, 1).($query ? $this->formatQueryString($query) : '');
+    }
+
+    public function formatQueryString($query)
+    {
+        $queryString = '';
+        foreach ($query AS $name => $value) {
+            $queryString .= $name.'='.$value;
+        }
+        return '?'.$queryString;
     }
 
     public function getCurrentRoute()

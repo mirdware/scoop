@@ -35,10 +35,24 @@ class Environment
 
     public function getURL($args)
     {
-        if (empty($args)) {
-            return $this->router->getCurrentRoute();
+        $query = array_pop($args);
+        if (!is_array($query)) {
+            array_push($args, $query);
+            $query = null;
         }
-        return $this->router->getURL(array_shift($args), $args);
+        if (empty($args)) {
+            $currentPath = '//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+            if ($query) {
+                return $this->mergeQuery($currentPath, $query);
+            }
+            return $currentPath;
+        }
+        return $this->router->getURL(array_shift($args), $args, $query);
+    }
+
+    public function isCurrentRoute($route)
+    {
+        return $this->router->getCurrentRoute() === $route;
     }
 
     protected function configure() {
@@ -78,5 +92,37 @@ class Environment
             \Scoop\View::registerComponent($name, $component);
         }
         return $this;
+    }
+
+    private function getQuery($params)
+    {
+        $query = array();
+        $params = explode('&', $params);
+        foreach ($params AS $param) {
+            $param = explode('=', $param);
+            $query[$param[0]] = $param[1];
+        }
+        return $query;
+    }
+
+    private function cleanQuery($query)
+    {
+        foreach ($query AS $name => $value) {
+            if (!$value) {
+                unset($query[$name]);
+            }
+        }
+        return $query;
+    }
+
+    private function mergeQuery($url, $query)
+    {
+        $url = explode('?', $url);
+        if (isset($url[1])) {
+            $query += $this->getQuery($url[1]);
+        }
+        $query = $this->cleanQuery($query);
+        if (!$query) return $url[0];
+        return $url[0].$this->router->formatQueryString($query);   
     }
 }

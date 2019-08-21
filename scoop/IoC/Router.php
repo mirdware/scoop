@@ -25,7 +25,7 @@ class Router
             if (!is_subclass_of($controller, $classController)) {
                 throw new \UnexpectedValueException($controller.' not implement '.$classController);
             }
-            $controller =  \Scoop\Context::getInjector()->getInstance($controller);
+            $controller = \Scoop\Context::getInjector()->getInstance($controller);
             if ($controller) {
                 $this->intercept($url);
                 $controllerReflection = new \ReflectionClass($controller);
@@ -36,14 +36,12 @@ class Router
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
                 $method = $controllerReflection->getMethod($method);
-                $numParams = count($route['params']);
                 if (
-                    $numParams < $method->getNumberOfRequiredParameters() ||
-                    $numParams > $method->getNumberOfParameters()
+                    $numParams >= $method->getNumberOfRequiredParameters() &&
+                    $numParams <= $method->getNumberOfParameters()
                 ) {
-                    throw new \Scoop\Http\MethodNotAllowedException();
+                    return $method->invokeArgs($controller, $route['params']);
                 }
-                return $method->invokeArgs($controller, $route['params']);
             }
         }
         throw new \Scoop\Http\NotFoundException();

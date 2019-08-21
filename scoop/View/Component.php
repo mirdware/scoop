@@ -1,9 +1,6 @@
 <?php
 namespace Scoop\View;
 
-/**
- * Interface necesaria para el registro de componentes de la vista.
- */
 interface Component
 {
 	/**

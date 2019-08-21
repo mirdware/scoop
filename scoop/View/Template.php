@@ -1,22 +1,15 @@
 <?php
 namespace Scoop\View;
 
-/**
- * Clase encargada de convertir las plantillas en formato nombre.sdt.php a
- * vistas PHP
- */
 final class Template
 {
-    /**
-     * Nombre de la clase que se encarga del manejo de la herencia.
-     */
     const HERITAGE = '\Scoop\View\Heritage';
 
     /**
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
      * antiguas que el template.
      * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
-     * @param array  $viewData Datos que deben ser reemplazados dentro de la vista.
+     * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
     public static function parse($templatePath, $viewData)
@@ -37,9 +30,8 @@ final class Template
     }
 
     /**
-     * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera
-     * la vista.
-     * @param  string $template Nombre del template que se usara
+     * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera la vista.
+     * @param string $template Nombre del template que se usara
      * @return string Contenido básico de la vista a ser mostrada
      */
     private static function compile($template)
@@ -76,8 +68,9 @@ final class Template
     /**
      * Reglas de reemplazo para cada uno de los comandos de la plantilla.
      * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param  string  $line Linea que se encuentra analizando el parseador.
-     * @return boolean Existio o no reemplazo dentro de la linea.
+     * @param string $line Linea que se encuentra analizando el parseador.
+     * @return boolean Existio o no reemplazo dentro de la linea,
+     *  se pasa por referencia para reflejar cambios pues la función debe devolver un boolean.
      */
     private static function replace(&$line)
     {

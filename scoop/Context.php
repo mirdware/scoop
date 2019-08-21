@@ -8,6 +8,10 @@ class Context
     private static $service;
     private static $injector;
 
+    /**
+     * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
+     * @return vendor|\Scoop\Bootstrap\Loader El cargador usado para ejecutar la carga.
+     */
     public static function load()
     {
         if (!isset(self::$loader)) {
@@ -15,7 +19,7 @@ class Context
                 self::$loader = require 'vendor/autoload.php';
             } else {
                 require 'scoop/Bootstrap/Loader.php';
-                self::$loader = new Loader();
+                self::$loader = new \Loader();
                 $conf = json_decode(file_get_contents('composer.json'), true);
                 $psr4 = $conf['autoload']['psr-4'];
                 foreach ($psr4 as $key => $value) {
@@ -27,6 +31,12 @@ class Context
         return self::$loader;
     }
 
+    /**
+     * Conecta a una base de datos
+     * @param string|array<mixed> $bundle El nombre del configuration bundle (EJ: default)
+     *  o un array con los datos de configuración necesaria para la creación (database, user).
+     * @return \Scoop\Storage\DBC La conexión establecida con el servidor.
+     */
     public static function connect($bundle = null)
     {
         $config = self::getDBConfig($bundle);
@@ -44,6 +54,10 @@ class Context
         return self::$connections[$key];
     }
 
+    /**
+     * Obtiene la instancia del injector según las capacidades del servidor.
+     * @return \Scoop\IoC\Injector El injector apropiado para el servidor.
+     */
     public static function getInjector()
     {
         if (!self::$injector) {
@@ -52,6 +66,12 @@ class Context
         return self::$injector;
     }
 
+    /**
+     * Obtiene un servicio configurado previamente
+     * @param string $service Nombre del servicio a buscar.
+     * @return object Servicio hallado.
+     * @throws \UnderflowException Si no se ha registrado ningún servicio arroja la excepción.
+     */
     public static function getService($service)
     {
         if (!self::$service) {
@@ -60,6 +80,13 @@ class Context
         return self::$service->get($service);
     }
 
+    /**
+     * Registra un servicio en el service manager.
+     * @param string $key Nombre del servicio
+     * @param string|object $callback Nombre de la clase del servicio 
+     *  o el objeto mismo que representa el servicio.
+     * @param array<mixed> $params Parametros enviados al servicio.
+     */
     public static function registerService($key, $callback, $params = array())
     {
         if (!self::$service) {
@@ -68,6 +95,13 @@ class Context
         self::$service->register($key, $callback, $params);
     }
 
+    /**
+     * Obtiene la configuración de la base de datos establecida en /app/config::db
+     * Tambien puede mezclar los datos del array con los de la configuración por defecto.
+     * @param string|array<array<string>> $bundle El nombre del configuration bundle (EJ: default)
+     *  o un array con los datos de configuración necesaria para la creación (database, user).
+     * @return array<array<string>> Array de configuración.
+     */
     private static function getDBConfig($bundle)
     {
         $serviceConfig = self::getService('config');
@@ -79,6 +113,11 @@ class Context
         return $config;
     }
 
+    /**
+     * Agrega los datos por defecto para ejecutar la configuración.
+     * @param array<array<string>> $config Array de configuración.
+     * @return array<array<string>> Configuración normalizada.
+     */
     private static function normalizeDBConfig($config)
     {
         $requireds = array('database', 'user');

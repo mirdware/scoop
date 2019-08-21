@@ -1,16 +1,8 @@
 <?php
 namespace Scoop;
 
-/**
- * Clase que implementa los métodos y atributos necesarios para poder manejar de
- * manera más sencilla los controladores de la aplicación.
- */
 abstract class Controller
 {
-    /**
-     * Lista de posibles redirecciones del controlador.
-     * @var array
-     */
     private static $redirects = array(
         300 => 'HTTP/1.1 300 Multiple Choices',
         301 => 'HTTP/1.1 301 Moved Permanently',
@@ -26,7 +18,7 @@ abstract class Controller
     /**
      * Realiza la redirección a la página pasada como parámetro.
      * @param string $url Dirección a la que se redirecciona la página.
-     * @param integer $status Codigo de la redirección que se va a realizar.
+     * @param integer $status Código de la redirección que se va a realizar.
      */
     public static function redirect($url, $status = 302)
     {
@@ -39,15 +31,18 @@ abstract class Controller
         exit;
     }
 
+    /**
+     * Retorna al usuario a la página anterior.
+     */
     protected function goBack()
     {
         self::redirect($_SERVER['HTTP_REFERER']);
     }
 
     /**
-     * Emite una excepción 404 desde el controlador.
+     * Atajo para lanzar una excepción 404 desde el controlador.
      * @param string $msg Mensaje enviado a la excepción.
-     * @throws Http\NotFoundException La excepción not found.
+     * @throws \Scoop\Http\NotFoundException
      */
     protected function notFound($msg = null)
     {
@@ -55,9 +50,9 @@ abstract class Controller
     }
 
     /**
-     * Emite una excepción 403 desde el controlador.
+     * Atajo para lanzar una excepción 403 desde el controlador.
      * @param string $msg Mensaje enviado a la excepción.
-     * @throws Http\accessDeniedException La excepción access denied.
+     * @throws \Scoop\Http\accessDeniedException
      */
     protected function denyAccess($msg = null)
     {
@@ -65,9 +60,10 @@ abstract class Controller
     }
 
     /**
-     * Emite una excepción 400 desde el controlador si la validación no pasa.
-     * @param string $msg Mensaje en formato json enviado a la excepción.
-     * @throws Http\BadRequestException La excepción bad request.
+     * Ejecuta las validaciones y si no pasan se lanza una excepción 400.
+     * @param \Scoop\Validator $validator Objeto que contiene las validaciones a realizar.
+     * @param array<mixed> $data contiene los datos a ser validados.
+     * @throws \Scoop\Http\BadRequestException
     */
     protected function validate($validator, $data)
     {

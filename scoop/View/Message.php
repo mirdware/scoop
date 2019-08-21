@@ -6,25 +6,10 @@ namespace Scoop\View;
  */
 class Message implements Component
 {
-    /**
-     * Tipo de salida estandar de los mensajes.
-     */
     const INFO = 'info';
-     /**
-     * Tipo de salida como exito
-     */
     const SUCCESS = 'success';
-    /**
-     * Tipo de salida como error.
-     */
     const ERROR = 'error';
-    /**
-     * Tipo de salida como advertencia.
-     */
     const WARNING = 'warning';
-    /**
-     * @var array Propiedades del mensaje.
-     */
     private static $props;
 
     public function __construct()
@@ -36,7 +21,7 @@ class Message implements Component
 
     /**
      * Crea el componente en la vista.
-     * @return string Propiedad $template.
+     * @return string Renderiza el mensaje.
      */
     public function render()
     {
@@ -49,7 +34,11 @@ class Message implements Component
     /**
      * Valida y muestra el mensaje suministrado por el usuario.
      * @param string $msg  Mensaje a ser mostrado por la aplicación.
-     * @param string $type Tipo de mensaje a mostrar.
+     * @param string $type Tipo de mensaje a mostrar
+     *  SUCCESS(por defecto): Se ejecuto correctamente la acción
+     *  INFO: El mensaje es puramente informativo
+     *  WARNING: Se debe prestar atención a algo que no detuvo el proceso
+     *  ERROR: Se debe prestar atención a algo que detuvo el proceso.
      */
     public static function set($msg, $type = self::SUCCESS)
     {

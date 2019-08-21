@@ -1,24 +1,13 @@
 <?php
 namespace Scoop\View;
 
-/**
- * Clase que se encarga del manejo de herencia y relaciones dentro de las vistas.
- */
 abstract class Heritage {
-    /**
-     * Almacena el pie de la página que actua como padre
-     * @var string
-     */
     private static $footer;
-    /**
-     * Almacena los datos que seran pasados a plantillas relacionadas.
-     * @var array
-     */
     private static $data;
 
     /**
      * Inicia los atributos estaticos de la clase.
-     * @param array $data Los datos que seran renderizados por la plantilla.
+     * @param array<mixed> $data Los datos que seran renderizados por la plantilla.
      */
     public static function init($data)
     {

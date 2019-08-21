@@ -1,4 +1,4 @@
-import { Component, Resource, IoC } from 'scalar';
+import { Component, Resource } from 'scalar';
 
 let blockSubmit = false;
 

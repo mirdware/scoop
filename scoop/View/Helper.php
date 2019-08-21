@@ -1,25 +1,10 @@
 <?php
 namespace Scoop\View;
 
-/**
- * Clase que sirve como contenedor de funciones utiles a la vista.
- */
 class Helper
 {
-    /**
-     * Componentes que podra manejar las vistas.
-     * @var array
-     */
     private $components;
-    /**
-     * Inyección del servicio config.
-     * @var \Scoop\Bootstrap\Environment
-     */
     private $config;
-    /**
-     * Ubicación de los assets dentro de la aplicación.
-     * @var array
-     */
     private static $assets = array(
         'path' => 'public/',
         'img' => 'images/',
@@ -29,7 +14,7 @@ class Helper
 
     /**
      * Establece la configuración inicial de los atributos del Helper
-     * @param array $components colección de componentes usados por la vista.
+     * @param array<\Scoop\View\Component> $components colección de componentes usados por la vista.
      */
     public function __construct($components)
     {

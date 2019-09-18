@@ -1,5 +1,8 @@
-import { IoC } from 'scalar';
-import { Message } from './scoop/Message';
-import { Form } from './scoop/Form';
+import { Module } from 'scalar';
+import Messenger from './services/Messenger';
+import Message from './components/message';
+import Form from './components/form';
 
-IoC.provide(Message, Form);
+new Module(Messenger)
+.compose('#msg', Message)
+.compose('.scoop-form', Form);

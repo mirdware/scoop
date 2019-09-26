@@ -74,7 +74,7 @@ class Request
         $put = array();
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);
-            return self::purge($data);
+            return $data ? self::purge($data) : array();
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
         if (!$data) return $put;

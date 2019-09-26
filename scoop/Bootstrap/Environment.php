@@ -105,24 +105,12 @@ class Environment
         return $query;
     }
 
-    private function cleanQuery($query)
-    {
-        foreach ($query AS $name => $value) {
-            if (!$value) {
-                unset($query[$name]);
-            }
-        }
-        return $query;
-    }
-
     private function mergeQuery($url, $query)
     {
         $url = explode('?', $url);
         if (isset($url[1])) {
             $query += $this->getQuery($url[1]);
         }
-        $query = $this->cleanQuery($query);
-        if (!$query) return $url[0];
         return $url[0].$this->router->formatQueryString($query);   
     }
 }

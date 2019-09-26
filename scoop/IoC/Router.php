@@ -70,7 +70,7 @@ class Router
         if (count($params) > $count) {
             throw new \InvalidArgumentException('Unformed URL');
         }
-        for ($i=0; $i<$count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             if (isset($params[$i])) {
                 $url .= self::encodeURL($params[$i]).$path[$i];
             }
@@ -78,16 +78,17 @@ class Router
         if (strrpos($url, '/') !== strlen($url)-1) {
             $url .= '/';
         }
-        return ROOT.substr($url, 1).($query ? $this->formatQueryString($query) : '');
+        return ROOT.substr($url, 1).$this->formatQueryString($query);
     }
 
     public function formatQueryString($query)
     {
+        if (!is_array($query)) return '';
         $queryString = '';
         foreach ($query AS $name => $value) {
-            $queryString .= $name.'='.$value;
+            $queryString .= $value ?  $name.'='.$value : '';
         }
-        return '?'.$queryString;
+        return $queryString ? '?'.$queryString : '';
     }
 
     public function getCurrentRoute()

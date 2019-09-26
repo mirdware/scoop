@@ -13,13 +13,13 @@
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
+    "@babel/core": "^7.6.2",
+    "@babel/preset-env": "^7.6.2",
     "babelify": "^10.0.0",
     "browserify": "^16.5.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.2.0",
-    "gulp-livereload": "^4.0.1",
+    "gulp-livereload": "^4.0.2",
     "gulp-rename": "^1.4.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-stylus": "^2.7.0",
@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.2.2"
+    "scalar": "^0.2.5"
   }
 }

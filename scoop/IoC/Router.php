@@ -86,9 +86,11 @@ class Router
         if (!is_array($query)) return '';
         $queryString = '';
         foreach ($query AS $name => $value) {
-            $queryString .= $value ?  $name.'='.$value : '';
+            if ($value) {
+                $queryString .= '&'.$name.'='.$value;
+            }
         }
-        return $queryString ? '?'.$queryString : '';
+        return $queryString ? '?'.substr($queryString, 1) : '';
     }
 
     public function getCurrentRoute()

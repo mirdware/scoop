@@ -118,7 +118,7 @@ final class Template
             self::HERITAGE.'::sprout()'
         ), $line, $count);
         if ($count !== 0) return true;
-        $line = preg_replace('/([^\$]?)\{(('.$safeExp.'|:|\?)+)\}/',
+        $line = preg_replace('/([^\$]|^)\{(('.$safeExp.'|:|\?)+)\}/',
         '${1}<?php echo ${2} ?>', $line, -1, $count);
         if ($count !== 0) {
             $line = self::convertViewServices($line);

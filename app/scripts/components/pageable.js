@@ -34,11 +34,9 @@ function getHref(page, nextPage) {
       href += (href.indexOf('?') !== -1 ? '&' : '?') + 'page=' + nextPage;
     }
   } else {
-    href = href.replace('page=' + page, '');
-    const indexQ = href.indexOf('?');
-    if (indexQ === href.length - 1) {
-      href = href.substr(0, indexQ);
-    }
+    href = href
+    .replace('?page=' + page, '')
+    .replace('&page=' + page, '');
   }
   return href;
 }

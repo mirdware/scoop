@@ -1,10 +1,10 @@
 export default class Messenger {
   show(msg, type) {
-    Object.assign(this.component, { msg, type });
+    if (this.component) Object.assign(this.component, { msg, type });
   }
 
   close() {
-    this.component.type = 'not';
+    this.show('', 'not');
   }
 
   showError(msg) {

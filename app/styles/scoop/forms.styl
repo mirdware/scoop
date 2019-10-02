@@ -18,6 +18,22 @@ label
     margin .5em 0
     position relative
     text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
+    &.success
+        background-color $color-green-normal
+        &:hover
+            background-color $color-green-hover
+    &.error
+        background-color $color-red-normal
+        &:hover
+            background-color $color-red-hover
+    &.warning
+        background-color $color-yellow-normal
+        &:hover
+            background-color $color-yellow-hover
+    &.info
+        background-color $color-blue-normal
+        &:hover
+            background-color $color-blue-hover
     &:hover
         background-color $color-gray-hover
     &:disabled
@@ -26,6 +42,9 @@ label
         cursor not-allowed
         &:hover
             background-color $color-bg-disable
+
+input:read-only
+    cursor not-allowed
 
 .input
     border-radius .3em
@@ -57,23 +76,48 @@ label
         z-index 1
 
 .group-box
-    icon-box()
     display inline-block
-    vertical-align top
     padding 0 .5em
     box-sizing border-box
-    text-align left
-    {$inputs}
-        width 100%
-        margin-top .2em
-    .btn
-        margin-top 1.6em
-    textarea
-        height 120px
+    .input-box
+        display block
+        padding 0
+        {$inputs}
+            width 100%
 
-.inline-box
-    icon-box()
+.input-box
     display inline-block
+    padding 0 .5em
+    .icon
+        vertical-align middle
+        fa-icon "circle"
+        visibility hidden
+        font 1em FontAwesome
+        margin 0 0 0 -1.1em
+        width auto !important
+    &.error
+        alert-box "times-circle" $color-red-normal
+    &.success
+        alert-box "check-circle" $color-green-normal
+    &.warning
+        alert-box "exclamation-circle" $color-yellow-normal
+    &.group
+        display inline-flex
+        *
+            border-radius 0
+        :first-child
+            border-radius .5em 0 0 .5em
+        :last-child
+            border-radius 0 .5em .5em 0
+        .icon
+            padding 1em 0
+        .badge
+            background #eee
+            color #777
+            padding .5em
+            margin .4em 0
+            border 1px solid #ddd
+            vertical-align middle
 
 .radio
 .checkbox

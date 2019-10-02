@@ -70,7 +70,7 @@ class Request
 
     private static function getBodyData()
     {
-        $data = file_get_contents("php://input");
+        $data = file_get_contents('php://input');
         $put = array();
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);

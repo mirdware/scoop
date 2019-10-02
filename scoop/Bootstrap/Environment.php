@@ -36,7 +36,7 @@ class Environment
     public function getURL($args)
     {
         $query = array_pop($args);
-        if (!is_array($query)) {
+        if ($query !== null && !is_array($query)) {
             array_push($args, $query);
             $query = null;
         }

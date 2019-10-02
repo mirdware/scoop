@@ -36,6 +36,7 @@ class Router
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
                 $method = $controllerReflection->getMethod($method);
+                $numParams = count($route['params']);
                 if (
                     $numParams >= $method->getNumberOfRequiredParameters() &&
                     $numParams <= $method->getNumberOfParameters()

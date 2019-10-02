@@ -37,19 +37,3 @@ alert-box($icon, $color)
         visibility visible
     {$inputs}
         border-color $color !important
-
-icon-box()
-    .icon
-        vertical-align middle
-        fa-icon "circle"
-        visibility hidden
-        font 1em FontAwesome
-        position absolute
-        margin .8em 0 0 -1.2em
-        width auto !important
-    &.error
-        alert-box "times-circle" $color-red-normal
-    &.success
-        alert-box "check-circle" $color-green-normal
-    &.warning
-        alert-box "exclamation-circle" $color-yellow-normal

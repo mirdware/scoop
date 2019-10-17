@@ -1,5 +1,7 @@
 {
   "$color": {
+    "main": "#FF5C00",
+    "strong": "#D45500",
     "blue": {
       "normal": "#2981E4",
       "hover": "#337AB7"

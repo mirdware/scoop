@@ -1,0 +1,65 @@
+#scoop-overlay
+    height 100%
+    display none
+    left 0
+    position fixed
+    top 0
+    width 100%
+    z-index 1001
+    background-color rgba(0, 0, 0, .8)
+    .loading
+        animation spin 2s infinite linear
+        height 1em
+        width 1em
+        z-index 1002
+        top 50%
+        left 50%
+        margin -.5em 0 0 -.5em
+        position fixed
+        color #fff
+        fa-icon "spinner"
+        font 2em FontAwesome
+
+@keyframes animatetop
+  from
+    top -300px
+    opacity 0
+  to
+    top 50%
+    opacity 1
+
+#scoop-modal
+    display none
+    overflow: hidden
+    position: fixed
+    top: 50%;
+    left: 50%;
+    z-index: 1003
+    animation-name animatetop
+    animation-duration 0.4s
+    .header
+        background $color-main
+        cursor default
+        width 100%
+        border-bottom 1px solid #CCC
+        border-radius .5em .5em 0 0
+        display flex
+        h3
+            color #FFF
+            margin .5em
+            font-size 1em
+            white-space nowrap
+            text-transform uppercase
+            flex 1 1 auto
+        div
+            cursor pointer
+            float right
+            padding .5em
+            border-left 1px solid #CCC
+            color #fff
+            fa-icon "times"
+            font-family FontAwesome
+    .body
+        background #FFF
+        padding .5em
+        border-radius 0 0 .5em .5em

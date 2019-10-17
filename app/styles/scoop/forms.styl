@@ -5,7 +5,7 @@ label
     cursor pointer
 
 .btn
-    background $color-gray-normal
+    background $color-main
     border 0
     border-bottom 1px solid rgba(0, 0, 0, .25)
     border-radius .5em
@@ -35,7 +35,7 @@ label
         &:hover
             background-color $color-blue-hover
     &:hover
-        background-color $color-gray-hover
+        background-color $color-main
     &:disabled
         background-color $color-bg-disable
         color $color-gray-normal
@@ -82,8 +82,10 @@ input:read-only
     .input-box
         display block
         padding 0
-        {$inputs}
+        .input
             width 100%
+        &.group
+            display flex
 
 .input-box
     display inline-block

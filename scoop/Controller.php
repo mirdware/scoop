@@ -70,7 +70,7 @@ abstract class Controller
         $errors = $validator->validate($data);
         if (empty($errors)) return;
         $request = $this->inject('request');
-        $_SESSION['data-scoop'] = array(
+        $_SESSION['data-scoop'] += array(
             'body' => $request->getBody(),
             'query' => $request->getQuery(),
             'error' => $errors

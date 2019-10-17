@@ -114,7 +114,6 @@ export default class Form extends Component {
   }
 
   done(res, form) {
-    if (res.redirect) return window.location = res.redirect;
     this.inject(Messenger).showSuccess(res);
     form.reset();
     this.reset();

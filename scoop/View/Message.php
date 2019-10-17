@@ -14,9 +14,8 @@ class Message implements Component
 
     public function __construct()
     {
-        self::$props = isset($_SESSION['msg-scoop']) ?
-            $_SESSION['msg-scoop'] :
-            array('type' => 'not', 'msg' => '');
+        $message = \Scoop\Context::getService('request')->reference('message');
+        self::$props = $message ? $message : array('type' => 'not', 'msg' => '');
     }
 
     /**
@@ -27,7 +26,6 @@ class Message implements Component
     {
         $type = self::$props['type'];
         $msg = self::$props['msg'];
-        unset($_SESSION['msg-scoop']);
         return '<div id="msg" data-attr="className:type" class="'.$type.'"><i class="close"></i><span data-bind="msg">'.$msg.'</span></div>';
     }
 
@@ -46,7 +44,7 @@ class Message implements Component
         if (!in_array($type, $class->getConstants())) {
             throw new \UnexpectedValueException('Error building the message [type rejected].');
         }
-        self::$props = array('type'=>$type, 'msg'=>$msg);
-        $_SESSION['msg-scoop'] = self::$props;
+        self::$props = array('type' => $type, 'msg' => $msg);
+        $_SESSION['data-scoop'] += array('message' => self::$props);
     }
 }

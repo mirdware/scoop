@@ -11,13 +11,12 @@ class Request
     {
         self::$body = self::getBodyData();
         self::$query = self::purge($_GET);
-        self::$refererData = array();
+        self::$refererData = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
         foreach ($_FILES AS $name => $file) {
             self::$body[$name] = $file;
         }
-        if (isset($_SESSION['data-scoop'])) {
-            self::$refererData = $_SESSION['data-scoop'];
-            unset($_SESSION['data-scoop']);
+        if (!$this->isAjax()) {
+            $_SESSION['data-scoop'] = array();
         }
     }
 

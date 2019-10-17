@@ -75,14 +75,13 @@ final class View
      * @param  array<mixed> $args Argumentos pasados al metodo.
      * @return \Scoop\View La instancia de la clase para encadenamiento.
      */
-    public function __call($method, $args)
+    public static function __callStatic($method, $args)
     {
         $array = preg_split('/(?=[A-Z])/', $method);
         $component = strtolower(array_pop($array));
         if (isset(self::$components[$component])) {
             $method = join($array);
-            call_user_func_array(array(self::$components[$component], $method), $args);
-            return $this;
+            return call_user_func_array(array(self::$components[$component], $method), $args);
         }
         throw new \BadMethodCallException('Component '.$component.' unregistered');
     }

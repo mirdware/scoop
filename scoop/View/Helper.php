@@ -74,6 +74,17 @@ class Helper
         return $this->config->getURL(func_get_args());
     }
 
+    public function addPage($data, $quantity)
+    {
+        $queryString = \Scoop\Context::getService('request')->getQuery();
+        $nextPage = $data['page'] + $quantity;
+        if ($nextPage < 0 || $nextPage * $data['size'] >= $data['total']) {
+            return $this->route();
+        }
+        $queryString['page'] = $nextPage;
+        return $this->route($queryString);
+    }
+
     /**
      * Compone la clase dependiendo de los parametros dados.
      * @return string Estructura HTML del componente generado.

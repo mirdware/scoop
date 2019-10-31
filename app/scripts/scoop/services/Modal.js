@@ -1,9 +1,6 @@
 import { Resource } from 'scalar';
 import Overlay from './Overlay';
 
-const location = window.location;
-const cache = window.sessionStorage;
-
 function destructuring() {
   const $dom = document.getElementById('scoop-modal');
   if ($dom) {
@@ -21,12 +18,10 @@ function createBody(href, $dom, $body) {
     let content = document.getElementById(url[1]);
     if (content) {
       content = content.outerHTML;
-      cache.setItem(href, content);
       show($dom, $body, content);
     }
   } else {
     new Resource(href).get().then((data) => {
-      cache.setItem(href, data);
       show($dom, $body, data);
     });
   }
@@ -50,11 +45,12 @@ function generateModal() {
 }
 
 function show($dom, $body, content) {
+  const style = $dom.style;
   $body.innerHTML = content;
-  $dom.style.display = 'block';
-  $dom.style.width = $dom.clientWidth + 'px';
-  $dom.style.marginLeft = ($dom.clientWidth / 2 * -1) + 'px';
-  $dom.style.marginTop = ($dom.clientHeight / 2 * -1) + 'px';
+  style.display = 'block';
+  style.width = $dom.clientWidth + 'px';
+  style.marginLeft = ($dom.clientWidth / 2 * -1) + 'px';
+  style.marginTop = ($dom.clientHeight / 2 * -1) + 'px';
 }
 
 export default class Modal {
@@ -68,14 +64,9 @@ export default class Modal {
     const modal = this.modal;
     const $dom = modal.$dom;
     const $body = modal.$body;
-    const content = cache.getItem(href);
     this.overlay.open();
     modal.$title.innerText = title;
-    if (content) {
-      show($dom, $body, content);
-    } else {
-      createBody(href, $dom, $body);
-    }
+    createBody(href, $dom, $body);
     return true;
   }
 

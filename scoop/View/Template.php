@@ -23,7 +23,7 @@ final class Template
         } elseif (is_readable($template)) {
             self::create($view, self::compile($template));
         } else {
-            throw new \UnderflowException('Unable to load view or template');
+            throw new \UnderflowException('Unable to load view or template '.$templatePath);
         }
         extract($viewData);
         require $view;

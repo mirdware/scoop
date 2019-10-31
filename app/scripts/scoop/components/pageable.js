@@ -1,10 +1,14 @@
 import { Resource } from 'scalar';
+import ModalService from '../services/Modal';
+import FormService from '../services/Form';
+import Modal from './modal';
 
 const location = window.location;
 
 function sendRequest($) {
   new Resource(location.href).get()
   .then((data) => {
+    console.log($, data);
     const { page } = data;
     const disabledNext = (page + 1) * data.size >= data.total;
     const disabledPrev = page == 0;
@@ -56,6 +60,13 @@ function setPage($, $element) {
   sendRequest($);
 }
 
+function openModal(e, $) {
+  const target = e.currentTarget;
+  const _modal = $.inject(ModalService);
+  _modal.open(target.form.action + 'search/', target.title);
+  $.compose(_modal.modal.$dom, Modal);
+}
+
 function init($) {
   const { prev, next } = $;
   const { href } = location;
@@ -64,9 +75,19 @@ function init($) {
   next.disabled = next.disabled || href === next.href;
 }
 
+function search(form, $) {
+  const _form = $.inject(FormService);
+  const data = _form.toObject(form);
+  _form.setQueryString(data);
+  sendRequest($);
+}
+
 export default ($) => ({
   mount: () => init($),
+  'form': { submit: (e) => search(e.target, $) },
   '.prev': {click: () => addPage($, -1)},
   '.next': {click: () => addPage($, 1)},
+  '.modal': {click: (e) => openModal(e, $)},
+  'input[type="search"]': { search:  (e) =>search(e.target.form, $) },
   '.num-page': {click: (e) => setPage($, e.target)}
 });

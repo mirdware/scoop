@@ -5,7 +5,7 @@ label
     cursor pointer
 
 .btn
-    background $color-main
+    background $color.main
     border 0
     border-bottom 1px solid rgba(0, 0, 0, .25)
     border-radius .5em
@@ -19,36 +19,37 @@ label
     position relative
     text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
     &.success
-        background-color $color-green-normal
+        background-color $color.green.main
         &:hover
-            background-color $color-green-hover
+        &:disabled
+            background-color $color.green.strong
     &.error
-        background-color $color-red-normal
+        background-color $color.red.main
         &:hover
-            background-color $color-red-hover
+        &:disabled
+            background-color $color.red.main
     &.warning
-        background-color $color-yellow-normal
+        background-color $color.yellow.main
         &:hover
-            background-color $color-yellow-hover
+        &:disabled
+            background-color $color.yellow.strong
     &.info
-        background-color $color-blue-normal
+        background-color $color.blue.main
         &:hover
-            background-color $color-blue-hover
+        &:disabled
+            background-color $color.blue.strong
     &:hover
-        background-color $color-main
     &:disabled
-        background-color $color-bg-disable
-        color $color-gray-normal
+        background-color $color.strong
+    &:disabled
         cursor not-allowed
-        &:hover
-            background-color $color-bg-disable
 
 input:read-only
     cursor not-allowed
 
 .input
     border-radius .3em
-    border solid 1px $color-border-text
+    border solid 1px $color.border.text
     padding .5em
     padding-right 1.5em
     margin .5em 0
@@ -57,7 +58,7 @@ input:read-only
     box-sizing border-box
     &:disabled
         cursor not-allowed
-        background-color lighten($color-bg-disable, 60%)
+        background-color lighten($color.bg.disabled, 60%)
 
 .custom-input-file
     overflow hidden
@@ -98,11 +99,11 @@ input:read-only
         margin 0 0 0 -1.1em
         width auto !important
     &.error
-        alert-box "times-circle" $color-red-normal
+        alert-box "times-circle" $color.red.main
     &.success
-        alert-box "check-circle" $color-green-normal
+        alert-box "check-circle" $color.green.main
     &.warning
-        alert-box "exclamation-circle" $color-yellow-normal
+        alert-box "exclamation-circle" $color.yellow.main
     &.group
         display inline-flex
         *
@@ -128,7 +129,7 @@ input:read-only
         display none
         & + label:before
             display inline-block
-            color $color-border-text
+            color $color.border.text
             font-family FontAwesome
             font-style normal
             font-weight normal
@@ -138,9 +139,9 @@ input:read-only
             text-align left
         &:checked + label:before
         & + label:hover:before
-            color $color-check
+            color $color.check
         &:disabled + label:before
-            color $color-bg-disable
+            color $color.bg.disable
     input[type=radio]
         & + label
             fa-icon "circle-o"

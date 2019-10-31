@@ -1,5 +1,6 @@
 import { Resource, Component } from 'scalar';
 import Messenger from '../services/Messenger';
+import FormService from '../services/Form';
 
 function validate(form) {
   const invalid = form.querySelectorAll(':invalid');
@@ -20,25 +21,6 @@ function validate(form) {
   }
 }
 
-function formatObject(form) {
-  let obj = {};
-  for (let i = 0, inp; inp = form.elements[i]; i++) {
-    let name = inp.name;
-    if (!name) continue;
-    let type = inp.type;
-    if ( (type == "radio" || type == "checkbox") && !inp.checked ) continue;
-    let index = inp.selectedIndex;
-    if (name.indexOf("[]") != -1) {
-      name += i;
-    }
-    obj[name] = inp.value;
-    if (!obj[name] && type.indexOf("select") == 0 && index != -1) {
-      obj[name] = inp.options[index].text;
-    }
-  }
-  return obj;
-}
-
 function removeErrors(form) {
   for (let i = 0, error; error = form.elements[i]; i++) {
     error.parentNode.classList.remove('error');
@@ -47,12 +29,18 @@ function removeErrors(form) {
 }
 
 function submit($, form) {
-  if ($.blockSubmit) return;
-  $.blockSubmit = true;
+  $.loading = true;
   $.inject(Messenger).close();
   removeErrors(form);
   if (!form.checkValidity) validate(form);
-  $.submit(form);
+  const data = $.inject(FormService).toObject(form);
+  if (form.enctype === 'multipart/form-data') {
+    delete resource.headers['Content-Type'];
+  }
+  $.resource[$.method](data)
+  .then((res) => $.done(res, form))
+  .catch((res) => $.fail(res, form))
+  .then(() => $.loading = false);
 }
 
 function reset(form) {
@@ -66,6 +54,11 @@ function reset(form) {
 export default class Form extends Component {
   listen() {
     return {
+      mount: (e) => {
+        const form = e.target;
+        this.method = (form.getAttribute('method') || 'get').toLowerCase();
+        this.resource = new Resource(form.action);
+      },
       invalid: (e) => {
         const form = e.target.form;
         removeErrors(form);
@@ -76,27 +69,12 @@ export default class Form extends Component {
     }
   }
 
-  submit(form) {
-    const resource = new Resource(form.action);
-    let data;
-    if (form.enctype === 'multipart/form-data') {
-      data = new FormData(form);
-      delete resource.headers['Content-Type'];
-    } else {
-      data = formatObject(form);
-    }
-    resource[form.method.toLowerCase()](data)
-    .then((res) => this.done(res, form))
-    .catch((res) => this.fail(res, form))
-    .then(() => this.blockSubmit = false);
-  }
-
   fail(res, form) {
     try {
       const errors = JSON.parse(res.message);
       let focused = false;
       for (const key in errors) {
-        const input = document.getElementById(key);
+        const input = document.getElementById(key.replace(/_/g, '-'));
         const container = input.parentNode;
         const icon = container.getElementsByClassName('icon')[0];
         if (!focused) {
@@ -115,7 +93,14 @@ export default class Form extends Component {
 
   done(res, form) {
     this.inject(Messenger).showSuccess(res);
-    form.reset();
-    this.reset();
+    if (this.method === 'post') {
+      form.reset();
+      this.reset();
+    } else {
+      const passwords = form.querySelectorAll('input[type="password"]');
+      for (let i = 0, password; password = passwords[i]; i++) {
+        password.value = '';
+      }
+    }
   }
 }

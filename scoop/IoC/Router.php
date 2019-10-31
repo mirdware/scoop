@@ -18,10 +18,8 @@ class Router
     {
         $route = $this->getRoute($url);
         if ($route) {
-            $method = explode(':', $route['controller']);
             $classController = '\Scoop\Controller';
-            $controller = array_shift($method);
-            $method = array_pop($method);
+            $controller = $route['controller'];
             if (!is_subclass_of($controller, $classController)) {
                 throw new \UnexpectedValueException($controller.' not implement '.$classController);
             }
@@ -29,9 +27,7 @@ class Router
             if ($controller) {
                 $this->intercept($url);
                 $controllerReflection = new \ReflectionClass($controller);
-                if (!$method) {
-                    $method = strtolower($_SERVER['REQUEST_METHOD']);
-                }
+                $method = $this->getMethod($route);
                 if (!$controllerReflection->hasMethod($method)) {
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
@@ -53,13 +49,8 @@ class Router
         $matches = $this->filterProxy($url);
         $injector = \Scoop\Context::getInjector();
         foreach ($matches as $route) {
-            if (isset($route['proxy'])) {
-                $method = explode(':', $route['proxy']);
-                $proxy = array_shift($method);
-                $method = array_pop($method);
-                $proxy =  $injector->getInstance($proxy);
-                $proxy->$method();
-            }
+            $proxy = $injector->getInstance($route['proxy']);
+            $proxy->execute($url);
         }
     }
 
@@ -73,7 +64,7 @@ class Router
         }
         for ($i = 0; $i < $count; $i++) {
             if (isset($params[$i])) {
-                $url .= self::encodeURL($params[$i]).$path[$i];
+                $url .= self::encodeURL(trim($params[$i])).$path[$i];
             }
         }
         if (strrpos($url, '/') !== strlen($url)-1) {
@@ -97,6 +88,21 @@ class Router
     public function getCurrentRoute()
     {
         return $this->current;
+    }
+
+    private function getMethod($route)
+    {
+        $method = strtolower($_SERVER['REQUEST_METHOD']);
+        if (isset($route['methods'])) {
+            $methods = $route['methods'];
+            if (isset($methods[$method])) {
+                return $methods[$method];
+            }
+            if (isset($methods['all'])) {
+                return $methods['all'];
+            }
+        }
+        return $method;
     }
 
     private function getRoute($url)
@@ -153,7 +159,14 @@ class Router
         }
         $route['url'] = $oldURL.$route['url'];
         if (isset($route['routes'])) {
-            foreach ($route['routes'] as $k => $r) {
+            $routes = $route['routes'];
+            if (is_string($routes)) {
+                $routes = \Scoop\Context::getService('config')->load($routes);
+                if (is_string($routes)) {
+                    throw new \InvalidArgumentException('routes '.$routes.' not supported');
+                }
+            }
+            foreach ($routes as $k => $r) {
                 $this->load($r, $k, $route['url']);
             }
             unset($route['routes']);

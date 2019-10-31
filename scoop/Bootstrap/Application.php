@@ -33,7 +33,7 @@ class Application
             header('Content-Type:text/html');
             return $response->render();
         }
-        if (is_array($response)) {
+        if (is_array($response) || is_object($response)) {
             header('Content-Type:application/json');
             return json_encode($response);
         }

@@ -1,0 +1,39 @@
+{
+  "main": "#FF5C00",
+  "strong": "#D45500",
+  "check": "#2091CF",
+  "blue": {
+    "main": "#2981E4",
+    "strong": "#337AB7"
+  },
+  "red": {
+    "main": "#E62727",
+    "strong": "#CF2525"
+  },
+  "green": {
+    "main": "#91BD09",
+    "strong": "#749A02"
+  },
+  "orange": {
+    "main": "#FF5C00",
+    "strong": "#D45500"
+  },
+  "yellow": {
+    "main": "#FFB515",
+    "strong": "#FC9200"
+  },
+  "gray": {
+    "main": "#777",
+    "strong": "#333"
+  },
+  "border": {
+    "text": "#96A6C5"
+  },
+  "bg": {
+    "success": "#DFF0D8",
+    "info": "#D9EDF7",
+    "warning": "#FCF8E3",
+    "error": "#F2DEDE",
+    "disabled": "#E0E0E0"
+  }
+}

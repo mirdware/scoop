@@ -1,12 +1,15 @@
 import { Module } from 'scalar';
-import Messenger from './services/Messenger';
-import Message from './components/message';
-import Form from './components/form';
-import Printer from './components/printer';
-import Pageable from './components/pageable';
+import Messenger from './scoop/services/Messenger';
+import Form from './scoop/services/Form';
+import messageComponent from './scoop/components/message';
+import formComponent from './scoop/components/form';
+import printerComponent from './scoop/components/printer';
+import pageableComponent from './scoop/components/pageable';
 
-new Module(Messenger)
-.compose('#msg', Message)
-.compose('.scoop-form', Form)
-.compose('.printer', Printer)
-.compose('.pageable', Pageable);
+new Module(
+    Messenger,
+    Form
+).compose('#msg', messageComponent)
+.compose('.scoop-form', formComponent)
+.compose('.printer', printerComponent)
+.compose('.pageable', pageableComponent);

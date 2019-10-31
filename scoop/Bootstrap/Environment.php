@@ -12,19 +12,45 @@ class Environment
         if (!self::$sessionInit) {
             self::$sessionInit = session_start();
         }
+        $this->config = array(
+            'base' => require $configPath.'.php',
+            'data' => array()
+        ); 
         define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
-        $this->config = require $configPath.'.php';
     }
 
     public function get($name)
     {
-        $name = explode('.', $name);
-        $res = $this->config;
-        foreach ($name as $key) {
+        if (isset($this->config['data'][$name])) {
+            return $this->config['data'][$name];
+        }
+        $data = explode('.', $name);
+        $res = $this->config['base'];
+        foreach ($data as $key) {
             if (!isset($res[$key])) return null;
+            if (is_string($res[$key])) {
+                $res[$key] = $this->load($res[$key]);
+            }
             $res = $res[$key];
         }
+        $this->config['data'][$name] = $res;
         return $res;
+    }
+
+    public function load($value)
+    {
+        $index = strpos($value, ':') + 1;
+        if ($index !== -1) {
+            $method = substr($value, 0, $index);
+            $url = substr($value, $index);
+            if ($method === 'json:') {
+                return json_decode(file_get_contents($url . '.json'), true);
+            }
+            if ($method === 'import:') {
+                return require $url . '.php';
+            }
+        }
+        return $value;
     }
 
     public function route($url)
@@ -58,12 +84,12 @@ class Environment
     protected function configure() {
         \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
         \Scoop\Validator::addRule((Array) $this->get('validators'));
-        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
         $this->bind((Array) $this->get('providers'));
         $this->registerComponents((Array) $this->get('components'));
         $services = (Array) $this->get('services');
         $services += array('config' => $this, 'request' => new \Scoop\Http\Request());
         $this->registerServices($services);
+        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
         return $this;
     }
 

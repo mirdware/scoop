@@ -38,9 +38,13 @@ function submit($, form) {
     delete resource.headers['Content-Type'];
   }
   $.resource[$.method](data)
-  .then((res) => $.done(res, form))
-  .catch((res) => $.fail(res, form))
-  .then(() => $.loading = false);
+  .then((res) => {
+    $.loading = false;
+    $.done(res, form);
+  }).catch((res) => {
+    $.loading = false;
+    $.fail(res, form);
+  });
 }
 
 function reset(form) {
@@ -95,12 +99,11 @@ export default class Form extends Component {
     this.inject(Messenger).showSuccess(res);
     if (this.method === 'post') {
       form.reset();
-      this.reset();
-    } else {
-      const passwords = form.querySelectorAll('input[type="password"]');
-      for (let i = 0, password; password = passwords[i]; i++) {
-        password.value = '';
-      }
+      return this.reset();
+    }
+    const passwords = form.querySelectorAll('input[type="password"]');
+    for (let i = 0, password; password = passwords[i]; i++) {
+      password.value = '';
     }
   }
 }

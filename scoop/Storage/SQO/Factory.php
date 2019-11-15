@@ -3,66 +3,49 @@ namespace Scoop\Storage\SQO;
 
 final class Factory
 {
-    private $query = '';
-    private $values = array();
-    private $keys = null;
-    private $select;
+    private $query;
+    private $values;
     private $con;
+    private $isReader;
 
-    public function __construct($query, $values, $select, $connection)
+    public function __construct($query, $values, $numFields, $connection)
     {
         $this->query = $query;
         $this->con = $connection;
-        $this->select = $select;
-        if ($values) {
-            $select ? $this->createInsertSelect($values) : $this->create($values);
-        }
+        $this->numFields = $numFields;
+        $this->values = $values ? $values : array();
+        $this->isReader = is_a($values, '\Scoop\Storage\SQO\Filter');
     }
 
-    public function create($fields)
+    public function create($values)
     {
-        if ($this->select) {
+        if ($this->isReader) {
             throw new \DomainException('INSERT SELECT not support multiple rows');
         }
-        ksort($fields);
-        $keys = array_keys($fields);
-        if (!$this->keys) {
-            $this->keys = $keys;
-            $this->query .= ' ('.implode(',', $keys).') VALUES ';
-        } else if (array_diff($this->keys, $keys)) {
-            throw new \UnexpectedValueException('Keys ['.implode(',', $keys).'] unsupported');
+        if (count($values) !== $this->numFields) {
+            throw new \InvalidArgumentException('Number of elements incorrect');
         }
-        $this->values = array_merge(array_values($fields), $this->values);
+        $this->values = array_merge($values, $this->values);
         return $this;
     }
 
-    public function run($params = array())
+    public function run($params = null)
     {
-        if ($this->keys !== null) {
-            foreach ($params AS $key => $value) {
-                $this->select->bindParam($key, $value);
-            }
-            $statement = $this->con->prepare($this);
-            return $statement->execute($this->values + $params);
+        $statement = $this->con->prepare($this);
+        if ($this->isReader) {
+            return $statement->execute($params);
         }
-        throw new \DomainException('the SQO expression for create does not have rows');
+        return $statement->execute($this->values);
     }
 
     public function __toString()
     {
-        if ($this->select) {
-            return $this->query.' '.$this->select;
+        if ($this->isReader) {
+            return $this->query.' '.$this->values;
         }
-        $numFields = count($this->keys);
-        $numRows = count($this->values)/$numFields;
-        $placeholder = '('.implode(',', array_fill(0, $numFields, '?')).')';
+        $numRows = count($this->values)/$this->numFields;
+        $placeholder = '('.implode(',', array_fill(0, $this->numFields, '?')).')';
         $values = implode(',', array_fill(0, $numRows, $placeholder));
         return $this->query.$values;
-    }
-
-    private function createInsertSelect($values)
-    {
-        $this->query .= ' ('.implode(',', $values).')';
-        $this->keys = $values;
     }
 }

@@ -17,10 +17,16 @@ class SQO
         $this->con = $connection === null ? \Scoop\Context::connect() : $connection;
     }
 
-    public function create($fields = null, SQO\Reader $select = null)
+    public function create($fields, SQO\Reader $select = null)
     {
         $query = 'INSERT INTO '.$this->table;
-        return new SQO\Factory($query, $fields, $select, $this->con);
+        $values = $select;
+        if (array_keys($fields) !== range(0, count($fields) -1 )) {
+            $values = array_values($fields);
+            $fields = array_keys($fields);
+        }
+        $query .= ' ('.implode(',', $fields).') VALUES ';
+        return new SQO\Factory($query, $values, count($fields), $this->con);
     }
 
     public function read()

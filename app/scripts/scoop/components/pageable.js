@@ -8,7 +8,6 @@ const location = window.location;
 function sendRequest($) {
   new Resource(location.href).get()
   .then((data) => {
-    console.log($, data);
     const { page } = data;
     const disabledNext = (page + 1) * data.size >= data.total;
     const disabledPrev = page == 0;

@@ -30,6 +30,19 @@ final class Template
     }
 
     /**
+     * Reglas para limpiar y minificar la vista.
+     * @param  string $html Contenido completo de la plantilla.
+     * @return string Plantilla limpia y minificada.
+     */
+    public static function clearHTML($html)
+    {
+        return preg_replace(
+            array('/[\s\t\n\r]+/', '/<!--.*?-->/s', '/>\s*</', '/;\s*(\"|\')/', '/\s+\/>/', '/<\s+/', '/\s+>/'),
+            array(' ', '', '><', '${1}', '/>', '<', '>'), $html
+        );
+    }
+
+    /**
      * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera la vista.
      * @param string $template Nombre del template que se usara
      * @return string Contenido básico de la vista a ser mostrada
@@ -87,7 +100,7 @@ final class Template
             '/@if (('.$safeExp.')+)/',
             '/@elseif (('.$safeExp.')+)/',
             '/@while (('.$conditional.'|'.$fn.')+)/',
-            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+)/',
+            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
             '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
             self::HERITAGE.'::extend(\'${1}\')',
@@ -133,36 +146,6 @@ final class Template
             $line = str_replace($servicesFound[0][$i], '\Scoop\Context::getService(\''.$servicesFound[1][$i].'\')->', $line);
         }
         return $line;
-    }
-
-    /**
-     * Reglas para limpiar y minificar la vista.
-     * @param  string $html Contenido completo de la plantilla.
-     * @return string Plantilla limpia y minificada.
-     */
-    private static function clearHTML($html)
-    {
-        return preg_replace(array(
-            '/\s+/',
-            '/[\t\n\r]+/',
-            '/<!--.*?-->/s',
-            '/>\s*</',
-            '/;\s*(\"|\')/',
-            '/<\/\s+/',
-            '/\s+\/>/',
-            '/<\s+/',
-            '/\s+>/'
-        ), array(
-            ' ',
-            ' ',
-            '',
-            '><',
-            '${1}',
-            '</',
-            '/>',
-            '<',
-            '>'
-        ), $html);
     }
 
     /**

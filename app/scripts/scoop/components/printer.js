@@ -9,16 +9,16 @@ function getFrame() {
   return frame;
 }
 
-function sendRequest(link) {
+function sendRequest(e) {
+  const link = e.target;
   const frame = getFrame();
   link.target = 'frame-scoop-ajax';
   frame.onload = () => {
     const content = frame.contentWindow || frame.contentDocument;
     content.print();
   };
-  return true;
 }
 
 export default () => ({
-    click: (e) => sendRequest(e.target)
+    click: sendRequest
 });

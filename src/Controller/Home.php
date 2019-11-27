@@ -18,7 +18,12 @@ class Home extends Controller
     {
         $view = new View('home');
         $index = rand(0, count($this->quotes) - 1);
-        return $view->set('title', 'MirdWare')
-        ->set($this->quotes[$index]);
+        return $view->set(array(
+            'title' => 'MirdWare',
+            'meta' => array(
+                'description' => 'Engine PHP for development of web applications',
+                'keywords' => 'engine,PHP,web,scoop,scalar,development'
+            )
+        ))->set($this->quotes[$index]);
     }
 }

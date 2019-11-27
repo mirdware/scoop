@@ -89,15 +89,17 @@ class Helper
      * Compone la clase dependiendo de los parametros dados.
      * @return string Estructura HTML del componente generado.
      */
-    public function compose()
+    public function __call($method, $args)
     {
-        if (func_num_args() === 0) {
-            throw new \InvalidArgumentException('Unsoported number of arguments');
+        if (strpos($method, 'compose') === 0) {
+            $component = lcfirst(substr($method, 7));
+            if (isset($this->components[$component])) {
+                $component = new \ReflectionClass($this->components[$component]);
+                $component = $component->newInstanceArgs($args);
+                return Template::clearHTML($component->render());
+            }
+            throw new \BadMethodCallException('Component '.$component.' unregistered');
         }
-        $args = func_get_args();
-        $component = strtolower(array_shift($args));
-        $component = new \ReflectionClass($this->components[$component]);
-        $component = $component->newInstanceArgs($args);
-        return $component->render();
+        trigger_error('Call to undefined method '.__CLASS__.'::'.$method.'()', E_USER_ERROR);
     }
 }

@@ -52,7 +52,6 @@ function reset(form) {
   if (autofocusField instanceof HTMLInputElement) {
     autofocusField.focus();
   }
-  return true;
 }
 
 export default class Form extends Component {
@@ -63,14 +62,14 @@ export default class Form extends Component {
         this.method = (form.getAttribute('method') || 'get').toLowerCase();
         this.resource = new Resource(form.action);
       },
-      invalid: (e) => {
+      _invalid: (e) => {
         const form = e.target.form;
         removeErrors(form);
         validate(form);
       },
       reset: (e) => reset(e.target),
-      submit: (e) => submit(this, e.target)
-    }
+      _submit: (e) => submit(this, e.target)
+    };
   }
 
   fail(res, form) {

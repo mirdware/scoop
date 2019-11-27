@@ -83,10 +83,10 @@ function search(form, $) {
 
 export default ($) => ({
   mount: () => init($),
-  'form': { submit: (e) => search(e.target, $) },
-  '.prev': {click: () => addPage($, -1)},
-  '.next': {click: () => addPage($, 1)},
-  '.modal': {click: (e) => openModal(e, $)},
-  'input[type="search"]': { search:  (e) =>search(e.target.form, $) },
-  '.num-page': {click: (e) => setPage($, e.target)}
+  'form': {_submit: (e) => search(e.target, $)},
+  '.prev': {_click: (e) => addPage($, -1)},
+  '.next': {_click: (e) => addPage($, 1)},
+  '.modal': {_click: (e) => openModal(e, $)},
+  'input[type="search"]': {_search: (e) => search(e.target.form, $)},
+  '.num-page': {_click: (e) => setPage($, e.target)}
 });

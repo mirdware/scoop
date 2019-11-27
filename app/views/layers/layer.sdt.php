@@ -17,7 +17,7 @@
     <!-- Enlace a la hoja de estilos general -->
     <link rel="stylesheet" href="{#view->css(#config->get('app.name').'.min.css')}" />
     <!-- Descarga asincrona de javascript -->
-    <script src="{#view->js(#config->get('app.name').'.min.js')}" async></script>
+    <script src="{#view->js(#config->get('app.name').'.min.js')}" defer></script>
     <!-- Titulo de la pagina -->
     <title>{$title} » {#config->get('app.name')}</title>
 </head>

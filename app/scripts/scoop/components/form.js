@@ -16,7 +16,7 @@ function validate(form) {
       focused = true;
     }
     errorContainer.classList.add('error');
-    input.title = validationMessage;
+    errorContainer.title = validationMessage;
     if (icon) icon.title = validationMessage;
   }
 }
@@ -62,10 +62,8 @@ export default class Form extends Component {
         this.method = (form.getAttribute('method') || 'get').toLowerCase();
         this.resource = new Resource(form.action);
       },
-      _invalid: (e) => {
-        const form = e.target.form;
-        removeErrors(form);
-        validate(form);
+      '.input': {
+        _invalid: (e) => validate(e.target.form)
       },
       reset: (e) => reset(e.target),
       _submit: (e) => submit(this, e.target)

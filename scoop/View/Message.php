@@ -26,12 +26,11 @@ class Message implements Component
     {
         $type = self::$props['type'];
         $msg = self::$props['msg'];
-        return <<<EOD
-        <div id="msg" data-attr="className:type" class="$type">
+        return '
+        <div id="msg" data-attr="className:type" class="'.$type.'">
             <i class="close"></i>
-            <span data-bind="msg">$msg</span>
-        </div>
-        EOD;
+            <span data-bind="msg">'.$msg.'</span>
+        </div>';
     }
 
     /**

@@ -89,7 +89,7 @@ final class Template
     {
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
-        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+)\])*';
+        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+|\$\w+)\])*';
         $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
         $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes.'|'.$conditional.'|'.$fn;

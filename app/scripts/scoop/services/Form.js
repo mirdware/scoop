@@ -19,14 +19,19 @@ export default class Form {
       const type = inp.type;
       if ((type == "radio" || type == "checkbox") && !inp.checked) continue;
       const index = inp.selectedIndex;
-      if (name.indexOf("[]") != -1) {
-        name += i;
-      }
-      obj[name] = inp.value;
-      if (type === 'file') {
+      const lastChars = name.length - 2;
+      if (name.indexOf("[]") === lastChars) {
+        name = name.substr(0, lastChars);
+        if (!obj[name]) {
+          obj[name] = [];
+        }
+        obj[name].push(inp.value);
+      } else if (type === 'file') {
         obj[name] = inp.files;
       } else if (!obj[name] && type.indexOf("select") == 0 && index != -1) {
-        obj[name] = inp.options[index].text;
+        obj[name] = inp.options[index].value;
+      } else {
+        obj[name] = inp.value;
       }
     }
     return obj;

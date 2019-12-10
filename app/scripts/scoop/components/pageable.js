@@ -6,6 +6,7 @@ import Modal from './modal';
 const location = window.location;
 
 function sendRequest($) {
+  $.loading = true;
   new Resource(location.href).get()
   .then((data) => {
     const { page } = data;
@@ -20,6 +21,7 @@ function sendRequest($) {
       disabled: disabledPrev,
       href: disabledPrev ? '' : getHref(page, page - 1)
     };
+    $.loading = false;
   });
 }
 
@@ -75,10 +77,12 @@ function init($) {
 }
 
 function search(form, $) {
-  const _form = $.inject(FormService);
-  const data = _form.toObject(form);
-  _form.setQueryString(data);
-  sendRequest($);
+  if (!$.loading) {
+    const _form = $.inject(FormService);
+    const data = _form.toObject(form);
+    _form.setQueryString(data);
+    sendRequest($);
+  }
 }
 
 export default ($) => ({

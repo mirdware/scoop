@@ -76,14 +76,16 @@ export default class Form extends Component {
       let focused = false;
       for (const key in errors) {
         const input = document.getElementById(key.replace(/_/g, '-'));
-        const container = input.parentNode;
-        const icon = container.getElementsByClassName('icon')[0];
-        if (!focused) {
-          input.focus();
-          focused = true;
+        if (input) {
+          const container = input.parentNode;
+          const icon = container.getElementsByClassName('icon')[0];
+          if (!focused) {
+            input.focus();
+            focused = true;
+          }
+          container.classList.add('error');
+          if (icon) icon.title = errors[key];
         }
-        container.classList.add('error');
-        if (icon) icon.title = errors[key];
       }
     } catch (ex) {
       this.inject(Messenger).showError(res.message);

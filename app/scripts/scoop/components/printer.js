@@ -9,8 +9,17 @@ function getFrame() {
   return frame;
 }
 
-function sendRequest(e) {
-  const link = e.target;
+function find(e) {
+  let parent = e.target;
+  while (parent !== this) {
+    if (parent.classList.contains('printter')) {
+      return sendRequest(parent);
+    }
+    parent = parent.parentNode;
+  }
+}
+
+function sendRequest(link) {
   const frame = getFrame();
   link.target = 'frame-scoop-ajax';
   frame.onload = () => {
@@ -20,5 +29,5 @@ function sendRequest(e) {
 }
 
 export default () => ({
-    click: sendRequest
+  click: find
 });

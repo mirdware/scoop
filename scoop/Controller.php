@@ -44,7 +44,7 @@ abstract class Controller
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\NotFoundException
      */
-    protected function notFound($msg = null)
+    protected function notFound($msg = 'not found')
     {
         throw new \Scoop\Http\NotFoundException($msg);
     }
@@ -54,7 +54,7 @@ abstract class Controller
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\accessDeniedException
      */
-    protected function denyAccess($msg = null)
+    protected function denyAccess($msg = 'deny access')
     {
         throw new \Scoop\Http\AccessDeniedException($msg);
     }

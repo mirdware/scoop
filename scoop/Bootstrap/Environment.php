@@ -16,7 +16,7 @@ class Environment
             'base' => require $configPath.'.php',
             'data' => array()
         ); 
-        define('ROOT', '//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+        define('ROOT', (stripos($_SERVER['SERVER_PROTOCOL'],'https') === 0 ? 'https:' : 'http:').'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
     }
 
     public function get($name)

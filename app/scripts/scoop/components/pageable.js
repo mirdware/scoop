@@ -1,9 +1,10 @@
 import { Resource } from 'scalar';
 import ModalService from '../services/Modal';
 import FormService from '../services/Form';
-import Modal from './modal';
+import Search from './search';
 
 const location = window.location;
+const queryParams = {};
 
 function sendRequest($) {
   $.loading = true;
@@ -21,6 +22,7 @@ function sendRequest($) {
       disabled: disabledPrev,
       href: disabledPrev ? '' : getHref(page, page - 1)
     };
+    Object.assign($, getQueryParams($));
     $.loading = false;
   });
 }
@@ -64,8 +66,13 @@ function setPage($, $element) {
 function openModal(e, $) {
   const target = e.currentTarget;
   const _modal = $.inject(ModalService);
-  _modal.open(target.form.action + 'search/', target.title);
-  $.compose(_modal.modal.$dom, Modal);
+  _modal.open(target.form.dataset.modal, target.title).then(() => {
+    $.compose(_modal.modal.$dom, Search)
+    .send(getQueryParams($)).then((res) => {
+      $.inject(FormService).setQueryString(res);
+      sendRequest($);
+    });
+  });
 }
 
 function init($) {
@@ -74,6 +81,7 @@ function init($) {
   window.addEventListener('popstate', () => sendRequest($));
   prev.disabled = prev.disabled || href === prev.href;
   next.disabled = next.disabled || href === next.href;
+  getQueryParams($)
 }
 
 function search(form, $) {
@@ -83,6 +91,14 @@ function search(form, $) {
     _form.setQueryString(data);
     sendRequest($);
   }
+}
+
+function getQueryParams($) {
+  const res = $.inject(FormService).getQueryParams(location.search);
+  for (const key in queryParams) {
+    queryParams[key] = '';
+  }
+  return Object.assign(queryParams, res);
 }
 
 export default ($) => ({

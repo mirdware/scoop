@@ -10,6 +10,16 @@ export default class Form {
     `${location.pathname}?${params.substr(0, params.length-1)}` :
     location.pathname);
   }
+
+  getQueryParams(query) {
+    if  (!query) return;
+    const params = {};
+    query.substring(1, query.length).split('&').forEach((string) => {
+      string = string.split('=');
+      params[string[0]] = string[1];
+    });
+    return params;
+  }
   
   toObject(form) {
     let obj = {};

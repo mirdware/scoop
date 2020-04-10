@@ -16,15 +16,13 @@ function validate(form) {
       focused = true;
     }
     errorContainer.classList.add('error');
-    errorContainer.title = validationMessage;
-    if (icon) icon.title = validationMessage;
+    if (icon) icon.dataset.tooltip = validationMessage;
   }
 }
 
 function removeErrors(form) {
   for (let i = 0, error; error = form.elements[i]; i++) {
     error.parentNode.classList.remove('error');
-    error.removeAttribute('title');
   }
 }
 
@@ -33,18 +31,14 @@ function submit($, form) {
   $.inject(Messenger).close();
   removeErrors(form);
   if (!form.checkValidity) validate(form);
-  const data = $.inject(FormService).toObject(form);
+  if (!$.resource) {
+    $.method = (form.getAttribute('method') || 'get').toLowerCase();
+    $.resource = new Resource(form.action);
+  }
   if (form.enctype === 'multipart/form-data') {
     delete resource.headers['Content-Type'];
   }
-  $.resource[$.method](data)
-  .then((res) => {
-    $.loading = false;
-    $.done(res, form);
-  }).catch((res) => {
-    $.loading = false;
-    $.fail(res, form);
-  });
+  $.submit($.inject(FormService).toObject(form), form);
 }
 
 function reset(form) {
@@ -57,17 +51,23 @@ function reset(form) {
 export default class Form extends Component {
   listen() {
     return {
-      mount: (e) => {
-        const form = e.target;
-        this.method = (form.getAttribute('method') || 'get').toLowerCase();
-        this.resource = new Resource(form.action);
-      },
       '.input': {
         _invalid: (e) => validate(e.target.form)
       },
       reset: (e) => reset(e.target),
       _submit: (e) => submit(this, e.target)
     };
+  }
+
+  submit(data, form) {
+    this.resource[this.method](data)
+    .then((res) => {
+      this.loading = false;
+      this.done(res, form);
+    }).catch((res) => {
+      this.loading = false;
+      this.fail(res, form);
+    });
   }
 
   fail(res, form) {
@@ -84,21 +84,19 @@ export default class Form extends Component {
             focused = true;
           }
           container.classList.add('error');
-          if (icon) icon.title = errors[key];
+          if (icon) icon.dataset.tooltip = errors[key];
         }
       }
     } catch (ex) {
       this.inject(Messenger).showError(res.message);
       form.reset();
-      this.reset();
     }
   }
 
   done(res, form) {
     this.inject(Messenger).showSuccess(res);
     if (this.method === 'post') {
-      form.reset();
-      return this.reset();
+      return form.reset();
     }
     const passwords = form.querySelectorAll('input[type="password"]');
     for (let i = 0, password; password = passwords[i]; i++) {

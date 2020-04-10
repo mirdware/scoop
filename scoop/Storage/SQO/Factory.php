@@ -7,12 +7,15 @@ final class Factory
     private $values;
     private $con;
     private $isReader;
+    private $fields;
+    private $numFields;
 
-    public function __construct($query, $values, $numFields, $connection)
+    public function __construct($query, $values, $fields, $connection)
     {
         $this->query = $query;
         $this->con = $connection;
-        $this->numFields = $numFields;
+        $this->fields = $fields;
+        $this->numFields = count($fields);
         $this->values = $values ? $values : array();
         $this->isReader = is_a($values, '\Scoop\Storage\SQO\Filter');
     }
@@ -25,8 +28,20 @@ final class Factory
         if (count($values) !== $this->numFields) {
             throw new \InvalidArgumentException('Number of elements incorrect');
         }
+        if (array_keys($values) !== range(0, count($values) - 1)) {
+            $order = array();
+            foreach ($this->fields as $index => $key) {
+                $order[$index] = $values[$key];
+            }
+            $values = $order;
+        }
         $this->values = array_merge($values, $this->values);
         return $this;
+    }
+
+    public function hasData()
+    {
+        return !!count($this->values);
     }
 
     public function run($params = null)

@@ -6,7 +6,6 @@ function close($) {
 }
 
 export default class Modal extends Component {
-
   listen() {
     return {
       mount: () => {
@@ -19,7 +18,7 @@ export default class Modal extends Component {
       '.header div': {
         click: () => close(this)
       }
-    }
+    };
   }
 
   send(data = {}) {

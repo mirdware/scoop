@@ -1,11 +1,11 @@
-vendor/
-node_modules/
-public/css/
-public/js/
-public/fonts/
-app/cache/
+vendor/*
+node_modules/*
+public/css/*
+public/js/*
+public/fonts/*
+app/cache/*
+$RECYCLE.BIN/*
 #app/config*
-$RECYCLE.BIN/
 .DS_Store
 .DS_Store?
 ._*
@@ -16,5 +16,5 @@ Thumbs.db
 package-lock.json
 *.lock
 *.log
-!.gitkeep
 *.architect~
+!.gitkeep

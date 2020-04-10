@@ -21,12 +21,12 @@ class SQO
     {
         $query = 'INSERT INTO '.$this->table;
         $values = $select;
-        if (array_keys($fields) !== range(0, count($fields) -1 )) {
+        if (array_keys($fields) !== range(0, count($fields) - 1)) {
             $values = array_values($fields);
             $fields = array_keys($fields);
         }
         $query .= ' ('.implode(',', $fields).') VALUES ';
-        return new SQO\Factory($query, $values, count($fields), $this->con);
+        return new SQO\Factory($query, $values, $fields, $this->con);
     }
 
     public function read()

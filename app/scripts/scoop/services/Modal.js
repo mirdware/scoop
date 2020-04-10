@@ -20,11 +20,11 @@ function createBody(href, $dom, $body) {
       content = content.outerHTML;
       show($dom, $body, content);
     }
-  } else {
-    new Resource(href).get().then((data) => {
-      show($dom, $body, data);
-    });
+    return Promise.resolve();
   }
+  return new Resource(href).get().then((data) => {
+    show($dom, $body, data);
+  });
 }
 
 function generateModal() {
@@ -60,14 +60,13 @@ export default class Modal {
   }
 
   open(href, title) {
-    if (this.overlay.isOpen()) return false;
+    if (this.overlay.isOpen()) return Promise.reject();
     const modal = this.modal;
     const $dom = modal.$dom;
     const $body = modal.$body;
     this.overlay.open();
     modal.$title.innerText = title;
-    createBody(href, $dom, $body);
-    return true;
+    return createBody(href, $dom, $body);
   }
 
   close() {

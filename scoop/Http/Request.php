@@ -76,6 +76,7 @@ class Request
             return $data ? self::purge($data) : array();
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
+        $data = preg_replace('/-+\w+--/', '', trim($data));
         if (!$data) return $put;
         $data = explode('&', $data);
         foreach ($data as $value) {

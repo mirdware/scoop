@@ -52,7 +52,6 @@ input:read-only
     border-radius .3em
     border solid 1px $color-border-text
     padding .5em
-    padding-right 1.5em
     margin .5em 0
     vertical-align middle
     max-width 100%
@@ -60,6 +59,20 @@ input:read-only
     &:disabled
         cursor not-allowed
         background-color $color-bg-disabled
+    &:focus + .icon::before
+        content attr(data-tooltip)
+        position absolute
+        top 1.5em
+        right .8em
+        display inline-block
+        padding .3em .5em
+        border-radius .5em
+        border-top-right-radius 0
+        background #000
+        color #fff
+        font .9em sans-serif
+        width 10em
+        z-index 1
 
 .custom-input-file
     overflow hidden
@@ -90,14 +103,17 @@ input:read-only
             display flex
 
 .input-box
+    position relative
     display inline-block
     padding 0 .5em
     .icon
+        position absolute
+        right -1.3em
+        top 30%
         vertical-align middle
-        fa-icon "circle"
+        fa-icon "circle" after
         visibility hidden
         font 1em FontAwesome
-        margin 0 0 0 -1.1em
         width auto !important
     &.error
         alert-box "times-circle" $color-red-main
@@ -110,14 +126,12 @@ input:read-only
         *
             border-radius 0
         :first-child
-            border-top-left-radius .5em
-            border-bottom-left-radius .5em
+            border-top-left-radius .3em
+            border-bottom-left-radius .3em
         .last
         :last-child
-            border-top-right-radius .5em
-            border-bottom-right-radius .5em
-        .icon
-            padding 1em 0
+            border-top-right-radius .3em
+            border-bottom-right-radius .3em
         .badge
             background #eee
             color #777

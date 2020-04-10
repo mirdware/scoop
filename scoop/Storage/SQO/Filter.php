@@ -6,10 +6,10 @@ class Filter
     protected $from = array();
     protected $params = array();
     protected $query = '';
+    protected $order = array();
+    protected $group = array();
     protected $con;
     private $rules = array();
-    private $order = array();
-    private $group = array();
     private $orderType = ' ASC';
     private $limit = '';
     private $connector = 'AND';
@@ -28,9 +28,13 @@ class Filter
         return $this->type;
     }
 
-    public function bindParam($key, $value)
+    public function bind($key, $value = null)
     {
-        $this->params[$key] = $value;
+        if ($value) {
+            $this->params[$key] = $value;
+            return $this;
+        }
+        $this->params += $key;
         return $this;
     }
 

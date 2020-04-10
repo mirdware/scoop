@@ -11,7 +11,7 @@ function getFrame() {
 
 function find(e) {
   let parent = e.target;
-  while (parent !== this) {
+  while (parent && parent !== this) {
     if (parent.classList.contains('printter')) {
       return sendRequest(parent);
     }

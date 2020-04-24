@@ -15,7 +15,7 @@ class Equals extends Rule
      * ->equals(['input1', 'input2'], 'hello')
      * @param string|array $fields Nombres de los campos que deben cumplir con la regla,
      * si es un string solo se validara un solo campo
-     * @param string|array $inputs Nombre de los campos que deben contener información 
+     * @param string|array $inputs Nombre de los campos que deben contener información
      * similar al campo principal, si es un solo string se validara como valor y no como
      * campo
      */
@@ -46,7 +46,6 @@ class Equals extends Rule
 
     public function validate($value)
     {
-        if (empty($value)) return true;
         if (!$this->hasInputs) return $this->fail == $value;
         foreach ($this->values as $key => $input) {
             if ($input !== $value) {

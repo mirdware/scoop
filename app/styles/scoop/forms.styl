@@ -1,9 +1,12 @@
 label
     position relative
-    margin-right .5em
     cursor pointer
-    em
-        color $color-red-main
+    &.out
+        margin-right -.5em
+        margin-left .5em
+
+input[type="currency"]
+    text-align right
 
 .btn
     background $color-main
@@ -59,20 +62,6 @@ input:read-only
     &:disabled
         cursor not-allowed
         background-color $color-bg-disabled
-    &:focus + .icon::before
-        content attr(data-tooltip)
-        position absolute
-        top 1.5em
-        right .8em
-        display inline-block
-        padding .3em .5em
-        border-radius .5em
-        border-top-right-radius 0
-        background #000
-        color #fff
-        font .9em sans-serif
-        width 10em
-        z-index 1
 
 .custom-input-file
     overflow hidden
@@ -101,20 +90,47 @@ input:read-only
             width 100%
         &.group
             display flex
+        .icon
+            right -.8em
+        &[data-tooltip]:focus-within::before
+            right 0
+            left 0
+        em
+            right -.5em
 
 .input-box
     position relative
     display inline-block
     padding 0 .5em
+    em
+        color $color-red-main
+        position absolute
+        top 0
+        right 0
     .icon
         position absolute
-        right -1.3em
+        right -.3em
         top 30%
         vertical-align middle
-        fa-icon "circle" after
+        fa-icon "circle"
         visibility hidden
         font 1em FontAwesome
         width auto !important
+    &[data-tooltip]:focus-within::before
+        content attr(data-tooltip)
+        position absolute
+        text-align center
+        top 100%
+        margin-top -.8em
+        right .5em
+        left .5em
+        display inline-block
+        padding .3em .5em
+        border-radius 0 0 .5em .5em
+        background $color-gray-strong
+        color #FFF
+        font .9em sans-serif
+        z-index 1
     &.error
         alert-box "times-circle" $color-red-main
     &.success
@@ -152,7 +168,7 @@ input:read-only
             font-style normal
             font-weight normal
             line-height 1
-            padding-right .5em
+            padding-right .2em
             width 1em
             text-align left
         &:checked + label:before

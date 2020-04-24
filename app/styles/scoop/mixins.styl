@@ -1,15 +1,3 @@
-$inputs = 'input[type="text"],
-input[type="email"],
-input[type="number"],
-input[type="password"],
-input[type="tel"],
-input[type="url"],
-input[type="time"],
-input[type="datetime"],
-input[type="search"],
-textarea,
-.input'
-
 font-url($url)
     url("../fonts/" + $url)
 
@@ -28,12 +16,11 @@ font-face($family, $file, $weight = "normal")
         font-style normal
 
 alert-box($icon, $color)
-    color: $color !important
-    label
-        color $color !important
     .icon
-        fa-icon $icon after
+        fa-icon $icon
         color $color
         visibility visible
-    {$inputs}
+    .input
         border-color $color !important
+    label
+        color $color

@@ -6,23 +6,24 @@ function validate(form) {
   const invalid = form.querySelectorAll(':invalid');
   let focused = false;
   removeErrors(form);
-  for(let i = 0, input; input = invalid[i]; i++) {
+  for (let i = 0, input; input = invalid[i]; i++) {
     if (!input.willValidate) continue;
     const errorContainer = input.parentNode;
-    const icon = errorContainer.getElementsByClassName('icon')[0];
     const validationMessage = input.validationMessage;
     if (!focused) {
       input.focus();
       focused = true;
     }
     errorContainer.classList.add('error');
-    if (icon) icon.dataset.tooltip = validationMessage;
+    errorContainer.dataset.tooltip = validationMessage;
   }
 }
 
 function removeErrors(form) {
   for (let i = 0, error; error = form.elements[i]; i++) {
-    error.parentNode.classList.remove('error');
+    const parent = error.parentNode;
+    parent.classList.remove('error');
+    parent.removeAttribute('data-tooltip');
   }
 }
 
@@ -31,13 +32,6 @@ function submit($, form) {
   $.inject(Messenger).close();
   removeErrors(form);
   if (!form.checkValidity) validate(form);
-  if (!$.resource) {
-    $.method = (form.getAttribute('method') || 'get').toLowerCase();
-    $.resource = new Resource(form.action);
-  }
-  if (form.enctype === 'multipart/form-data') {
-    delete resource.headers['Content-Type'];
-  }
   $.submit($.inject(FormService).toObject(form), form);
 }
 
@@ -60,7 +54,13 @@ export default class Form extends Component {
   }
 
   submit(data, form) {
-    this.resource[this.method](data)
+    if (!form.resource) {
+      form.resource = new Resource(form.action);
+      if (form.enctype === 'multipart/form-data') {
+        delete form.resource.headers['Content-Type'];
+      }
+    }
+    form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data)
     .then((res) => {
       this.loading = false;
       this.done(res, form);
@@ -78,25 +78,24 @@ export default class Form extends Component {
         const input = document.getElementById(key.replace(/_/g, '-'));
         if (input) {
           const container = input.parentNode;
-          const icon = container.getElementsByClassName('icon')[0];
           if (!focused) {
             input.focus();
             focused = true;
           }
           container.classList.add('error');
-          if (icon) icon.dataset.tooltip = errors[key];
+          container.dataset.tooltip = errors[key];
         }
       }
     } catch (ex) {
       this.inject(Messenger).showError(res.message);
-      form.reset();
     }
   }
 
   done(res, form) {
     this.inject(Messenger).showSuccess(res);
-    if (this.method === 'post') {
-      return form.reset();
+    if (form.method.toLowerCase() === 'post') {
+      form.reset();
+      return reset(form);
     }
     const passwords = form.querySelectorAll('input[type="password"]');
     for (let i = 0, password; password = passwords[i]; i++) {

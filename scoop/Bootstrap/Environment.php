@@ -15,8 +15,9 @@ class Environment
         $this->config = array(
             'base' => require $configPath.'.php',
             'data' => array()
-        ); 
-        define('ROOT', (stripos($_SERVER['SERVER_PROTOCOL'],'https') === 0 ? 'https:' : 'http:').'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+        );
+        $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
+        define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
     }
 
     public function get($name)
@@ -137,6 +138,6 @@ class Environment
         if (isset($url[1])) {
             $query += $this->getQuery($url[1]);
         }
-        return $url[0].$this->router->formatQueryString($query);   
+        return $url[0].$this->router->formatQueryString($query);
     }
 }

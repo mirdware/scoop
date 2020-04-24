@@ -42,8 +42,8 @@ function getHref(page, nextPage) {
     }
   } else {
     href = href
-    .replace('?page=' + page, '')
-    .replace('&page=' + page, '');
+      .replace('?page=' + page, '')
+      .replace('&page=' + page, '');
   }
   return href;
 }
@@ -103,10 +103,10 @@ function getQueryParams($) {
 
 export default ($) => ({
   mount: () => init($),
-  'form': {_submit: (e) => search(e.target, $)},
-  '.prev': {_click: (e) => addPage($, -1)},
-  '.next': {_click: (e) => addPage($, 1)},
-  '.modal': {_click: (e) => openModal(e, $)},
-  'input[type="search"]': {_search: (e) => search(e.target.form, $)},
-  '.num-page': {_click: (e) => setPage($, e.target)}
+  'form': { _submit: (e) => search(e.target, $) },
+  '.prev': { _click: (e) => addPage($, -1) },
+  '.next': { _click: (e) => addPage($, 1) },
+  '.modal': { _click: (e) => openModal(e, $) },
+  'input[type="search"]': { _search: (e) => search(e.target.form, $) },
+  '.num-page': { _click: (e) => setPage($, e.target) }
 });

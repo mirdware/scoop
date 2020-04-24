@@ -20,7 +20,7 @@ export default class Form {
     });
     return params;
   }
-  
+
   toObject(form) {
     let obj = {};
     for (let i = 0, inp; inp = form.elements[i]; i++) {

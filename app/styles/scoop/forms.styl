@@ -88,6 +88,8 @@ input:read-only
         padding 0
         .input
             width 100%
+            &.number-short
+                width 6em
         &.group
             display flex
         .icon
@@ -97,6 +99,9 @@ input:read-only
             left 0
         em
             right -.5em
+    &.block
+        display block
+        margin .5em 0 1.2em 0
 
 .input-box
     position relative
@@ -161,6 +166,8 @@ input:read-only
     input[type=radio]
     input[type=checkbox]
         display none
+        & + label
+            margin-left 1em
         & + label:before
             display inline-block
             color $color-border-text
@@ -168,6 +175,7 @@ input:read-only
             font-style normal
             font-weight normal
             line-height 1
+            margin-left -1.2em
             padding-right .2em
             width 1em
             text-align left
@@ -186,5 +194,3 @@ input:read-only
             fa-icon "square-o"
         &:checked + label
             fa-icon "check-square-o"
-    label
-        padding-left 0

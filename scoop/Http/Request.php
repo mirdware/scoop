@@ -20,12 +20,12 @@ class Request
         }
     }
 
-    public function getQuery($id = null) 
+    public function getQuery($id = null)
     {
         return self::getByIndex($id, self::$query);
     }
 
-    public function getBody($id = null) 
+    public function getBody($id = null)
     {
         return self::getByIndex($id, self::$body);
     }
@@ -76,12 +76,12 @@ class Request
             return $data ? self::purge($data) : array();
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
-        $data = preg_replace('/-+\w+--/', '', trim($data));
-        if (!$data) return $put;
-        $data = explode('&', $data);
+        $data = preg_split('/-+[\w\s:;]*/', trim($data), null, \PREG_SPLIT_NO_EMPTY);
+        if (empty($data)) return $put;
         foreach ($data as $value) {
-            $value = explode('=', $value);
-            $put[$value[0]] = urldecode($value[1]);
+            $value = explode("\n", $value);
+            $key = str_replace('"', '', str_replace('="', '', trim($value[0])));
+            $put[$key] = trim($value[2]);
         }
         return $put;
     }

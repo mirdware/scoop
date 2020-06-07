@@ -1,5 +1,5 @@
 .scoop-table
-    border 1px solid #ccc
+    overflow-x auto
     caption
         font-size 1.5em
         margin .5em 0 .75em
@@ -15,7 +15,7 @@
         text-align center
         height 1em
         input[type=checkbox]
-        input[type=checkbox]
+        input[type=radio]
             padding 0
         label
             margin 0
@@ -42,14 +42,15 @@
             border-bottom 3px solid #ddd
             display block
             margin-bottom .625em
-        td
+        td:not([hidden])
             border-bottom 1px solid #ddd
-            display block
+            display flex
             font-size .8em
             text-align right
+            height auto
+            justify-content space-between
         td::before
             content attr(data-label)
-            float left
             font-weight bold
             text-transform uppercase
         td:last-child

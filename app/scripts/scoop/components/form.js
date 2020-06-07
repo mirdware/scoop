@@ -56,8 +56,8 @@ export default class Form extends Component {
   submit(data, form) {
     if (!form.resource) {
       form.resource = new Resource(form.action);
-      if (form.enctype === 'multipart/form-data') {
-        delete form.resource.headers['Content-Type'];
+      if (form.enctype !== 'multipart/form-data') {
+        form.resource.headers['Content-Type'] = 'application/json';
       }
     }
     form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data)

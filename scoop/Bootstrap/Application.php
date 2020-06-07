@@ -3,7 +3,6 @@ namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $router;
     private $url;
     private $environment;
 
@@ -26,7 +25,7 @@ class Application
             return $this->formatResponse($error);
         } catch (\UnderflowException $ex) {}
     }
-    
+
     public function setURL($url)
     {
         $this->url = $url;

@@ -3,6 +3,7 @@
     "main": "#FF5C00",
     "strong": "#D45500",
     "check": "#2091CF",
+    "contrast": "#fff",
     "blue": {
       "main": "#2981E4",
       "strong": "#337AB7"
@@ -34,7 +35,7 @@
       "success": "#DFF0D8",
       "info": "#D9EDF7",
       "warning": "#FCF8E3",
-      "error": "#F2DEDE",
+      "error": "#FFCECE",
       "disabled": "#ECECEC"
     }
   }

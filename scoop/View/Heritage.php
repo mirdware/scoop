@@ -50,7 +50,9 @@ abstract class Heritage {
     public static function getContent()
     {
         $view = ob_get_contents().self::$footer;
-        ob_end_clean();
+        while (ob_get_length() !== false) {
+            ob_end_clean();
+        }
         return $view;
     }
 }

@@ -32,23 +32,11 @@ class Reader extends Filter
         $page = isset($params['page']) ? intval($params['page']) : 0;
         $size = isset($params['size']) ? intval($params['size']) : 12;
         unset($params['page'], $params['size']);
-        $parameters = $this->assign(new \stdClass(), $this);
-        $this->query = preg_replace('/^SELECT (.*) FROM /', 'SELECT COUNT(*) AS total FROM ', $parameters->query);
-        $this->order = array();
-        $this->group = array();
-        $paginated = $this->run($params)->fetch(\PDO::FETCH_ASSOC);
-        $this->assign($this, $parameters);
+        $sql = 'SELECT COUNT(*) AS total FROM ('.$this->bind($params).') d';
+        $paginated = $this->con->prepare($sql);
+        $paginated->execute($this->getParamsAllowed($sql));
         $clone = clone $this;
-        $result = $clone->limit($page * $size, $size)->run($params)->fetchAll();
-        return $paginated + compact('page', 'size', 'result');
-    }
-
-    private function assign($target, $source)
-    {
-        $keys = array('query', 'order', 'group');
-        foreach ($keys as $key) {
-            $target->$key = $source->$key;
-        }
-        return $target;
+        $result = $clone->limit($page * $size, $size)->run()->fetchAll();
+        return $paginated->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');
     }
 }

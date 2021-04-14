@@ -20,10 +20,11 @@ function createBody(href, $dom, $body) {
       content = content.outerHTML;
       show($dom, $body, content);
     }
-    return Promise.resolve();
+    return Promise.resolve($dom);
   }
   return new Resource(href).get().then((data) => {
     show($dom, $body, data);
+    return $dom;
   });
 }
 

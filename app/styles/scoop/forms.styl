@@ -48,8 +48,12 @@ input[type="currency"]
     &:disabled
         cursor not-allowed
 
-input:read-only
-    cursor not-allowed
+input:not([type=submit]):not([type=button]):not([type=file])
+    &:not([type=reset]):not([type=color]):not([type=image])
+        &:not([type=radio]):not([type=checkbox]):not([type=range])
+        /textarea
+            &:read-only
+                cursor not-allowed
 
 .input
     border-radius .3em

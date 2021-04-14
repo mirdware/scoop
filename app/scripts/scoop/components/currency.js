@@ -1,4 +1,4 @@
-const numberFormat = new Intl.NumberFormat('es-CO', { style: 'decimal', minimumFractionDigits: 2 });
+const numberFormat = new Intl.NumberFormat('de-DE', { style: 'decimal',  minimumFractionDigits: 2 });
 
 String.prototype.currency = function () {
   return '$' + numberFormat.format(this);
@@ -21,7 +21,7 @@ function mask($target) {
 
 function unmask($target) {
   if (!$target.value) return;
-  $target.value = parseFloat($target.value.replace('.', '').replace(',', '.'));
+  $target.value = parseFloat($target.value.replace(/\./g, '').replace(',', '.'));
   $target.select();
 }
 

@@ -27,7 +27,7 @@ class Validator
 
     /**
      * Crea el objeto \Scoop\Validator con un tipo de validación.
-     * @param integer $typeValidation Los dos tipo de validación permitidos son 
+     * @param integer $typeValidation Los dos tipo de validación permitidos son
      *  SIMPLE_VALIDATION(por defecto): arroja solo un error por campo
      *  FULL_VALIDATION: arroja todos los errores que pueda tener un campo.
      */
@@ -40,7 +40,7 @@ class Validator
      * Genera la validación de los datos, retornando los errores encontrados
      * @param  array<mixed> $data Datos a ser validados ("nombreCampo" => "valor")
      * @return array<string> Errores hallados durante el proceso de validación.
-     *  Dependiendo si es una validación simple o completa arroja un array 
+     *  Dependiendo si es una validación simple o completa arroja un array
      *  unidimencional o multidimencional.
      */
     public function validate($data)
@@ -108,7 +108,7 @@ class Validator
 
     /**
      * Según los datos suministrados se encarga de ejecutar las reglas pertinentes a cada uno.
-     * @param  string $rule   Nombre de la regla que sera ejecutada.
+     * @param  mixed $rule   Nombre de la regla que sera ejecutada.
      * @param  string $field  Nombre del campo que sera validado
      * @param  array<mixed> $params Parametros pasados a la regla (max, min, etc).
      */

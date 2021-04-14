@@ -26,6 +26,7 @@ class DBC extends \PDO
     {
         parent::commit();
         $this->eventManager->disconnect($this);
+        gc_collect_cycles();
     }
 
     private function __clone() {}

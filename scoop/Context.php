@@ -75,7 +75,7 @@ class Context
     public static function getService($service)
     {
         if (!self::$service) {
-            throw new \UnderflowException('No service registered');
+            throw new \UnderflowException('No service '.$service.' registered');
         }
         return self::$service->get($service);
     }
@@ -83,7 +83,7 @@ class Context
     /**
      * Registra un servicio en el service manager.
      * @param string $key Nombre del servicio
-     * @param string|object $callback Nombre de la clase del servicio 
+     * @param string|object $callback Nombre de la clase del servicio
      *  o el objeto mismo que representa el servicio.
      * @param array<mixed> $params Parametros enviados al servicio.
      */

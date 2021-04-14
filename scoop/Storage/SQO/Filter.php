@@ -83,8 +83,9 @@ class Filter
         if ($params !== null) {
             $this->params += $params;
         }
-        $statement = $this->con->prepare($this);
-        $statement->execute($this->params);
+        $sql = $this->__toString();
+        $statement = $this->con->prepare($sql);
+        $statement->execute($this->getParamsAllowed($sql));
         return $statement;
     }
 
@@ -98,20 +99,46 @@ class Filter
             .$this->limit;
     }
 
+    protected function getParamsAllowed($sql)
+    {
+        $allowed = array();
+        preg_match_all('/:[\w_]+/', $sql, $matches);
+        foreach ($matches[0] as $match) {
+            $name = substr($match, 1);
+            $allowed[$name] = 1;
+        }
+        return array_intersect_key($this->params, $allowed);
+    }
+
     private function getRules()
     {
         $rules = $this->rules;
         foreach ($rules as $key => $rule) {
             preg_match_all('/:[\w_]+/', $rule, $matches);
             foreach ($matches[0] as $match) {
-                if (!isset($this->params[substr($match, 1)])) {
+                $name = substr($match, 1);
+                if (!isset($this->params[$name])) {
                     unset($rules[$key]);
                     break;
+                }
+                if (is_array($this->params[$name])) {
+                    $rules[$key] = str_replace(':'.$name, $this->formatQueryArray($name), $rule);
                 }
             }
         }
         if (empty($rules)) return '';
         return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
+    }
+
+    private function formatQueryArray($name)
+    {
+        $rule = '';
+        foreach ($this->params[$name] as $index => $value) {
+            $this->params[$name.$index] = $value;
+            $rule .= ':'.$name.$index.',';
+        }
+        unset($this->params[$name]);
+        return substr($rule, 0, -1);
     }
 
     private function getOrder()

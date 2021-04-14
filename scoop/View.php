@@ -80,7 +80,7 @@ final class View
         $array = preg_split('/(?=[A-Z])/', $method);
         $component = strtolower(array_pop($array));
         if (isset(self::$components[$component])) {
-            $method = join($array);
+            $method = implode('', $array);
             return call_user_func_array(array(self::$components[$component], $method), $args);
         }
         throw new \BadMethodCallException('Component '.$component.' unregistered');

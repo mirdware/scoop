@@ -1,0 +1,39 @@
+.scoop-tabs
+    display flex
+    flex-wrap wrap
+    input[name=tab]
+        position absolute
+        opacity 0
+        &:checked + label
+            background #fff
+            color #000
+            & + .panel
+                display block
+        &:focus + label
+            z-index 1
+        & + label
+            width 100%
+            padding 1em 1.5em
+            background $color-main
+            cursor pointer
+            font-weight bold
+            font-size 18px
+            color $color-contrast
+            transition background 0.1s, color 0.1s
+            &:hover
+                background $color-bg-disabled
+                color $color-main
+            &:active
+                background #ccc
+    .panel
+        display none
+        width 100%
+        padding 1em 2em
+        box-shadow 0 0 80px -40px rgba(0,0,0,0.3)
+
+@media (min-width: 600px)
+  .scoop-tabs
+    input[name=tab] + label
+        width auto
+    .panel
+        order 99

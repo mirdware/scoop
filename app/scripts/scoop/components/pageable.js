@@ -13,47 +13,51 @@ function sendRequest($) {
     const { page } = data;
     const disabledNext = (page + 1) * data.size >= data.total;
     const disabledPrev = page == 0;
-    $.data = data.result;
-    $.next = {
+    const name = $.name || 'page';
+    $[$.nameData || 'data'] = data.result;
+    $[$.nameNext || 'next'] = {
       disabled: disabledNext,
-      href: disabledNext ? '' : getHref(page, page + 1)
+      href: disabledNext ? '' : getHref(page, page + 1, name)
     };
-    $.prev = {
+    $[$.namePrev || 'prev'] = {
       disabled: disabledPrev,
-      href: disabledPrev ? '' : getHref(page, page - 1)
+      href: disabledPrev ? '' : getHref(page, page - 1, name)
     };
     Object.assign($, getQueryParams($));
+    Object.assign($, data);
     $.loading = false;
   });
 }
 
-function getPage() {
-  const page = location.search.match(/page=(\d+)/);
+function getPage(name) {
+  const regex = new RegExp(name + '=(\\d+)');
+  const page = location.search.match(regex);
   return page ? parseInt(page[1]) : 0;
 }
 
-function getHref(page, nextPage) {
+function getHref(page, nextPage, name) {
   let { href } = location;
   if (nextPage > 0) {
     if (page) {
-      href = href.replace('page=' + page, 'page=' + nextPage);
+      href = href.replace(name + '=' + page, name + '=' + nextPage);
     } else {
-      href += (href.indexOf('?') !== -1 ? '&' : '?') + 'page=' + nextPage;
+      href += (href.indexOf('?') !== -1 ? '&' : '?') + name + '=' + nextPage;
     }
   } else {
     href = href
-      .replace('?page=' + page, '')
-      .replace('&page=' + page, '');
+      .replace('?' + name + '=' + page, '')
+      .replace('&' + name + '=' + page, '');
   }
   return href;
 }
 
 function addPage($, pagePlus) {
-  const page = getPage();
+  const name = $.name || 'page';
+  const page = getPage(name);
   const nextPage = page + pagePlus;
-  if (page > nextPage && $.prev.disabled) return;
-  if (page < nextPage && $.next.disabled) return;
-  const href = getHref(page, nextPage);
+  if (page > nextPage && $[$.namePrev || 'prev'].disabled) return;
+  if (page < nextPage && $[$.nameNext || 'next'].disabled) return;
+  const href = getHref(page, nextPage, name);
   window.history.pushState(null, '', href);
   sendRequest($);
 }
@@ -75,13 +79,17 @@ function openModal(e, $) {
   });
 }
 
-function init($) {
-  const { prev, next } = $;
+function init($, options) {
+  if (options) {
+    Object.assign($, JSON.parse('{' + options + '}'));
+  }
+  const prev = $[$.namePrev || 'prev'];
+  const next = $[$.nameNext || 'next'];
   const { href } = location;
   window.addEventListener('popstate', () => sendRequest($));
   prev.disabled = prev.disabled || href === prev.href;
   next.disabled = next.disabled || href === next.href;
-  getQueryParams($)
+  getQueryParams($);
 }
 
 function search(form, $) {
@@ -102,10 +110,10 @@ function getQueryParams($) {
 }
 
 export default ($) => ({
-  mount: () => init($),
+  mount: (e) => init($, e.target.dataset.options),
   'form': { _submit: (e) => search(e.target, $) },
-  '.prev': { _click: (e) => addPage($, -1) },
-  '.next': { _click: (e) => addPage($, 1) },
+  '.prev': { _click: () => addPage($, -1) },
+  '.next': { _click: () => addPage($, 1) },
   '.modal': { _click: (e) => openModal(e, $) },
   'input[type="search"]': { _search: (e) => search(e.target.form, $) },
   '.num-page': { _click: (e) => setPage($, e.target) }

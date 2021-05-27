@@ -7,7 +7,8 @@ const mincss = require('gulp-clean-css');
 const buffer = require('vinyl-buffer');
 const uglify = require('gulp-uglify');
 const sourcemaps = require('gulp-sourcemaps');
-const livereload = require('gulp-livereload');
+const browserSync = require('browser-sync').create();
+const php = require('gulp-connect-php');
 const nib = require('nib');
 const fontAwesome = require('fa-stylus');
 const app = require('./package.json');
@@ -27,7 +28,7 @@ gulp.task('css', () => {
   .pipe(rename(app.name + '.min.css'))
   .pipe(sourcemaps.write('.'))
   .pipe(gulp.dest('public/css/'))
-  .pipe(livereload());
+  .pipe(browserSync.stream());
 });
 
 gulp.task('js', () => {
@@ -45,7 +46,7 @@ gulp.task('js', () => {
   .pipe(uglify())
   .pipe(sourcemaps.write('.'))
   .pipe(gulp.dest('public/js/'))
-  .pipe(livereload());
+  .pipe(browserSync.stream());
 });
 
 gulp.task('move', () => {
@@ -53,12 +54,17 @@ gulp.task('move', () => {
   .pipe(gulp.dest('public/fonts'));
 });
 
-gulp.task('default', gulp.series(gulp.parallel('css', 'js'), 'move'));
+gulp.task('default', gulp.parallel('css', 'js', 'move'));
 
 gulp.task('dev', gulp.parallel('default', () => {
-  livereload.listen();
-  gulp.watch(pathStyles + '**/*', gulp.parallel('css'));
-  gulp.watch(pathScripts + '**/*', gulp.parallel('js'));
-  gulp.watch('src/**/*.php').on('change', livereload.changed);
-  gulp.watch('app/**/*.php').on('change', livereload.changed);
+  php.server({
+    router: './app/router.php'
+  }, function (){
+    browserSync.init(['**/*.php'], {
+      proxy: process.env.PHP_HOST || 'http://localhost:8000',
+      port: 8001
+    });
+  });
+  gulp.watch(pathStyles + '**/*', gulp.series('css'));
+  gulp.watch(pathScripts + '**/*', gulp.series('js'));
 }));

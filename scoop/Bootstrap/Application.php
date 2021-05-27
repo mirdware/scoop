@@ -54,8 +54,11 @@ class Application
                     str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
                 );
             }
-            $this->url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
-            unset($_GET['route'], $_REQUEST['route']);
+            $this->url = '/';
+            if (isset($_GET['route'])) {
+                $this->url .= filter_var($_GET['route'], FILTER_SANITIZE_URL);
+                unset($_GET['route'], $_REQUEST['route']);
+            }
         }
         return $this->url;
     }

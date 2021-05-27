@@ -18,18 +18,13 @@ class Router
     {
         $route = $this->getRoute($url);
         if ($route) {
-            $classController = '\Scoop\Controller';
-            $controller = $route['controller'];
-            if (!is_subclass_of($controller, $classController)) {
-                throw new \UnexpectedValueException($controller.' not implement '.$classController);
-            }
-            $controller = \Scoop\Context::getInjector()->getInstance($controller);
+            $method = strtolower($_SERVER['REQUEST_METHOD']);
+            $controller = $this->getController($route['controller'], $method);
             if ($controller) {
                 $this->intercept($url);
                 $controllerReflection = new \ReflectionClass($controller);
-                $method = $this->getMethod($route);
                 if (!$controllerReflection->hasMethod($method)) {
-                    throw new \Scoop\Http\MethodNotAllowedException();
+                    throw new \Scoop\Http\MethodNotAllowedException($controllerReflection->getName().' not implement '.$method.' method');
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($route['params']);
@@ -90,19 +85,19 @@ class Router
         return $this->current;
     }
 
-    private function getMethod($route)
+    private function getController($controller, $method)
     {
-        $method = strtolower($_SERVER['REQUEST_METHOD']);
-        if (isset($route['methods'])) {
-            $methods = $route['methods'];
-            if (isset($methods[$method])) {
-                return $methods[$method];
-            }
-            if (isset($methods['all'])) {
-                return $methods['all'];
-            }
+        if (is_array($controller)) {
+            if (!isset($controller[$method])) {
+                throw new \Scoop\Http\MethodNotAllowedException('There not controller for '.$method.' method');
+            };
+            $controller = $controller[$method];
         }
-        return $method;
+        $classController = '\Scoop\Controller';
+        if (!is_subclass_of($controller, $classController)) {
+            throw new \UnexpectedValueException($controller.' not implement '.$classController);
+        }
+        return \Scoop\Context::getInjector()->getInstance($controller);
     }
 
     private function getRoute($url)

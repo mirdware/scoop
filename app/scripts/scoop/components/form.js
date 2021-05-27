@@ -71,7 +71,6 @@ export default class Form extends Component {
   }
 
   fail(res, form) {
-    console.log(res);
     try {
       const errors = JSON.parse(res.message);
       let focused = false;

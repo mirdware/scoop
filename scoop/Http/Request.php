@@ -3,36 +3,30 @@ namespace Scoop\Http;
 
 class Request
 {
-    private static $body;
-    private static $query;
-    private static $refererData;
+    private $body;
+    private $query;
+    private $referrer;
 
-    public function __construct()
+    public function __construct($data = array())
     {
-        self::$body = self::getBodyData();
-        self::$query = self::purge($_GET);
-        self::$refererData = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
-        foreach ($_FILES AS $name => $file) {
-            self::$body[$name] = $file;
-        }
-        if (!$this->isAjax()) {
-            $_SESSION['data-scoop'] = array();
-        }
+        $this->body = isset($data['body']) ? $data['body'] : $this->getBodyData();
+        $this->query = isset($data['query']) ? $data['query'] : $this->purge($_GET);
+        $this->referrer = isset($data['referrer']) ? $data['referrer'] : $this->getReferrerData();
     }
 
     public function getQuery($id = null)
     {
-        return self::getByIndex($id, self::$query);
+        return $this->getByIndex($id, $this->query);
     }
 
     public function getBody($id = null)
     {
-        return self::getByIndex($id, self::$body);
+        return $this->getByIndex($id, $this->body);
     }
 
     public function reference($id)
     {
-        return self::getByIndex($id, self::$refererData);
+        return $this->getByIndex($id, $this->referrer);
     }
 
     /**
@@ -46,7 +40,7 @@ class Request
             $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
     }
 
-    private static function getByIndex($name, $res)
+    private function getByIndex($name, $res)
     {
         if (!$name) return $res;
         $name = explode('.', $name);
@@ -57,33 +51,43 @@ class Request
         return $res;
     }
 
-    private static function purge($array)
+    private function purge($array)
     {
         foreach ($array as $key => $value) {
-            $array[$key] = is_array($value) ?
-            self::purge($value) :
-            self::filterXSS($value);
+            $array[$key] = is_array($value) ? $this->purge($value) : $this->filterXSS($value);
         }
         return $array;
     }
 
-    private static function getBodyData()
+    private function getReferrerData() {
+        if (!$this->isAjax()) {
+            $_SESSION['data-scoop'] = array();
+        }
+        return isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
+    }
+
+    private function getBodyData()
     {
         $data = file_get_contents('php://input');
-        $put = array();
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);
-            return $data ? self::purge($data) : array();
+            return $data ? $this->purge($data) : array();
         }
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') return self::purge($_POST);
-        $data = preg_split('/-+[\w\s:;]*/', trim($data), null, \PREG_SPLIT_NO_EMPTY);
-        if (empty($data)) return $put;
+        $body = array();
+        foreach ($_FILES AS $name => $file) {
+            $body[$name] = $file;
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            return $body + $this->purge($_POST);
+        }
+        $data = preg_split('/-+[\w\s:;]*/', trim($data), -1, \PREG_SPLIT_NO_EMPTY);
+        if (empty($data)) return $body;
         foreach ($data as $value) {
             $value = explode("\n", $value);
             $key = str_replace('"', '', str_replace('="', '', trim($value[0])));
-            $put[$key] = trim($value[2]);
+            $body[$key] = trim($value[2]);
         }
-        return $put;
+        return $body;
     }
 
     /**

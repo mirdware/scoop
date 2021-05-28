@@ -68,6 +68,7 @@ class Context
 
     /**
      * Obtiene un servicio configurado previamente
+     * @deprecated
      * @param string $service Nombre del servicio a buscar.
      * @return object Servicio hallado.
      * @throws \UnderflowException Si no se ha registrado ningún servicio arroja la excepción.
@@ -82,6 +83,7 @@ class Context
 
     /**
      * Registra un servicio en el service manager.
+     * @deprecated
      * @param string $key Nombre del servicio
      * @param string|object $callback Nombre de la clase del servicio
      *  o el objeto mismo que representa el servicio.

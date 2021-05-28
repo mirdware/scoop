@@ -3,6 +3,7 @@ namespace Scoop;
 
 abstract class Controller
 {
+    private static $request;
     private static $redirects = array(
         300 => 'HTTP/1.1 300 Multiple Choices',
         301 => 'HTTP/1.1 301 Moved Permanently',
@@ -14,7 +15,12 @@ abstract class Controller
         307 => 'HTTP/1.1 307 Temporary Redirect',
         308 => 'HTTP/1.1 308 Permanent Redirect'
     );
-
+    
+    public static function setRequest(\Scoop\Http\Request $request)
+    {
+        self::$request = $request;
+    }
+    
     /**
      * Realiza la redirección a la página pasada como parámetro.
      * @param string $url Dirección a la que se redirecciona la página.
@@ -29,6 +35,11 @@ abstract class Controller
         }
         header('Location:'.$url);
         exit;
+    }
+    
+    protected final function getRequest()
+    {
+        return self::$request;
     }
 
     /**
@@ -69,10 +80,9 @@ abstract class Controller
     {
         $errors = $validator->validate($data);
         if (empty($errors)) return;
-        $request = $this->inject('request');
         $_SESSION['data-scoop'] += array(
-            'body' => $request->getBody(),
-            'query' => $request->getQuery(),
+            'body' => $this->request->getBody(),
+            'query' => $this->request->getQuery(),
             'error' => $errors
         );
         throw new \Scoop\Http\BadRequestException(json_encode($errors));
@@ -80,6 +90,7 @@ abstract class Controller
 
     /**
      * Obtiene el servicio especificado por el usuario.
+     * @deprecated
      * @param string $serviceName Nombre del servicio a obtener.
      * @return object Servicio a obtener.
      */

@@ -63,7 +63,8 @@ final class View
     public function render()
     {
         $helperView = new View\Helper(self::$components);
-        \Scoop\Context::registerService('view', $helperView);
+        View\Service::inject('view', $helperView);
+        View\Service::inject('config', \Scoop\Context::getService('config'));
         View\Heritage::init($this->viewData);
         View\Template::parse($this->viewPath, $this->viewData);
         return View\Heritage::getContent();

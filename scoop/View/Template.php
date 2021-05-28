@@ -4,6 +4,7 @@ namespace Scoop\View;
 final class Template
 {
     const HERITAGE = '\Scoop\View\Heritage';
+    const SERVICE = '\Scoop\View\Service';
 
     /**
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
@@ -81,6 +82,7 @@ final class Template
         $safeExp = $quotes.'|'.$conditional.'|'.$fn;
         $simpleString = '\'([\w\/-]+)\'';
         $line = preg_replace(array(
+            '/@inject ([\\\\\w]+):(\w+)/',
             '/@extends '.$simpleString.'/',
             '/@import '.$simpleString.'/',
             '/@if (('.$safeExp.')+)/',
@@ -89,6 +91,7 @@ final class Template
             '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
             '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
+            '<?php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?>',
             '<?php '.self::HERITAGE.'::extend(\'${1}\') ?>',
             '<?php '.self::HERITAGE.'::import(\'${1}\') ?>',
             '<?php if(${1}): ?>',
@@ -111,7 +114,7 @@ final class Template
     {
         preg_match_all('/#(\w*)->/is', $line, $servicesFound);
         for ($i = 0; isset($servicesFound[0][$i]); $i++) {
-            $line = str_replace($servicesFound[0][$i], '\Scoop\Context::getService(\''.$servicesFound[1][$i].'\')->', $line);
+            $line = str_replace($servicesFound[0][$i], self::SERVICE.'::get(\''.$servicesFound[1][$i].'\')->', $line);
         }
         return $line;
     }

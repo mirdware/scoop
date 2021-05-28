@@ -56,7 +56,9 @@ class Environment
 
     public function route($url)
     {
-        $this->configure();
+        $request = new \Scoop\Http\Request();
+        $this->configure($request);
+        \Scoop\Controller::setRequest($request);
         return $this->router->route($url);
     }
 
@@ -82,13 +84,13 @@ class Environment
         return $this->router->getCurrentRoute() === $route;
     }
 
-    protected function configure() {
+    protected function configure($request) {
         \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
         \Scoop\Validator::addRule((Array) $this->get('validators'));
         $this->bind((Array) $this->get('providers'));
         $this->registerComponents((Array) $this->get('components'));
         $services = (Array) $this->get('services');
-        $services += array('config' => $this, 'request' => new \Scoop\Http\Request());
+        $services += array('config' => $this, 'request' => $request);
         $this->registerServices($services);
         $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
         return $this;

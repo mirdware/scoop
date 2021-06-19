@@ -11,12 +11,7 @@ class Message implements Component
     const ERROR = 'error';
     const WARNING = 'warning';
     private static $props;
-
-    public function __construct()
-    {
-        $message = \Scoop\Context::getService('request')->reference('message');
-        self::$props = $message ? $message : array('type' => 'not', 'msg' => '');
-    }
+    private static $request;
 
     /**
      * Crea el componente en la vista.
@@ -24,6 +19,12 @@ class Message implements Component
      */
     public function render()
     {
+        if (self::$props) {
+            unset($_SESSION['data-scoop']['message']);
+        } else {
+            $message = self::$request->reference('message');
+            self::$props = $message ? $message : array('type' => 'not', 'msg' => '');
+        }
         $type = self::$props['type'];
         $msg = self::$props['msg'];
         return '
@@ -31,6 +32,11 @@ class Message implements Component
             <i class="close"></i>
             <span data-bind="msg">'.$msg.'</span>
         </div>';
+    }
+
+    public static function setRequest(\Scoop\Http\Request $request)
+    {
+        self::$request = $request;
     }
 
     /**
@@ -46,9 +52,9 @@ class Message implements Component
     {
         $class = new \ReflectionClass(get_class());
         if (!in_array($type, $class->getConstants())) {
-            throw new \UnexpectedValueException('Error building the message [type rejected].');
+            throw new \UnexpectedValueException('Error building the message [type '.$type.' rejected].');
         }
         self::$props = array('type' => $type, 'msg' => $msg);
-        $_SESSION['data-scoop'] += array('message' => self::$props);
+        $_SESSION['data-scoop']['message'] = self::$props;
     }
 }

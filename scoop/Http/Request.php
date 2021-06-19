@@ -6,12 +6,14 @@ class Request
     private $body;
     private $query;
     private $referrer;
+    private $url;
 
     public function __construct($data = array())
     {
-        $this->body = isset($data['body']) ? $data['body'] : $this->getBodyData();
+        $this->url = isset($data['url']) ? $data['url'] : $this->setURL();
+        $this->body = isset($data['body']) ? $data['body'] : $this->setBody();
         $this->query = isset($data['query']) ? $data['query'] : $this->purge($_GET);
-        $this->referrer = isset($data['referrer']) ? $data['referrer'] : $this->getReferrerData();
+        $this->referrer = isset($data['referrer']) ? $data['referrer'] : $this->setReferrer();
     }
 
     public function getQuery($id = null)
@@ -22,6 +24,11 @@ class Request
     public function getBody($id = null)
     {
         return $this->getByIndex($id, $this->body);
+    }
+
+    public function getURL()
+    {
+        return $this->url;
     }
 
     public function reference($id)
@@ -59,14 +66,30 @@ class Request
         return $array;
     }
 
-    private function getReferrerData() {
+    private function setURL()
+    {
+        if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
+            \Scoop\Controller::redirect(
+                str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
+            );
+        }
+        $url = '/';
+        if (isset($_GET['route'])) {
+            $url .= filter_var($_GET['route'], FILTER_SANITIZE_URL);
+            unset($_GET['route'], $_REQUEST['route']);
+        }
+        return $url;
+    }
+
+    private function setReferrer() {
+        $referrer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
         if (!$this->isAjax()) {
             $_SESSION['data-scoop'] = array();
         }
-        return isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
+        return $referrer;
     }
 
-    private function getBodyData()
+    private function setBody()
     {
         $data = file_get_contents('php://input');
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {

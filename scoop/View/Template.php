@@ -37,15 +37,24 @@ final class Template
      */
     public static function clearHTML($html)
     {
+        $blockElements = array(
+            'div', 'main', 'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'dl', 'dt', 'fieldset',
+            'figcaption', 'figure', 'footer', 'form', 'h\d', 'header', 'hr', 'li', 'nav', 'noscript', 'ol', 'p',
+            'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
+        );
         preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
         if (isset($matches[0])) {
             $head = preg_replace('/>\s+</', '><', $matches[2]);
             $html = str_replace($matches[0], '<html'.$matches[1].'><head>'.$head.'</head><body>', $html);
         }
-        return preg_replace(
+        $html = preg_replace(
             array('/\s+/', '/<!--.*?-->/s', '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/', '/(;|=)\s*(\"|\')/', '/\s*(\/?)\s*>/', '/<\s/'),
             array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<'), $html
         );
+        foreach ($blockElements as $element) {
+            $html = preg_replace('/[\s\r\n]*(<\/?'.$element.'[^>]*>)[\s\r\n]*/is', '${1}', $html);
+        }
+        return $html;
     }
 
     /**
@@ -58,8 +67,7 @@ final class Template
         $content = '';
         $file = fopen($template, 'r');
         while (!feof($file)) {
-            $line = self::replace(fgets($file));
-            $content .= trim($line);
+            $content .= self::replace(fgets($file));
         }
         fclose($file);
         return self::convertViewServices($content);
@@ -80,11 +88,11 @@ final class Template
         $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
         $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes.'|'.$conditional.'|'.$fn;
-        $simpleString = '\'([\w\/-]+)\'';
+        $uri = '\'([\w\/-]+)\'';
         $line = preg_replace(array(
-            '/@inject ([\\\\\w]+):(\w+)/',
-            '/@extends '.$simpleString.'/',
-            '/@import '.$simpleString.'/',
+            '/@inject ([\\\\\w]+)#(\w+)/',
+            '/@extends '.$uri.'/',
+            '/@import '.$uri.'/',
             '/@if (('.$safeExp.')+)/',
             '/@elseif (('.$safeExp.')+)/',
             '/@while (('.$conditional.'|'.$fn.')+)/',

@@ -10,17 +10,17 @@ abstract class Exception extends \Exception
     public function __construct($message, $code, $previous, $headers)
     {
         parent::__construct($message, $code, $previous);
-        $config = \Scoop\Context::getService('config');
-        $title = $config->get('exceptions.'.$code.'.title');
-        $path =  $config->get('exceptions.'.$code.'.view');
+        $environment = \Scoop\Context::getEnvironment();
+        $title = $environment->getConfig('exceptions.'.$code.'.title');
+        $path =  $environment->getConfig('exceptions.'.$code.'.view');
         $this->headers = $headers;
         $this->title = $title ? $title : 'Error report';
         $this->path = $path ? 'exceptions/'.$path : 'exceptions/default';
     }
 
-    public function addHeader($headers)
+    public function addHeader($header)
     {
-        $this->headers[] = $headers;
+        $this->headers[] = $header;
         return $this;
     }
 
@@ -29,7 +29,7 @@ abstract class Exception extends \Exception
         foreach ($this->headers as $header) {
             header($header);
         }
-        if (\Scoop\Context::getService('request')->isAjax()) {
+        if (in_array('Content-Type: application/json', $this->headers)) {
             return array(
                 'code' => $this->getCode(),
                 'message' => $this->getMessage()

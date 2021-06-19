@@ -20,7 +20,7 @@ class Environment
         define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
     }
 
-    public function get($name)
+    public function getConfig($name, $default = null)
     {
         if (isset($this->config['data'][$name])) {
             return $this->config['data'][$name];
@@ -28,9 +28,9 @@ class Environment
         $data = explode('.', $name);
         $res = $this->config['base'];
         foreach ($data as $key) {
-            if (!isset($res[$key])) return null;
+            if (!isset($res[$key])) return $default;
             if (is_string($res[$key])) {
-                $res[$key] = $this->load($res[$key]);
+                $res[$key] = $this->loadLazily($res[$key]);
             }
             $res = $res[$key];
         }
@@ -38,12 +38,12 @@ class Environment
         return $res;
     }
 
-    public function load($value)
+    public function loadLazily($path)
     {
-        $index = strpos($value, ':') + 1;
+        $index = strpos($path, ':') + 1;
         if ($index !== -1) {
-            $method = substr($value, 0, $index);
-            $url = substr($value, $index);
+            $method = substr($path, 0, $index);
+            $url = substr($path, $index);
             if ($method === 'json:') {
                 return json_decode(file_get_contents($url . '.json'), true);
             }
@@ -51,15 +51,15 @@ class Environment
                 return require $url . '.php';
             }
         }
-        return $value;
+        return $path;
     }
 
-    public function route($url)
+    public function route($request)
     {
-        $request = new \Scoop\Http\Request();
         $this->configure($request);
         \Scoop\Controller::setRequest($request);
-        return $this->router->route($url);
+        \Scoop\View::setRequest($request);
+        return $this->router->route($request);
     }
 
     public function getURL($args)
@@ -85,14 +85,12 @@ class Environment
     }
 
     protected function configure($request) {
-        \Scoop\Validator::setMessages((Array) $this->get('messages.error'));
-        \Scoop\Validator::addRule((Array) $this->get('validators'));
-        $this->bind((Array) $this->get('providers'));
-        $this->registerComponents((Array) $this->get('components'));
-        $services = (Array) $this->get('services');
-        $services += array('config' => $this, 'request' => $request);
-        $this->registerServices($services);
-        $this->router = new \Scoop\IoC\Router((Array) $this->get('routes'));
+        \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
+        \Scoop\Validator::addRule((Array) $this->getConfig('validators'));
+        $this->bind((Array) $this->getConfig('providers'));
+        $this->registerComponents((Array) $this->getConfig('components'));
+        $this->registerServices(array('config' => $this, 'request' => $request));
+        $this->router = new \Scoop\IoC\Router((Array) $this->getConfig('routes'));
         return $this;
     }
 

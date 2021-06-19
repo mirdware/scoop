@@ -13,11 +13,10 @@
  */
 
 require 'scoop/Context.php';
-\Scoop\Context::load();
-$environment = new \Scoop\Bootstrap\Environment('app/config');
-$app = new \Scoop\Bootstrap\Application($environment);
+\Scoop\Context::load('app/config');
+$app = new \Scoop\Bootstrap\Application();
 try {
     echo $app->run();
 } catch (\Scoop\Http\Exception $ex) {
-    echo $app->showError($ex->handler());
+    echo $app->showError($ex);
 }

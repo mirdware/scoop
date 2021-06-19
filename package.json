@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "scoop project",
   "repository": {
     "type": "git",
@@ -31,6 +31,6 @@
   },
   "dependencies": {
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.2.8"
+    "scalar": "^0.2.9"
   }
 }

@@ -5,6 +5,7 @@ final class View
 {
     private $viewPath;
     private $viewData = array();
+    private static $request;
     private static $components = array(
         'message' => '\Scoop\View\Message'
     );
@@ -62,12 +63,17 @@ final class View
      */
     public function render()
     {
-        $helperView = new View\Helper(self::$components);
+        $helperView = new View\Helper(self::$request, self::$components);
         View\Service::inject('view', $helperView);
-        View\Service::inject('config', \Scoop\Context::getService('config'));
+        View\Service::inject('config', \Scoop\Context::getEnvironment());
         View\Heritage::init($this->viewData);
         View\Template::parse($this->viewPath, $this->viewData);
         return View\Heritage::getContent();
+    }
+
+    public static function setRequest(\Scoop\Http\Request $request)
+    {
+        self::$request = $request;
     }
 
     /**

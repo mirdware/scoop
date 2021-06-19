@@ -4,7 +4,8 @@ namespace Scoop\View;
 class Helper
 {
     private $components;
-    private $config;
+    private $environment;
+    private $request;
     private static $assets = array(
         'path' => 'public/',
         'img' => 'images/',
@@ -16,11 +17,12 @@ class Helper
      * Establece la configuración inicial de los atributos del Helper
      * @param array<\Scoop\View\Component> $components colección de componentes usados por la vista.
      */
-    public function __construct($components)
+    public function __construct($request, $components)
     {
+        $this->request = $request;
         $this->components = $components;
-        $this->config = \Scoop\Context::getService('config');
-        self::$assets = (array) $this->config->get('assets') + self::$assets;
+        $this->environment = \Scoop\Context::getEnvironment();
+        self::$assets = (array) $this->environment->getConfig('assets') + self::$assets;
     }
 
     /**
@@ -71,18 +73,28 @@ class Helper
      */
     public function route()
     {
-        return $this->config->getURL(func_get_args());
+        return $this->environment->getURL(func_get_args());
     }
 
     public function addPage($data, $quantity)
     {
-        $queryString = \Scoop\Context::getService('request')->getQuery();
+        $queryString = $this->request->getQuery();
         $nextPage = $data['page'] + $quantity;
         if ($nextPage < 0 || $nextPage * $data['size'] >= $data['total']) {
             return $this->route();
         }
         $queryString['page'] = $nextPage;
         return $this->route($queryString);
+    }
+
+    public function getConfig($name)
+    {
+        return $this->environment->getConfig($name);
+    }
+
+    public function isCurrentRoute($route)
+    {
+        return $this->environment->isCurrentRoute($route);
     }
 
     /**
@@ -95,6 +107,12 @@ class Helper
             $component = lcfirst(substr($method, 7));
             if (isset($this->components[$component])) {
                 $component = new \ReflectionClass($this->components[$component]);
+                if ($component->hasMethod('setRequest')) {
+                    $requestMethod = $component->getMethod('setRequest');
+                    if ($requestMethod->isStatic()) {
+                        $requestMethod->invoke($component, $this->request);
+                    }
+                }
                 $component = $component->newInstanceArgs($args);
                 return Template::clearHTML($component->render());
             }

@@ -3,9 +3,19 @@ namespace Scoop\IoC;
 
 abstract class Injector
 {
-    public abstract function bind($interfaceName, $className);
+    protected $rules = array();
 
     public abstract function getInstance($className);
+
+    public function bind($interfaceName, $className)
+    {
+        $interfaceName = self::formatClassName($interfaceName);
+        $className = self::formatClassName($className);
+        if (!is_subclass_of($className, $interfaceName)) {
+            throw new \UnexpectedValueException('class '.$className.' can not binding to '.$interfaceName);
+        }
+        $this->rules[$interfaceName] = $className;
+    }
 
     public function create($className, $args = array())
     {

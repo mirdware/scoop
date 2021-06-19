@@ -30,7 +30,7 @@ abstract class Controller
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $config = \Scoop\Context::getService('config');
+            $config = \Scoop\Context::getEnvironment();
             $url = $config->getURL($url);
         }
         header('Location:'.$url);
@@ -81,8 +81,8 @@ abstract class Controller
         $errors = $validator->validate($data);
         if (empty($errors)) return;
         $_SESSION['data-scoop'] += array(
-            'body' => $this->request->getBody(),
-            'query' => $this->request->getQuery(),
+            'body' => self::$request->getBody(),
+            'query' => self::$request->getQuery(),
             'error' => $errors
         );
         throw new \Scoop\Http\BadRequestException(json_encode($errors));

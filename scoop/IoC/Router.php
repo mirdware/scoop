@@ -14,14 +14,14 @@ class Router
         uasort($this->routes, array($this, 'sortByURL'));
     }
 
-    public function route($url)
+    public function route($request)
     {
-        $route = $this->getRoute($url);
+        $route = $this->getRoute($request->getURL());
         if ($route) {
             $method = strtolower($_SERVER['REQUEST_METHOD']);
             $controller = $this->getController($route['controller'], $method);
             if ($controller) {
-                $this->intercept($url);
+                $this->intercept($request);
                 $controllerReflection = new \ReflectionClass($controller);
                 if (!$controllerReflection->hasMethod($method)) {
                     throw new \Scoop\Http\MethodNotAllowedException($controllerReflection->getName().' not implement '.$method.' method');
@@ -39,13 +39,13 @@ class Router
         throw new \Scoop\Http\NotFoundException();
     }
 
-    public function intercept($url)
+    public function intercept($request)
     {
-        $matches = $this->filterProxy($url);
+        $matches = $this->filterProxy($request->getURL());
         $injector = \Scoop\Context::getInjector();
         foreach ($matches as $route) {
             $proxy = $injector->getInstance($route['proxy']);
-            $proxy->execute($url);
+            $proxy->execute($request);
         }
     }
 
@@ -156,7 +156,7 @@ class Router
         if (isset($route['routes'])) {
             $routes = $route['routes'];
             if (is_string($routes)) {
-                $routes = \Scoop\Context::getService('config')->load($routes);
+                $routes = \Scoop\Context::getEnvironment()->loadLazily($routes);
                 if (is_string($routes)) {
                     throw new \InvalidArgumentException('routes '.$routes.' not supported');
                 }

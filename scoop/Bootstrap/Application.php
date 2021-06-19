@@ -3,33 +3,28 @@ namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $url;
-    private $environment;
+    private $request;
 
-    public function __construct(Environment $environment)
+    public function __construct()
     {
-        $this->environment = $environment;
+        $this->request = new \Scoop\Http\Request();
         $this->enableCORS();
     }
 
     public function run()
     {
-        $url = $this->getURL();
-        $response = $this->environment->route($url);
+        $response = \Scoop\Context::getEnvironment()->route($this->request);
         return $this->formatResponse($response);
     }
 
-    public function showError($error)
+    public function showError($ex)
     {
         try {
-            return $this->formatResponse($error);
+            if ($this->request->isAjax()) {
+                $ex->addHeader('Content-Type: application/json');
+            }
+            return $this->formatResponse($ex->handler());
         } catch (\UnderflowException $ex) {}
-    }
-
-    public function setURL($url)
-    {
-        $this->url = $url;
-        return $this;
     }
 
     private function formatResponse($response)
@@ -46,26 +41,9 @@ class Application
         return $response;
     }
 
-    private function getURL()
-    {
-        if (!isset($this->url)) {
-            if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-                \Scoop\Controller::redirect(
-                    str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
-                );
-            }
-            $this->url = '/';
-            if (isset($_GET['route'])) {
-                $this->url .= filter_var($_GET['route'], FILTER_SANITIZE_URL);
-                unset($_GET['route'], $_REQUEST['route']);
-            }
-        }
-        return $this->url;
-    }
-
     private function enableCORS()
     {
-        $cors = $this->environment->get('cors');
+        $cors = \Scoop\Context::getEnvironment()->getConfig('cors');
         if (!$cors) return;
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             $origin = isset($cors['origin']) ?

@@ -1,8 +1,6 @@
 <?php
 return array(
-    'app' => json_decode(file_get_contents(
-        __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'package.json'
-    ), true),
+    'app' => 'json:package',
     'db' => array(
         'default' => array(
             'database' => 'scoop',

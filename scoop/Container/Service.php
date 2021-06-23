@@ -1,5 +1,5 @@
 <?php
-namespace Scoop\IoC;
+namespace Scoop\Container;
 
 class Service
 {

@@ -17,7 +17,7 @@ abstract class Service
         }
         $service = self::$services[$name];
         if (is_string($service)) {
-            $service = \Scoop\Context::getInjector()->getInstance($service);
+            $service = \Scoop\Context::inject($service);
         }
         return $service;
     }

@@ -24,7 +24,7 @@ abstract class Exception extends \Exception
         return $this;
     }
 
-    public function handler()
+    public function handle()
     {
         foreach ($this->headers as $header) {
             header($header);

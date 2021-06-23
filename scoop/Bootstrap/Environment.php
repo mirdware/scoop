@@ -87,19 +87,9 @@ class Environment
     protected function configure($request) {
         \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
         \Scoop\Validator::addRule((Array) $this->getConfig('validators'));
-        $this->bind((Array) $this->getConfig('providers'));
         $this->registerComponents((Array) $this->getConfig('components'));
         $this->registerServices(array('config' => $this, 'request' => $request));
-        $this->router = new \Scoop\IoC\Router((Array) $this->getConfig('routes'));
-        return $this;
-    }
-
-    protected function bind($interfaces)
-    {
-        $injector = \Scoop\Context::getInjector();
-        foreach ($interfaces as $interface => $class) {
-            $injector->bind($interface, $class);
-        }
+        $this->router = new \Scoop\Container\Router((Array) $this->getConfig('routes'));
         return $this;
     }
 

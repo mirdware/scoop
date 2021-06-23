@@ -1,5 +1,5 @@
 <?php
-namespace Scoop\IoC;
+namespace Scoop\Container;
 
 class Router
 {
@@ -42,9 +42,8 @@ class Router
     public function intercept($request)
     {
         $matches = $this->filterProxy($request->getURL());
-        $injector = \Scoop\Context::getInjector();
         foreach ($matches as $route) {
-            $proxy = $injector->getInstance($route['proxy']);
+            $proxy = \Scoop\Context::inject($route['proxy']);
             $proxy->execute($request);
         }
     }
@@ -93,11 +92,14 @@ class Router
             };
             $controller = $controller[$method];
         }
-        $classController = '\Scoop\Controller';
-        if (!is_subclass_of($controller, $classController)) {
-            throw new \UnexpectedValueException($controller.' not implement '.$classController);
+        if (!class_exists($controller)) {
+            throw new \Scoop\Http\NotFoundException('Class '.$controller.' not found');
         }
-        return \Scoop\Context::getInjector()->getInstance($controller);
+        $baseController = '\Scoop\Controller';
+        if (!is_subclass_of($controller, $baseController)) {
+            throw new \UnexpectedValueException($controller.' not implement '.$baseController);
+        }
+        return \Scoop\Context::inject($controller);
     }
 
     private function getRoute($url)

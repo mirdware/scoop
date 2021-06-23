@@ -23,7 +23,7 @@ class Application
             if ($this->request->isAjax()) {
                 $ex->addHeader('Content-Type: application/json');
             }
-            return $this->formatResponse($ex->handler());
+            return $this->formatResponse($ex->handle());
         } catch (\UnderflowException $ex) {}
     }
 

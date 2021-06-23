@@ -8,12 +8,13 @@ class Context
     private static $service;
     private static $injector;
     private static $environment;
+    private static $dispatcher;
 
     /**
      * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
      * @return vendor|\Scoop\Bootstrap\Loader El cargador usado para ejecutar la carga.
      */
-    public static function load($configPath)
+    public static function load(string $configPath)
     {
         if (isset(self::$loader)) {
             throw new \Exception('Context loaded');
@@ -31,12 +32,8 @@ class Context
             self::$loader->register(true);
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        $injector = self::$environment->getConfig('injector', '\Scoop\IoC\BasicInjector');
-        $baseInjector = '\Scoop\IoC\Injector';
-        if (!is_subclass_of($injector, $baseInjector)) {
-            throw new \UnexpectedValueException($injector.' not implement '.$baseInjector);
-        }
-        self::$injector = new $injector();
+        self::configureInjector();
+        self::configureDispatcher();
     }
 
     /**
@@ -74,11 +71,22 @@ class Context
 
     /**
      * Obtiene la instancia del injector según las capacidades del servidor.
-     * @return \Scoop\IoC\Injector El injector apropiado para el servidor.
+     * @return \Scoop\Container\Injector El injector apropiado para el servidor.
+     * @deprecated
      */
     public static function getInjector()
     {
         return self::$injector;
+    }
+
+    public static function inject(string $id)
+    {
+        return self::$injector->get($id);
+    }
+
+    public static function dispatchEvent(\Scoop\Event $event)
+    {
+        return self::$dispatcher->dispatch($event);
     }
 
     /**
@@ -107,7 +115,7 @@ class Context
     public static function registerService($key, $callback, $params = array())
     {
         if (!self::$service) {
-            self::$service = new \Scoop\IoC\Service();
+            self::$service = new \Scoop\Container\Service();
         }
         self::$service->register($key, $callback, $params);
     }
@@ -148,5 +156,22 @@ class Context
             'host' => '127.0.0.1',
             'driver' => 'pgsql'
         ), $config);
+    }
+
+    private static function configureInjector()
+    {
+        $injector = self::$environment->getConfig('injector', '\Scoop\Container\BasicInjector');
+        $baseInjector = '\Scoop\Container\Injector';
+        self::$injector = new $injector(self::$environment);
+        if (!(self::$injector instanceof $baseInjector)) {
+            throw new \UnexpectedValueException($injector.' not implement '.$baseInjector);
+        }
+    }
+
+    private static function configureDispatcher()
+    {
+        $listeners = (Array) self::$environment->getConfig('events');
+        $provider = new \Scoop\Event\Provider($listeners);
+        self::$dispatcher = new \Scoop\Event\Dispatcher($provider);
     }
 }

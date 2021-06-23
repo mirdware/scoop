@@ -80,12 +80,15 @@ abstract class Controller
     {
         $errors = $validator->validate($data);
         if (empty($errors)) return;
+        if (self::$request->isAjax()) {
+            throw new \Scoop\Http\BadRequestException(json_encode($errors));
+        }
         $_SESSION['data-scoop'] += array(
             'body' => self::$request->getBody(),
             'query' => self::$request->getQuery(),
             'error' => $errors
         );
-        throw new \Scoop\Http\BadRequestException(json_encode($errors));
+        self::redirect($_SERVER['HTTP_REFERER']);
     }
 
     /**

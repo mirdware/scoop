@@ -6,11 +6,9 @@ class DBC extends \PDO
     private $db;
     private $engine;
     private $host;
-    private $eventManager;
 
     public function __construct($db, $user, $pass, $host, $engine)
     {
-        $this->eventManager = \Scoop\Context::getInjector()->getInstance('Scoop\Storage\EventManager');
         $this->db = $db;
         $this->engine = $engine;
         $this->host = $host;
@@ -19,13 +17,13 @@ class DBC extends \PDO
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));
         parent::beginTransaction();
-        $this->eventManager->connect($this);
+        \Scoop\Context::dispatchEvent(new Event\Connect($this));
     }
 
     public function __destruct()
     {
         parent::commit();
-        $this->eventManager->disconnect($this);
+        \Scoop\Context::dispatchEvent(new Event\Disconnect($this));
         gc_collect_cycles();
     }
 

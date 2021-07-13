@@ -3,19 +3,20 @@ namespace Scoop\Storage\SQO;
 
 class Filter
 {
-    protected $from = array();
-    protected $params = array();
     protected $query = '';
+    protected $from = array();
     protected $order = array();
     protected $group = array();
+    protected $params;
     protected $con;
     private $rules = array();
     private $orderType = ' ASC';
     private $limit = '';
+    private $having = '';
     private $connector = 'AND';
     private $type;
 
-    public function __construct($query, $type, $params, $connection)
+    public function __construct($query, $type, $connection, $params = array())
     {
         $this->query = $query;
         $this->type = $type;
@@ -72,6 +73,11 @@ class Filter
         return $this;
     }
 
+    public function having($condition)
+    {
+        $this->having = $condition;
+    }
+
     public function limit($offset, $limit = null)
     {
         $this->limit = ' LIMIT '.($limit === null ? $offset : $limit.' OFFSET '.$offset);
@@ -95,6 +101,7 @@ class Filter
             .implode('', $this->from)
             .$this->getRules()
             .$this->getGroup()
+            .$this->getHaving()
             .$this->getOrder()
             .$this->limit;
     }
@@ -145,6 +152,12 @@ class Filter
     {
         if (empty($this->order)) return '';
         return ' ORDER BY '.implode(', ', $this->order).$this->orderType;
+    }
+
+    private function getHaving()
+    {
+        if (!$this->having) return '';
+        return ' HAVING '.$this->having;
     }
 
     private function getGroup()

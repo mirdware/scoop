@@ -3,11 +3,11 @@ namespace Scoop\Event;
 
 class Dispatcher
 {
-    private $listenerProvider;
+    private $bus;
 
-    public function __construct($listenerProvider)
+    public function __construct($bus)
     {
-        $this->listenerProvider = $listenerProvider;
+        $this->bus = $bus;
     }
 
     public function dispatch(object $event)
@@ -15,7 +15,7 @@ class Dispatcher
         if ($event->isPropagationStopped()) {
             return $event;
         }
-        foreach ($this->listenerProvider->getListenersForEvent($event) as $listener) {
+        foreach ($this->bus->getListenersForEvent($event) as $listener) {
             $listener($event);
         }
     }

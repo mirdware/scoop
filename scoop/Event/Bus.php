@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Event;
 
-class Provider
+class Bus
 {
     private $listeners = array();
 

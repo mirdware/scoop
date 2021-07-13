@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Storage\Event;
 
-class Disconnect extends \Scoop\Event
+class Closed extends \Scoop\Event
 {
     private $connection;
 

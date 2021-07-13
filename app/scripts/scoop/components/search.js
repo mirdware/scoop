@@ -1,4 +1,4 @@
-import Modal from './Modal';
+import Modal from './modal';
 import FormService from '../services/Form';
 
 function submit(form, $) {

@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Storage\Event;
 
-class Connect extends \Scoop\Event
+class Opened extends \Scoop\Event
 {
     private $connection;
 

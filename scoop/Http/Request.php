@@ -92,23 +92,30 @@ class Request
     private function setBody()
     {
         $data = file_get_contents('php://input');
+        $body = array();
         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             $data = json_decode($data, true);
             return $data ? $this->purge($data) : array();
         }
-        $body = array();
         foreach ($_FILES AS $name => $file) {
             $body[$name] = $file;
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return $body + $this->purge($_POST);
         }
-        $data = preg_split('/-+[\w\s:;]*/', trim($data), -1, \PREG_SPLIT_NO_EMPTY);
-        if (empty($data)) return $body;
-        foreach ($data as $value) {
-            $value = explode("\n", $value);
-            $key = str_replace('"', '', str_replace('="', '', trim($value[0])));
-            $body[$key] = trim($value[2]);
+        if (!$data) return $body;
+        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
+        $boundary = $matches[1];
+        $blocks = preg_split("/-+$boundary/", $data);
+        array_pop($blocks);
+        foreach ($blocks as $block) {
+            if (!empty($block)) {
+                $regex = strpos($block, 'application/') ?
+                "/name=\"([^\"]*)\"[^\n]*[\n|\r]+([^\n\r].*)?$/s" :
+                '/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s';
+                preg_match($regex, $block, $matches);
+                $body[$matches[1]] = $matches[2];
+            }
         }
         return $body;
     }

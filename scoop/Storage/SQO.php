@@ -34,7 +34,7 @@ class SQO
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
         $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
-        return new SQO\Reader($query, SQO::READ, array(), $this->con);
+        return new SQO\Reader($query, $this->con);
     }
 
     public function update($fields)
@@ -52,13 +52,13 @@ class SQO
                 $query .= $key.' = :'.$key.', ';
             }
         }
-        return new SQO\Filter(substr($query, 0, -2), SQO::UPDATE, $fields, $this->con);
+        return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this->con, $fields);
     }
 
     public function delete()
     {
         $query = 'DELETE FROM '.$this->table;
-        return new SQO\Filter($query, SQO::DELETE, array(), $this->con);
+        return new SQO\Filter($query, self::DELETE, $this->con);
     }
 
     public function getLastId($nameSeq = null)

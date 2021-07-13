@@ -17,13 +17,13 @@ class DBC extends \PDO
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));
         parent::beginTransaction();
-        \Scoop\Context::dispatchEvent(new Event\Connect($this));
+        \Scoop\Context::dispatchEvent(new Event\Opened($this));
     }
 
     public function __destruct()
     {
         parent::commit();
-        \Scoop\Context::dispatchEvent(new Event\Disconnect($this));
+        \Scoop\Context::dispatchEvent(new Event\Closed($this));
         gc_collect_cycles();
     }
 

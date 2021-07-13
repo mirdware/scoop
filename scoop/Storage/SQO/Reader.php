@@ -3,9 +3,9 @@ namespace Scoop\Storage\SQO;
 
 class Reader extends Filter
 {
-    public function __construct($query, $type, $params, $connection)
+    public function __construct($query, $connection)
     {
-        parent::__construct($query, $type, $params, $connection);
+        parent::__construct($query, \Scoop\Storage\SQO::READ, $connection);
     }
 
     public function join($table, $using = 'NATURAL', $type = 'INNER')

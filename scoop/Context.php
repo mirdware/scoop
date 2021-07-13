@@ -171,7 +171,7 @@ class Context
     private static function configureDispatcher()
     {
         $listeners = (Array) self::$environment->getConfig('events');
-        $provider = new \Scoop\Event\Provider($listeners);
-        self::$dispatcher = new \Scoop\Event\Dispatcher($provider);
+        $eventBus = new \Scoop\Event\Bus($listeners);
+        self::$dispatcher = new \Scoop\Event\Dispatcher($eventBus);
     }
 }

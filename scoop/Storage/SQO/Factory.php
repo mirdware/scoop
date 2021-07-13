@@ -12,12 +12,12 @@ final class Factory
 
     public function __construct($query, $values, $fields, $connection)
     {
-        $this->query = $query;
         $this->con = $connection;
         $this->fields = $fields;
         $this->numFields = count($fields);
         $this->values = $values ? $values : array();
-        $this->isReader = is_a($values, '\Scoop\Storage\SQO\Filter');
+        $this->isReader = is_a($values, '\Scoop\Storage\SQO\Reader');
+        $this->query = $this->isReader ? substr($query, 0, -7) : $query;
     }
 
     public function create($values)

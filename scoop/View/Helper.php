@@ -94,7 +94,7 @@ class Helper
 
     public function isCurrentRoute($route)
     {
-        return $this->environment->isCurrentRoute($route);
+        return $this->environment->getCurrentRoute() === $route;
     }
 
     /**

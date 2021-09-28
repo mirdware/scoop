@@ -71,17 +71,15 @@ class Environment
         }
         if (empty($args)) {
             $currentPath = '//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-            if ($query) {
-                return $this->mergeQuery($currentPath, $query);
-            }
-            return $currentPath;
+            if (!$query) $query = array();
+            return $this->mergeQuery($currentPath, $query);
         }
         return $this->router->getURL(array_shift($args), $args, $query);
     }
 
-    public function isCurrentRoute($route)
+    public function getCurrentRoute()
     {
-        return $this->router->getCurrentRoute() === $route;
+        return $this->router->getCurrentRoute();
     }
 
     protected function configure($request) {

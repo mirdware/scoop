@@ -73,7 +73,7 @@ class Router
         $queryString = '';
         foreach ($query AS $name => $value) {
             if ($value) {
-                $queryString .= '&'.$name.'='.$value;
+                $queryString .= '&'.htmlentities($name, ENT_QUOTES | ENT_HTML5, 'UTF-8').'='.htmlentities($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             }
         }
         return $queryString ? '?'.substr($queryString, 1) : '';
@@ -173,7 +173,7 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        return strcasecmp($a['url'], $b['url']) < 0;
+        return strcasecmp($a['url'], $b['url']);
     }
 
     private static function normalizeURL($url)

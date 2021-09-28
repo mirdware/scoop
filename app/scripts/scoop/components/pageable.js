@@ -1,4 +1,4 @@
-import { Resource } from 'scalar';
+import { Resource, Component } from 'scalar';
 import ModalService from '../services/Modal';
 import FormService from '../services/Form';
 import Search from './search';
@@ -7,22 +7,13 @@ const location = window.location;
 const queryParams = {};
 
 function sendRequest($) {
+  let url = $.options.url ? $.options.url + location.search : location.href;
+  if (url.indexOf('http') !== 0) {
+    url = location.protocol + url;
+  }
   $.loading = true;
-  new Resource(location.href).get()
-  .then((data) => {
-    const { page } = data;
-    const disabledNext = (page + 1) * data.size >= data.total;
-    const disabledPrev = page == 0;
-    const name = $.name || 'page';
-    $[$.nameData || 'data'] = data.result;
-    $[$.nameNext || 'next'] = {
-      disabled: disabledNext,
-      href: disabledNext ? '' : getHref(page, page + 1, name)
-    };
-    $[$.namePrev || 'prev'] = {
-      disabled: disabledPrev,
-      href: disabledPrev ? '' : getHref(page, page - 1, name)
-    };
+  new Resource(url).get().then((data) => {
+    $.refresh(data);
     Object.assign($, getQueryParams($));
     Object.assign($, data);
     $.loading = false;
@@ -52,11 +43,11 @@ function getHref(page, nextPage, name) {
 }
 
 function addPage($, pagePlus) {
-  const name = $.name || 'page';
+  const name = $.options.page;
   const page = getPage(name);
   const nextPage = page + pagePlus;
-  if (page > nextPage && $[$.namePrev || 'prev'].disabled) return;
-  if (page < nextPage && $[$.nameNext || 'next'].disabled) return;
+  if (page > nextPage && $[$.options.prev].disabled) return;
+  if (page < nextPage && $[$.options.next].disabled) return;
   const href = getHref(page, nextPage, name);
   window.history.pushState(null, '', href);
   sendRequest($);
@@ -80,12 +71,16 @@ function openModal(e, $) {
 }
 
 function init($, options) {
-  if (options) {
-    Object.assign($, JSON.parse('{' + options + '}'));
-  }
-  const prev = $[$.namePrev || 'prev'];
-  const next = $[$.nameNext || 'next'];
+  options = Object.assign({
+    prev: 'prev',
+    next: 'next',
+    data: 'data',
+    page: 'page'
+  }, options ? JSON.parse(options) : {});
+  const prev = $[options.prev];
+  const next = $[options.next];
   const { href } = location;
+  $.options = options;
   window.addEventListener('popstate', () => sendRequest($));
   prev.disabled = prev.disabled || href === prev.href;
   next.disabled = next.disabled || href === next.href;
@@ -109,12 +104,35 @@ function getQueryParams($) {
   return Object.assign(queryParams, res);
 }
 
-export default ($) => ({
-  mount: (e) => init($, e.target.dataset.options),
-  'form': { _submit: (e) => search(e.target, $) },
-  '.prev': { _click: () => addPage($, -1) },
-  '.next': { _click: () => addPage($, 1) },
-  '.modal': { _click: (e) => openModal(e, $) },
-  'input[type="search"]': { _search: (e) => search(e.target.form, $) },
-  '.num-page': { _click: (e) => setPage($, e.target) }
-});
+export default class Pageable extends Component {
+  listen() {
+    return {
+      mount: (e) => init(this, e.target.dataset.options),
+      'form': { _submit: (e) => search(e.target, this) },
+      '.prev': { _click: () => addPage(this, -1) },
+      '.next': { _click: () => addPage(this, 1) },
+      '.modal': { _click: (e) => openModal(e, this) },
+      'input[type="search"]': { _search: (e) => search(e.target.form, this) },
+      '.num-page': { _click: (e) => setPage(this, e.target) }
+    };
+  }
+
+  refresh(data) {
+    this[this.options.data] = data.result;
+    this.disable(data.page, data.size, data.total);
+  }
+
+  disable(page, size, total) {
+    const name = this.options.page;
+    const disabledNext = (page + 1) * size >= total;
+    const disabledPrev = page == 0;
+    this[this.options.next] = {
+      disabled: disabledNext,
+      href: disabledNext ? '' : getHref(page, page + 1, name)
+    };
+    this[this.options.prev] = {
+      disabled: disabledPrev,
+      href: disabledPrev ? '' : getHref(page, page - 1, name)
+    };
+  }
+};

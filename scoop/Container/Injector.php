@@ -65,7 +65,7 @@ abstract class Injector
     {
         $args = array();
         foreach ($params as $param) {
-            $class = $param->getClass();
+            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
             if ($class) {
                 $args[] = $this->get($class->getName());
             }

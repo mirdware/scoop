@@ -14,15 +14,14 @@ function sendRequest($) {
   $.loading = true;
   new Resource(url).get().then((data) => {
     $.refresh(data);
-    Object.assign($, getQueryParams($));
-    Object.assign($, data);
+    Object.assign($, getQueryParams($), data);
     $.loading = false;
   });
 }
 
-function getPage(name) {
+function getPage(name, search) {
   const regex = new RegExp(name + '=(\\d+)');
-  const page = location.search.match(regex);
+  const page = search.match(regex);
   return page ? parseInt(page[1]) : 0;
 }
 
@@ -35,16 +34,19 @@ function getHref(page, nextPage, name) {
       href += (href.indexOf('?') !== -1 ? '&' : '?') + name + '=' + nextPage;
     }
   } else {
-    href = href
-      .replace('?' + name + '=' + page, '')
-      .replace('&' + name + '=' + page, '');
+    href = href.replace('?' + name + '=' + page, '');
+    if (href.indexOf('?') === -1) {
+      href = href.replace('&', '?');
+    }
+    href = href.replace('&' + name + '=' + page, '');
   }
   return href;
 }
 
 function addPage($, pagePlus) {
+  if ($.loading) return;
   const name = $.options.page;
-  const page = getPage(name);
+  const page = getPage(name, location.search);
   const nextPage = page + pagePlus;
   if (page > nextPage && $[$.options.prev].disabled) return;
   if (page < nextPage && $[$.options.next].disabled) return;
@@ -79,11 +81,11 @@ function init($, options) {
   }, options ? JSON.parse(options) : {});
   const prev = $[options.prev];
   const next = $[options.next];
-  const { href } = location;
+  const currentPage = getPage(options.page, location.search);
   $.options = options;
   window.addEventListener('popstate', () => sendRequest($));
-  prev.disabled = prev.disabled || href === prev.href;
-  next.disabled = next.disabled || href === next.href;
+  prev.disabled = prev.disabled || currentPage === getPage(options.page, prev.href);
+  next.disabled = next.disabled || currentPage === getPage(options.page, next.href);
   getQueryParams($);
 }
 

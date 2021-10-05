@@ -30,7 +30,9 @@ class Reader extends Filter
     public function page($params)
     {
         $page = isset($params['page']) ? intval($params['page']) : 0;
-        $size = isset($params['size']) ? intval($params['size']) : 12;
+        $size = isset($params['size']) ?
+        intval($params['size']) :
+        \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
         $sql = 'SELECT COUNT(*) AS total FROM ('.$this->bind($params).') d';
         $paginated = $this->con->prepare($sql);

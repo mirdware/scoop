@@ -76,14 +76,14 @@ class Helper
         return $this->environment->getURL(func_get_args());
     }
 
-    public function addPage($data, $quantity)
+    public function addPage($data, $quantity, $name = 'page')
     {
         $queryString = $this->request->getQuery();
         $nextPage = $data['page'] + $quantity;
         if ($nextPage < 0 || $nextPage * $data['size'] >= $data['total']) {
             return $this->route();
         }
-        $queryString['page'] = $nextPage;
+        $queryString[$name] = $nextPage;
         return $this->route($queryString);
     }
 

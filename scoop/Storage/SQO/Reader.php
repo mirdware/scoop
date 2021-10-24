@@ -3,9 +3,9 @@ namespace Scoop\Storage\SQO;
 
 class Reader extends Filter
 {
-    public function __construct($query, $connection)
+    public function __construct($query, $sqo)
     {
-        parent::__construct($query, \Scoop\Storage\SQO::READ, $connection);
+        parent::__construct($query, \Scoop\Storage\SQO::READ, $sqo);
     }
 
     public function join($table, $using = 'NATURAL', $type = 'INNER')
@@ -35,7 +35,7 @@ class Reader extends Filter
         \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
         $sql = 'SELECT COUNT(*) AS total FROM ('.$this->bind($params).') d';
-        $paginated = $this->con->prepare($sql);
+        $paginated = $this->sqo->getConnection()->prepare($sql);
         $paginated->execute($this->getParamsAllowed($sql));
         $clone = clone $this;
         $result = $clone->limit($page * $size, $size)->run()->fetchAll();

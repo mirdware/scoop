@@ -8,7 +8,7 @@ class Filter
     protected $order = array();
     protected $group = array();
     protected $params;
-    protected $con;
+    protected $sqo;
     private $rules = array();
     private $orderType = ' ASC';
     private $limit = '';
@@ -16,12 +16,12 @@ class Filter
     private $connector = 'AND';
     private $type;
 
-    public function __construct($query, $type, $connection, $params = array())
+    public function __construct($query, $type, $sqo)
     {
+        $this->params = array();
         $this->query = $query;
         $this->type = $type;
-        $this->con = $connection;
-        $this->params = $params;
+        $this->sqo = $sqo;
     }
 
     public function getType()
@@ -29,13 +29,13 @@ class Filter
         return $this->type;
     }
 
-    public function bind($key, $value = null)
+    public function bind($key, $value = 0)
     {
-        if ($value) {
-            $this->params[$key] = $value;
+        if (is_array($key)) {
+            $this->params += $key;
             return $this;
         }
-        $this->params += $key;
+        $this->params[$key] = $value;
         return $this;
     }
 
@@ -86,11 +86,15 @@ class Filter
 
     public function run($params = null)
     {
-        if ($params !== null) {
+        if (is_array($params)) {
             $this->params += $params;
         }
         $sql = $this->__toString();
-        $statement = $this->con->prepare($sql);
+        $con = $this->sqo->getConnection();
+        $statement = $con->prepare($sql);
+        if ($this->type !== \Scoop\Storage\SQO::READ) {
+            $con->beginTransaction();
+        }
         $statement->execute($this->getParamsAllowed($sql));
         return $statement;
     }

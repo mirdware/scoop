@@ -173,7 +173,7 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        return strcasecmp($a['url'], $b['url']);
+        return strcasecmp($b['url'], $a['url']);
     }
 
     private static function normalizeURL($url)

@@ -1,7 +1,7 @@
 {
   "name": "scoop",
-  "version": "0.6.3",
-  "description": "scoop project",
+  "version": "0.6.4",
+  "description": "Simple Characteristics of Object Oriented PHP",
   "repository": {
     "type": "git",
     "url": "https://github.com/mirdware/scoop"
@@ -13,10 +13,10 @@
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.14.3",
-    "@babel/preset-env": "^7.14.2",
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
     "babelify": "^10.0.0",
-    "browser-sync": "^2.26.14",
+    "browser-sync": "^2.27.5",
     "browserify": "^17.0.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",

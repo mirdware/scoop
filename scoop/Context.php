@@ -42,9 +42,9 @@ class Context
      *  o un array con los datos de configuración necesaria para la creación (database, user).
      * @return \Scoop\Storage\DBC La conexión establecida con el servidor.
      */
-    public static function connect($bundle = null)
+    public static function connect($bundle = 'default', $options = array())
     {
-        $config = self::getDBConfig($bundle);
+        $config = self::$environment->getConfig('db'.$bundle) + $options;
         $config = self::normalizeDBConfig($config);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
@@ -120,28 +120,6 @@ class Context
         self::$service->register($key, $callback, $params);
     }
 
-    /**
-     * Obtiene la configuración de la base de datos establecida en /app/config::db
-     * Tambien puede mezclar los datos del array con los de la configuración por defecto.
-     * @param string|array<array<string>> $bundle El nombre del configuration bundle (EJ: default)
-     *  o un array con los datos de configuración necesaria para la creación (database, user).
-     * @return array<array<string>> Array de configuración.
-     */
-    private static function getDBConfig($bundle)
-    {
-        if (is_string($bundle)) return self::$environment->getConfig('db'.$bundle);
-        $config = self::$environment->getConfig('db.default');
-        if (is_array($bundle)) {
-            $config += $bundle;
-        }
-        return $config;
-    }
-
-    /**
-     * Agrega los datos por defecto para ejecutar la configuración.
-     * @param array<array<string>> $config Array de configuración.
-     * @return array<array<string>> Configuración normalizada.
-     */
     private static function normalizeDBConfig($config)
     {
         $requireds = array('database', 'user');

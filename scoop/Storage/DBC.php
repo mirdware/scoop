@@ -16,15 +16,22 @@ class DBC extends \PDO
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));
-        parent::beginTransaction();
         \Scoop\Context::dispatchEvent(new Event\Opened($this));
     }
 
     public function __destruct()
     {
-        parent::commit();
+        if (parent::inTransaction()) {
+            parent::commit();
+        }
         \Scoop\Context::dispatchEvent(new Event\Closed($this));
-        gc_collect_cycles();
+    }
+
+    public function beginTransaction()
+    {
+        if (!parent::inTransaction()) {
+            parent::beginTransaction();
+        }
     }
 
     private function __clone() {}

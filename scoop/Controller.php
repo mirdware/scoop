@@ -44,6 +44,7 @@ abstract class Controller
 
     /**
      * Retorna al usuario a la página anterior.
+     * @deprecated
      */
     protected function goBack()
     {

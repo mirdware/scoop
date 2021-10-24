@@ -5,19 +5,23 @@ final class Factory
 {
     private $query;
     private $values;
-    private $con;
+    private $sqo;
     private $isReader;
     private $fields;
     private $numFields;
 
-    public function __construct($query, $values, $fields, $connection)
+    public function __construct($query, $values, $fields, $sqo)
     {
-        $this->con = $connection;
+        $this->sqo = $sqo;
         $this->fields = $fields;
         $this->numFields = count($fields);
-        $this->values = $values ? $values : array();
-        $this->isReader = is_a($values, '\Scoop\Storage\SQO\Reader');
         $this->query = $this->isReader ? substr($query, 0, -7) : $query;
+        if ($values) {
+            $this->isReader = is_a($values, '\Scoop\Storage\SQO\Reader');
+            $this->values = is_array($values) ? $sqo->nullify($values) : $values;
+        } else {
+            $values = array();
+        }
     }
 
     public function create($values)
@@ -35,7 +39,7 @@ final class Factory
             }
             $values = $order;
         }
-        $this->values = array_merge($values, $this->values);
+        $this->values = array_merge($this->sqo->nullify($values), $this->values);
         return $this;
     }
 
@@ -46,7 +50,9 @@ final class Factory
 
     public function run($params = null)
     {
-        $statement = $this->con->prepare($this);
+        $con = $this->sqo->getConnection();
+        $statement = $con->prepare($this);
+        $con->beginTransaction();
         if ($this->isReader) {
             return $statement->execute($params);
         }

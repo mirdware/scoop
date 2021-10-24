@@ -14,6 +14,7 @@ class Application
     public function run()
     {
         $response = \Scoop\Context::getEnvironment()->route($this->request);
+        gc_collect_cycles();
         return $this->formatResponse($response);
     }
 

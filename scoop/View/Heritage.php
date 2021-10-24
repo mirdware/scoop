@@ -13,6 +13,10 @@ abstract class Heritage {
     {
         self::$footer = '';
         self::$data = $data;
+        if (ob_get_length()) {
+            ob_flush();
+        }
+        ob_start();
     }
 
     /**

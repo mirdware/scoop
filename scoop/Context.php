@@ -44,7 +44,7 @@ class Context
      */
     public static function connect($bundle = 'default', $options = array())
     {
-        $config = self::$environment->getConfig('db'.$bundle) + $options;
+        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
         $config = self::normalizeDBConfig($config);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {

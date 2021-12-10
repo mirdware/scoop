@@ -23,15 +23,10 @@ abstract class Command
                     $endofoptions = true;
                     continue;
                 }
-                $value = "";
-                $com   = substr( $arg, 2 );
-                if (strpos($com,'=')) {
-                    list($com,$value) = explode('=', $com, 2);
-                } elseif (strpos($args[0],'-') !== 0) {
-                    while (strpos($args[0],'-') !== 0) {
-                        $value .= array_shift($args).' ';
-                    }
-                    $value = rtrim($value,' ');
+                $value = '';
+                $com = substr( $arg, 2 );
+                if (strpos($com, '=')) {
+                    list($com, $value) = explode('=', $com, 2);
                 }
                 $this->options[$com] = !empty($value) ? $value : true;
                 continue;

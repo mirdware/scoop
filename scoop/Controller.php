@@ -15,12 +15,12 @@ abstract class Controller
         307 => 'HTTP/1.1 307 Temporary Redirect',
         308 => 'HTTP/1.1 308 Permanent Redirect'
     );
-    
+
     public static function setRequest(\Scoop\Http\Request $request)
     {
         self::$request = $request;
     }
-    
+
     /**
      * Realiza la redirección a la página pasada como parámetro.
      * @param string $url Dirección a la que se redirecciona la página.
@@ -36,7 +36,7 @@ abstract class Controller
         header('Location:'.$url);
         exit;
     }
-    
+
     protected final function getRequest()
     {
         return self::$request;
@@ -44,11 +44,14 @@ abstract class Controller
 
     /**
      * Retorna al usuario a la página anterior.
-     * @deprecated
      */
     protected function goBack()
     {
-        self::redirect($_SERVER['HTTP_REFERER']);
+        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : self::$request->reference('http');
+        if ($http_referer) {
+            self::redirect($http_referer);
+        }
+        throw new \RuntimeException('HTTP reference losed');
     }
 
     /**
@@ -80,7 +83,7 @@ abstract class Controller
     protected function validate($validator, $data)
     {
         $errors = $validator->validate($data);
-        if (empty($errors)) return;
+        if (empty($errors)) return $validator->getData();
         if (self::$request->isAjax()) {
             throw new \Scoop\Http\BadRequestException(json_encode($errors));
         }
@@ -89,7 +92,7 @@ abstract class Controller
             'query' => self::$request->getQuery(),
             'error' => $errors
         );
-        self::redirect($_SERVER['HTTP_REFERER']);
+        $this->goBack();
     }
 
     /**

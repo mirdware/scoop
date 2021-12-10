@@ -53,7 +53,7 @@ class SQO
                 $query .= $key.' = :'.$key.', ';
             }
         }
-        return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this);
+        return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this, $fields);
     }
 
     public function delete()

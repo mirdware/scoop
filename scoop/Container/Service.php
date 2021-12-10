@@ -1,6 +1,9 @@
 <?php
 namespace Scoop\Container;
 
+/**
+ * @deprecated
+ */
 class Service
 {
     private $services = array();

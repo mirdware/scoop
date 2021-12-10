@@ -3,25 +3,20 @@ namespace Scoop\Storage\SQO;
 
 class Filter
 {
-    protected $query = '';
     protected $from = array();
-    protected $order = array();
-    protected $group = array();
-    protected $params;
     protected $sqo;
     private $rules = array();
-    private $orderType = ' ASC';
-    private $limit = '';
-    private $having = '';
     private $connector = 'AND';
+    private $query;
+    private $params;
     private $type;
 
-    public function __construct($query, $type, $sqo)
+    public function __construct($query, $type, $sqo, $params = array())
     {
-        $this->params = array();
         $this->query = $query;
         $this->type = $type;
         $this->sqo = $sqo;
+        $this->params = $params;
     }
 
     public function getType()
@@ -51,39 +46,6 @@ class Filter
         return $this;
     }
 
-    public function order()
-    {
-        $numArgs = func_num_args();
-        if (!$numArgs) {
-            throw new \InvalidArgumentException('Unsoported number of arguments');
-        }
-        $args = func_get_args();
-        $type = strtoupper($args[$numArgs - 1]);
-        if ($type === 'ASC' || $type === 'DESC') {
-            $this->orderType = ' '.$type;
-            array_pop($args);
-        }
-        $this->order += $args;
-        return $this;
-    }
-
-    public function group()
-    {
-        $this->group += func_get_args();
-        return $this;
-    }
-
-    public function having($condition)
-    {
-        $this->having = $condition;
-    }
-
-    public function limit($offset, $limit = null)
-    {
-        $this->limit = ' LIMIT '.($limit === null ? $offset : $limit.' OFFSET '.$offset);
-        return $this;
-    }
-
     public function run($params = null)
     {
         if (is_array($params)) {
@@ -103,11 +65,7 @@ class Filter
     {
         return $this->query
             .implode('', $this->from)
-            .$this->getRules()
-            .$this->getGroup()
-            .$this->getHaving()
-            .$this->getOrder()
-            .$this->limit;
+            .$this->getRules();
     }
 
     protected function getParamsAllowed($sql)
@@ -150,23 +108,5 @@ class Filter
         }
         unset($this->params[$name]);
         return substr($rule, 0, -1);
-    }
-
-    private function getOrder()
-    {
-        if (empty($this->order)) return '';
-        return ' ORDER BY '.implode(', ', $this->order).$this->orderType;
-    }
-
-    private function getHaving()
-    {
-        if (!$this->having) return '';
-        return ' HAVING '.$this->having;
-    }
-
-    private function getGroup()
-    {
-        if (empty($this->group)) return '';
-        return ' GROUP BY '.implode(', ', $this->group);
     }
 }

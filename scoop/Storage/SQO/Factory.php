@@ -15,13 +15,13 @@ final class Factory
         $this->sqo = $sqo;
         $this->fields = $fields;
         $this->numFields = count($fields);
-        $this->query = $this->isReader ? substr($query, 0, -7) : $query;
         if ($values) {
             $this->isReader = is_a($values, '\Scoop\Storage\SQO\Reader');
             $this->values = is_array($values) ? $sqo->nullify($values) : $values;
         } else {
-            $values = array();
+            $this->values = array();
         }
+        $this->query = $this->isReader ? substr($query, 0, -7) : $query;
     }
 
     public function create($values)

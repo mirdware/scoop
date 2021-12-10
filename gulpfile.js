@@ -58,13 +58,14 @@ gulp.task('default', gulp.parallel('css', 'js', 'move'));
 
 gulp.task('dev', gulp.parallel('default', () => {
   php.server({
-    router: './app/router.php'
+    router: './app/router.php',
+    hostname: '0.0.0.0'
   }, function (){
     browserSync.init(['**/*.php'], {
       proxy: process.env.PHP_HOST || 'http://localhost:8000',
       port: 8001
     });
   });
-  gulp.watch(pathStyles + '**/*', gulp.series('css'));
-  gulp.watch(pathScripts + '**/*', gulp.series('js'));
+  gulp.watch(pathStyles + '**/*', {interval: 1000, usePolling: true}, gulp.series('css'));
+  gulp.watch(pathScripts + '**/*', {interval: 1000, usePolling: true}, gulp.series('js'));
 }));

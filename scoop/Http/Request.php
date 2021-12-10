@@ -84,7 +84,9 @@ class Request
     private function setReferrer() {
         $referrer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
         if (!$this->isAjax()) {
-            $_SESSION['data-scoop'] = array();
+            $_SESSION['data-scoop'] = array(
+                'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)).$_SERVER['REQUEST_URI']
+            );
         }
         return $referrer;
     }

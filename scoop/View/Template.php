@@ -99,23 +99,23 @@ final class Template
             '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
             '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
-            '<?php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?>',
-            '<?php '.self::HERITAGE.'::extend(\'${1}\') ?>',
-            '<?php '.self::HERITAGE.'::import(\'${1}\') ?>',
-            '<?php if(${1}): ?>',
-            '<?php elseif(${1}): ?>',
-            '<?php while(${1}): ?>',
-            '<?php foreach(${1}): ?>',
-            '<?php for(${1}): ?>'
+            '[? '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?]',
+            '[? '.self::HERITAGE.'::extend(\'${1}\') ?]',
+            '[? '.self::HERITAGE.'::import(\'${1}\') ?]',
+            '[? if(${1}): ?]',
+            '[? elseif(${1}): ?]',
+            '[? while(${1}): ?]',
+            '[? foreach(${1}): ?]',
+            '[? for(${1}): ?]'
         ), $line, 1, $count);
         if ($count !== 0) return $line;
         $line = str_replace(
             array(':if', ':foreach', ':for', ':while', '@else', '@sprout'),
-            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>', '<?php '.self::HERITAGE.'::sprout() ?>'),
+            array('[? endif ?]', '[? endforeach ?]', '[? endfor ?]', '[? endwhile ?]', '[? else: ?]', '[? '.self::HERITAGE.'::sprout() ?]'),
             $line, $count
         );
         if ($count !== 0) return $line;
-        return str_replace(array('{{', '}}'), array('<?php echo ', ' ?>'), $line, $count);
+        return str_replace(array('{{', '}}'), array('[? echo ', ' ?]'), $line, $count);
     }
 
     private static function convertViewServices($line)
@@ -138,6 +138,7 @@ final class Template
         $matches = $matches[0];
         $content = self::clearHTML($content);
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
+        $content = str_replace(array('[?', '?]'), array('<?php', '?>'), $content);
         $search += array(': ?><?php ', ' ?><?php ');
         $matches += array(':', ';');
         $content = str_replace($search, $matches, $content);

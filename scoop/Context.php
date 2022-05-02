@@ -14,7 +14,7 @@ class Context
      * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
      * @return vendor|\Scoop\Bootstrap\Loader El cargador usado para ejecutar la carga.
      */
-    public static function load(string $configPath)
+    public static function load($configPath)
     {
         if (isset(self::$loader)) {
             throw new \Exception('Context loaded');
@@ -79,7 +79,7 @@ class Context
         return self::$injector;
     }
 
-    public static function inject(string $id)
+    public static function inject($id)
     {
         return self::$injector->get($id);
     }

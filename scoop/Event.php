@@ -5,12 +5,12 @@ class Event
 {
     private $propagationStopped = false;
 
-    public function isPropagationStopped(): bool
+    public function isPropagationStopped()
     {
         return $this->propagationStopped;
     }
 
-    public function stopPropagation(): void
+    public function stopPropagation()
     {
         $this->propagationStopped = true;
     }

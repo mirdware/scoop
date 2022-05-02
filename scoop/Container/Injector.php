@@ -39,7 +39,7 @@ abstract class Injector
         try {
             $class = new \ReflectionClass($className);
             if (!$class->isInstantiable()) {
-                throw new Exception('Cannot inject '.$className.' because it cannot be instantiated');
+                throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
             }
             $constructor = $class->getConstructor();
             if ($constructor) {
@@ -48,7 +48,7 @@ abstract class Injector
             }
             return $class->newInstanceWithoutConstructor();
         } catch (\ReflectionException $ex) {
-            throw new NotFoundException($className.' not found', $ex->getCode(), $ex);
+            throw new \Scoop\Http\NotFoundException($className.' not found', $ex);
         }
     }
 

@@ -30,7 +30,7 @@ class DBC extends \PDO
     public function beginTransaction()
     {
         if (!parent::inTransaction()) {
-            parent::beginTransaction();
+            return parent::beginTransaction();
         }
     }
 
@@ -41,9 +41,9 @@ class DBC extends \PDO
         return $this->db;
     }
 
-    public function getEngine()
+    public function is($engine)
     {
-        return $this->engine;
+        return $this->engine === $engine;
     }
 
     public function getHost()

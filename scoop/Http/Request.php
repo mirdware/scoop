@@ -116,7 +116,7 @@ class Request
                 "/name=\"([^\"]*)\"[^\n]*[\n|\r]+([^\n\r].*)?$/s" :
                 '/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s';
                 preg_match($regex, $block, $matches);
-                $body[$matches[1]] = $matches[2];
+                $body[$matches[1]] = isset($matches[2]) ? $matches[2] : '';
             }
         }
         return $body;

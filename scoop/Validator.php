@@ -63,7 +63,7 @@ class Validator
         return $this->errors;
     }
 
-    public function include()
+    public function included()
     {
         $this->includes = func_get_args();
     }

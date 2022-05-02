@@ -14,36 +14,38 @@ abstract class Command
     {
         $endofoptions = false;
         while ($arg = array_shift($args)) {
-            if ($endofoptions) {
-                $this->arguments[] = $arg;
-                continue;
-            }
-            if (substr( $arg, 0, 2 ) === '--') {
-                if (!isset ($arg[3])) {
-                    $endofoptions = true;
-                    continue;
-                }
-                $value = '';
-                $com = substr( $arg, 2 );
-                if (strpos($com, '=')) {
-                    list($com, $value) = explode('=', $com, 2);
-                }
-                $this->options[$com] = !empty($value) ? $value : true;
-                continue;
-            }
-            if ( substr( $arg, 0, 1 ) === '-' ) {
-                for ($i = 1; isset($arg[$i]) ; $i++) {
-                    $this->flags[] = $arg[$i];
-                }
-                continue;
-            }
-            $this->commands[] = $arg;
-            continue;
+            $endofoptions = $this->setOptions($arg, $endofoptions);
         }
         if (!count($this->options) && !count($this->flags)) {
             $this->arguments = array_merge($this->commands, $this->arguments);
             $this->commands = array();
         }
+    }
+
+    private function setOptions($arg, $endofoptions)
+    {
+        if ($endofoptions) {
+            $this->arguments[] = $arg;
+            return true;
+        }
+        if (substr($arg, 0, 2) === '--') {
+            if (!isset ($arg[3])) return true;
+            $value = '';
+            $com = substr( $arg, 2 );
+            if (strpos($com, '=')) {
+                list($com, $value) = explode('=', $com, 2);
+            }
+            $this->options[$com] = !empty($value) ? $value : true;
+            return false;
+        }
+        if (substr($arg, 0, 1) === '-') {
+            for ($i = 1; isset($arg[$i]) ; $i++) {
+                $this->flags[] = $arg[$i];
+            }
+            return false;
+        }
+        $this->commands[] = $arg;
+        return false;
     }
 
     protected function getOption($name, $default = null)
@@ -56,6 +58,6 @@ abstract class Command
 
     protected function hasFlag($name)
     {
-        return isset($this->flags[$name]);
+        return in_array($name, $this->flags);
     }
 }

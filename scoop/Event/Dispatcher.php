@@ -10,7 +10,7 @@ class Dispatcher
         $this->bus = $bus;
     }
 
-    public function dispatch(object $event)
+    public function dispatch($event)
     {
         if ($event->isPropagationStopped()) {
             return $event;

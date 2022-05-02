@@ -40,12 +40,10 @@ class Reader extends Filter
         intval($params['size']) :
         \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
-        $sql = 'SELECT COUNT(*) AS total FROM ('.$this->bind($params).') d';
-        $paginated = $this->sqo->getConnection()->prepare($sql);
-        $paginated->execute($this->getParamsAllowed($sql));
-        $clone = clone $this;
-        $result = $clone->limit($page * $size, $size)->run()->fetchAll();
-        return $paginated->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');
+        $paginated = new \Scoop\Storage\SQO($this->bind($params), 'page');
+        $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
+        return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
+        ->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');
     }
 
     public function order()
@@ -94,19 +92,17 @@ class Reader extends Filter
     private function getOrder()
     {
         if (empty($this->order)) return '';
-        $order = ' ORDER BY ';
-        foreach ($this->order as $element) {
+        foreach ($this->order as $key => $element) {
             if (!preg_match('/\sASC|DESC$/i', $element)) {
-                $element .= $this->orderType;
+                $this->order[$key] = $element.$this->orderType;
             }
-            $order = $element.', ';
         }
-        return substr($order, -2);
+        return ' ORDER BY '.implode(', ', $this->order);
     }
 
     private function getHaving()
     {
-        if (!$this->having) return '';
+        if (empty($this->having)) return '';
         return ' HAVING '.$this->having;
     }
 

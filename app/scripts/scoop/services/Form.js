@@ -1,18 +1,18 @@
 export default class Form {
-  setQueryString(data) {
-    let params = '';
-    for (const name in data) {
-      if (data[name]) {
-        params += name + '=' + encodeURI(data[name]) + '&';
+  setQueryString(params) {
+    let query = '';
+    for (const name in params) {
+      if (params[name]) {
+        query += name + '=' + encodeURI(params[name]) + '&';
       }
     }
-    window.history.pushState(null, '', params ?
-    `${location.pathname}?${params.substr(0, params.length-1)}` :
+    window.history.pushState(null, '', query ?
+    `${location.pathname}?${query.substring(0, query.length - 1)}` :
     location.pathname);
   }
 
   getQueryParams(query) {
-    if  (!query) return;
+    if (!query) return;
     const params = {};
     query.substring(1, query.length).split('&').forEach((string) => {
       string = string.split('=');

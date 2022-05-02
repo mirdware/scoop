@@ -10,7 +10,7 @@ class Bus
         $this->bind($providers);
     }
 
-    public function getListenersForEvent(object $event): iterable
+    public function getListenersForEvent($event)
     {
         $classBase = '\scoop\Event';
         $eventType = get_class($event);

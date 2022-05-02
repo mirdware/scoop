@@ -9,16 +9,19 @@ class SQO
     private $table;
     private $aliasTable;
     private $connectionName;
+    private $isReader;
 
     public function __construct($table, $alias = '', $connectionName = 'default')
     {
-        $this->table = $table;
-        $this->aliasTable = $table.' '.$alias;
+        $this->isReader = is_a($table, '\Scoop\Storage\SQO\Reader');
+        $this->table = $this->isReader ? '('.$table.')' : $table;
+        $this->aliasTable = $this->table.' '.$alias;
         $this->connectionName = $connectionName;
     }
 
     public function create($fields, SQO\Reader $select = null)
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support CREATE');
         $query = 'INSERT INTO '.$this->table;
         $values = $select;
         if (array_keys($fields) !== range(0, count($fields) - 1)) {
@@ -39,6 +42,7 @@ class SQO
 
     public function update($fields)
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support UPDATE');
         $operators = array('+', '-', '/', '*', '%');
         $fields = $this->nullify($fields);
         $query = 'UPDATE '.$this->table.' SET ';
@@ -58,6 +62,7 @@ class SQO
 
     public function delete()
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support DELETE');
         $query = 'DELETE FROM '.$this->table;
         return new SQO\Filter($query, self::DELETE, $this);
     }

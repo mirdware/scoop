@@ -1,8 +1,6 @@
 <?php
 namespace scoop\Command;
 
-use Exception;
-
 class Bus
 {
     private $commands;
@@ -20,7 +18,7 @@ class Bus
         }
         if (!isset($this->instances[$name])) {
             if (!isset($this->commands[$name])) {
-                throw new \RuntimeException('Command '.$name.' not found');
+                throw new \UnexpectedValueException('Command '.$name.' not found');
             }
             $this->instances[$name] = \Scoop\Context::inject($this->commands[$name]);
         }
@@ -31,7 +29,7 @@ class Bus
     {
         $baseClass = '\Scoop\Command';
         if (!is_subclass_of($className, $baseClass)) {
-            throw new Exception('Class '.$className.' not implements '.$baseClass);
+            throw new \UnexpectedValueException('Class '.$className.' not implements '.$baseClass);
         }
         $this->commands[$name] = $className;
         return $this;

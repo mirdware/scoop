@@ -8,6 +8,7 @@ $RECYCLE.BIN/*
 #app/config*
 .DS_Store
 .DS_Store?
+.vscode
 ._*
 .Spotlight-V100
 .Trashes

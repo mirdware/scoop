@@ -12,17 +12,16 @@ class Bus
 
     public function getListenersForEvent($event)
     {
-        $classBase = '\scoop\Event';
-        $eventType = get_class($event);
+        $eventClass = get_class($event);
         $listeners = array();
-        if (!($event instanceof $classBase)) {
-            throw new \UnexpectedValueException($eventType.' not implement '.$classBase);
-        }
-        if (isset($this->listeners[$eventType])) {
-            foreach ($this->listeners[$eventType] as $listener) {
-                array_push($listeners, is_callable($listener) ? $listener : \Scoop\Context::inject($listener));
+        do {
+            if (isset($this->listeners[$eventClass])) {
+                foreach ($this->listeners[$eventClass] as $listener) {
+                    array_push($listeners, \Scoop\Context::inject($listener));
+                }
             }
-        }
+            $eventClass = get_parent_class($eventClass);
+        } while ($eventClass !== \Scoop\Event::class);
         return $listeners;
     }
 

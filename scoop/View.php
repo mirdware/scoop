@@ -67,7 +67,8 @@ final class View
         View\Service::inject('view', $helperView);
         View\Service::inject('config', \Scoop\Context::getEnvironment());
         View\Heritage::init($this->viewData);
-        View\Template::parse($this->viewPath, $this->viewData);
+        extract($this->viewData);
+        require View\Template::parse($this->viewPath);
         return View\Heritage::getContent();
     }
 

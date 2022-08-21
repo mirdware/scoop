@@ -38,14 +38,13 @@ class Context
 
     /**
      * Conecta a una base de datos
-     * @param string|array<mixed> $bundle El nombre del configuration bundle (EJ: default)
-     *  o un array con los datos de configuración necesaria para la creación (database, user).
+     * @param string $bundle El nombre del configuration bundle (EJ: default)
+     * @param array<mixed> $options Un array con los datos de configuración necesaria para la creación (database, user).
      * @return \Scoop\Storage\DBC La conexión establecida con el servidor.
      */
     public static function connect($bundle = 'default', $options = array())
     {
-        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
-        $config = self::normalizeDBConfig($config);
+        $config = self::normalizeConnection($bundle, $options);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
             self::$connections[$key] = new Storage\DBC(
@@ -57,6 +56,12 @@ class Context
             );
         }
         return self::$connections[$key];
+    }
+
+    public static function disconnect($bundle = 'default', $options = array())
+    {
+        $key = implode('', self::normalizeConnection($bundle, $options));
+        unset(self::$connections[$key]);
     }
 
     public static function getLoader()
@@ -84,7 +89,7 @@ class Context
         return self::$injector->get($id);
     }
 
-    public static function dispatchEvent(\Scoop\Event $event)
+    public static function dispatchEvent($event)
     {
         return self::$dispatcher->dispatch($event);
     }
@@ -120,8 +125,9 @@ class Context
         self::$service->register($key, $callback, $params);
     }
 
-    private static function normalizeDBConfig($config)
+    private static function normalizeConnection($bundle, $options)
     {
+        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {

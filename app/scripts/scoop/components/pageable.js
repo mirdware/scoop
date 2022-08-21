@@ -7,12 +7,14 @@ const location = window.location;
 const queryParams = {};
 
 function sendRequest($) {
+  const resource = new Resource(url);
   let url = $.options.url ? $.options.url + location.search : location.href;
+  resource.redirect = false;
   if (url.indexOf('http') !== 0) {
     url = location.protocol + url;
   }
   $.loading = true;
-  new Resource(url).get().then((data) => {
+  resource.get().then((data) => {
     $.refresh(data);
     Object.assign($, getQueryParams($), data);
     $.loading = false;

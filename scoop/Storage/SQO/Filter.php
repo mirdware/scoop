@@ -5,7 +5,8 @@ class Filter
 {
     protected $from = array();
     protected $sqo;
-    private $rules = array();
+    private $filters = array();
+    private $restrictions = array();
     private $connector = 'AND';
     private $query;
     private $params;
@@ -42,7 +43,13 @@ class Filter
 
     public function filter($rule)
     {
-        $this->rules[] = $rule;
+        $this->filters[] = $rule;
+        return $this;
+    }
+
+    public function restrict($rule)
+    {
+        $this->restrictions[] = $rule;
         return $this;
     }
 
@@ -81,7 +88,7 @@ class Filter
 
     private function getRules()
     {
-        $rules = $this->rules;
+        $rules = $this->filters;
         foreach ($rules as $key => $rule) {
             preg_match_all('/:[\w_]+/', $rule, $matches);
             foreach ($matches[0] as $match) {
@@ -95,6 +102,7 @@ class Filter
                 }
             }
         }
+        $rules = array_merge($this->restrictions, $rules);
         if (empty($rules)) return '';
         return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
     }

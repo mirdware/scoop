@@ -13,7 +13,7 @@ final class Template
      * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
-    public static function parse($templatePath, $viewData)
+    public static function parse($templatePath)
     {
         $template = 'app/views/'.$templatePath.'.sdt.php';
         $view = 'app/cache/views/'.$templatePath.'.php';
@@ -26,8 +26,7 @@ final class Template
         } else {
             throw new \UnderflowException('Unable to load view or template '.$templatePath);
         }
-        extract($viewData);
-        require $view;
+        return $view;
     }
 
     /**
@@ -101,7 +100,7 @@ final class Template
         ), array(
             '[? '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?]',
             '[? '.self::HERITAGE.'::extend(\'${1}\') ?]',
-            '[? '.self::HERITAGE.'::import(\'${1}\') ?]',
+            '[? require '.self::HERITAGE.'::getCompilePath(\'${1}\') ?]',
             '[? if(${1}): ?]',
             '[? elseif(${1}): ?]',
             '[? while(${1}): ?]',

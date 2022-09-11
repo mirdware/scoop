@@ -14,7 +14,7 @@ class Bus
     public function getCommand($name)
     {
         if (!$name) {
-            throw new \RuntimeException('Should provider a command');
+            throw new \RuntimeException('Should provider a command see --help');
         }
         if (!isset($this->instances[$name])) {
             if (!isset($this->commands[$name])) {

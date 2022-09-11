@@ -97,7 +97,7 @@ class Validator
      * Registra o modifica una regla dentro de $customRules.
      * @param array<string> $rules Identificadores de la clase que se encargara de resolver la regla.
      */
-    public static function addRule($rules)
+    public static function addRules($rules)
     {
         foreach ($rules as $className) {
             $classRule = '\Scoop\Validation\Rule';

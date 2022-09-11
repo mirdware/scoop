@@ -3,15 +3,28 @@ namespace Scoop\Command;
 
 class Structure extends \Scoop\Command
 {
-    public function execute($args)
+    protected function execute()
     {
-        $this->setArguments($args);
         $name = $this->getOption('name', 'default');
         $con = $this->getConnection($name);
         $this->createTable($con);
-        $creator = $this->print($name, $con);
-        if ($creator->hasData()) $creator->run();
-        echo 'structure changed!';
+        $creator = $this->update($name, $con);
+        if ($creator->hasData()) {
+            $creator->run();
+            self::writeLine('Structure changed!', Color::BLUE);
+        } else {
+            self::writeLine('Nothing to do!', Color::RED);
+        }
+    }
+
+    protected function help()
+    {
+        echo 'Update database with the struct files', PHP_EOL, PHP_EOL,
+        'Options:', PHP_EOL,
+        '--schema => update only structs of a specific "schema"(folder)', PHP_EOL,
+        '--name => use a diferent database connection than "default"', PHP_EOL,
+        '--user => change the user of the database connection', PHP_EOL,
+        '--password => change the password of the database connection', PHP_EOL;
     }
 
     private function createTable($con)
@@ -51,7 +64,7 @@ class Structure extends \Scoop\Command
         return $files;
     }
 
-    private function print($name, $con)
+    private function update($name, $con)
     {
         $sqoStruct = new \Scoop\Storage\SQO($con->is('pgsql') ? 'public.structs' : 'struct', 's', $name);
         $creator = $sqoStruct->create(array('name'));
@@ -61,14 +74,14 @@ class Structure extends \Scoop\Command
         foreach ($files as $file) {
             $name = basename($file);
             if (!in_array($name, $structs)) {
-                echo 'File '.$file.'... ';
+                echo 'File ', $file, '... ';
                 $content = file_get_contents($file);
                 if ($content) {
                     $con->exec($content);
                     $creator->create(array($name));
-                    echo "updated!\n";
+                    self::writeLine('updated!', Color::GREEN);
                 } else {
-                    echo "pending!\n";
+                    self::writeLine('pending!', Color::YELLOW);
                 }
             }
         }

@@ -4,6 +4,10 @@ namespace Scoop\Bootstrap;
 class Environment
 {
     private static $sessionInit = false;
+    private static $loaders = array(
+        'import' => '\Scoop\Bootstrap\Loader\Import',
+        'json' => '\Scoop\Bootstrap\Loader\Json'
+    );
     private $router;
     private $config;
 
@@ -42,15 +46,16 @@ class Environment
 
     public function loadLazily($path)
     {
-        $index = strpos($path, ':') + 1;
+        $index = strpos($path, ':');
         if ($index !== -1) {
             $method = substr($path, 0, $index);
-            $url = substr($path, $index);
-            if ($method === 'json:') {
-                return json_decode(file_get_contents($url . '.json'), true);
-            }
-            if ($method === 'import:') {
-                return require $url . '.php';
+            if (isset(self::$loaders[$method])) {
+                $url = substr($path, $index + 1);
+                $loader = self::$loaders[$method];
+                if (is_string($loader)) {
+                    $loader = new $loader();
+                }
+                return $loader->load($url);
             }
         }
         return $path;
@@ -85,28 +90,27 @@ class Environment
     }
 
     protected function configure($request) {
+        $loaders = (Array) $this->getConfig('loaders');
+        foreach ($loaders as $name => $className) {
+            self::$loaders[strtolower($name)] = $className;
+        }
         \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
-        \Scoop\Validator::addRule((Array) $this->getConfig('validators'));
-        $this->registerComponents((Array) $this->getConfig('components'));
+        \Scoop\Validator::addRules((Array) $this->getConfig('validators'));
+        \Scoop\View::registerComponents((Array) $this->getConfig('components'));
         $this->registerServices(array('config' => $this, 'request' => $request));
         $this->router = new \Scoop\Container\Router((Array) $this->getConfig('routes'));
         return $this;
     }
 
+    /**
+     * @deprecated
+     */
     protected function registerServices($services)
     {
         foreach ($services as $name => $service) {
             is_array($service) ?
                 \Scoop\Context::registerService($name, array_shift($service), $service) :
                 \Scoop\Context::registerService($name, $service);
-        }
-        return $this;
-    }
-
-    protected function registerComponents($components)
-    {
-        foreach ($components as $name => $component) {
-            \Scoop\View::registerComponent($name, $component);
         }
         return $this;
     }

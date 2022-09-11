@@ -3,17 +3,33 @@ namespace Scoop\Command;
 
 class Creator extends \Scoop\Command
 {
+    private static $commands = array(
+        'struct' => '\Scoop\Command\Creator\Struct'
+    );
     private $bus;
 
     public function __construct()
     {
         $this->bus = new Bus();
-        $this->bus->addCommand('struct', Creator\Struct::class);
+        foreach (self::$commands as $command => $controller) {
+            $this->bus->addCommand($command, $controller);
+        }
     }
 
-    public function execute($args)
+    protected function execute()
     {
+        $args = $this->getArguments();
         $commandName = array_shift($args);
-        return $this->bus->getCommand($commandName)->execute($args);
+        $this->bus->getCommand($commandName)->run($args);
+    }
+
+    protected function help()
+    {
+        echo 'create new starter artifacts', PHP_EOL, PHP_EOL,
+        'Commands:', PHP_EOL;
+        foreach (self::$commands as $command => $controller) {
+            echo $command, ' => ', self::writeLine($controller.'.php', Color::BLUE);
+        }
+        echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
     }
 }

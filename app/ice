@@ -8,13 +8,38 @@ require 'scoop/Context.php';
 $commandBus = new \Scoop\Command\Bus();
 array_shift($argv);
 $commandName = array_shift($argv);
-if ($commandName) {
-    $commands = \Scoop\Context::getEnvironment()->getConfig('commands', array());
+$trace = $commandName === '--trace';
+$environment = \Scoop\Context::getEnvironment();
+$commands = $environment->getConfig('commands', array()) + array(
+    'new' => '\Scoop\Command\Creator',
+    'dbup' => '\Scoop\Command\Structure'
+);
+if ($trace) {
+    $commandName = array_shift($argv);
+}
+if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
     foreach ($commands as $command => $controller) {
         $commandBus->addCommand($command, $controller);
     }
-    $commandBus->addCommand('new', '\Scoop\Command\Creator')
-    ->addCommand('dbup', '\Scoop\Command\Structure')
-    ->getCommand($commandName)
-    ->execute($argv);
+    try {
+        $commandBus
+        ->getCommand($commandName)
+        ->run($argv);
+    } catch (Exception $ex) {
+        \Scoop\Command::writeLine(
+            $ex->getMessage().($trace ? PHP_EOL.$ex->getTraceAsString() : ''),
+            \Scoop\Command\Color::RED
+        );
+    }
+} else {
+    echo 'ICE/SCOOP version ',
+    \Scoop\Command::writeLine(
+        $environment->getConfig('app.version'), \Scoop\Command\Color::YELLOW, \Scoop\Command\Format::BOLD
+    );
+    echo PHP_EOL, 'Commands:', PHP_EOL;
+    foreach ($commands as $command => $controller) {
+        echo $command, ' => ', \Scoop\Command::writeLine($controller.'.php', \Scoop\Command\Color::BLUE);
+    }
+    echo PHP_EOL, 'Options:', PHP_EOL, '--trace => show exception stack when execute a command', PHP_EOL,
+    PHP_EOL, 'Run app/ice COMMAND --help for more information', PHP_EOL;
 }

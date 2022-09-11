@@ -1,51 +1,39 @@
 <?php
 namespace Scoop;
 
+use InvalidArgumentException;
+
 abstract class Command
 {
-    private $commands = array();
     private $options = array();
     private $flags = array();
     private $arguments = array();
 
-    public abstract function execute($args);
-
-    protected function setArguments($args)
+    public function run($args)
     {
-        $endofoptions = false;
-        while ($arg = array_shift($args)) {
-            $endofoptions = $this->setOptions($arg, $endofoptions);
+        if (isset($args[0]) && $args[0] === '--help') {
+            return $this->help();
         }
-        if (!count($this->options) && !count($this->flags)) {
-            $this->arguments = array_merge($this->commands, $this->arguments);
-            $this->commands = array();
-        }
+        $this->setArguments($args);
+        return $this->execute();
     }
 
-    private function setOptions($arg, $endofoptions)
+    public static function writeLine()
     {
-        if ($endofoptions) {
-            $this->arguments[] = $arg;
-            return true;
-        }
-        if (substr($arg, 0, 2) === '--') {
-            if (!isset ($arg[3])) return true;
-            $value = '';
-            $com = substr( $arg, 2 );
-            if (strpos($com, '=')) {
-                list($com, $value) = explode('=', $com, 2);
-            }
-            $this->options[$com] = !empty($value) ? $value : true;
-            return false;
-        }
-        if (substr($arg, 0, 1) === '-') {
-            for ($i = 1; isset($arg[$i]) ; $i++) {
-                $this->flags[] = $arg[$i];
-            }
-            return false;
-        }
-        $this->commands[] = $arg;
-        return false;
+        echo call_user_func_array(array('\Scoop\Command', 'write'), func_get_args()), PHP_EOL;
+    }
+
+    public static function write()
+    {
+        $styles = func_get_args();
+        $msg = array_shift($styles);
+        if (!is_string($msg)) throw new \InvalidArgumentException('first parameter should be string');
+        echo "\e[", implode(';', $styles), 'm', $msg, "\e[0m";
+    }
+
+    protected function getArguments()
+    {
+        return $this->arguments;
     }
 
     protected function getOption($name, $default = null)
@@ -59,5 +47,28 @@ abstract class Command
     protected function hasFlag($name)
     {
         return in_array($name, $this->flags);
+    }
+
+    protected abstract function execute();
+
+    protected abstract function help();
+
+    private function setArguments($args)
+    {
+        $this->arguments = $args;
+        while ($arg = array_shift($args)) {
+            if (strlen($arg) > 2 && substr($arg, 0, 2) === '--') {
+                $value = '';
+                $com = substr($arg, 2);
+                if (strpos($com, '=')) {
+                    list($com, $value) = explode('=', $com, 2);
+                }
+                $this->options[$com] = !empty($value) ? $value : true;
+            } elseif (substr($arg, 0, 1) === '-') {
+                for ($i = 1; isset($arg[$i]) ; $i++) {
+                    $this->flags[] = $arg[$i];
+                }
+            }
+        }
     }
 }

@@ -8,6 +8,7 @@ class Environment
         'import' => '\Scoop\Bootstrap\Loader\Import',
         'json' => '\Scoop\Bootstrap\Loader\Json'
     );
+    private static $version;
     private $router;
     private $config;
 
@@ -51,10 +52,7 @@ class Environment
             $method = substr($path, 0, $index);
             if (isset(self::$loaders[$method])) {
                 $url = substr($path, $index + 1);
-                $loader = self::$loaders[$method];
-                if (is_string($loader)) {
-                    $loader = new $loader();
-                }
+                $loader = \Scoop\Context::inject(self::$loaders[$method]);
                 return $loader->load($url);
             }
         }
@@ -87,6 +85,16 @@ class Environment
     public function getCurrentRoute()
     {
         return $this->router->getCurrentRoute();
+    }
+
+    public function getVersion()
+    {
+        if (!self::$version) {
+            $index = file_get_contents('index.php');
+            preg_match_all('# @version\s+(.*?)\n#s', $index, $annotations);
+            self::$version = $annotations[1][0];
+        }
+        return self::$version;
     }
 
     protected function configure($request) {

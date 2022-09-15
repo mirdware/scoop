@@ -7,12 +7,12 @@ class DBC extends \PDO
     private $engine;
     private $host;
 
-    public function __construct($db, $user, $pass, $host, $engine)
+    public function __construct($db, $user, $pass, $host, $port, $engine)
     {
         $this->db = $db;
         $this->engine = $engine;
         $this->host = $host;
-        parent::__construct($engine.': host = '.$host.' dbname = '.$db, $user, $pass, array(
+        parent::__construct($engine.': host = '.$host.' dbname = '.$db.($port ? ' port='.$port : ''),$user, $pass, array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));

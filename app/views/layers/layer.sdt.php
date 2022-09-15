@@ -15,9 +15,9 @@
     <!-- Icono de la aplicación -->
     <link rel="shortcut icon" type="image/x-icon" href="{{#view->asset('favicon.ico')}}" />
     <!-- Enlace a la hoja de estilos general -->
-    <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}" />
+    <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}?v={{#view->getConfig('app.version')}}" />
     <!-- Descarga asincrona de javascript -->
-    <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" defer></script>
+    <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}?v={{#view->getConfig('app.version')}}" defer></script>
     <!-- Titulo de la pagina -->
     <title>{{$title}} » {{#view->getConfig('app.name')}}</title>
 </head>

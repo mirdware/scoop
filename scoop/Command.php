@@ -1,8 +1,6 @@
 <?php
 namespace Scoop;
 
-use InvalidArgumentException;
-
 abstract class Command
 {
     private $options = array();
@@ -11,10 +9,10 @@ abstract class Command
 
     public function run($args)
     {
-        if (isset($args[0]) && $args[0] === '--help') {
+        $this->setArguments($args);
+        if ($this->getOption('help')) {
             return $this->help();
         }
-        $this->setArguments($args);
         return $this->execute();
     }
 
@@ -55,19 +53,21 @@ abstract class Command
 
     private function setArguments($args)
     {
-        $this->arguments = $args;
         while ($arg = array_shift($args)) {
-            if (strlen($arg) > 2 && substr($arg, 0, 2) === '--') {
-                $value = '';
-                $com = substr($arg, 2);
-                if (strpos($com, '=')) {
-                    list($com, $value) = explode('=', $com, 2);
-                }
-                $this->options[$com] = !empty($value) ? $value : true;
-            } elseif (substr($arg, 0, 1) === '-') {
-                for ($i = 1; isset($arg[$i]) ; $i++) {
-                    $this->flags[] = $arg[$i];
-                }
+            if (strpos($arg, '-') !== 0) {
+                array_unshift($args, $arg);
+                $this->arguments = $args;
+                return;
+            }
+            if (strpos($arg, '--') !== 0) {
+                $arg = substr($arg, 1);
+                if ($arg) $this->flags = str_split($arg);
+                continue;
+            }
+            $arg = substr($arg, 2);
+            if ($arg) {
+                $arg = explode('=', $arg, 2);
+                $this->options[$arg[0]] = isset($arg[1]) ? $arg[1] : true;
             }
         }
     }

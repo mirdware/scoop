@@ -52,6 +52,7 @@ class Context
                 $config['user'],
                 $config['password'],
                 $config['host'],
+                $config['port'],
                 $config['driver']
             );
         }
@@ -138,6 +139,7 @@ class Context
         return array_merge(array(
             'password' => '',
             'host' => '127.0.0.1',
+            'port' => null,
             'driver' => 'pgsql'
         ), $config);
     }

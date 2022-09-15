@@ -34,7 +34,7 @@ if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
 } else {
     echo 'ICE/SCOOP version ',
     \Scoop\Command::writeLine(
-        $environment->getConfig('app.version'), \Scoop\Command\Color::YELLOW, \Scoop\Command\Format::BOLD
+        $environment->getVersion(), \Scoop\Command\Color::YELLOW, \Scoop\Command\Format::BOLD
     );
     echo PHP_EOL, 'Commands:', PHP_EOL;
     foreach ($commands as $command => $controller) {

@@ -22,7 +22,7 @@ class Helper
         $this->request = $request;
         $this->components = $components;
         $this->environment = \Scoop\Context::getEnvironment();
-        self::$assets = (array) $this->environment->getConfig('assets') + self::$assets;
+        self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 
     /**

@@ -44,7 +44,7 @@ class Router
         $matches = $this->filterProxy($request->getURL());
         foreach ($matches as $route) {
             $proxy = \Scoop\Context::inject($route['proxy']);
-            $proxy->execute($request);
+            $proxy->process($request);
         }
     }
 

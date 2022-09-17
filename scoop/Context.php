@@ -4,6 +4,7 @@ namespace Scoop;
 class Context
 {
     private static $connections = array();
+    private static $loggers;
     private static $loader;
     private static $service;
     private static $injector;
@@ -32,8 +33,7 @@ class Context
             self::$loader->register(true);
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        self::configureInjector();
-        self::configureDispatcher();
+        self::configure();
     }
 
     /**
@@ -87,6 +87,9 @@ class Context
 
     public static function inject($id)
     {
+        if (!self::$injector->has($id) && isset(self::$loggers[$id])) {
+            return self::$injector->create($id, self::$loggers[$id]);
+        }
         return self::$injector->get($id);
     }
 
@@ -128,7 +131,7 @@ class Context
 
     private static function normalizeConnection($bundle, $options)
     {
-        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
+        $config = self::$environment->getConfig('db.'.$bundle, array()) + $options;
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {
@@ -144,6 +147,31 @@ class Context
         ), $config);
     }
 
+    private static function configure()
+    {
+        self::configureInjector();
+        self::configureDispatcher();
+        self::configureLogger();
+        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.error', array()));
+        \Scoop\Validator::addRules(self::$environment->getConfig('validators', array()));
+        \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
+    }
+
+    private static function configureLogger()
+    {
+        $loggers = self::$environment->getConfig('loggers', array());
+        $handlers = array();
+        foreach ($loggers as $level => $value) {
+            if (isset($value['handler'])) {
+                $handler = $value['handler'];
+                unset($value['handler']);
+                $handlers[$level] = $handler;
+                self::$loggers[$handler] = $value;
+            }
+        }
+        \Scoop\Log\Logger::setHandlers($handlers);
+    }
+
     private static function configureInjector()
     {
         $injector = self::$environment->getConfig('injector', '\Scoop\Container\BasicInjector');
@@ -156,7 +184,7 @@ class Context
 
     private static function configureDispatcher()
     {
-        $listeners = (Array) self::$environment->getConfig('events');
+        $listeners = self::$environment->getConfig('events', array());
         $eventBus = new \Scoop\Event\Bus($listeners);
         self::$dispatcher = new \Scoop\Event\Dispatcher($eventBus);
     }

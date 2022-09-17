@@ -25,6 +25,8 @@ class Environment
             $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
             define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         }
+        self::$loaders += $this->getConfig('loaders', array());
+        $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
     }
 
     public function getConfig($name, $default = null)
@@ -61,7 +63,7 @@ class Environment
 
     public function route($request)
     {
-        $this->configure($request);
+        $this->registerServices(array('config' => $this, 'request' => $request));
         \Scoop\Controller::setRequest($request);
         \Scoop\View::setRequest($request);
         return $this->router->route($request);
@@ -95,19 +97,6 @@ class Environment
             self::$version = $annotations[1][0];
         }
         return self::$version;
-    }
-
-    protected function configure($request) {
-        $loaders = (Array) $this->getConfig('loaders');
-        foreach ($loaders as $name => $className) {
-            self::$loaders[strtolower($name)] = $className;
-        }
-        \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
-        \Scoop\Validator::addRules((Array) $this->getConfig('validators'));
-        \Scoop\View::registerComponents((Array) $this->getConfig('components'));
-        $this->registerServices(array('config' => $this, 'request' => $request));
-        $this->router = new \Scoop\Container\Router((Array) $this->getConfig('routes'));
-        return $this;
     }
 
     /**

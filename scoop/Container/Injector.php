@@ -7,7 +7,7 @@ abstract class Injector
 
     public function __construct($environment)
     {
-        $this->bind((Array) $environment->getConfig('providers'));
+        $this->bind($environment->getConfig('providers', array()));
     }
 
     public static function formatClassName($className)
@@ -29,7 +29,7 @@ abstract class Injector
             if (isset($this->rules[$id])) {
                 return $this->get($this->rules[$id]);
             }
-            $this->setInstance($id, $this->create($id));
+            $this->create($id);
         }
         return $this->getInstance($id);
     }
@@ -43,10 +43,13 @@ abstract class Injector
             }
             $constructor = $class->getConstructor();
             if ($constructor) {
-                $args = array_merge($this->getArguments($constructor->getParameters()), $args);
-                return $class->newInstanceArgs($args);
+                $args = $this->getArguments($constructor->getParameters(), $args);
+                $instance = $class->newInstanceArgs($args);
+            } else {
+                $instance = $class->newInstanceWithoutConstructor();
             }
-            return $class->newInstanceWithoutConstructor();
+            $this->setInstance($className, $instance);
+            return $instance;
         } catch (\ReflectionException $ex) {
             throw new \Scoop\Http\NotFoundException($className.' not found', $ex);
         }
@@ -61,13 +64,15 @@ abstract class Injector
         }
     }
 
-    private function getArguments($params)
+    private function getArguments($params, $definitions)
     {
         $args = array();
         foreach ($params as $param) {
-            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-            if ($class) {
-                $args[] = $this->get($class->getName());
+            if (isset($definitions[$param->getName()])) {
+                $args[] = $definitions[$param->getName()];
+            } else {
+                $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
+                if ($class) $args[] = $this->get($class->getName());
             }
         }
         return $args;

@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "Simple Characteristics of Object Oriented PHP",
   "repository": {
     "type": "git",

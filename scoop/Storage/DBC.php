@@ -6,17 +6,19 @@ class DBC extends \PDO
     private $db;
     private $engine;
     private $host;
+    private $dispatcher;
 
     public function __construct($db, $user, $pass, $host, $port, $engine)
     {
         $this->db = $db;
         $this->engine = $engine;
         $this->host = $host;
+        $this->dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
         parent::__construct($engine.': host = '.$host.' dbname = '.$db.($port ? ' port='.$port : ''),$user, $pass, array(
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));
-        \Scoop\Context::dispatchEvent(new Event\Opened($this));
+        $this->dispatcher->dispatch(new Event\Opened($this));
     }
 
     public function __destruct()
@@ -24,7 +26,7 @@ class DBC extends \PDO
         if (parent::inTransaction()) {
             parent::commit();
         }
-        \Scoop\Context::dispatchEvent(new Event\Closed($this));
+        $this->dispatcher->dispatch(new Event\Closed($this));
     }
 
     public function beginTransaction()

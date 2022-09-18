@@ -26,7 +26,6 @@ class Environment
             define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         }
         self::$loaders += $this->getConfig('loaders', array());
-        $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
     }
 
     public function getConfig($name, $default = null)
@@ -39,6 +38,9 @@ class Environment
         foreach ($data as $key) {
             if (!isset($res[$key])) return $default;
             if (is_string($res[$key])) {
+                if ($key === 'providers') {
+                    throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
+                }
                 $res[$key] = $this->loadLazily($res[$key]);
             }
             $res = $res[$key];
@@ -63,6 +65,7 @@ class Environment
 
     public function route($request)
     {
+        $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
         $this->registerServices(array('config' => $this, 'request' => $request));
         \Scoop\Controller::setRequest($request);
         \Scoop\View::setRequest($request);

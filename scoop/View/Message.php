@@ -27,11 +27,11 @@ class Message implements Component
         }
         $type = self::$props['type'];
         $msg = self::$props['msg'];
-        return '
+        return Template::clearHTML('
         <div id="msg" data-attr="className:type" class="'.$type.'">
             <i class="close"></i>
             <span data-bind="msg">'.$msg.'</span>
-        </div>';
+        </div>');
     }
 
     public static function setRequest(\Scoop\Http\Request $request)

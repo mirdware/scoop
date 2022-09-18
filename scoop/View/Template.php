@@ -43,7 +43,8 @@ final class Template
         );
         preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
         if (isset($matches[0])) {
-            $head = preg_replace('/>\s+</', '><', $matches[2]);
+            $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
+            $head = preg_replace('/>\s+</', '><', $head);
             $html = str_replace($matches[0], '<html'.$matches[1].'><head>'.$head.'</head><body>', $html);
         }
         $html = preg_replace(

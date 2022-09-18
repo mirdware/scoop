@@ -74,6 +74,15 @@ final class View
 
     public static function setRequest(\Scoop\Http\Request $request)
     {
+        foreach (self::$components as $className) {
+            $reflectionClass = new \ReflectionClass($className);
+            if ($reflectionClass->hasMethod('setRequest')) {
+                $reflectionMethod = $reflectionClass->getMethod('setRequest');
+                if ($reflectionMethod->isStatic()) {
+                    $reflectionMethod->invoke($reflectionClass, $request);
+                }
+            }
+        }
         self::$request = $request;
     }
 

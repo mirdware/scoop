@@ -36,23 +36,19 @@ abstract class Injector
 
     public function create($className, $args = array())
     {
-        try {
-            $class = new \ReflectionClass($className);
-            if (!$class->isInstantiable()) {
-                throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
-            }
-            $constructor = $class->getConstructor();
-            if ($constructor) {
-                $args = $this->getArguments($constructor->getParameters(), $args);
-                $instance = $class->newInstanceArgs($args);
-            } else {
-                $instance = $class->newInstanceWithoutConstructor();
-            }
-            $this->setInstance($className, $instance);
-            return $instance;
-        } catch (\ReflectionException $ex) {
-            throw new \Scoop\Http\NotFoundException($className.' not found', $ex);
+        $class = new \ReflectionClass($className);
+        if (!$class->isInstantiable()) {
+            throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
         }
+        $constructor = $class->getConstructor();
+        if ($constructor) {
+            $args = $this->getArguments($constructor->getParameters(), $args);
+            $instance = $class->newInstanceArgs($args);
+        } else {
+            $instance = $class->newInstanceWithoutConstructor();
+        }
+        $this->setInstance($className, $instance);
+        return $instance;
     }
 
     private function bind($interfaces)
@@ -72,7 +68,7 @@ abstract class Injector
                 $args[] = $definitions[$param->getName()];
             } else {
                 $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-                if ($class) $args[] = $this->get($class->getName());
+                if ($class) $args[] = \Scoop\Context::inject($class->getName());
             }
         }
         return $args;

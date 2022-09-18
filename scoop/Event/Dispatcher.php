@@ -5,7 +5,7 @@ class Dispatcher
 {
     private $bus;
 
-    public function __construct($bus)
+    public function __construct(Bus $bus)
     {
         $this->bus = $bus;
     }

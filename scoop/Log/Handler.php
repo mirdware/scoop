@@ -1,8 +1,18 @@
 <?php
 namespace Scoop\Log;
 
-interface Handler
+abstract class Handler
 {
     public const DEFAULT_FORMAT = '%timestamp% [%level%]: %message%';
-    public function handle($log);
+
+    protected function format($log)
+    {
+        $output = self::DEFAULT_FORMAT;
+        foreach ($log as $var => $value) {
+            $output = str_replace('%' . $var . '%', $value, $output);
+        }
+        return $output;
+    }
+
+    public abstract function handle($log);
 }

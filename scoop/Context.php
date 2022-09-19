@@ -159,7 +159,7 @@ class Context
         $handlers = array();
         foreach ($loggers as $level => $value) {
             if (isset($value['handler'])) {
-                $handler = $value['handler'];
+                $handler = $value['handler'].':'.$level;
                 unset($value['handler']);
                 $handlers[$level] = $handler;
                 self::$configParameters[$handler] = $value;

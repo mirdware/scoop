@@ -1,7 +1,7 @@
 <?php
 namespace Scoop\Log\Handler;
 
-class File implements \Scoop\Log\Handler
+class File extends \Scoop\Log\Handler
 {
     private $name;
 
@@ -22,10 +22,6 @@ class File implements \Scoop\Log\Handler
 
     public function handle($log)
     {
-        $output = self::DEFAULT_FORMAT;
-        foreach ($log as $var => $value) {
-            $output = str_replace('%' . $var . '%', $value, $output);
-        }
-        file_put_contents($this->name, $output . PHP_EOL, FILE_APPEND);
+        return file_put_contents($this->name, $this->format($log).PHP_EOL, FILE_APPEND);
     }
 }

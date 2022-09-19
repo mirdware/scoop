@@ -34,8 +34,10 @@ abstract class Injector
         return $this->getInstance($id);
     }
 
-    public function create($className, $args = array())
+    public function create($id, $args = array())
     {
+        $index = strpos($id, ':');
+        $className = $index === false ? $id : substr($id, 0, $index);
         $class = new \ReflectionClass($className);
         if (!$class->isInstantiable()) {
             throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
@@ -47,7 +49,7 @@ abstract class Injector
         } else {
             $instance = $class->newInstanceWithoutConstructor();
         }
-        $this->setInstance($className, $instance);
+        $this->setInstance($id, $instance);
         return $instance;
     }
 

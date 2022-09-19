@@ -57,7 +57,7 @@ class Logger
         if (!defined($levelClass)) throw new \InvalidArgumentException($level.' not support level');
         if (isset($this->handlers[$level])) {
             $handler = \Scoop\Context::inject($this->handlers[$level]);
-            $handler->handle(array(
+            return $handler->handle(array(
                 'message' => self::interpolate((string)$message, $context),
                 'level' => $level,
                 'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)

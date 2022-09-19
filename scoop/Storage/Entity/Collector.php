@@ -3,65 +3,20 @@ namespace Scoop\Storage\Entity;
 
 class Collector
 {
-    private static $totalObjects = array();
-    private static $fromDB = false;
-    private $objects = array();
+    private $entities = array();
 
-    public function __construct($array = array())
+    public function add($entity, $mapper)
     {
-        if ($array) {
-            self::$fromDB = true;
-            $this->objects = array_map(array($this, 'notify'), $array);
-            self::$fromDB = false;
-        }
+        $this->entities[$mapper['id']] = $entity;
     }
 
-    private static function notify($obj)
+    public function remove($entity, $mapper)
     {
-        $object = self::internalSearch($obj, self::$totalObjects);
-        if ($object) {
-            return $object;
-        }
-        self::$totalObjects[] = $obj;
-        return $obj;
+        unset($this->entities[$mapper['id']]);
     }
 
-    private static function internalSearch($obj, $array, $delete = false)
+    public function save()
     {
-        foreach ($array as $key => $object) {
-            if ($obj == $object || (self::$fromDB &&
-                get_class($obj) === get_class($object) &&
-                $obj->getPK() === $object->getPK())) {
-                if ($delete) {
-                    unset($array[$key]);
-                }
-                return $object;
-            }
-        }
-    }
 
-    public function search($obj)
-    {
-        return array_search($obj, $this->objects);
-    }
-
-    public function toArray()
-    {
-        return $this->objects;
-    }
-
-    public function add($obj)
-    {
-        $this->objects[] = self::notify($obj);
-    }
-
-    public function get($i)
-    {
-        return $this->objects[$i];
-    }
-
-    public function remove($obj)
-    {
-        self::internalSearch($obj, $this->objects, true);
     }
 }

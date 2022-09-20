@@ -1,4 +1,6 @@
 const gulp = require('gulp');
+const fs = require("fs");
+const path = require('path');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 const stylus = require('gulp-stylus');
@@ -12,9 +14,17 @@ const php = require('gulp-connect-php');
 const nib = require('nib');
 const fontAwesome = require('fa-stylus');
 const app = require('./package.json');
-const filesToMove = './node_modules/fa-stylus/fonts/**/*.*';
+const filesToMove = getModulePath() + '/node_modules/fa-stylus/fonts/**/*.*';
 const pathScripts = 'app/scripts/';
 const pathStyles = 'app/styles/';
+
+function getModulePath() {
+  const cumulativePath = (acc) => (value) => (acc += value + path.sep)
+  let folder = __dirname;
+  return ['/'].concat(
+    folder.split(path.sep).filter(Boolean).map(cumulativePath(path.sep))
+  ).reverse().filter((currentPath) => fs.existsSync(currentPath + 'node_modules'));
+}
 
 gulp.task('css', () => {
   return gulp.src(pathStyles + 'app.styl')

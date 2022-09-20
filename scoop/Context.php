@@ -141,6 +141,9 @@ class Context
         self::$configParameters['Scoop\Event\Bus'] = array(
             'providers' => self::$environment->getConfig('events', array())
         );
+        self::$configParameters['Scoop\Storage\Entity\Manager'] = array(
+            'map' => self::$environment->getConfig('entities', array())
+        );
     }
 
     private static function configureInjector()
@@ -155,14 +158,14 @@ class Context
 
     private static function configureLogger()
     {
-        $loggers = self::$environment->getConfig('loggers', array());
+        $logHandlers = self::$environment->getConfig('log', array());
         $handlers = array();
-        foreach ($loggers as $level => $value) {
-            if (isset($value['handler'])) {
-                $handler = $value['handler'].':'.$level;
-                unset($value['handler']);
+        foreach ($logHandlers as $level => $params) {
+            if (isset($params['handler'])) {
+                $handler = $params['handler'].':'.$level;
+                unset($params['handler']);
                 $handlers[$level] = $handler;
-                self::$configParameters[$handler] = $value;
+                self::$configParameters[$handler] = $params;
             }
         }
         self::$configParameters['Scoop\Log\Logger'] = compact('handlers');

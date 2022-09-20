@@ -11,14 +11,16 @@ abstract class Heritage {
      */
     public static function init($data)
     {
+        $flush = '';
+        $content = ob_get_contents();
+        if (ob_get_length()) {
+            $flush = ob_get_flush();
+        }
         self::$data = $data;
         array_push(self::$stack, array(
             'footer' => '',
-            'content' => trim(ob_get_contents())
+            'content' => $flush === $content ? '' : trim($content)
         ));
-        if (ob_get_length()) {
-            ob_flush();
-        }
         ob_start();
     }
 

@@ -15,11 +15,13 @@ class Manager
     public function persist($entity)
     {
         $mapper = $this->getMapper(get_class($entity));
+        $this->collector->add($entity, $mapper);
+        if (!isset($mapper['relations'])) return;
         $reflection = new \ReflectionObject($entity);
         foreach ($mapper['relations'] as $name => $type) {
             $property = $reflection->getProperty($name);
             $property->setAccessible(true);
-            $relationEntity = $property->getValue();
+            $relationEntity = $property->getValue($entity);
             if (!$relationEntity) continue;
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
@@ -31,19 +33,18 @@ class Manager
                 $this->collector->add($relationEntity, $relationMapper);
             }
         }
-        $this->collector->add($entity, $mapper);
     }
 
     public function remove($entity)
     {
-        $mapper = $this->getMapper(get_class($entity));
-        $this->collector->remove($entity, $mapper);
+        $this->getMapper(get_class($entity));
+        $this->collector->remove($entity);
     }
 
     public function find($classEntity)
     {
         $this->getMapper($classEntity);
-        return new Query($classEntity, $this->map);
+        return new Query($this->collector, $classEntity, $this->map);
     }
 
     public function flush()

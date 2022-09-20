@@ -9,10 +9,7 @@ class Slack extends \Scoop\Log\Handler
     public function __construct($url, $config = array())
     {
         $this->url = $url;
-        $this->config = $config + array(
-            'channel' => '#general',
-            'username' => 'webhookbot'
-        );
+        $this->config = $config;
     }
 
     public function handle($log)

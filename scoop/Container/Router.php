@@ -73,7 +73,7 @@ class Router
         $queryString = '';
         foreach ($query AS $name => $value) {
             if ($value) {
-                $queryString .= '&'.htmlentities($name, ENT_QUOTES | ENT_HTML5, 'UTF-8').'='.htmlentities($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $queryString .= '&'.filter_var($name, FILTER_UNSAFE_RAW).'='.filter_var($value, FILTER_UNSAFE_RAW);
             }
         }
         return $queryString ? '?'.substr($queryString, 1) : '';

@@ -138,6 +138,7 @@ class Context
         \Scoop\Validator::setMessages(self::$environment->getConfig('messages.error', array()));
         \Scoop\Validator::addRules(self::$environment->getConfig('validators', array()));
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
+        self::$configParameters['Scoop\Storage\Crypt'] = self::$environment->getConfig('crypt', array());
         self::$configParameters['Scoop\Event\Bus'] = array(
             'providers' => self::$environment->getConfig('events', array())
         );

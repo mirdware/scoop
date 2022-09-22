@@ -19,7 +19,7 @@ class Query
     public function get()
     {
         $fields = array();
-        foreach ($this->map[$this->classEntity]['fields'] as $key => $value) {
+        foreach ($this->map[$this->classEntity]['properties'] as $key => $value) {
             $fields[isset($value['name']) ? $value['name'] : $key] = $key;
         }
         $result = $this->sqo->read(array_keys($fields))->run();

@@ -1,77 +1,76 @@
 <?php
 namespace Scoop\Storage\Entity;
 
-class Collector
+class Collector extends Mapper
 {
-    private $map;
-    private $entities = array();
-    private $persisted = array();
-    private $removed = array();
-    private $statements = array();
+    private $entities;
+    private $persisted;
+    private $removed;
+    private $statements;
 
     public function __construct($map)
     {
-        $this->map = $map;
+        parent::__construct($map);
+        $this->entities = new \SplObjectStorage();
+        $this->persisted = array();
+        $this->removed = array();
+        $this->statements = array();
     }
 
     public function add($entity)
     {
-        $key = array_search($entity, $this->entities);
-        if (!$key) {
-            $key = $this->getKey($entity);
-            $this->entities[$key];
-        }
+        $key = $this->getKey($entity);
         unset($this->removed[$key]);
     }
 
     public function remove($entity)
     {
-        $key = array_search($entity, $this->entities);
-        unset($this->entities[$key]);
-        if (isset($this->persisted[$key])) {
-            $this->removed[$key] = $this->persisted[$key];
+        if (isset($this->entities[$entity])) {
+            $key = $this->entities[$entity];
+            unset($this->entities[$entity]);
+            if (isset($this->persisted[$key])) {
+                $this->removed[$key] = $entity;
+            }
         }
     }
 
     public function save()
     {
-        foreach ($this->entities as $key => $entity) {
+        foreach ($this->entities as $entity) {
             $object = new \ReflectionObject($entity);
             $className = $object->getName();
-            $fields = $this->getFields($key, $object->getProperties());
-            $this->execute($key, $fields);
-            $key = $this->updateKey($key, $this->statements[$className]);
-            $this->persisted[$key] = $this->statements[$className];
+            $fields = $this->getFields($entity, $this->map[$className], $object->getProperties());
+            $this->execute($entity, $fields);
+            $key = $this->updateKey($entity, $className);
+            $this->persisted[$key] = $entity;
         }
     }
 
     public function make($className, $id, $row, $fields, $sqo)
     {
+        $key = $className.':'.$id;
+        if (isset($this->persisted[$key])) {
+            return $this->persisted[$key];
+        }
         if (!isset($this->statements[$className])) {
             $this->statements[$className] = $sqo;
         }
-        $this->persisted[$className.':'.$id] = $this->statements[$className];
-        if (!isset($this->entities[$className.':'.$id])) {
-            $reflectionClass = new \ReflectionClass($className);
-            $constructor = $reflectionClass->getConstructor();
-            $args = array_fill(0, $constructor->getNumberOfRequiredParameters(), null);
-            $entity = $constructor ? $reflectionClass->newInstanceArgs($args) : $reflectionClass->newInstanceWithoutConstructor();
-            $object = new \ReflectionObject($entity);
-            foreach ($row as $name => $value) {
-                $prop = $object->getProperty($fields[$name]);
-                $prop->setAccessible(true);
-                $prop->setValue($entity, $value);
-            }
-            $this->entities[$className.':'.$id] = $entity;
+        $reflectionClass = new \ReflectionClass($className);
+        $constructor = $reflectionClass->getConstructor();
+        $args = array_fill(0, $constructor->getNumberOfRequiredParameters(), null);
+        $entity = $constructor ? $reflectionClass->newInstanceArgs($args) : $reflectionClass->newInstanceWithoutConstructor();
+        $object = new \ReflectionObject($entity);
+        foreach ($row as $name => $value) {
+            $prop = $object->getProperty($fields[$name]);
+            $prop->setAccessible(true);
+            $prop->setValue($entity, $value);
         }
-        return $this->entities[$className.':'.$id];
+        $this->entities[$entity] = $key;
+        return $entity;
     }
 
-    private function getFields($key, $properties)
+    private function getFields($entity, $mapper, $properties)
     {
-        $entity = $this->entities[$key];
-        $className = substr($key, 0, strpos($key, ':'));
-        $mapper = $this->map[$className];
         $fields = array();
         foreach ($properties as $prop) {
             $name = $prop->getName();
@@ -81,7 +80,7 @@ class Collector
             if (!isset($value)) continue;
             if (isset($mapper['relations'][$name])) {
                 $relation = $mapper['relations'][$name];
-                $idName = isset($this->map[$relation[0]]['id']) ? $this->map[$relation[0]]['id'] : 'id';
+                $idName = $this->getIdName($relation[0]);
                 $object = new \ReflectionObject($value);
                 $relationProp = $object->getProperty($idName);
                 $relationProp->setAccessible(true);
@@ -95,61 +94,59 @@ class Collector
         return $fields;
     }
 
-    private function execute($key, $fields)
+    private function execute($entity, $fields)
     {
+        $key = strval($this->entities[$entity]);
         $index = strpos($key, ':');
         $className = substr($key, 0, $index);
-        if (!isset($this->map[$className]['table'])) throw new \RuntimeException($className.' not mapper configured');
+        if (!isset($this->map[$className]['table'])) {
+            throw new \RuntimeException($className.' not mapper configured');
+        }
+        if (!isset($this->statements[$className])) {
+            $this->statements[$className] = new \Scoop\Storage\SQO($this->map[$className]['table']);
+        }
         if (isset($this->persisted[$key])) {
-            $statement = $this->persisted[$key];
+            $statement = $this->statements[$className];
             $params = array('id' => substr($key, $index + 1));
             if (isset($this->removed[$key])) {
                 return $statement->delete()->restrict('id = :id')->run($params);
             }
             return $statement->update($fields)->restrict('id = :id')->run($params);
         }
-        if (!isset($this->statements[$className])) {
-            $this->statements[$className] = new \Scoop\Storage\SQO($this->map[$className]['table']);
-        }
         return $this->statements[$className]->create($fields)->run();
     }
 
     private function getKey($entity)
     {
+        if (isset($this->entities[$entity])) {
+            return $this->entities[$entity];
+        }
         $object = new \ReflectionObject($entity);
         $className = $object->getName();
-        $id = isset($this->map[$className]['id']) ? $this->map[$className]['id'] : 'id';
+        $id = $this->getIdName($className);
         $property = $object->getProperty($id);
         $property->setAccessible(true);
         $id = $property->getValue($entity);
-        if ($id) {
-            return $className.':'.$id;
-        }
-        $key = array_search($entity, $this->entities);
-        if (!$key) {
-            $key = $className.':'.uniqid();
-            $this->entities[$key] = $entity;
-        }
-        return $key;
+        $key = $id ? $className.':'.$id : $className.':'.uniqid();
+        $this->entities[$entity] = $key;
+        return $this->entities[$entity];
     }
 
-    private function updateKey($key, $statement)
+    private function updateKey($entity, $className)
     {
-        $className = substr($key, 0, strpos($key, ':'));
-        $idName = isset($this->map[$className]['id']) ? $this->map[$className]['id'] : 'id';
+        $idName = $this->getIdName($className);
         if (isset($this->map[$className]['properties'][$idName]['type'])) {
             $type = explode(':', $this->map[$className]['properties'][$idName]['type']);
             $isAuto = array_pop($type) === 'SERIAL';
             if ($isAuto) {
-                $id = $statement->getLastId();
-                $entity = $this->entities[$key];
+                $id = $this->statements[$className]->getLastId();
                 $object = new \ReflectionObject($entity);
                 $prop = $object->getProperty($idName);
                 $prop->setAccessible(true);
                 $prop->setValue($entity, $id);
-                $key = $className.':'.$id;
+                $this->entities[$entity] = $className.':'.$id;
             }
         }
-        return $key;
+        return $this->entities[$entity];
     }
 }

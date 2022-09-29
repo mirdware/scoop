@@ -5,11 +5,13 @@ class Manager
 {
     private $map;
     private $collector;
+    private $relations;
 
     public function __construct($map)
     {
         $this->map = $map;
         $this->collector = new Collector($map);
+        $this->relations = new Relation($map, $this->collector);
     }
 
     public function __destruct()
@@ -22,12 +24,12 @@ class Manager
         $mapper = $this->getMapper(get_class($entity));
         if (isset($mapper['relations'])) {
             $object = new \ReflectionObject($entity);
-            $this->addRelations($entity, $object, $this->filterRelations(
+            $this->relations->add($entity, $object, $this->filterRelations(
                 $mapper['relations'],
                 array(Relation::ONE_TO_ONE, Relation::MANY_TO_ONE)
             ));
             $this->collector->add($entity);
-            $this->addRelations($entity, $object, $this->filterRelations(
+            $this->relations->add($entity, $object, $this->filterRelations(
                 $mapper['relations'],
                 array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY))
             );
@@ -38,7 +40,10 @@ class Manager
 
     public function remove($entity)
     {
-        $this->getMapper(get_class($entity));
+        $mapper = $this->getMapper(get_class($entity));
+        if (isset($mapper['relations'])) {
+            $this->relations->remove($entity, $mapper['relations']);
+        }
         $this->collector->remove($entity);
     }
 
@@ -51,11 +56,13 @@ class Manager
     public function flush()
     {
         $this->collector->save();
+        $this->relations->save();
     }
 
     public function clean()
     {
         $this->collector = new Collector($this->map);
+        $this->relations = new Relation($this->map, $this->collector);
     }
 
     private function getMapper($classEntity)
@@ -64,27 +71,6 @@ class Manager
             throw new \InvalidArgumentException($classEntity.' not mapper configured');
         }
         return $this->map[$classEntity];
-    }
-
-    private function addRelations($entity, $object, $relations)
-    {
-        foreach ($relations as $name => $relation) {
-            $property = $object->getProperty($name);
-            $property->setAccessible(true);
-            $relationEntity = $property->getValue($entity);
-            if (!$relationEntity) continue;
-            if (is_array($relationEntity)) {
-                foreach ($relationEntity as $e) {
-                    $objectRelation = new \ReflectionObject($e);
-                    $property = $objectRelation->getProperty($relation[1]);
-                    $property->setAccessible(true);
-                    $property->setValue($e, $entity);
-                    $this->collector->add($e);
-                }
-            } else {
-                $this->collector->add($relationEntity);
-            }
-        }
     }
 
     private function filterRelations($relations, $types)

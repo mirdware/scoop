@@ -162,12 +162,13 @@ class Context
         $logHandlers = self::$environment->getConfig('log', array());
         $handlers = array();
         foreach ($logHandlers as $level => $params) {
-            if (isset($params['handler'])) {
-                $handler = $params['handler'].':'.$level;
-                unset($params['handler']);
-                $handlers[$level] = $handler;
-                self::$configParameters[$handler] = $params;
+            if (!isset($params['handler'])) {
+                throw new \UnexpectedValueException('Handler not configured for '.$level.' level');
             }
+            $handler = $params['handler'].':'.$level;
+            unset($params['handler']);
+            $handlers[$level] = $handler;
+            self::$configParameters[$handler] = $params;
         }
         self::$configParameters['Scoop\Log\Logger'] = compact('handlers');
     }

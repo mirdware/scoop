@@ -19,7 +19,7 @@ class Manager
         $this->flush();
     }
 
-    public function persist($entity)
+    public function save($entity)
     {
         $mapper = $this->getMapper(get_class($entity));
         if (isset($mapper['relations'])) {

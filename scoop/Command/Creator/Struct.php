@@ -9,7 +9,7 @@ class Struct extends \Scoop\Command
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        echo 'File ', self::write($path, \Scoop\Command\Color::BLUE), ' created';
+        echo 'File ', self::write($path, \Scoop\Command\Color::BLUE), ' created', PHP_EOL;
     }
 
     protected function help()

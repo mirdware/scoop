@@ -21,7 +21,7 @@ class Bus
                 }
             }
             $eventClass = get_parent_class($eventClass);
-        } while ($eventClass !== \Scoop\Event::class);
+        } while ($eventClass !== 'Scoop\Event');
         return $listeners;
     }
 

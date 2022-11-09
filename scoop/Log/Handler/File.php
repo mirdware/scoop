@@ -8,12 +8,14 @@ class File extends \Scoop\Log\Handler
     public function __construct($file = null)
     {
         if (!$file) {
-            $appName = \Scoop\Context::getEnvironment()->getConfig('app.name');
-            $file = 'app/logs/'.$appName.'-'.date('Y-m-d').'.log';
+            $env = \Scoop\Context::getEnvironment();
+            $file = $env->getConfig('storage', 'app/storage/')
+            .'logs/'.$env->getConfig('app.name')
+            .'-'.date('Y-m-d').'.log';
         }
         $dir = dirname($file);
         if (!file_exists($dir)) {
-            if (mkdir($dir, 0777, true) && !is_dir($dir)) {
+            if (mkdir($dir, 0700, true) && !is_dir($dir)) {
                 throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s"', $dir));
             }
         }

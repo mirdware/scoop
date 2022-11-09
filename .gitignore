@@ -3,7 +3,7 @@ node_modules/*
 public/css/*
 public/js/*
 public/fonts/*
-app/cache/*
+app/storage/*
 $RECYCLE.BIN/*
 #app/config*
 .DS_Store

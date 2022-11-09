@@ -15,8 +15,9 @@ final class Template
      */
     public static function parse($templatePath)
     {
+        $storage = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
         $template = 'app/views/'.$templatePath.'.sdt.php';
-        $view = 'app/cache/views/'.$templatePath.'.php';
+        $view = $storage.'cache/views/'.$templatePath.'.php';
         if (is_readable($view)) {
             if (is_readable($template) && filemtime($template) > filemtime($view)) {
                 self::create($view, self::compile($template));

@@ -7,8 +7,8 @@ const location = window.location;
 const queryParams = {};
 
 function sendRequest($) {
-  const resource = new Resource(url);
   let url = $.options.url ? $.options.url + location.search : location.href;
+  const resource = new Resource(url);
   resource.redirect = false;
   if (url.indexOf('http') !== 0) {
     url = location.protocol + url;

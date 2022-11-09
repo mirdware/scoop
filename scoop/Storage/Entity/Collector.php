@@ -77,7 +77,6 @@ class Collector extends Mapper
             if (!isset($mapper['properties'][$name])) continue;
             $prop->setAccessible(true);
             $value = $prop->getValue($entity);
-            if (!isset($value)) continue;
             if (isset($mapper['relations'][$name])) {
                 $relation = $mapper['relations'][$name];
                 $idName = $this->getIdName($relation[0]);
@@ -113,7 +112,19 @@ class Collector extends Mapper
             }
             return $statement->update($fields)->restrict('id = :id')->run($params);
         }
+        $fields = $this->clearNulls($fields);
         return $this->statements[$className]->create($fields)->run();
+    }
+
+    private function clearNulls($value, $only = null)
+    {
+        $filtered = array();
+        foreach ($value as $key => $element) {
+            if (($only !== null && !isset($only[$key])) || $element !== null) {
+                $filtered[$key] = $element;
+            }
+        }
+        return $filtered;
     }
 
     private function getKey($entity)

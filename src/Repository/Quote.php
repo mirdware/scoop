@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Repository;
 
-Interface Quote
+interface Quote
 {
     public function publish();
 }

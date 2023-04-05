@@ -164,6 +164,19 @@ input:not([type=submit]):not([type=button]):not([type=file])
             margin .4em 0
             border 1px solid #ddd
             vertical-align middle
+    &.password
+        .raw
+            font 1em FontAwesome
+            position absolute
+            right 1em
+            top 30%
+            vertical-align middle
+            width auto !important
+            background #fff
+            &.show
+                fa-icon "eye"
+            &.hide
+                fa-icon "eye-slash"
 
 .radio
 .checkbox

@@ -17,6 +17,7 @@ const app = require('./package.json');
 const filesToMove = getModulePath() + '/node_modules/fa-stylus/fonts/**/*.*';
 const pathScripts = 'app/scripts/';
 const pathStyles = 'app/styles/';
+const inject = require('gulp-js-html-inject');
 
 function getModulePath() {
   const cumulativePath = (acc) => (value) => (acc += value + path.sep)
@@ -47,12 +48,16 @@ gulp.task('js', () => {
     'debug': true
   })
   .transform('babelify', {
-    'presets': ['@babel/preset-env']
+    presets: ['@babel/preset-env'],
+    plugins: [
+      ["@babel/plugin-proposal-decorators", { "legacy" : true }]
+    ]
   })
   .bundle()
   .pipe(source(app.name + '.min.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init())
+  .pipe(inject({basepath: pathScripts, pattern: /'import:([a-zA-Z0-9\-_.\/]+)'/g}))
   .pipe(uglify())
   .pipe(sourcemaps.write('.'))
   .pipe(gulp.dest('public/js/'))

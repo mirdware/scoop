@@ -11,15 +11,11 @@ abstract class Heritage {
      */
     public static function init($data)
     {
-        $flush = '';
         $content = ob_get_contents();
-        if (ob_get_length()) {
-            $flush = ob_get_flush();
-        }
         self::$data = $data;
         array_push(self::$stack, array(
             'footer' => '',
-            'content' => $flush === $content ? '' : trim($content)
+            'content' => trim($content)
         ));
         ob_start();
     }
@@ -63,10 +59,7 @@ abstract class Heritage {
     {
         $item = array_pop(self::$stack);
         $view = ob_get_contents().$item['footer'];
-        while (ob_get_length() !== false) {
-            ob_end_clean();
-        }
-        echo $item['content'];
+        ob_end_clean();
         return $view;
     }
 }

@@ -53,24 +53,24 @@ export default class Form extends Component {
     };
   }
 
-  submit(data, form) {
+  async submit(data, form) {
     if (!form.resource) {
       form.resource = new Resource(form.action);
       if (form.enctype !== 'multipart/form-data') {
         form.resource.headers['Content-Type'] = 'application/json';
       }
     }
-    form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data)
-    .then((res) => {
-      this.loading = false;
+    try {
+      const res = await form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data);
       this.done(res, form);
-    }).catch((res) => {
+    } catch (ex) {
+      this.fail(ex, form);
+    } finally {
       this.loading = false;
-      this.fail(res, form);
-    });
+    }
   }
 
-  fail(res, form) {
+  fail(res) {
     try {
       const errors = JSON.parse(res.message);
       let focused = false;

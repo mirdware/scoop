@@ -3,6 +3,7 @@ return array(
     'app' => 'json:package',
     'db' => array(
         'default' => array(
+            'host' => 'host.docker.internal',
             'database' => 'scoop',
             'user' => 'postgres',
             'password' => 'postgres'

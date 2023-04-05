@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Repository;
 
-use \Scoop\Storage\SQO;
+use Scoop\Storage\SQO;
 
 class QuoteDB implements Quote
 {

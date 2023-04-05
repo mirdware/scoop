@@ -6,7 +6,7 @@ import Search from './search';
 const location = window.location;
 const queryParams = {};
 
-function sendRequest($) {
+async function sendRequest($) {
   let url = $.options.url ? $.options.url + location.search : location.href;
   const resource = new Resource(url);
   resource.redirect = false;
@@ -14,11 +14,10 @@ function sendRequest($) {
     url = location.protocol + url;
   }
   $.loading = true;
-  resource.get().then((data) => {
-    $.refresh(data);
-    Object.assign($, getQueryParams($), data);
-    $.loading = false;
-  });
+  const data = await resource.get();
+  $.refresh(data);
+  Object.assign($, getQueryParams($), data);
+  $.loading = false;
 }
 
 function getPage(name, search) {
@@ -62,16 +61,13 @@ function setPage($, $element) {
   sendRequest($);
 }
 
-function openModal(e, $) {
+async function openModal(e, $) {
   const target = e.currentTarget;
   const _modal = $.inject(ModalService);
-  _modal.open(target.form.dataset.modal, target.title).then(() => {
-    $.compose(_modal.modal.$dom, Search)
-    .send(getQueryParams($)).then((res) => {
-      $.inject(FormService).setQueryString(res);
-      sendRequest($);
-    });
-  });
+  const $dom = await _modal.open(target.form.dataset.modal, target.title);
+  const res = $.compose($dom, Search).send(getQueryParams($));
+  $.inject(FormService).setQueryString(res);
+  sendRequest($);
 }
 
 function init($, options) {

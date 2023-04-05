@@ -12,7 +12,7 @@ function destructuring() {
   }
 }
 
-function createBody(href, $dom, $body) {
+async function createBody(href, $dom, $body) {
   const url = href.split('#');
   if (url[1] && url[0] === location.href) {
     let content = document.getElementById(url[1]);
@@ -22,10 +22,9 @@ function createBody(href, $dom, $body) {
     }
     return Promise.resolve($dom);
   }
-  return new Resource(href).get().then((data) => {
-    show($dom, $body, data);
-    return $dom;
-  });
+  const data = await new Resource(href).get();
+  show($dom, $body, data);
+  return $dom;
 }
 
 function generateModal() {

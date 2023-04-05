@@ -58,7 +58,7 @@ class Logger
         if (isset($this->handlers[$level])) {
             $handler = \Scoop\Context::inject($this->handlers[$level]);
             return $handler->handle(array(
-                'message' => self::interpolate((string)$message, $context),
+                'message' => self::interpolate(var_export($message, true), $context),
                 'level' => $level,
                 'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)
             ));
@@ -69,7 +69,9 @@ class Logger
     {
         $replace = array();
         foreach ($context as $key => $value) {
-            if (is_string($value) || method_exists($value, '__toString')) {
+            if (!is_object($value)) {
+                $replace['{'.$key.'}'] = var_export($value, true);
+            } elseif (method_exists($value, '__toString')) {
                 $replace['{'.$key.'}'] = $value;
             }
         }

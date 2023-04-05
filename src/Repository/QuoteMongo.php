@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repository;
 
 class QuoteMongo implements Quote

@@ -16,7 +16,7 @@ export default class Form {
     const params = {};
     query.substring(1, query.length).split('&').forEach((string) => {
       string = string.split('=');
-      params[string[0]] = string[1];
+      params[string[0]] = decodeURI(string[1]);
     });
     return params;
   }

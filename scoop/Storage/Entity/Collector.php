@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\Entity;
 
 class Collector extends Mapper
@@ -48,7 +49,7 @@ class Collector extends Mapper
 
     public function make($className, $id, $row, $fields, $sqo)
     {
-        $key = $className.':'.$id;
+        $key = $className . ':' . $id;
         if (isset($this->persisted[$key])) {
             return $this->persisted[$key];
         }
@@ -58,7 +59,9 @@ class Collector extends Mapper
         $reflectionClass = new \ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
         $args = array_fill(0, $constructor->getNumberOfRequiredParameters(), null);
-        $entity = $constructor ? $reflectionClass->newInstanceArgs($args) : $reflectionClass->newInstanceWithoutConstructor();
+        $entity = $constructor ?
+        $reflectionClass->newInstanceArgs($args) :
+        $reflectionClass->newInstanceWithoutConstructor();
         $object = new \ReflectionObject($entity);
         foreach ($row as $name => $value) {
             $prop = $object->getProperty($fields[$name]);
@@ -74,7 +77,9 @@ class Collector extends Mapper
         $fields = array();
         foreach ($properties as $prop) {
             $name = $prop->getName();
-            if (!isset($mapper['properties'][$name])) continue;
+            if (!isset($mapper['properties'][$name])) {
+                continue;
+            }
             $prop->setAccessible(true);
             $value = $prop->getValue($entity);
             if (isset($mapper['relations'][$name])) {
@@ -99,7 +104,7 @@ class Collector extends Mapper
         $index = strpos($key, ':');
         $className = substr($key, 0, $index);
         if (!isset($this->map[$className]['table'])) {
-            throw new \RuntimeException($className.' not mapper configured');
+            throw new \RuntimeException($className . ' not mapper configured');
         }
         if (!isset($this->statements[$className])) {
             $this->statements[$className] = new \Scoop\Storage\SQO($this->map[$className]['table']);
@@ -138,7 +143,7 @@ class Collector extends Mapper
         $property = $object->getProperty($id);
         $property->setAccessible(true);
         $id = $property->getValue($entity);
-        $key = $id ? $className.':'.$id : $className.':'.uniqid();
+        $key = $id ? $className . ':' . $id : $className . ':' . uniqid();
         $this->entities[$entity] = $key;
         return $this->entities[$entity];
     }
@@ -155,7 +160,7 @@ class Collector extends Mapper
                 $prop = $object->getProperty($idName);
                 $prop->setAccessible(true);
                 $prop->setValue($entity, $id);
-                $this->entities[$entity] = $className.':'.$id;
+                $this->entities[$entity] = $className . ':' . $id;
             }
         }
         return $this->entities[$entity];

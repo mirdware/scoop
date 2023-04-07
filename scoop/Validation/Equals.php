@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 class Equals extends Rule
@@ -36,7 +37,9 @@ class Equals extends Rule
      */
     public function setValues($data)
     {
-        if (!$this->hasInputs) return;
+        if (!$this->hasInputs) {
+            return;
+        }
         $this->values = array();
         foreach ($this->inputs as $key => $value) {
             $value = is_numeric($key) ? $value : $key;
@@ -46,7 +49,9 @@ class Equals extends Rule
 
     public function validate($value)
     {
-        if (!$this->hasInputs) return $this->fail == $value;
+        if (!$this->hasInputs) {
+            return $this->fail == $value;
+        }
         foreach ($this->values as $key => $input) {
             if ($input !== $value) {
                 $this->fail = $this->inputs[$key];

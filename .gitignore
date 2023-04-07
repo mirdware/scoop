@@ -1,21 +1,79 @@
-vendor/*
-node_modules/*
 public/css/*
 public/js/*
 public/fonts/*
 app/storage/*
-$RECYCLE.BIN/*
-#app/config*
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+##### MacOS
+# General
 .DS_Store
+.AppleDouble
+.LSOverride
 .DS_Store?
-.vscode
+
+# Thumbnails
 ._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
 .Spotlight-V100
+.TemporaryItems
 .Trashes
-ehthumbs.db
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# Windows thumbnail cache files
 Thumbs.db
-package-lock.json
-*.lock
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+##### Backup
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# Log file - the following switch allows to specify the file that will be
+# used to write all messages from simulation:  -l <filename>
 *.log
+
+##### CVS
+/CVS/*
+**/CVS/*
+.cvsignore
+*/.cvsignore
+
+##### PuTTY
+# Private key
+*.ppk
+
+##### VisualStudioCode
+/.vscode/
+*.code-workspace
+
+##### Composer
+composer.phar
+/vendor/
+
+# Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control
+# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
+composer.lock
+
+#node
+/node_modules/
+package-lock.json
+
+#tests
+/.phpunit.cache/
+phpunit.xml
+
 *.architect~
 !.gitkeep

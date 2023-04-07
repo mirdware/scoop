@@ -1,5 +1,6 @@
 #!/usr/bin/env  php
 <?php
+
 if (php_sapi_name() !== 'cli') {
     exit;
 }
@@ -27,7 +28,7 @@ if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
         ->run($argv);
     } catch (Exception $ex) {
         \Scoop\Command::writeLine(
-            $ex->getMessage().($trace ? PHP_EOL.$ex->getTraceAsString() : ''),
+            $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : ''),
             \Scoop\Command\Color::RED
         );
     }
@@ -38,7 +39,7 @@ if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
     );
     echo PHP_EOL, 'Commands:', PHP_EOL;
     foreach ($commands as $command => $controller) {
-        echo $command, ' => ', \Scoop\Command::writeLine($controller.'.php', \Scoop\Command\Color::BLUE);
+        echo $command, ' => ', \Scoop\Command::writeLine($controller . '.php', \Scoop\Command\Color::BLUE);
     }
     echo PHP_EOL, 'Options:', PHP_EOL, '--trace => show exception stack when execute a command', PHP_EOL,
     PHP_EOL, 'Run app/ice COMMAND --help for more information', PHP_EOL;

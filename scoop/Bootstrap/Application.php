@@ -1,36 +1,40 @@
 <?php
+
 namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $request;
+    private $environment;
 
     public function __construct()
     {
-        $this->request = new \Scoop\Http\Request();
+        $this->environment = \Scoop\Context::getEnvironment();
         $this->enableCORS();
     }
 
     public function run()
     {
-        $response = \Scoop\Context::getEnvironment()->route($this->request);
-        gc_collect_cycles();
-        return $this->formatResponse($response);
-    }
-
-    public function showError($ex)
-    {
+        $request = new \Scoop\Http\Request();
         try {
-            if ($this->request->isAjax()) {
+            $response = $this->environment->route($request);
+            gc_collect_cycles();
+            return $this->formatResponse($response);
+        } catch (\Scoop\Http\Exception $ex) {
+            if ($request->isAjax()) {
                 $ex->addHeader('Content-Type: application/json');
             }
             return $this->formatResponse($ex->handle());
-        } catch (\UnderflowException $ex) {}
+        } catch (\Throwable $ex) {
+            $em = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
+            return $this->formatResponse($em->handle($ex, $request->isAjax()));
+        }
     }
 
     private function formatResponse($response)
     {
-        if ($response === null) return header('HTTP/1.0 204 No Response');
+        if ($response === null) {
+            return header('HTTP/1.0 204 No Response');
+        }
         if ($response instanceof \Scoop\View) {
             header('Content-Type:text/html');
             return $response->render();
@@ -44,8 +48,10 @@ class Application
 
     private function enableCORS()
     {
-        $cors = \Scoop\Context::getEnvironment()->getConfig('cors');
-        if (!$cors) return;
+        $cors = $this->environment->getConfig('cors');
+        if (!$cors) {
+            return;
+        }
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             $origin = isset($cors['origin']) ?
             array_map('trim', explode(',', $cors['origin'])) :

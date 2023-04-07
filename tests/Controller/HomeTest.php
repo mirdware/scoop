@@ -9,6 +9,9 @@ use Scoop\View;
 
 class HomeTest extends TestCase
 {
+    /**
+     * @covers \App\Controller\Home
+     */
     public function testShowViewQuote()
     {
         $repository = new QuoteArray();

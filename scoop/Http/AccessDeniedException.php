@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 class AccessDeniedException extends Exception
 {
     public function __construct($message = 'Forbidden', \Exception $previous = null)

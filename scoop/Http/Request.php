@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Http;
 
 class Request
@@ -49,10 +50,14 @@ class Request
 
     private function getByIndex($name, $res)
     {
-        if (!$name) return $res;
+        if (!$name) {
+            return $res;
+        }
         $name = explode('.', $name);
         foreach ($name as $key) {
-            if (!isset($res[$key])) return '';
+            if (!isset($res[$key])) {
+                return '';
+            }
             $res = $res[$key];
         }
         return $res;
@@ -70,7 +75,8 @@ class Request
     {
         if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
             \Scoop\Controller::redirect(
-                str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
+                str_replace('index.php', '', $_SERVER['REQUEST_URI']),
+                301
             );
         }
         $url = '/';
@@ -81,11 +87,12 @@ class Request
         return $url;
     }
 
-    private function setReferrer() {
+    private function setReferrer()
+    {
         $referrer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
         if (!$this->isAjax()) {
             $_SESSION['data-scoop'] = array(
-                'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)).$_SERVER['REQUEST_URI']
+                'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)) . $_SERVER['REQUEST_URI']
             );
         }
         return $referrer;
@@ -99,13 +106,15 @@ class Request
             $data = json_decode($data, true);
             return $data ? $this->purge($data) : array();
         }
-        foreach ($_FILES AS $name => $file) {
+        foreach ($_FILES as $name => $file) {
             $body[$name] = $file;
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return $body + $this->purge($_POST);
         }
-        if (!$data) return $body;
+        if (!$data) {
+            return $body;
+        }
         preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
         $boundary = $matches[1];
         $blocks = preg_split("/-+$boundary/", $data);

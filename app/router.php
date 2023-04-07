@@ -1,4 +1,5 @@
 <?php
+
 $_matches = array();
 
 /**
@@ -10,14 +11,14 @@ function finalize()
     if (defined('REWRITER_FINALIZED')) return false;
     define('REWRITER_FINALIZED', true);
     if (is_file($_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'])) {
-        $_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'].$_SERVER['SCRIPT_NAME'];
+        $_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
     }
     if (isset($_SERVER['QUERY_STRING'])) {
         $_GET = [];
         parse_str($_SERVER['QUERY_STRING'], $_GET);
     }
     $_SERVER['PHP_SELF'] = '';
-    $_SERVER['REQUEST_URI'] = '/'.str_replace('index.php?route=', '', $_SERVER['REQUEST_URI']);
+    $_SERVER['REQUEST_URI'] = '/' . str_replace('index.php?route=', '', $_SERVER['REQUEST_URI']);
     $queryStringPosition = strpos($_SERVER['REQUEST_URI'], '&');
     if ($queryStringPosition) {
         $_SERVER['REQUEST_URI'][$queryStringPosition] = '?';
@@ -95,12 +96,12 @@ function test($expression)
 
 set_environment($_SERVER['REQUEST_URI']);
 $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
-$page = __dir__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.trim($uri, '/');
+$page = __dir__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . trim($uri, '/');
 if (file_exists($page) && is_file($page)) {
     return false;
 }
 if (substr($uri, -1) !== '/') {
-    header('Location: '.$uri.'/');
+    header('Location: ' . $uri . '/');
     exit;
 }
 // Your rewrite rules here.

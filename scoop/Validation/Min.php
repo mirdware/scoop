@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 class Min extends Rule
@@ -13,6 +14,8 @@ class Min extends Rule
 
     public function validate($value)
     {
-        if (is_numeric($value)) return $value <= $this->min;
+        if (is_numeric($value)) {
+            return $value <= $this->min;
+        }
     }
 }

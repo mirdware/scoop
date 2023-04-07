@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 abstract class Rule

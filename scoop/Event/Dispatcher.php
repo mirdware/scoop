@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Event;
 
 class Dispatcher
@@ -14,7 +15,7 @@ class Dispatcher
     {
         $eventBase = 'Scoop\Event';
         if (!is_subclass_of($event, $eventBase)) {
-            throw new \InvalidArgumentException(get_class($event).' not implements '.$eventBase);
+            throw new \InvalidArgumentException(get_class($event) . ' not implements ' . $eventBase);
         }
         if ($event->isPropagationStopped()) {
             return $event;

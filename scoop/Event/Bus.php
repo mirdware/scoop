@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Event;
 
 class Bus

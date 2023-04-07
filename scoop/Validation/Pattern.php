@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 class Pattern extends Rule
@@ -13,6 +14,6 @@ class Pattern extends Rule
 
     public function validate($value)
     {
-        return preg_match('/'.$this->pattern.'/', $value);
+        return preg_match('/' . $this->pattern . '/', $value);
     }
 }

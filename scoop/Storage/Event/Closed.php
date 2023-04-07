@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\Event;
 
 class Closed extends \Scoop\Event

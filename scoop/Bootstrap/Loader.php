@@ -1,4 +1,7 @@
 <?php
+
+namespace Scoop\Bootstrap;
+
 class Loader
 {
     private $prefixLengthsPsr4 = array();
@@ -97,7 +100,7 @@ class Loader
             }
         } elseif (!isset($this->prefixDirsPsr4[$prefix])) {
             $length = strlen($prefix);
-            if ('\\' !== $prefix[$length - 1]) {
+            if ($prefix[$length - 1] !== '\\') {
                 throw new \InvalidArgumentException('A non-empty PSR-4 prefix must end with a namespace separator.');
             }
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
@@ -130,7 +133,7 @@ class Loader
             $this->fallbackDirsPsr4 = (array) $paths;
         } else {
             $length = strlen($prefix);
-            if ('\\' !== $prefix[$length - 1]) {
+            if ($prefix[$length - 1] !== '\\') {
                 throw new \InvalidArgumentException('A non-empty PSR-4 prefix must end with a namespace separator.');
             }
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
@@ -178,7 +181,7 @@ class Loader
 
     public function findFile($class)
     {
-        if ('\\' == $class[0]) {
+        if ($class[0] == '\\') {
             $class = substr($class, 1);
         }
         if (isset($this->classMap[$class])) {
@@ -204,9 +207,10 @@ class Loader
         $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
             foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
-                if (0 === strpos($class, $prefix)) {
+                if (strpos($class, $prefix) === 0) {
                     foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
-                        if (file_exists($file = $myLocation . $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
+                        $file = $myLocation . $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length);
+                        if (file_exists($file)) {
                             return $file;
                         }
                     }
@@ -218,7 +222,8 @@ class Loader
                 return $file;
             }
         }
-        if (false !== $pos = strrpos($class, '\\')) {
+        $pos = strrpos($class, '\\');
+        if ($pos !== false) {
             $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
                 . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
         } else {
@@ -226,7 +231,7 @@ class Loader
         }
         if (isset($this->prefixesPsr0[$first])) {
             foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
-                if (0 === strpos($class, $prefix)) {
+                if (strpos($class, $prefix) === 0) {
                     foreach ($dirs as $dir) {
                         if (file_exists($file = $myLocation . $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
                             return $file;

@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Log\Handler;
 
 class File extends \Scoop\Log\Handler
@@ -10,8 +11,8 @@ class File extends \Scoop\Log\Handler
         if (!$file) {
             $env = \Scoop\Context::getEnvironment();
             $file = $env->getConfig('storage', 'app/storage/')
-            .'logs/'.$env->getConfig('app.name')
-            .'-'.date('Y-m-d').'.log';
+            . 'logs/' . $env->getConfig('app.name')
+            . '-' . date('Y-m-d') . '.log';
         }
         $dir = dirname($file);
         if (!file_exists($dir)) {
@@ -24,6 +25,6 @@ class File extends \Scoop\Log\Handler
 
     public function handle($log)
     {
-        return file_put_contents($this->fileName, $this->format($log).PHP_EOL, FILE_APPEND);
+        return file_put_contents($this->fileName, $this->format($log) . PHP_EOL, FILE_APPEND);
     }
 }

@@ -1,7 +1,9 @@
 <?php
+
 namespace Scoop\View;
 
-abstract class Heritage {
+abstract class Heritage
+{
     private static $stack = array();
     private static $data;
 
@@ -30,7 +32,7 @@ abstract class Heritage {
         require Template::parse($parent);
         $index = count(self::$stack) - 1;
         $footer = &self::$stack[$index]['footer'];
-        $footer = trim(ob_get_contents()).$footer;
+        $footer = trim(ob_get_contents()) . $footer;
         ob_end_clean();
     }
 
@@ -58,7 +60,7 @@ abstract class Heritage {
     public static function getContent()
     {
         $item = array_pop(self::$stack);
-        $view = ob_get_contents().$item['footer'];
+        $view = ob_get_contents() . $item['footer'];
         ob_end_clean();
         return $view;
     }

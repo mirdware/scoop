@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Command;
 
 class Structure extends \Scoop\Command
@@ -39,27 +40,31 @@ class Structure extends \Scoop\Command
     {
         $options = array();
         $user = $this->getOption('user');
-        if ($user) $options['user'] = $user;
+        if ($user) {
+            $options['user'] = $user;
+        }
         $password = $this->getOption('password');
-        if ($password) $options['password'] = $password;
+        if ($password) {
+            $options['password'] = $password;
+        }
         return \Scoop\Context::connect($name, $options);
     }
 
-    function getFiles()
+    private function getFiles()
     {
-        $path = 'app/structs/'.$this->getOption('schema', '');
+        $path = 'app/structs/' . $this->getOption('schema', '');
         if (strrpos($path, '/') !== strlen($path) - 1) {
             $path .= '/';
         }
-        return $this->glob($path.'*.sql');
+        return $this->glob($path . '*.sql');
     }
 
     private function glob($pattern)
     {
         $files = glob($pattern);
-        $folders = glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT);
+        $folders = glob(dirname($pattern) . '/*', GLOB_ONLYDIR | GLOB_NOSORT);
         foreach ($folders as $dir) {
-            $files = array_merge($files, $this->glob($dir.'/'.basename($pattern)));
+            $files = array_merge($files, $this->glob($dir . '/' . basename($pattern)));
         }
         return $files;
     }

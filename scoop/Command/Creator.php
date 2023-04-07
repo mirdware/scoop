@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Command;
 
 class Creator extends \Scoop\Command
@@ -28,7 +29,7 @@ class Creator extends \Scoop\Command
         echo 'create new starter artifacts', PHP_EOL, PHP_EOL,
         'Commands:', PHP_EOL;
         foreach (self::$commands as $command => $controller) {
-            echo $command, ' => ', self::writeLine($controller.'.php', Color::BLUE);
+            echo $command, ' => ', self::writeLine($controller . '.php', Color::BLUE);
         }
         echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
     }

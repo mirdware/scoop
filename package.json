@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Simple Characteristics of Object Oriented PHP",
   "repository": {
     "type": "git",
@@ -13,11 +13,11 @@
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.20.2",
-    "@babel/plugin-proposal-decorators": "^7.20.2",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/core": "^7.21.4",
+    "@babel/plugin-proposal-decorators": "^7.21.0",
+    "@babel/preset-env": "^7.21.4",
     "babelify": "^10.0.0",
-    "browser-sync": "^2.27.10",
+    "browser-sync": "^2.29.1",
     "browserify": "^17.0.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -25,14 +25,15 @@
     "gulp-js-html-inject": "^0.0.1",
     "gulp-rename": "^2.0.0",
     "gulp-sourcemaps": "^3.0.0",
-    "gulp-stylus": "^2.7.1",
+    "gulp-stylus": "^3.0.0",
     "gulp-uglify": "^3.0.2",
     "nib": "^1.2.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
+    "@spawm/resource": "^0.1.1",
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.3.0"
+    "scalar": "^0.3.1"
   }
 }

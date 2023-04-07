@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\View;
 
 abstract class Service
@@ -13,7 +14,7 @@ abstract class Service
     public static function get($name)
     {
         if (!isset(self::$services[$name])) {
-            throw new \UnderflowException('No service '.$name.' registered');
+            throw new \UnderflowException('No service ' . $name . ' registered');
         }
         $service = self::$services[$name];
         if (is_string($service)) {

@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\Entity;
 
 abstract class Mapper

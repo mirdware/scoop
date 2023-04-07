@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\View;
 
 final class Template
@@ -16,8 +17,8 @@ final class Template
     public static function parse($templatePath)
     {
         $storage = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
-        $template = 'app/views/'.$templatePath.'.sdt.php';
-        $view = $storage.'cache/views/'.$templatePath.'.php';
+        $template = 'app/views/' . $templatePath . '.sdt.php';
+        $view = $storage . 'cache/views/' . $templatePath . '.php';
         if (is_readable($view)) {
             if (is_readable($template) && filemtime($template) > filemtime($view)) {
                 self::create($view, self::compile($template));
@@ -25,7 +26,7 @@ final class Template
         } elseif (is_readable($template)) {
             self::create($view, self::compile($template));
         } else {
-            throw new \UnderflowException('Unable to load view or template '.$templatePath);
+            throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
         return $view;
     }
@@ -42,18 +43,37 @@ final class Template
             'figcaption', 'figure', 'footer', 'form', 'h\d', 'header', 'hr', 'li', 'nav', 'noscript', 'ol', 'p',
             'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
         );
-        preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
+        preg_match(
+            '/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
+            $html,
+            $matches
+        );
         if (isset($matches[0])) {
             $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
             $head = preg_replace('/>\s+</', '><', $head);
-            $html = str_replace($matches[0], '<html'.$matches[1].'><head>'.$head.'</head><body>', $html);
+            $html = str_replace($matches[0], '<html' . $matches[1] . '><head>' . $head . '</head><body>', $html);
         }
         $html = preg_replace(
-            array('/\s+/', '/<!--.*?-->/s', '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/', '/(;|=)\s*(\"|\')/', '/\s*(\/?)\s*>/', '/<\s/'),
-            array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<'), $html
+            array(
+                '/\s+/',
+                '/<!--.*?-->/s',
+                '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/',
+                '/(;|=)\s*(\"|\')/',
+                '/\s*(\/?)\s*>/',
+                '/<\s/'
+            ),
+            array(
+                ' ',
+                '',
+                '</${1}></${2}>',
+                '${1}${2}',
+                '${1}>',
+                '<'
+            ),
+            $html
         );
         foreach ($blockElements as $element) {
-            $html = preg_replace('/[\s\r\n]*(<\/?'.$element.'[^>]*>)[\s\r\n]*/is', '${1}', $html);
+            $html = preg_replace('/[\s\r\n]*(<\/?' . $element . '[^>]*>)[\s\r\n]*/is', '${1}', $html);
         }
         return $html;
     }
@@ -85,37 +105,56 @@ final class Template
     {
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
-        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+|\$\w+)\])*';
-        $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
-        $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
-        $safeExp = $quotes.'|'.$conditional.'|'.$fn;
+        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[(' . $quotes . '|\d+|\$\w+)\])*';
+        $conditional = $safeChars . '|' . $vars . '|[<>!]|and|or';
+        $fn = '\((' . $quotes . '|' . $safeChars . '|' . $vars . '|,|\[.*\]|array\(.*\))*\)';
+        $safeExp = $quotes . '|' . $conditional . '|' . $fn;
         $uri = '\'([\w\/-]+)\'';
         $line = preg_replace(array(
-            '/@inject ([\\\\\w]+)#(\w+)/',
-            '/@extends '.$uri.'/',
-            '/@import '.$uri.'/',
-            '/@if (('.$safeExp.')+)/',
-            '/@elseif (('.$safeExp.')+)/',
-            '/@while (('.$conditional.'|'.$fn.')+)/',
-            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
-            '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
+            "/@inject ([\\\\\w]+)#(\w+)/",
+            "/@extends $uri/",
+            "/@import $uri/",
+            "/@if (($safeExp)+)/",
+            "/@elseif (($safeExp)+)/",
+            "/@while (($conditional|$fn)+)/",
+            "/@foreach (($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/",
+            "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
         ), array(
-            '[php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') php]',
-            '[php '.self::HERITAGE.'::extend(\'${1}\') php]',
-            '[php require '.self::HERITAGE.'::getCompilePath(\'${1}\') php]',
+            '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
+            '[php ' . self::HERITAGE . '::extend(\'${1}\') php]',
+            '[php require ' . self::HERITAGE . '::getCompilePath(\'${1}\') php]',
             '[php if(${1}): php]',
             '[php elseif(${1}): php]',
             '[php while(${1}): php]',
             '[php foreach(${1}): php]',
             '[php for(${1}): php]'
         ), $line, 1, $count);
-        if ($count !== 0) return $line;
+        if ($count !== 0) {
+            return $line;
+        }
         $line = str_replace(
-            array(':if', ':foreach', ':for', ':while', '@else', '@sprout'),
-            array('[php endif php]', '[php endforeach php]', '[php endfor php]', '[php endwhile php]', '[php else: php]', '[php '.self::HERITAGE.'::sprout() php]'),
-            $line, $count
+            array(
+                ':if',
+                ':foreach',
+                ':for',
+                ':while',
+                '@else',
+                '@sprout'
+            ),
+            array(
+                '[php endif php]',
+                '[php endforeach php]',
+                '[php endfor php]',
+                '[php endwhile php]',
+                '[php else: php]',
+                '[php ' . self::HERITAGE . '::sprout() php]'
+            ),
+            $line,
+            $count
         );
-        if ($count !== 0) return $line;
+        if ($count !== 0) {
+            return $line;
+        }
         return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line);
     }
 
@@ -123,7 +162,7 @@ final class Template
     {
         preg_match_all('/\[php.*?php\]/is', $content, $tagsFound);
         foreach ($tagsFound[0] as $search) {
-            $replace = preg_replace('/#(\w*)->/is', self::SERVICE.'::get(\'${1}\')->', $search);
+            $replace = preg_replace('/#(\w*)->/is', self::SERVICE . '::get(\'${1}\')->', $search);
             $content = str_replace($search, $replace, $content);
         }
         return $content;
@@ -145,10 +184,10 @@ final class Template
         $matches += array(':', ';');
         $content = str_replace($search, $matches, $content);
         $path = explode('/', $viewName);
-        $count = count($path)-1;
+        $count = count($path) - 1;
         $dir = '';
-        for ($i=0; $i<$count; $i++) {
-            $dir .= $path[$i].'/';
+        for ($i = 0; $i < $count; $i++) {
+            $dir .= $path[$i] . '/';
             if (!file_exists($dir)) {
                 mkdir($dir, 0700);
             }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Log;
 
 class Logger
@@ -53,8 +54,10 @@ class Logger
 
     public function log($level, $message, $context = array())
     {
-        $levelClass = '\Scoop\Log\Level::'.strtoupper($level);
-        if (!defined($levelClass)) throw new \InvalidArgumentException($level.' not support level');
+        $levelClass = '\Scoop\Log\Level::' . strtoupper($level);
+        if (!defined($levelClass)) {
+            throw new \InvalidArgumentException($level . ' not support level');
+        }
         if (isset($this->handlers[$level])) {
             $handler = \Scoop\Context::inject($this->handlers[$level]);
             return $handler->handle(array(
@@ -70,9 +73,9 @@ class Logger
         $replace = array();
         foreach ($context as $key => $value) {
             if (!is_object($value)) {
-                $replace['{'.$key.'}'] = var_export($value, true);
+                $replace['{' . $key . '}'] = var_export($value, true);
             } elseif (method_exists($value, '__toString')) {
-                $replace['{'.$key.'}'] = $value;
+                $replace['{' . $key . '}'] = $value;
             }
         }
         return strtr($message, $replace);

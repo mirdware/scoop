@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Container;
 
 class Router
@@ -24,7 +25,9 @@ class Router
                 $this->intercept($request);
                 $controllerReflection = new \ReflectionClass($controller);
                 if (!$controllerReflection->hasMethod($method)) {
-                    throw new \Scoop\Http\MethodNotAllowedException($controllerReflection->getName().' not implement '.$method.' method');
+                    throw new \Scoop\Http\Exception\MethodNotAllowed(
+                        $controllerReflection->getName() . ' not implement ' . $method . ' method'
+                    );
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($route['params']);
@@ -36,7 +39,7 @@ class Router
                 }
             }
         }
-        throw new \Scoop\Http\NotFoundException();
+        throw new \Scoop\Http\Exception\NotFound();
     }
 
     public function intercept($request)
@@ -58,25 +61,27 @@ class Router
         }
         for ($i = 0; $i < $count; $i++) {
             if (isset($params[$i])) {
-                $url .= self::encodeURL(trim($params[$i])).$path[$i];
+                $url .= self::encodeURL(trim($params[$i])) . $path[$i];
             }
         }
-        if (strrpos($url, '/') !== strlen($url)-1) {
+        if (strrpos($url, '/') !== strlen($url) - 1) {
             $url .= '/';
         }
-        return ROOT.substr($url, 1).$this->formatQueryString($query);
+        return ROOT . substr($url, 1) . $this->formatQueryString($query);
     }
 
     public function formatQueryString($query)
     {
-        if (!is_array($query)) return '';
+        if (!is_array($query)) {
+            return '';
+        }
         $queryString = '';
-        foreach ($query AS $name => $value) {
+        foreach ($query as $key => $value) {
             if ($value) {
-                $queryString .= '&'.filter_var($name, FILTER_UNSAFE_RAW).'='.filter_var($value, FILTER_UNSAFE_RAW);
+                $queryString .= '&' . filter_var($key, FILTER_UNSAFE_RAW) . '=' . filter_var($key, FILTER_UNSAFE_RAW);
             }
         }
-        return $queryString ? '?'.substr($queryString, 1) : '';
+        return $queryString ? '?' . substr($queryString, 1) : '';
     }
 
     public function getCurrentRoute()
@@ -88,16 +93,16 @@ class Router
     {
         if (is_array($controller)) {
             if (!isset($controller[$method])) {
-                throw new \Scoop\Http\MethodNotAllowedException('There not controller for '.$method.' method');
-            };
+                throw new \Scoop\Http\Exception\MethodNotAllowed('There not controller for ' . $method . ' method');
+            }
             $controller = $controller[$method];
         }
         if (!class_exists($controller)) {
-            throw new \Scoop\Http\NotFoundException('Class '.$controller.' not found');
+            throw new \Scoop\Http\Exception\NotFound('Class ' . $controller . ' not found');
         }
         $baseController = '\Scoop\Controller';
         if (!is_subclass_of($controller, $baseController)) {
-            throw new \UnexpectedValueException($controller.' not implement '.$baseController);
+            throw new \UnexpectedValueException($controller . ' not implement ' . $baseController);
         }
         return \Scoop\Context::inject($controller);
     }
@@ -127,7 +132,7 @@ class Router
         foreach ($this->routes as $key => $route) {
             if (
                 isset($route['controller']) &&
-                preg_match('/^'.self::normalizeURL($route['url']).'$/', $url, $route['params'])
+                preg_match('/^' . self::normalizeURL($route['url']) . '$/', $url, $route['params'])
             ) {
                 $matches[$key] = $route;
             }
@@ -141,7 +146,7 @@ class Router
         foreach ($this->routes as $route) {
             if (
                 isset($route['proxy']) &&
-                preg_match('/^'.self::normalizeURL($route['url']).'/', $url)
+                preg_match('/^' . self::normalizeURL($route['url']) . '/', $url)
             ) {
                 $matches[] = $route;
             }
@@ -154,13 +159,13 @@ class Router
         if (!isset($route['url'])) {
             throw new \OutOfBoundsException('url\'s key has not been defined for the route');
         }
-        $route['url'] = $oldURL.$route['url'];
+        $route['url'] = $oldURL . $route['url'];
         if (isset($route['routes'])) {
             $routes = $route['routes'];
             if (is_string($routes)) {
                 $routes = \Scoop\Context::getEnvironment()->loadLazily($routes);
                 if (is_string($routes)) {
-                    throw new \InvalidArgumentException('routes '.$routes.' not supported');
+                    throw new \InvalidArgumentException('routes ' . $routes . ' not supported');
                 }
             }
             foreach ($routes as $k => $r) {
@@ -188,29 +193,41 @@ class Router
             '/(\d*)/?',
             '([\w\+\-\s\.]*)',
             '(\d*)'
-        ),$url).((substr($url, -1) === '/')? '?': '/?');
+        ), $url) . ((substr($url, -1) === '/') ? '?' : '/?');
         return addcslashes($url, '/');
     }
 
     private static function encodeURL($str)
     {
         $str = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'), 'a', $str
+            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
+            'a',
+            $str
         );
         $str = str_replace(
-            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'), 'e', $str
+            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
+            'e',
+            $str
         );
         $str = str_replace(
-            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'), 'i', $str
+            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
+            'i',
+            $str
         );
         $str = str_replace(
-            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'), 'o', $str
+            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
+            'o',
+            $str
         );
         $str = str_replace(
-            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'), 'u', $str
+            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
+            'u',
+            $str
         );
         $str = str_replace(
-            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'), array('-', 'n', 'N', 'c', 'C'), $str
+            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'),
+            array('-', 'n', 'N', 'c', 'C'),
+            $str
         );
         return urlencode($str);
     }

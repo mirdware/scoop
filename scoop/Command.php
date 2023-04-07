@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop;
 
 abstract class Command
@@ -25,7 +26,9 @@ abstract class Command
     {
         $styles = func_get_args();
         $msg = array_shift($styles);
-        if (!is_string($msg)) throw new \InvalidArgumentException('first parameter should be string');
+        if (!is_string($msg)) {
+            throw new \InvalidArgumentException('first parameter should be string');
+        }
         echo "\e[", implode(';', $styles), 'm', $msg, "\e[0m";
     }
 
@@ -47,9 +50,9 @@ abstract class Command
         return in_array($name, $this->flags);
     }
 
-    protected abstract function execute();
+    abstract protected function execute();
 
-    protected abstract function help();
+    abstract protected function help();
 
     private function setArguments($args)
     {
@@ -61,7 +64,9 @@ abstract class Command
             }
             if (strpos($arg, '--') !== 0) {
                 $arg = substr($arg, 1);
-                if ($arg) $this->flags = str_split($arg);
+                if ($arg) {
+                    $this->flags = str_split($arg);
+                }
                 continue;
             }
             $arg = substr($arg, 2);

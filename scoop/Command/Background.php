@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Command;
 
 abstract class Background

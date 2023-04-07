@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Bootstrap;
 
 class Environment
@@ -18,12 +19,14 @@ class Environment
             self::$sessionInit = session_start();
         }
         $this->config = array(
-            'base' => require $configPath.'.php',
+            'base' => require $configPath . '.php',
             'data' => array()
         );
         if (isset($_SERVER['HTTP_HOST'])) {
-            $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
-            define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+            $http = !empty($_SERVER['HTTPS']) &&
+                $_SERVER['HTTPS'] !== 'off' ||
+                $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
+            define('ROOT', $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
         self::$loaders += $this->getConfig('loaders', array());
     }
@@ -36,7 +39,9 @@ class Environment
         $data = explode('.', $name);
         $res = $this->config['base'];
         foreach ($data as $key) {
-            if (!isset($res[$key])) return $default;
+            if (!isset($res[$key])) {
+                return $default;
+            }
             if (is_string($res[$key])) {
                 if ($key === 'providers') {
                     throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
@@ -66,7 +71,6 @@ class Environment
     public function route($request)
     {
         $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
-        $this->registerServices(array('config' => $this, 'request' => $request));
         \Scoop\Controller::setRequest($request);
         \Scoop\View::setRequest($request);
         return $this->router->route($request);
@@ -80,8 +84,10 @@ class Environment
             $query = null;
         }
         if (empty($args)) {
-            $currentPath = '//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-            if (!$query) $query = array();
+            $currentPath = '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            if (!$query) {
+                $query = array();
+            }
             return $this->mergeQuery($currentPath, $query);
         }
         return $this->router->getURL(array_shift($args), $args, $query);
@@ -102,24 +108,11 @@ class Environment
         return self::$version;
     }
 
-    /**
-     * @deprecated
-     */
-    protected function registerServices($services)
-    {
-        foreach ($services as $name => $service) {
-            is_array($service) ?
-                \Scoop\Context::registerService($name, array_shift($service), $service) :
-                \Scoop\Context::registerService($name, $service);
-        }
-        return $this;
-    }
-
     private function getQuery($params)
     {
         $query = array();
         $params = explode('&', $params);
-        foreach ($params AS $param) {
+        foreach ($params as $param) {
             $param = explode('=', $param);
             $query[$param[0]] = $param[1];
         }
@@ -132,6 +125,6 @@ class Environment
         if (isset($url[1])) {
             $query += $this->getQuery($url[1]);
         }
-        return $url[0].$this->router->formatQueryString($query);
+        return $url[0] . $this->router->formatQueryString($query);
     }
 }

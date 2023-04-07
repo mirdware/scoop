@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\Entity;
 
 class Relation extends Mapper
@@ -23,18 +24,20 @@ class Relation extends Mapper
             $property = $object->getProperty($name);
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
-            if (!$relationEntity) continue;
+            if (!$relationEntity) {
+                continue;
+            }
             if (is_array($relationEntity)) {
                 $mapperKey = null;
                 if ($relation[2] === self::MANY_TO_MANY) {
                     $classEntity = $object->getName();
-                    $mapperKey = $classEntity.':'.$relation[0];
+                    $mapperKey = $classEntity . ':' . $relation[0];
                     $isFirstThis = true;
                     if (!isset($this->map[$mapperKey])) {
-                        $mapperKey = $relation[0].':'.$classEntity;
+                        $mapperKey = $relation[0] . ':' . $classEntity;
                         $isFirstThis = false;
                         if (!isset($this->map[$mapperKey])) {
-                            throw new \UnexpectedValueException('Mapper for relation '.$mapperKey.' not exist');
+                            throw new \UnexpectedValueException('Mapper for relation ' . $mapperKey . ' not exist');
                         }
                     }
                 }
@@ -73,7 +76,9 @@ class Relation extends Mapper
             $property = $object->getProperty($name);
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
-            if (!$relationEntity) continue;
+            if (!$relationEntity) {
+                continue;
+            }
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
                     $this->collector->remove($e);
@@ -107,7 +112,9 @@ class Relation extends Mapper
             foreach ($this->map[$key]['columns'] as $name => $column) {
                 if (isset($column['foreign'])) {
                     $index = array_search($column['foreign'], $entities);
-                    if ($index !== false) $fields[$index] = $name;
+                    if ($index !== false) {
+                        $fields[$index] = $name;
+                    }
                 }
             }
             ksort($fields);

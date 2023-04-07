@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage;
 
 class SQO
@@ -14,21 +15,23 @@ class SQO
     public function __construct($table, $alias = '', $connectionName = 'default')
     {
         $this->isReader = is_a($table, '\Scoop\Storage\SQO\Reader');
-        $this->table = $this->isReader ? '('.$table.')' : $table;
-        $this->aliasTable = $this->table.' '.$alias;
+        $this->table = $this->isReader ? '(' . $table . ')' : $table;
+        $this->aliasTable = $this->table . ' ' . $alias;
         $this->connectionName = $connectionName;
     }
 
     public function create($fields, SQO\Reader $select = null)
     {
-        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support CREATE');
-        $query = 'INSERT INTO '.$this->table;
+        if ($this->isReader) {
+            throw new \DomainException('Subquery on FROM clausule not support CREATE');
+        }
+        $query = 'INSERT INTO ' . $this->table;
         $values = $select;
         if (array_keys($fields) !== range(0, count($fields) - 1)) {
             $values = array_values($fields);
             $fields = array_keys($fields);
         }
-        $query .= ' ('.implode(',', $fields).') VALUES ';
+        $query .= ' (' . implode(',', $fields) . ') VALUES ';
         return new SQO\Factory($query, $values, $fields, $this);
     }
 
@@ -36,25 +39,27 @@ class SQO
     {
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
-        $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
+        $query = 'SELECT ' . $fields . ' FROM ' . $this->aliasTable;
         return new SQO\Reader($query, $this);
     }
 
     public function update($fields)
     {
-        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support UPDATE');
+        if ($this->isReader) {
+            throw new \DomainException('Subquery on FROM clausule not support UPDATE');
+        }
         $operators = array('+', '-', '/', '*', '%');
         $fields = $this->nullify($fields);
-        $query = 'UPDATE '.$this->table.' SET ';
+        $query = 'UPDATE ' . $this->table . ' SET ';
         foreach ($fields as $key => $value) {
             $lastChar = substr($key, -1);
             if (in_array($lastChar, $operators)) {
                 unset($fields[$key]);
                 $key = substr($key, 0, -1);
                 $fields[$key] = $value;
-                $query .= $key.' = '.$key.' '.$lastChar.' :'.$key.', ';
+                $query .= $key . ' = ' . $key . ' ' . $lastChar . ' :' . $key . ', ';
             } else {
-                $query .= $key.' = :'.$key.', ';
+                $query .= $key . ' = :' . $key . ', ';
             }
         }
         return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this, $fields);
@@ -62,8 +67,10 @@ class SQO
 
     public function delete()
     {
-        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support DELETE');
-        $query = 'DELETE FROM '.$this->table;
+        if ($this->isReader) {
+            throw new \DomainException('Subquery on FROM clausule not support DELETE');
+        }
+        $query = 'DELETE FROM ' . $this->table;
         return new SQO\Filter($query, self::DELETE, $this);
     }
 
@@ -93,10 +100,10 @@ class SQO
         }
         foreach ($args as $key => &$value) {
             if ($value instanceof SQO\Reader) {
-                $value = '('.$value.')';
+                $value = '(' . $value . ')';
             }
             if (!is_numeric($key)) {
-                $value .= ' AS '.$key;
+                $value .= ' AS ' . $key;
             }
         }
         return $args;

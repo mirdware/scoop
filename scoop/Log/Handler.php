@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Log;
 
 abstract class Handler
@@ -14,5 +15,5 @@ abstract class Handler
         return $output;
     }
 
-    public abstract function handle($log);
+    abstract public function handle($log);
 }

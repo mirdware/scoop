@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\View;
 
 /**
@@ -28,9 +29,9 @@ class Message implements Component
         $type = self::$props['type'];
         $msg = self::$props['msg'];
         return Template::clearHTML('
-        <div id="msg" data-attr="className:type" class="'.$type.'">
+        <div id="msg" data-attr="className:type" class="' . $type . '">
             <i class="close"></i>
-            <span data-bind="msg">'.$msg.'</span>
+            <span data-bind="msg">' . $msg . '</span>
         </div>');
     }
 
@@ -52,7 +53,7 @@ class Message implements Component
     {
         $class = new \ReflectionClass(get_class());
         if (!in_array($type, $class->getConstants())) {
-            throw new \UnexpectedValueException('Error building the message [type '.$type.' rejected].');
+            throw new \UnexpectedValueException('Error building the message [type ' . $type . ' rejected].');
         }
         self::$props = array('type' => $type, 'msg' => $msg);
         $_SESSION['data-scoop']['message'] = self::$props;

@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 class ConflictException extends Exception
 {
     public function __construct($message = 'Bad Indexed', \Exception $previous = null)

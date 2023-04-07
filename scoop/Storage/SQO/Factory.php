@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\SQO;
 
 final class Factory
@@ -62,11 +63,11 @@ final class Factory
     public function __toString()
     {
         if ($this->isReader) {
-            return $this->query.' '.$this->values;
+            return $this->query . ' ' . $this->values;
         }
-        $numRows = count($this->values)/$this->numFields;
-        $placeholder = '('.implode(',', array_fill(0, $this->numFields, '?')).')';
+        $numRows = count($this->values) / $this->numFields;
+        $placeholder = '(' . implode(',', array_fill(0, $this->numFields, '?')) . ')';
         $values = implode(',', array_fill(0, $numRows, $placeholder));
-        return $this->query.$values;
+        return $this->query . $values;
     }
 }

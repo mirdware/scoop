@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 abstract class Exception extends \Exception
 {
     private $headers;
@@ -11,11 +15,11 @@ abstract class Exception extends \Exception
     {
         parent::__construct($message, $code, $previous);
         $environment = \Scoop\Context::getEnvironment();
-        $title = $environment->getConfig('exceptions.'.$code.'.title');
-        $path =  $environment->getConfig('exceptions.'.$code.'.view');
+        $title = $environment->getConfig('exceptions.' . $code . '.title');
+        $path =  $environment->getConfig('exceptions.' . $code . '.view');
         $this->headers = $headers;
         $this->title = $title ? $title : 'Error report';
-        $this->path = $path ? 'exceptions/'.$path : 'exceptions/default';
+        $this->path = $path ? 'exceptions/' . $path : 'exceptions/default';
     }
 
     public function addHeader($header)

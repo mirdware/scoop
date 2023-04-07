@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 class MinLength extends Rule

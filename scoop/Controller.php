@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop;
 
 abstract class Controller
@@ -33,11 +34,11 @@ abstract class Controller
             $config = \Scoop\Context::getEnvironment();
             $url = $config->getURL($url);
         }
-        header('Location:'.$url);
+        header('Location:' . $url);
         exit;
     }
 
-    protected final function getRequest()
+    final protected function getRequest()
     {
         return self::$request;
     }
@@ -56,6 +57,7 @@ abstract class Controller
 
     /**
      * Atajo para lanzar una excepción 404 desde el controlador.
+     * @deprecated 7.1
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\NotFoundException
      */
@@ -66,6 +68,7 @@ abstract class Controller
 
     /**
      * Atajo para lanzar una excepción 403 desde el controlador.
+     * @deprecated 7.1
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\accessDeniedException
      */
@@ -83,9 +86,13 @@ abstract class Controller
     protected function validate($validator, $data)
     {
         $errors = $validator->validate($data);
-        if (empty($errors)) return $validator->getData();
+        if (empty($errors)) {
+            return $validator->getData();
+        }
+        header('HTTP/1.0 400 Bad Request');
         if (self::$request->isAjax()) {
-            throw new \Scoop\Http\BadRequestException(json_encode($errors));
+            header('Content-Type: application/json');
+            exit (json_encode(array('code' => 400, 'message' => $errors)));
         }
         $_SESSION['data-scoop'] += array(
             'body' => self::$request->getBody(),
@@ -93,16 +100,5 @@ abstract class Controller
             'error' => $errors
         );
         $this->goBack();
-    }
-
-    /**
-     * Obtiene el servicio especificado por el usuario.
-     * @deprecated
-     * @param string $serviceName Nombre del servicio a obtener.
-     * @return object Servicio a obtener.
-     */
-    protected function inject($serviceName)
-    {
-        return \Scoop\Context::getService($serviceName);
     }
 }

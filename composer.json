@@ -34,7 +34,7 @@
     "scripts": {
         "test": [
             "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
-            "./vendor/bin/phpunit tests"
+            "./vendor/bin/phpunit tests --colors=always"
         ],
         "fix": "./vendor/bin/phpcbf -p ./src --standard=app/phpcs.xml"
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop;
 
 class Validator
@@ -86,7 +87,7 @@ class Validator
     public function __call($name, $args)
     {
         if (!isset(self::$customRules[$name])) {
-            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::'.$name.'()');
+            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::' . $name . '()');
         }
         $class = new \ReflectionClass(self::$customRules[$name]);
         $this->rules[] = $class->newInstanceArgs($args);
@@ -102,7 +103,7 @@ class Validator
         foreach ($rules as $className) {
             $classRule = '\Scoop\Validation\Rule';
             if (!is_subclass_of($className, $classRule)) {
-                throw new \UnexpectedValueException($className.' not implement '.$classRule);
+                throw new \UnexpectedValueException($className . ' not implement ' . $classRule);
             }
             self::$customRules[$className::getName()] = $className;
         }
@@ -152,7 +153,8 @@ class Validator
      * @param string $value Valor del campo.
      * @return string Mesaje formateado.
      */
-    private function getMessage($rule, $params, $value) {
+    private function getMessage($rule, $params, $value)
+    {
         $name = $rule->getName();
         if ($name === 'required' && $value === null) {
             $name = 'on';
@@ -173,7 +175,7 @@ class Validator
         if (isset(self::$msg[$rule])) {
             $keys = array_keys($params);
             foreach ($keys as &$key) {
-                $key = '{'.$key.'}';
+                $key = '{' . $key . '}';
             }
             return str_replace($keys, $params, self::$msg[$rule]);
         }

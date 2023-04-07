@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\Entity;
 
 class Manager
@@ -31,8 +32,8 @@ class Manager
             $this->collector->add($entity);
             $this->relations->add($entity, $object, $this->filterRelations(
                 $mapper['relations'],
-                array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY))
-            );
+                array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY)
+            ));
             return;
         }
         $this->collector->add($entity);
@@ -68,7 +69,7 @@ class Manager
     private function getMapper($classEntity)
     {
         if (!isset($this->map[$classEntity])) {
-            throw new \InvalidArgumentException($classEntity.' not mapper configured');
+            throw new \InvalidArgumentException($classEntity . ' not mapper configured');
         }
         return $this->map[$classEntity];
     }

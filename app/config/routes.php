@@ -1,4 +1,5 @@
 <?php
+
 use App\Controller\Home;
 
 return array(

@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 class NotFoundException extends Exception
 {
     public function __construct($message = 'Not Found', \Exception $previous = null)

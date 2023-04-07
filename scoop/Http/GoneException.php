@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 class GoneException extends Exception
 {
     public function __construct($message = 'Gone', \Exception $previous = null)

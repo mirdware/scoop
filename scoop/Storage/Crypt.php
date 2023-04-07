@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage;
 
 class Crypt
@@ -20,12 +21,12 @@ class Crypt
         $tag = '';
         $encryptedstring = openssl_encrypt($string, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16);
         if ($this->encoding === 'base64') {
-            return base64_encode($keysalt.$iv.$encryptedstring.$tag);
+            return base64_encode($keysalt . $iv . $encryptedstring . $tag);
         }
-        if($this->encoding === 'hex') {
-            return bin2hex($keysalt.$iv.$encryptedstring.$tag);
+        if ($this->encoding === 'hex') {
+            return bin2hex($keysalt . $iv . $encryptedstring . $tag);
         }
-        return $keysalt.$iv.$encryptedstring.$tag;
+        return $keysalt . $iv . $encryptedstring . $tag;
     }
 
     public function decrypt($string)

@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\SQO;
 
 class Reader extends Filter
@@ -18,17 +19,17 @@ class Reader extends Filter
     {
         $simpleType = strtoupper($using);
         if ($simpleType === 'CROSS' || $simpleType === 'NATURAL') {
-            $this->from[] = ' '.$simpleType.' JOIN '.$table;
+            $this->from[] = ' ' . $simpleType . ' JOIN ' . $table;
             return $this;
         }
         $type = strtoupper($type);
         if ($type !== 'INNER') {
             $type .= ' OUTER';
         }
-        $this->from[] = ' '.$type.' JOIN '.$table.(
+        $this->from[] = ' ' . $type . ' JOIN ' . $table . (
             preg_match('/\s*([<>!=]{1,2}|NOT ?LIKE)\s*/', $using) ?
-                ' ON('.$using.')' :
-                ' USING('.$using.')'
+                ' ON(' . $using . ')' :
+                ' USING(' . $using . ')'
         );
         return $this;
     }
@@ -55,7 +56,7 @@ class Reader extends Filter
         $args = func_get_args();
         $type = strtoupper($args[$numArgs - 1]);
         if ($type === 'ASC' || $type === 'DESC') {
-            $this->orderType = ' '.$type;
+            $this->orderType = ' ' . $type;
             array_pop($args);
         }
         $this->order += array_map('trim', $args);
@@ -76,39 +77,45 @@ class Reader extends Filter
 
     public function limit($offset, $limit = null)
     {
-        $this->limit = ' LIMIT '.($limit === null ? $offset : $limit.' OFFSET '.$offset);
+        $this->limit = ' LIMIT ' . ($limit === null ? $offset : $limit . ' OFFSET ' . $offset);
         return $this;
     }
 
     public function __toString()
     {
         return parent::__toString()
-            .$this->getGroup()
-            .$this->getHaving()
-            .$this->getOrder()
-            .$this->limit;
+            . $this->getGroup()
+            . $this->getHaving()
+            . $this->getOrder()
+            . $this->limit;
     }
 
     private function getOrder()
     {
-        if (empty($this->order)) return '';
+        if (empty($this->order)) {
+            return '';
+        }
         foreach ($this->order as $key => $element) {
             if (!preg_match('/\sASC|DESC$/i', $element)) {
-                $this->order[$key] = $element.$this->orderType;
+                $this->order[$key] = $element . $this->orderType;
             }
         }
-        return ' ORDER BY '.implode(', ', $this->order);
+        return ' ORDER BY ' . implode(', ', $this->order);
     }
 
     private function getHaving()
     {
-        if (empty($this->having)) return '';
-        return ' HAVING '.$this->having;
+        if (empty($this->having)) {
+            return '';
+        }
+        return ' HAVING ' . $this->having;
     }
 
     private function getGroup()
     {
-        if (empty($this->group)) return '';
-        return ' GROUP BY '.implode(', ', $this->group);
+        if (empty($this->group)) {
+            return '';
+        }
+        return ' GROUP BY ' . implode(', ', $this->group);
     }
 }

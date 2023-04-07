@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Validation;
 
 class Max extends Rule
@@ -13,6 +14,8 @@ class Max extends Rule
 
     public function validate($value)
     {
-        if (is_numeric($value)) return $value <= $this->max;
+        if (is_numeric($value)) {
+            return $value <= $this->max;
+        }
     }
 }

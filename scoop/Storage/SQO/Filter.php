@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Storage\SQO;
 
 class Filter
@@ -71,8 +72,8 @@ class Filter
     public function __toString()
     {
         return $this->query
-            .implode('', $this->from)
-            .$this->getRules();
+            . implode('', $this->from)
+            . $this->getRules();
     }
 
     protected function getParamsAllowed($sql)
@@ -98,21 +99,23 @@ class Filter
                     break;
                 }
                 if (is_array($this->params[$name])) {
-                    $rules[$key] = str_replace(':'.$name, $this->formatQueryArray($name), $rule);
+                    $rules[$key] = str_replace(':' . $name, $this->formatQueryArray($name), $rule);
                 }
             }
         }
         $rules = array_merge($this->restrictions, $rules);
-        if (empty($rules)) return '';
-        return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
+        if (empty($rules)) {
+            return '';
+        }
+        return ' WHERE (' . implode(') ' . $this->connector . ' (', $rules) . ')';
     }
 
     private function formatQueryArray($name)
     {
         $rule = '';
         foreach ($this->params[$name] as $index => $value) {
-            $this->params[$name.$index] = $value;
-            $rule .= ':'.$name.$index.',';
+            $this->params[$name . $index] = $value;
+            $rule .= ':' . $name . $index . ',';
         }
         unset($this->params[$name]);
         return substr($rule, 0, -1);

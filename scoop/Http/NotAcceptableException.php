@@ -1,6 +1,10 @@
 <?php
+
 namespace Scoop\Http;
 
+/**
+ * @deprecated 7.1
+ */
 class NotAcceptableException extends Exception
 {
     public function __construct($message = 'Not Acceptable', \Exception $previous = null)

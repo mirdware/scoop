@@ -23,5 +23,8 @@ export default class Overlay {
 
   close() {
     this.$dom.style.display = '';
+    this.$dom.eventListenerList.forEach(
+      listener => this.$dom.removeEventListener(listener.name, listener.fn, listener.opt)
+    );
   }
 }

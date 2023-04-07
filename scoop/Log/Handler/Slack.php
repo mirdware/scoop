@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Log\Handler;
 
 class Slack extends \Scoop\Log\Handler

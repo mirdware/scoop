@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Bootstrap\Loader;
 
 class Json

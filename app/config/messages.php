@@ -1,4 +1,5 @@
 <?php
+
 return array(
     'error' => array(
         'required' => 'Complete este campo',

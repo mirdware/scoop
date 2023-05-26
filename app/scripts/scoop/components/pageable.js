@@ -1,4 +1,5 @@
-import { Resource, Component } from 'scalar';
+import { Component } from 'scalar';
+import Resource from '@spawm/resource';
 import ModalService from '../services/Modal';
 import FormService from '../services/Form';
 import Search from './search';
@@ -65,7 +66,7 @@ async function openModal(e, $) {
   const target = e.currentTarget;
   const _modal = $.inject(ModalService);
   const $dom = await _modal.open(target.form.dataset.modal, target.title);
-  const res = $.compose($dom, Search).send(getQueryParams($));
+  const res = await $.compose($dom, Search).send(getQueryParams($));
   $.inject(FormService).setQueryString(res);
   sendRequest($);
 }

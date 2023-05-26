@@ -1,4 +1,5 @@
-import { Resource, Component } from 'scalar';
+import { Component } from 'scalar';
+import Resource from '@spawm/resource';
 import Messenger from '../services/Messenger';
 import FormService from '../services/Form';
 
@@ -71,23 +72,22 @@ export default class Form extends Component {
   }
 
   fail(res) {
-    try {
-      const errors = JSON.parse(res.message);
-      let focused = false;
-      for (const key in errors) {
-        const input = document.getElementById(key.replace(/_/g, '-'));
-        if (input) {
-          const container = input.parentNode;
-          if (!focused) {
-            input.focus();
-            focused = true;
-          }
-          container.classList.add('error');
-          container.dataset.tooltip = errors[key];
+    if (res.message instanceof String) {
+      return this.inject(Messenger).showError(res.message);
+    }
+    const { message } = res;
+    let focused = false;
+    for (const key in message) {
+      const input = document.getElementById(key.replace(/_/g, '-'));
+      if (input) {
+        const container = input.parentNode;
+        if (!focused) {
+          input.focus();
+          focused = true;
         }
+        container.classList.add('error');
+        container.dataset.tooltip = message[key];
       }
-    } catch (ex) {
-      this.inject(Messenger).showError(res.message);
     }
   }
 

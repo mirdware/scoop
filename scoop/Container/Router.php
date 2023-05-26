@@ -78,7 +78,7 @@ class Router
         $queryString = '';
         foreach ($query as $key => $value) {
             if ($value) {
-                $queryString .= '&' . filter_var($key, FILTER_UNSAFE_RAW) . '=' . filter_var($key, FILTER_UNSAFE_RAW);
+                $queryString .= '&' . filter_var($key, FILTER_UNSAFE_RAW) . '=' . filter_var($value, FILTER_UNSAFE_RAW);
             }
         }
         return $queryString ? '?' . substr($queryString, 1) : '';

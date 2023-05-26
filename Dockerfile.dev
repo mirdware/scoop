@@ -10,4 +10,4 @@ WORKDIR /app
 EXPOSE 8001 8000
 COPY . .
 COPY --chown=application:application . .
-CMD bash -c "npm install && composer install && app/ice dbup && npm run dev"
+CMD bash -c "npm install && composer install && php app/ice dbup && npm run dev"

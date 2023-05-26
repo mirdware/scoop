@@ -104,19 +104,16 @@ class Helper
      */
     public function __call($method, $args)
     {
-        if (strpos($method, 'compose') === 0) {
-            $component = lcfirst(substr($method, 7));
-            if (isset($this->components[$component])) {
-                $component = new \ReflectionClass($this->components[$component]);
-                $component = $component->newInstanceArgs($args);
-                $component = $component->render();
-                if ($component instanceof \Scoop\View) {
-                    return $component->render();
-                }
-                return $component;
-            }
-            throw new \BadMethodCallException('Component ' . $component . ' unregistered');
+        if (strpos($method, 'compose') !== 0) {
+            trigger_error('Call to undefined method ' . __CLASS__ . '::' . $method . '()', E_USER_ERROR);
         }
-        trigger_error('Call to undefined method ' . __CLASS__ . '::' . $method . '()', E_USER_ERROR);
+        $component = lcfirst(substr($method, 7));
+        if (isset($this->components[$component])) {
+            $component = new \ReflectionClass($this->components[$component]);
+            $component = $component->newInstanceArgs($args);
+            $component = $component->render();
+            return ($component instanceof \Scoop\View) ? $component->render() : $component;
+        }
+        throw new \BadMethodCallException('Component ' . $component . ' unregistered');
     }
 }

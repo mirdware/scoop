@@ -69,7 +69,7 @@ final class View
         View\Service::inject('config', \Scoop\Context::getEnvironment());
         View\Heritage::init($this->viewData);
         extract($this->viewData);
-        require View\Template::parse($this->viewPath);
+        require View\Heritage::getCompilePath($this->viewPath);
         return View\Heritage::getContent();
     }
 

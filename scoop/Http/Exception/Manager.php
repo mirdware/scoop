@@ -51,10 +51,11 @@ class Manager
 
     public function handle($ex, $isJSON)
     {
-        if (!isset(self::$exceptions[$ex::class])) {
+        $className = get_class($ex);
+        if (!isset(self::$exceptions[$className])) {
             throw $ex;
         }
-        $status = self::$exceptions[$ex::class];
+        $status = self::$exceptions[$className];
         $this->addHeaders($status);
         if ($isJSON) {
             header('Content-Type: application/json');

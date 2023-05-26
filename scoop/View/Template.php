@@ -14,7 +14,7 @@ final class Template
      * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
-    public static function parse($templatePath)
+    public function parse($templatePath)
     {
         $storage = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
         $template = 'app/views/' . $templatePath . '.sdt.php';
@@ -97,9 +97,8 @@ final class Template
     /**
      * Reglas de reemplazo para cada uno de los comandos de la plantilla.
      * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param string $line Linea que se encuentra analizando el parseador,
-     * se pasa por referencia para reflejar cambios pues la función debe devolver un boolean.
-     * @return boolean Existio o no reemplazo dentro de la linea,
+     * @param string $line Linea que se encuentra analizando el parseador.
+     * @return string Linea con los cambios realizados.
      */
     private static function replace($line)
     {
@@ -109,11 +108,11 @@ final class Template
         $conditional = $safeChars . '|' . $vars . '|[<>!]|and|or';
         $fn = '\((' . $quotes . '|' . $safeChars . '|' . $vars . '|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes . '|' . $conditional . '|' . $fn;
-        $uri = '\'([\w\/-]+)\'';
+        $uri = '(\w+:)?[\$\w\/-]+';
         $line = preg_replace(array(
             "/@inject ([\\\\\w]+)#(\w+)/",
-            "/@extends $uri/",
-            "/@import $uri/",
+            "/@extends ('$uri')/",
+            "/@import ('$uri'|\"$uri\")/",
             "/@if (($safeExp)+)/",
             "/@elseif (($safeExp)+)/",
             "/@while (($conditional|$fn)+)/",
@@ -121,8 +120,8 @@ final class Template
             "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
         ), array(
             '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
-            '[php ' . self::HERITAGE . '::extend(\'${1}\') php]',
-            '[php require ' . self::HERITAGE . '::getCompilePath(\'${1}\') php]',
+            '[php ' . self::HERITAGE . '::extend(${1}) php]',
+            '[php require ' . self::HERITAGE . '::getCompilePath(${1}) php]',
             '[php if(${1}): php]',
             '[php elseif(${1}): php]',
             '[php while(${1}): php]',

@@ -9,7 +9,7 @@ COPY --from=node /app/public/ ./public/
 COPY . .
 COPY --chown=application:application . .
 RUN composer install --optimize-autoloader --no-dev &&\
-app/ice dbup &&\
+php app/ice dbup &&\
 rm gulpfile.js &&\
 rm composer* &&\
 rm package-lock.json

@@ -32,6 +32,9 @@
         "phpunit/phpunit": "^9.6"
     },
     "scripts": {
+        "pre-install-cmd": [
+            "Composer\\Config::disableProcessTimeout"
+        ],
         "test": [
             "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
             "./vendor/bin/phpunit tests --colors=always"

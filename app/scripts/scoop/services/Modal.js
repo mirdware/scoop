@@ -1,4 +1,4 @@
-import { Resource } from 'scalar';
+import Resource from '@spawm/resource';
 import Overlay from './Overlay';
 
 function destructuring() {

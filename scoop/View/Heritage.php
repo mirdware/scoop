@@ -6,6 +6,7 @@ abstract class Heritage
 {
     private static $stack = array();
     private static $data;
+    private static $templates;
 
     /**
      * Inicia los atributos estaticos de la clase.
@@ -15,6 +16,10 @@ abstract class Heritage
     {
         $content = ob_get_contents();
         self::$data = $data;
+        self::$templates = array_merge(
+            array('sdt' => 'Scoop\View\Template'),
+            \Scoop\Context::getEnvironment()->getConfig('templates', array())
+        );
         array_push(self::$stack, array(
             'footer' => '',
             'content' => trim($content)
@@ -28,8 +33,9 @@ abstract class Heritage
      */
     public static function extend($parent)
     {
+        $template = \Scoop\Context::inject(self::$templates['sdt']);
         extract(self::$data);
-        require Template::parse($parent);
+        require $template->parse($parent);
         $index = count(self::$stack) - 1;
         $footer = &self::$stack[$index]['footer'];
         $footer = trim(ob_get_contents()) . $footer;
@@ -42,7 +48,17 @@ abstract class Heritage
      */
     public static function getCompilePath($path)
     {
-        return Template::parse($path);
+        $key = 'sdt';
+        $index = strpos($path, ':');
+        if ($index) {
+            $data = explode(':', $path);
+            if (isset(self::$templates[$data[0]])) {
+                $key = $data[0];
+                $path = $data[1];
+            }
+        }
+        $template = \Scoop\Context::inject(self::$templates[$key]);
+        return $template->parse($path, self::$data);
     }
 
     /**

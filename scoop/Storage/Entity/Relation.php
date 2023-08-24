@@ -2,7 +2,7 @@
 
 namespace Scoop\Storage\Entity;
 
-class Relation extends Mapper
+class Relation
 {
     const ONE_TO_ONE = 1;
     const ONE_TO_MANY = 2;
@@ -10,10 +10,11 @@ class Relation extends Mapper
     const MANY_TO_MANY = 4;
     private $collector;
     private $many;
+    private $relationMap;
 
     public function __construct($map, $collector)
     {
-        parent::__construct($map);
+        $this->relationMap = $map;
         $this->collector = $collector;
         $this->many = array();
     }
@@ -24,36 +25,24 @@ class Relation extends Mapper
             $property = $object->getProperty($name);
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
+            list($relationName, $mapperKey) = $this->getPropertyRelation($relation);
             if (!$relationEntity) {
                 continue;
             }
             if (is_array($relationEntity)) {
-                $mapperKey = null;
-                if ($relation[2] === self::MANY_TO_MANY) {
-                    $classEntity = $object->getName();
-                    $mapperKey = $classEntity . ':' . $relation[0];
-                    $isFirstThis = true;
-                    if (!isset($this->map[$mapperKey])) {
-                        $mapperKey = $relation[0] . ':' . $classEntity;
-                        $isFirstThis = false;
-                        if (!isset($this->map[$mapperKey])) {
-                            throw new \UnexpectedValueException('Mapper for relation ' . $mapperKey . ' not exist');
-                        }
-                    }
-                }
                 foreach ($relationEntity as $e) {
                     $objectRelation = new \ReflectionObject($e);
-                    $property = $objectRelation->getProperty($relation[1]);
+                    $property = $objectRelation->getProperty($relationName);
                     $property->setAccessible(true);
                     $property->setValue($e, $entity);
                     $this->collector->add($e);
                     if (!is_null($mapperKey)) {
-                        $this->many[$mapperKey][] = $isFirstThis ? array($entity, $e) : array($e, $entity);
+                        $this->many[$mapperKey][] = array($entity, $e);
                     }
                 }
-            } else {
+            } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
-                $property = $objectRelation->getProperty($relation[1]);
+                $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
                 if (is_array($value)) {
@@ -83,9 +72,10 @@ class Relation extends Mapper
                 foreach ($relationEntity as $e) {
                     $this->collector->remove($e);
                 }
-            } else {
+            } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
-                $property = $objectRelation->getProperty($relation[1]);
+                $relationName = $this->getPropertyRelation($relation)[0];
+                $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
                 if (is_array($value)) {
@@ -105,31 +95,47 @@ class Relation extends Mapper
     public function save()
     {
         foreach ($this->many as $key => $relation) {
-            $sqo = new \Scoop\Storage\SQO($this->map[$key]['table']);
-            $entities = explode(':', $key);
-            $idNames = array_map(array($this, 'getIdName'), $entities);
+            $sqo = new \Scoop\Storage\SQO($this->relationMap[$key]['table']);
             $fields = array();
-            foreach ($this->map[$key]['columns'] as $name => $column) {
+            $properties = array();
+            foreach ($this->relationMap[$key]['columns'] as $name => $column) {
                 if (isset($column['foreign'])) {
-                    $index = array_search($column['foreign'], $entities);
-                    if ($index !== false) {
-                        $fields[$index] = $name;
-                    }
+                    $fields[] = $name;
+                    $properties[] = $column['foreign'];
                 }
             }
-            ksort($fields);
+            $idNames = array_map(array($this->collector, 'getIdName'), $properties);
             $create = $sqo->create($fields);
             foreach ($relation as $entities) {
                 $id = array();
-                foreach ($entities as $i => $entity) {
+                foreach ($entities as $entity) {
                     $object = new \ReflectionObject($entity);
+                    $name = $object->getName();
+                    $i = array_search($name, $properties);
                     $prop = $object->getProperty($idNames[$i]);
                     $prop->setAccessible(true);
                     $id[$i] = $prop->getValue($entity);
                 }
+                ksort($id);
                 $create->create($id);
             }
             $create->run();
         }
+        $this->many = array();
+    }
+
+    private function getPropertyRelation($relation)
+    {
+        $relationProperty = array($relation[1], null);
+        if ($relation[2] === self::MANY_TO_MANY) {
+            $relationProperty = explode(':', $relation[1]);
+            if (!isset($relationProperty[1])) {
+                throw new \UnexpectedValueException('Property ' . $relation[1] . ' malphormed for MANY TO MANY relation');
+            }
+            if (!isset($this->relationMap[$relationProperty[1]])) {
+                throw new \UnexpectedValueException('Mapper for relation ' . $relation[1] . ' not exist');
+            }
+        }
+        return $relationProperty;
     }
 }

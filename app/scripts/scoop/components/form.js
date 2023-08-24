@@ -1,4 +1,4 @@
-import { Component } from 'scalar';
+import {Component} from 'scalar';
 import Resource from '@spawm/resource';
 import Messenger from '../services/Messenger';
 import FormService from '../services/Form';
@@ -56,10 +56,11 @@ export default class Form extends Component {
 
   async submit(data, form) {
     if (!form.resource) {
-      form.resource = new Resource(form.action);
+      const options = {};
       if (form.enctype !== 'multipart/form-data') {
-        form.resource.headers['Content-Type'] = 'application/json';
+        options.headers = {'Content-Type': 'application/json'};
       }
+      form.resource = new Resource(form.action, options);
     }
     try {
       const res = await form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data);
@@ -72,22 +73,23 @@ export default class Form extends Component {
   }
 
   fail(res) {
-    if (res.message instanceof String) {
-      return this.inject(Messenger).showError(res.message);
-    }
-    const { message } = res;
-    let focused = false;
-    for (const key in message) {
-      const input = document.getElementById(key.replace(/_/g, '-'));
-      if (input) {
-        const container = input.parentNode;
-        if (!focused) {
-          input.focus();
-          focused = true;
+    try {
+      const errors = JSON.parse(res.message);
+      let focused = false;
+      for (const key in errors) {
+        const input = document.getElementById(key.replace(/_/g, '-'));
+        if (input) {
+          const container = input.parentNode;
+          if (!focused) {
+            input.focus();
+            focused = true;
+          }
+          container.classList.add('error');
+          container.dataset.tooltip = errors[key];
         }
-        container.classList.add('error');
-        container.dataset.tooltip = message[key];
       }
+    } catch (ex) {
+      this.inject(Messenger).showError(res.message);
     }
   }
 

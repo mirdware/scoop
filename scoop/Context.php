@@ -102,7 +102,7 @@ class Context
             'providers' => self::$environment->getConfig('events', array())
         );
         self::$configParameters['Scoop\Storage\Entity\Manager'] = array(
-            'map' => self::$environment->getConfig('entities', array())
+            'map' => self::$environment->getConfig('model', array())
         );
     }
 

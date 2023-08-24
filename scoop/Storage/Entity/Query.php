@@ -2,32 +2,59 @@
 
 namespace Scoop\Storage\Entity;
 
-class Query extends Mapper
+class Query
 {
-    private $classEntity;
+    private $root;
     private $sqo;
+    private $fields;
+    private $reader;
+    private $idName;
     private $collector;
+    private $map;
+    private $aggregates;
 
-    public function __construct($collector, $classEntity, $map)
+    public function __construct($collector, $aggregate, $map)
     {
-        parent::__construct($map);
-        $this->classEntity = $classEntity;
+        $this->map = $map;
+        $this->root = $aggregate;
         $this->collector = $collector;
-        $this->sqo = new \Scoop\Storage\SQO($map[$classEntity]['table']);
+        $this->sqo = new \Scoop\Storage\SQO($map['entities'][$aggregate]['table'], 'r');
+        $this->fields = $this->getFields($this->root, 'r', false);
+        $this->reader = $this->sqo->read($this->fields);
+        $this->idName = $collector->getTableId($this->root);
+        $this->aggregates = array();
     }
 
-    public function get()
+    public function add()
+    {
+        $aggregates = func_get_args();
+        $leftId = 'r.' . $this->idName;
+        foreach ($aggregates as $aggregate) {
+            $alias = 'a' . count($this->aggregates);
+            $this->aggregates[$alias] = $aggregate;
+            $rightId = $alias . '.' . $this->collector->getTableId($aggregate);
+            $this->reader->join($this->map['entities'][$aggregate]['table'] . ' '.$alias, $leftId . '=' . $rightId);
+            $leftId = $rightId;
+        }
+        return $this;
+    }
+
+    public function get($id)
+    {
+        $this->reader->restrict('r.' . $this->idName . ' = :id');
+        $result = $this->reader->run(compact('id'));
+        $fields = $this->getFields($this->root, 'r', true);
+        $row = $result->fetch();
+        return $this->collector->make($this->root, $row['r_' . $this->idName], $row, $fields, $this->sqo);
+    }
+
+    private function getFields($entity, $alias, $isProp)
     {
         $fields = array();
-        foreach ($this->map[$this->classEntity]['properties'] as $key => $value) {
-            $fields[isset($value['name']) ? $value['name'] : $key] = $key;
+        foreach ($this->map['entities'][$entity]['properties'] as $key => $value) {
+            $value = isset($value['name']) ? $value['name'] : $key;
+            $fields[$alias . '_' . $key] = $isProp ? $key : $alias . '.' . $value;
         }
-        $result = $this->sqo->read(array_keys($fields))->run();
-        $entities = array();
-        while ($row = $result->fetch()) {
-            $id = $this->getIdName($this->classEntity);
-            $entities[] = $this->collector->make($this->classEntity, $row[$id], $row, $fields, $this->sqo);
-        }
-        return $entities;
+        return $fields;
     }
 }

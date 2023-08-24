@@ -11,8 +11,8 @@ class Manager
     public function __construct($map)
     {
         $this->map = $map;
-        $this->collector = new Collector($map);
-        $this->relations = new Relation($map, $this->collector);
+        $this->collector = new Mapper($map['entities'], $map['values']);
+        $this->relations = new Relation($map['relations'], $this->collector);
     }
 
     public function __destruct()
@@ -62,16 +62,16 @@ class Manager
 
     public function clean()
     {
-        $this->collector = new Collector($this->map);
+        $this->collector = new Mapper($this->map);
         $this->relations = new Relation($this->map, $this->collector);
     }
 
     private function getMapper($classEntity)
     {
-        if (!isset($this->map[$classEntity])) {
+        if (!isset($this->map['entities'][$classEntity])) {
             throw new \InvalidArgumentException($classEntity . ' not mapper configured');
         }
-        return $this->map[$classEntity];
+        return $this->map['entities'][$classEntity];
     }
 
     private function filterRelations($relations, $types)

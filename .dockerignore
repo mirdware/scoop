@@ -3,7 +3,7 @@
 **/node_modules/
 **/vendor/
 Dockerfile
-Dockerfile.dev
+.devcontainer/*
 app/storage/*
 README.md
 .DS_Store

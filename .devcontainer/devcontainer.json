@@ -1,0 +1,9 @@
+{
+    "name": "Simple Charectiristics of PHP Oriented Object",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "webapp",
+    "forwardPorts": [8000, 8001],
+    "workspaceFolder": "/app",
+    "shutdownAction": "stopCompose",
+    "postStartCommand": "npm install && composer install && php app/ice dbup && npm run dev"
+}

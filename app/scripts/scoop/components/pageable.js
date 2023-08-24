@@ -9,8 +9,9 @@ const queryParams = {};
 
 async function sendRequest($) {
   let url = $.options.url ? $.options.url + location.search : location.href;
-  const resource = new Resource(url);
-  resource.redirect = false;
+  const resource = new Resource(url, {
+    redirect: false 
+  });
   if (url.indexOf('http') !== 0) {
     url = location.protocol + url;
   }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\Entity;
+namespace Scoop\Persistence\Entity;
 
 class Manager
 {

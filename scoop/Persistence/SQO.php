@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage;
+namespace Scoop\Persistence;
 
 class SQO
 {
@@ -14,7 +14,7 @@ class SQO
 
     public function __construct($table, $alias = '', $connectionName = 'default')
     {
-        $this->isReader = is_a($table, '\Scoop\Storage\SQO\Reader');
+        $this->isReader = is_a($table, '\Scoop\Persistence\SQO\Reader');
         $this->table = $this->isReader ? '(' . $table . ')' : $table;
         $this->aliasTable = $this->table . ' ' . $alias;
         $this->connectionName = $connectionName;

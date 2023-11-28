@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage;
+namespace Scoop\Persistence;
 
 class DBC extends \PDO
 {

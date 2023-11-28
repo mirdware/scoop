@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\SQO;
+namespace Scoop\Persistence\SQO;
 
 class Reader extends Filter
 {
@@ -12,7 +12,7 @@ class Reader extends Filter
 
     public function __construct($query, $sqo)
     {
-        parent::__construct($query, \Scoop\Storage\SQO::READ, $sqo);
+        parent::__construct($query, \Scoop\Persistence\SQO::READ, $sqo);
     }
 
     public function join($table, $using = 'NATURAL', $type = 'INNER')
@@ -41,7 +41,7 @@ class Reader extends Filter
         intval($params['size']) :
         \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
-        $paginated = new \Scoop\Storage\SQO($this->bind($params), 'page');
+        $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page');
         $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
         return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
         ->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');

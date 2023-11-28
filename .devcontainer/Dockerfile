@@ -5,6 +5,6 @@ COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 
-RUN echo 'display_errors = 1' > /opt/docker/etc/php/php.ini
+COPY ./php.ini /opt/docker/etc/php/php.ini
 WORKDIR /app
 EXPOSE 8001 8000

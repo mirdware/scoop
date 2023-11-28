@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\Entity;
+namespace Scoop\Persistence\Entity;
 
 class Relation
 {
@@ -18,7 +18,7 @@ class Relation
         $this->collector = $collector;
         $this->many = array();
     }
-    
+
     public function add($entity, $object, $relations)
     {
         foreach ($relations as $name => $relation) {
@@ -95,7 +95,7 @@ class Relation
     public function save()
     {
         foreach ($this->many as $key => $relation) {
-            $sqo = new \Scoop\Storage\SQO($this->relationMap[$key]['table']);
+            $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
             $fields = array();
             $properties = array();
             foreach ($this->relationMap[$key]['columns'] as $name => $column) {

@@ -19,16 +19,44 @@ final class Template
         $storage = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
         $template = 'app/views/' . $templatePath . '.sdt.php';
         $view = $storage . 'cache/views/' . $templatePath . '.php';
-        if (is_readable($view)) {
-            if (is_readable($template) && filemtime($template) > filemtime($view)) {
-                self::create($view, self::compile($template));
-            }
-        } elseif (is_readable($template)) {
-            self::create($view, self::compile($template));
-        } else {
+        if (!is_readable($template)) {
             throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
+        if (is_readable($view) && filemtime($view) > filemtime($template)) {
+            return $view;
+        }
+        $this->create($view, $template);
         return $view;
+    }
+
+    /**
+     * Almacena la vista PHP en el disco.
+     * @param string $viewName Nombre de la vista a almacenar.
+     * @param string $content Contenido de la plantilla aplicando los reemplazos.
+     */
+    protected function create($viewName, $templateName)
+    {
+        $content = self::compile($templateName);
+        preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
+        $matches = $matches[0];
+        $content = self::clearHTML($content);
+        $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
+        $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
+        $search += array(': ?><?php ', ' ?><?php ');
+        $matches += array(':', ';');
+        $content = str_replace($search, $matches, $content);
+        $path = explode('/', $viewName);
+        $count = count($path) - 1;
+        $dir = '';
+        for ($i = 0; $i < $count; $i++) {
+            $dir .= $path[$i] . '/';
+            if (!file_exists($dir)) {
+                mkdir($dir, 0700);
+            }
+        }
+        $view = fopen($viewName, 'w');
+        fwrite($view, $content);
+        fclose($view);
     }
 
     /**
@@ -165,34 +193,5 @@ final class Template
             $content = str_replace($search, $replace, $content);
         }
         return $content;
-    }
-
-    /**
-     * Almacena la vista PHP en el disco.
-     * @param string $viewName Nombre de la vista a almacenar.
-     * @param string $content Contenido de la plantilla aplicando los reemplazos.
-     */
-    private static function create($viewName, $content)
-    {
-        preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
-        $matches = $matches[0];
-        $content = self::clearHTML($content);
-        $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
-        $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
-        $search += array(': ?><?php ', ' ?><?php ');
-        $matches += array(':', ';');
-        $content = str_replace($search, $matches, $content);
-        $path = explode('/', $viewName);
-        $count = count($path) - 1;
-        $dir = '';
-        for ($i = 0; $i < $count; $i++) {
-            $dir .= $path[$i] . '/';
-            if (!file_exists($dir)) {
-                mkdir($dir, 0700);
-            }
-        }
-        $view = fopen($viewName, 'w');
-        fwrite($view, $content);
-        fclose($view);
     }
 }

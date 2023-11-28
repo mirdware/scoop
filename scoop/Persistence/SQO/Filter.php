@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\SQO;
+namespace Scoop\Persistence\SQO;
 
 class Filter
 {
@@ -62,7 +62,7 @@ class Filter
         $sql = $this->__toString();
         $con = $this->sqo->getConnection();
         $statement = $con->prepare($sql);
-        if ($this->type !== \Scoop\Storage\SQO::READ) {
+        if ($this->type !== \Scoop\Persistence\SQO::READ) {
             $con->beginTransaction();
         }
         $statement->execute($this->getParamsAllowed($sql));

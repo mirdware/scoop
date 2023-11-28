@@ -7,13 +7,12 @@ services:
     volumes:
       - ../.:/app
     ports:
-      - "8080:8000"
-      - "8081:8001"
+      - "8000:8000"
+      - "8001:8001"
     depends_on:
       - "db"
     environment:
       PHP_DISPLAY_ERRORS: 1
-      PHP_DATE_TIMEZONE: America/Bogota
     tty: true
 
   db:
@@ -21,8 +20,6 @@ services:
     image: postgres:14.1-alpine
     volumes:
       - ../../data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: scoop

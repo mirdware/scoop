@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use Scoop\Storage\SQO;
+use Scoop\Persistence\SQO;
 
 class QuoteDB implements Quote
 {

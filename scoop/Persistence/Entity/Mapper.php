@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\Entity;
+namespace Scoop\Persistence\Entity;
 
 class Mapper
 {
@@ -148,7 +148,7 @@ class Mapper
             throw new \RuntimeException($className . ' not mapper configured');
         }
         if (!isset($this->statements[$className])) {
-            $this->statements[$className] = new \Scoop\Storage\SQO($this->entityMap[$className]['table']);
+            $this->statements[$className] = new \Scoop\Persistence\SQO($this->entityMap[$className]['table']);
         }
         if (isset($this->persisted[$key])) {
             $statement = $this->statements[$className];

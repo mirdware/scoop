@@ -77,3 +77,6 @@ phpunit.xml
 
 *.architect~
 !.gitkeep
+
+#docker
+/.devcontainer/docker-compose.override.yml

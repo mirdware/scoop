@@ -17,7 +17,7 @@ abstract class Heritage
         $content = ob_get_contents();
         self::$data = $data;
         self::$templates = array_merge(
-            array('sdt' => 'Scoop\View\Template'),
+            array('sdt.php' => 'Scoop\View\Template'),
             \Scoop\Context::getEnvironment()->getConfig('templates', array())
         );
         array_push(self::$stack, array(
@@ -33,7 +33,7 @@ abstract class Heritage
      */
     public static function extend($parent)
     {
-        $template = \Scoop\Context::inject(self::$templates['sdt']);
+        $template = \Scoop\Context::inject(self::$templates['sdt.php']);
         extract(self::$data);
         require $template->parse($parent);
         $index = count(self::$stack) - 1;
@@ -48,16 +48,13 @@ abstract class Heritage
      */
     public static function getCompilePath($path)
     {
-        $key = 'sdt';
-        $index = strpos($path, ':');
-        if ($index) {
-            $data = explode(':', $path);
-            if (isset(self::$templates[$data[0]])) {
-                $key = $data[0];
-                $path = $data[1];
-            }
-        }
-        $template = \Scoop\Context::inject(self::$templates[$key]);
+        $infoPath = pathinfo($path);
+        $ext = (
+            isset($infoPath['extension']) &&
+            isset(self::$templates[$infoPath['extension']])
+        ) ? $infoPath['extension'] : 'sdt.php';
+        $path = $infoPath['dirname'] . DIRECTORY_SEPARATOR . $infoPath['filename'];
+        $template = \Scoop\Context::inject(self::$templates[$ext]);
         return $template->parse($path, self::$data);
     }
 

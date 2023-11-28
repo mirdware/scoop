@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\SQO;
+namespace Scoop\Persistence\SQO;
 
 final class Factory
 {
@@ -17,7 +17,7 @@ final class Factory
         $this->fields = $fields;
         $this->numFields = count($fields);
         if ($values) {
-            $this->isReader = is_a($values, '\Scoop\Storage\SQO\Reader');
+            $this->isReader = is_a($values, '\Scoop\Persistence\SQO\Reader');
             $this->values = is_array($values) ? $sqo->nullify($values) : $values;
         } else {
             $this->values = array();

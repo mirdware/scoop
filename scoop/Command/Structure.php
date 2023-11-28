@@ -71,7 +71,7 @@ class Structure extends \Scoop\Command
 
     private function update($name, $con)
     {
-        $sqoStruct = new \Scoop\Storage\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $name);
+        $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $name);
         $creator = $sqoStruct->create(array('name'));
         $files = $this->getFiles();
         $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);

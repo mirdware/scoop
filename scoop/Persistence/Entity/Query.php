@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage\Entity;
+namespace Scoop\Persistence\Entity;
 
 class Query
 {
@@ -18,7 +18,7 @@ class Query
         $this->map = $map;
         $this->root = $aggregate;
         $this->collector = $collector;
-        $this->sqo = new \Scoop\Storage\SQO($map['entities'][$aggregate]['table'], 'r');
+        $this->sqo = new \Scoop\Persistence\SQO($map['entities'][$aggregate]['table'], 'r');
         $this->fields = $this->getFields($this->root, 'r', false);
         $this->reader = $this->sqo->read($this->fields);
         $this->idName = $collector->getTableId($this->root);

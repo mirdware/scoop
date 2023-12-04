@@ -2,7 +2,7 @@
 
 namespace Scoop\Persistence\Event;
 
-class Opened extends \Scoop\Event
+class Opened
 {
     private $connection;
 

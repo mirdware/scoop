@@ -56,14 +56,17 @@ export default class Form extends Component {
 
   async submit(data, form) {
     if (!form.resource) {
+      form.resource = {};
+    }
+    if (!form.resource[form.action]) {
       const options = {};
       if (form.enctype !== 'multipart/form-data') {
         options.headers = {'Content-Type': 'application/json'};
       }
-      form.resource = new Resource(form.action, options);
+      form.resource[form.action] = new Resource(form.action, options);
     }
     try {
-      const res = await form.resource[(form.getAttribute('method') || 'get').toLowerCase()](data);
+      const res = await form.resource[form.action][(form.getAttribute('method') || 'get').toLowerCase()](data);
       this.done(res, form);
     } catch (ex) {
       this.fail(ex, form);

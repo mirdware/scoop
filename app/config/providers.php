@@ -1,5 +1,5 @@
 <?php
 
 return array(
-    'App\Repository\Quote' => 'App\Repository\QuoteArray'
+    'App\Repository\Quote' => 'App\Repository\QuoteDB'
 );

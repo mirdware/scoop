@@ -32,6 +32,7 @@ class DBC extends \PDO
         $this->dispatcher->dispatch(new Event\Closed($this));
     }
 
+    #[\ReturnTypeWillChange]
     public function beginTransaction()
     {
         if (!parent::inTransaction()) {

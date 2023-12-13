@@ -1,5 +1,5 @@
-FROM node:18-alpine AS node
-FROM webdevops/php-dev:8.0-alpine
+FROM node:20-alpine AS node
+FROM webdevops/php-dev:8.1-alpine
 
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=node /usr/local/bin/node /usr/local/bin/node

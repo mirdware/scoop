@@ -8,7 +8,7 @@ return array(
     'app' => 'json:package',
     'db' => array(
         'default' => array(
-            'host' => $host ? $host :  'db',
+            'host' => $host ? $host : 'db',
             'database' => 'scoop',
             'user' => $user ? $user : 'postgres',
             'password' => $password ? $password : 'postgres'

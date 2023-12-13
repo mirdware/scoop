@@ -39,7 +39,9 @@ export default class Form {
       } else if (type === 'file') {
         obj[name] = inp.files;
       } else if (!obj[name] && type.indexOf("select") == 0 && index != -1) {
-        obj[name] = inp.options[index].value;
+        obj[name] = type === "select-multiple" ?
+        Array.from(inp.selectedOptions).map(({ value }) => value) :
+        inp.options[index].value;
       } else {
         obj[name] = inp.value;
       }

@@ -8,9 +8,8 @@ class Length extends Rule
     protected $min;
     protected $length;
 
-    public function __construct($fields, $min, $max)
+    public function __construct($min, $max)
     {
-        parent::__construct($fields);
         $this->max = $max;
         $this->min = $min;
     }

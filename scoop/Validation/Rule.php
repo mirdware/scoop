@@ -4,24 +4,11 @@ namespace Scoop\Validation;
 
 abstract class Rule
 {
-    private $fields;
+    protected $data;
 
-    /**
-     * Genera la estructura necesaria para la regla.
-     * @param array<mixed> $fields Campos a ser validados.
-     */
-    public function __construct($fields)
+    public function setData($data)
     {
-        $this->fields = $fields;
-    }
-
-    /**
-     * Obtiene los campos que estan siendo validados.
-     * @return array<string> Campos validados.
-     */
-    public function getFields()
-    {
-        return $this->fields;
+        $this->data = $data;
     }
 
     /**
@@ -31,19 +18,8 @@ abstract class Rule
     public function getParams()
     {
         $params = get_object_vars($this);
-        unset($params['fields']);
+        unset($params['data']);
         return $params;
-    }
-
-    /**
-     * Obtiene el nombre de la regla.
-     * @return string Nombre de la regla.
-     */
-    public static function getName()
-    {
-        $className = get_called_class();
-        $baseClass = substr(strrchr($className, '\\'), 1);
-        return lcfirst($baseClass);
     }
 
     /**

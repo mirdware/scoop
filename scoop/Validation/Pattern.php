@@ -6,9 +6,8 @@ class Pattern extends Rule
 {
     protected $pattern;
 
-    public function __construct($fields, $pattern, $mask = '')
+    public function __construct($pattern)
     {
-        parent::__construct($fields);
         $this->pattern = $pattern;
     }
 

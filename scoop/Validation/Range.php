@@ -7,9 +7,8 @@ class Range extends Rule
     protected $min;
     protected $max;
 
-    public function __construct($fields, $min, $max)
+    public function __construct($min, $max)
     {
-        parent::__construct($fields);
         $this->min = $min;
         $this->max = $max;
     }
@@ -19,5 +18,6 @@ class Range extends Rule
         if (is_numeric($value)) {
             return $value >= $this->min && $value <= $this->max;
         }
+        return false;
     }
 }

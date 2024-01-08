@@ -6,9 +6,8 @@ class Max extends Rule
 {
     protected $max;
 
-    public function __construct($fields, $max)
+    public function __construct($max)
     {
-        parent::__construct($fields);
         $this->max = $max;
     }
 
@@ -17,5 +16,6 @@ class Max extends Rule
         if (is_numeric($value)) {
             return $value <= $this->max;
         }
+        return false;
     }
 }

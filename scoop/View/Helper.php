@@ -98,6 +98,11 @@ class Helper
         return $this->environment->getCurrentRoute() === $route;
     }
 
+    public function fetch($name)
+    {
+        return $this->request->reference($name);
+    }
+
     /**
      * Compone la clase dependiendo de los parametros dados.
      * @return string Estructura HTML del componente generado.

@@ -6,9 +6,8 @@ class Min extends Rule
 {
     protected $min;
 
-    public function __construct($fields, $min)
+    public function __construct($min)
     {
-        parent::__construct($fields);
         $this->min = $min;
     }
 
@@ -17,5 +16,6 @@ class Min extends Rule
         if (is_numeric($value)) {
             return $value <= $this->min;
         }
+        return false;
     }
 }

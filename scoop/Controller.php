@@ -38,21 +38,21 @@ abstract class Controller
         exit;
     }
 
-    final protected function getRequest()
-    {
-        return self::$request;
-    }
-
     /**
      * Retorna al usuario a la página anterior.
      */
-    protected function goBack()
+    public static function goBack()
     {
         $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : self::$request->reference('http');
         if ($http_referer) {
             self::redirect($http_referer);
         }
         throw new \RuntimeException('HTTP reference losed');
+    }
+
+    final protected function getRequest()
+    {
+        return self::$request;
     }
 
     /**
@@ -82,13 +82,14 @@ abstract class Controller
      * @param \Scoop\Validator $validator Objeto que contiene las validaciones a realizar.
      * @param array<mixed> $data contiene los datos a ser validados.
      * @throws \Scoop\Http\BadRequestException
+     * @deprecated
     */
     protected function validate($validator, $data)
     {
-        $errors = $validator->validate($data);
-        if (empty($errors)) {
+        if ($validator->validate($data)) {
             return $validator->getData();
         }
+        $errors = $validator->getErrors();
         header('HTTP/1.0 400 Bad Request');
         if (self::$request->isAjax()) {
             header('Content-Type: application/json');

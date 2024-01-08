@@ -54,6 +54,9 @@ class Request
         if (!$name) {
             return $res;
         }
+        if ($name instanceof \Scoop\Validator) {
+            return $this->validate($name, $res);
+        }
         $name = explode('.', $name);
         foreach ($name as $key) {
             if (!isset($res[$key])) {
@@ -156,5 +159,24 @@ class Request
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
         } while ($old_data !== $data);
         return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    }
+
+    private function validate($validator, $data)
+    {
+        if ($validator->validate($data)) {
+            return $validator->getData();
+        }
+        $errors = $validator->getErrors();
+        header('HTTP/1.0 400 Bad Request');
+        if ($this->isAjax()) {
+            header('Content-Type: application/json');
+            exit (json_encode(array('code' => 400, 'message' => $errors)));
+        }
+        $_SESSION['data-scoop'] += array(
+            'body' => $this->getBody(),
+            'query' => $this->getQuery(),
+            'error' => $errors
+        );
+        \Scoop\Controller::goBack();
     }
 }

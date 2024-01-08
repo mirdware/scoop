@@ -94,8 +94,8 @@ class Context
     {
         self::configureInjector();
         self::configureLogger();
-        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.error', array()));
-        \Scoop\Validator::addRules(self::$environment->getConfig('validators', array()));
+        $lang = self::$environment->getConfig('language', 'es');
+        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.' . $lang . '.fail', array()));
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
         self::$configParameters['Scoop\Persistence\Crypt'] = self::$environment->getConfig('crypt', array());
         self::$configParameters['Scoop\Event\Bus'] = array(

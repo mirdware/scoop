@@ -24,7 +24,7 @@ class Application
                 $ex->addHeader('Content-Type: application/json');
             }
             return $this->formatResponse($ex->handle());
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $em = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
             return $this->formatResponse($em->handle($ex, $request->isAjax()));
         }

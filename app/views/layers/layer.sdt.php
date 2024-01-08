@@ -19,7 +19,7 @@
     <!-- Descarga asincrona de javascript -->
     <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}?v={{#view->getConfig('app.version')}}" defer></script>
     <!-- Titulo de la pagina -->
-    <title>{{$title}} » {{#view->getConfig('app.name')}}</title>
+    <title>{{isset($title) ? $title : 'Welcome'}} » {{#view->getConfig('app.name')}}</title>
 </head>
 
 <body>

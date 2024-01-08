@@ -10,22 +10,8 @@ class Validator
     private $typeValidation;
     private $errors;
     private $data;
-    private $includes = array();
     private $rules = array();
     private static $msg = array();
-    private static $customRules = array(
-        'required' => '\Scoop\Validation\Required',
-        'length' => '\Scoop\Validation\Length',
-        'email' => '\Scoop\Validation\Email',
-        'max' => '\Scoop\Validation\Max',
-        'maxLength' => '\Scoop\Validation\MaxLength',
-        'min' => '\Scoop\Validation\Min',
-        'minLength' => '\Scoop\Validation\MinLength',
-        'number' => '\Scoop\Validation\Number',
-        'pattern' => '\Scoop\Validation\Pattern',
-        'range' => '\Scoop\Validation\Range',
-        'equals' => '\Scoop\Validation\Equals'
-    );
 
     /**
      * Crea el objeto \Scoop\Validator con un tipo de validación.
@@ -41,32 +27,47 @@ class Validator
     /**
      * Genera la validación de los datos, retornando los errores encontrados
      * @param  array<mixed> $data Datos a ser validados ("nombreCampo" => "valor")
-     * @return array<string> Errores hallados durante el proceso de validación.
+     * @return boolean Paso o no validación.
      *  Dependiendo si es una validación simple o completa arroja un array
      *  unidimencional o multidimencional.
      */
     public function validate($data)
     {
-        $this->data = array_filter($data, array($this, 'filterData'), ARRAY_FILTER_USE_KEY);
         $this->errors = array();
-        foreach ($this->rules as $rule) {
-            $fields = $rule->getFields();
-            if (is_array($fields)) {
-                foreach ($fields as $key => $field) {
-                    $params = array('label' => $field);
-                    $this->executeRule($rule, is_numeric($key) ? $field : $key, $params, $data);
-                }
-            } else {
-                $params = array('label' => $fields);
-                $this->executeRule($rule, $fields, $params, $data);
+        $this->data = array();
+        foreach ($this->rules as $field => $rules) {
+            $value = isset($data[$field]) ? $data[$field] : null;
+            foreach ($rules as $rule) {
+                $params = array('label' => $field);
+                $rule->setData($data);
+                $this->executeRule($rule, $field, $params, $value);
             }
+            $this->data[$field] = $value;
         }
-        return $this->errors;
+        return empty($this->errors);
     }
 
-    public function included()
+    public function add()
     {
-        $this->includes = func_get_args();
+        $args = func_get_args();
+        $field = array_shift($args);
+        if (!$field) {
+            throw new \InvalidArgumentException('no field has been sent to validate');
+        }
+        if (!is_string($field)) {
+            throw new \InvalidArgumentException('Field must be a string');
+        }
+        foreach ($args as $index => $validation) {
+            if (!($validation instanceof \Scoop\Validation\Rule)) {
+                throw new \InvalidArgumentException('Parameter ' . ($index + 2) . ' not is a Validation');
+            }
+        }
+        if (isset($this->rules[$field])) {
+            $this->rules[$field] += $args;
+        } else {
+            $this->rules[$field] = $args;
+        }
+        return $this;
     }
 
     public function getData()
@@ -74,40 +75,11 @@ class Validator
         return $this->data;
     }
 
-    /**
-     * Se encarga de realizar el llamado dinamico de las reglas definidas.
-     *  ->required('input')
-     *  ->required(['input', 'input2'])
-     *  ->length('input', 1, 5)
-     *  ->length(['input', 'input2'], 1, 5)
-     * @param  string $name Nombre de la regla que se desea construir.
-     * @param  array<mixed> $args Argumentos pasados al constructor de la regla.
-     * @return \Scoop\Validator La instancia de la clase para encadenamiento.
-     */
-    public function __call($name, $args)
+    public function getErrors()
     {
-        if (!isset(self::$customRules[$name])) {
-            throw new \BadMethodCallException('Call to undefined method Scoop\Validator::' . $name . '()');
-        }
-        $class = new \ReflectionClass(self::$customRules[$name]);
-        $this->rules[] = $class->newInstanceArgs($args);
-        return $this;
+        return $this->errors;
     }
 
-    /**
-     * Registra o modifica una regla dentro de $customRules.
-     * @param array<string> $rules Identificadores de la clase que se encargara de resolver la regla.
-     */
-    public static function addRules($rules)
-    {
-        foreach ($rules as $className) {
-            $classRule = '\Scoop\Validation\Rule';
-            if (!is_subclass_of($className, $classRule)) {
-                throw new \UnexpectedValueException($className . ' not implement ' . $classRule);
-            }
-            self::$customRules[$className::getName()] = $className;
-        }
-    }
 
     /**
      * Establece cual sera el array de mensajes personalizados para cada regla.
@@ -118,11 +90,6 @@ class Validator
         self::$msg = (array) $messages;
     }
 
-    private function filterData($key)
-    {
-        return in_array($key, $this->includes);
-    }
-
     /**
      * Según los datos suministrados se encarga de ejecutar las reglas pertinentes a cada uno.
      * @param  mixed $rule   Nombre de la regla que sera ejecutada.
@@ -130,12 +97,8 @@ class Validator
      * @param  array<mixed> $params Parametros pasados a la regla (max, min, etc).
      * @param  array<mixed> $data Datos a validar
      */
-    private function executeRule($rule, $field, $params, $data)
+    private function executeRule($rule, $field, $params, $value)
     {
-        $value = isset($data[$field]) ? $data[$field] : null;
-        if (method_exists($rule, 'setValues')) {
-            $rule->setValues($data);
-        }
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
             if (!isset($this->errors[$field]) && !$rule->validate($value)) {
                 $this->errors[$field] = $this->getMessage($rule, $params, $value);
@@ -143,7 +106,6 @@ class Validator
         } elseif (!$rule->validate($value)) {
             $this->errors[$field][] = $this->getMessage($rule, $params, $value);
         }
-        $this->data[$field] = $value;
     }
 
     /**
@@ -155,29 +117,14 @@ class Validator
      */
     private function getMessage($rule, $params, $value)
     {
-        $name = $rule->getName();
-        if ($name === 'required' && $value === null) {
-            $name = 'on';
-        }
         $params += array('value' => $value) + $rule->getParams();
-        return self::formatMessage($name, $params);
-    }
-
-    /**
-     * Crea el mensaje que sera mostrado en la notificación de errores.
-     * @param  string $rule   Nombre de la regla de la cual se desea obtener el mesaje.
-     * @param  array $params Parametros que fueron enviados a la regla (max, min, etc).
-     * @return string Mensaje formateado para su notificación.
-     *  Si no se haya dentro de los mensajes personalizados es enviado el de defecto.
-     */
-    private static function formatMessage($rule, $params)
-    {
-        if (isset(self::$msg[$rule])) {
+        $name = get_class($rule);
+        if (isset(self::$msg[$name])) {
             $keys = array_keys($params);
             foreach ($keys as &$key) {
                 $key = '{' . $key . '}';
             }
-            return str_replace($keys, $params, self::$msg[$rule]);
+            return str_replace($keys, $params, self::$msg[$name]);
         }
         return self::DEFAULT_MSG;
     }

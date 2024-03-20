@@ -82,7 +82,7 @@ abstract class Controller
      * @param \Scoop\Validator $validator Objeto que contiene las validaciones a realizar.
      * @param array<mixed> $data contiene los datos a ser validados.
      * @throws \Scoop\Http\BadRequestException
-     * @deprecated
+     * @deprecated 7.2
     */
     protected function validate($validator, $data)
     {

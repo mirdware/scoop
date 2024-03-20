@@ -36,13 +36,13 @@ class Validator
         $this->errors = array();
         $this->data = array();
         foreach ($this->rules as $field => $rules) {
-            $value = isset($data[$field]) ? $data[$field] : null;
+            $value = $this->getValue($field, $data);
             foreach ($rules as $rule) {
-                $params = array('label' => $field);
+                $params = array('@name' => $field);
                 $rule->setData($data);
-                $this->executeRule($rule, $field, $params, $value);
+                $this->executeRule($rule, $params, $value);
             }
-            $this->data[$field] = $value;
+            $this->setValue($field, $value);
         }
         return empty($this->errors);
     }
@@ -97,8 +97,9 @@ class Validator
      * @param  array<mixed> $params Parametros pasados a la regla (max, min, etc).
      * @param  array<mixed> $data Datos a validar
      */
-    private function executeRule($rule, $field, $params, $value)
+    private function executeRule($rule, $params, $value)
     {
+        $field = $params['@name'];
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
             if (!isset($this->errors[$field]) && !$rule->validate($value)) {
                 $this->errors[$field] = $this->getMessage($rule, $params, $value);
@@ -117,7 +118,7 @@ class Validator
      */
     private function getMessage($rule, $params, $value)
     {
-        $params += array('value' => $value) + $rule->getParams();
+        $params += array('@value' => is_string($value) ? $value : json_encode($value)) + $rule->getParams();
         $name = get_class($rule);
         if (isset(self::$msg[$name])) {
             $keys = array_keys($params);
@@ -127,5 +128,32 @@ class Validator
             return str_replace($keys, $params, self::$msg[$name]);
         }
         return self::DEFAULT_MSG;
+    }
+
+    private function getValue($field, $value) {
+        $fields = explode('.', $field);
+        foreach ($fields as $field) {
+            if (!isset($value[$field])) {
+                return null;
+            }
+            $value = $value[$field];
+        }
+        return $value;
+    }
+
+    private function setValue($field, $value) {
+        $fields = explode('.', $field);
+        $response = &$this->data;
+        $key = array_shift($fields);
+        $num = count($fields);
+        while($num > 0) {
+            if (!isset($response[$key])) {
+                $response[$key] = array();
+            }
+            $response = &$response[$key];
+            $key = array_shift($fields);
+            $num = count($fields);
+        }
+        $response[$key] = $value;
     }
 }

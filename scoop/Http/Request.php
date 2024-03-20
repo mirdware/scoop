@@ -46,7 +46,7 @@ class Request
     {
         return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
             $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
-            (isset($_SERVER['Accept']) && $_SERVER['Accept'] === 'application/json');
+            (isset($_SERVER['HTTP_ACCEPT']) && $_SERVER['HTTP_ACCEPT'] === 'application/json');
     }
 
     private function getByIndex($name, $res)
@@ -70,7 +70,11 @@ class Request
     private function purge($array)
     {
         foreach ($array as $key => $value) {
-            $array[$key] = is_array($value) ? $this->purge($value) : $this->filterXSS($value);
+            if (is_array($value)) {
+                $array[$key] = $this->purge($value);
+            } elseif (is_string($value)) {
+                $array[$key] = $this->filterXSS($value);
+            }
         }
         return $array;
     }

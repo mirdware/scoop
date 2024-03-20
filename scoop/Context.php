@@ -97,7 +97,7 @@ class Context
         $lang = self::$environment->getConfig('language', 'es');
         \Scoop\Validator::setMessages(self::$environment->getConfig('messages.' . $lang . '.fail', array()));
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
-        self::$configParameters['Scoop\Persistence\Crypt'] = self::$environment->getConfig('crypt', array());
+        self::$configParameters['Scoop\Persistence\Vault'] = self::$environment->getConfig('vault', array());
         self::$configParameters['Scoop\Event\Bus'] = array(
             'providers' => self::$environment->getConfig('events', array())
         );

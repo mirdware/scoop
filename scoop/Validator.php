@@ -35,15 +35,7 @@ class Validator
     {
         $this->errors = array();
         $this->data = array();
-        foreach ($this->rules as $field => $rules) {
-            $value = $this->getValue($field, $data);
-            foreach ($rules as $rule) {
-                $params = array('@name' => $field);
-                $rule->setData($data);
-                $this->executeRule($rule, $params, $value);
-            }
-            $this->setValue($field, $value);
-        }
+        $this->setData($this->rules, $data);
         return empty($this->errors);
     }
 
@@ -51,22 +43,8 @@ class Validator
     {
         $args = func_get_args();
         $field = array_shift($args);
-        if (!$field) {
-            throw new \InvalidArgumentException('no field has been sent to validate');
-        }
-        if (!is_string($field)) {
-            throw new \InvalidArgumentException('Field must be a string');
-        }
-        foreach ($args as $index => $validation) {
-            if (!($validation instanceof \Scoop\Validation\Rule)) {
-                throw new \InvalidArgumentException('Parameter ' . ($index + 2) . ' not is a Validation');
-            }
-        }
-        if (isset($this->rules[$field])) {
-            $this->rules[$field] += $args;
-        } else {
-            $this->rules[$field] = $args;
-        }
+        $this->validateArgs($field, $args);
+        $this->setRules($field, $args);
         return $this;
     }
 
@@ -145,15 +123,70 @@ class Validator
         $fields = explode('.', $field);
         $response = &$this->data;
         $key = array_shift($fields);
-        $num = count($fields);
-        while($num > 0) {
+        while(count($fields)) {
             if (!isset($response[$key])) {
                 $response[$key] = array();
             }
             $response = &$response[$key];
             $key = array_shift($fields);
-            $num = count($fields);
         }
         $response[$key] = $value;
+    }
+
+    private function setRules($field, $validations)
+    {
+        $fields = explode('.*.', $field);
+        $response = &$this->rules;
+        $key = array_shift($fields);
+        while(count($fields)) {
+            $completeKey = $key . '.*.';
+            if (!isset($response[$completeKey])) {
+                $response[$completeKey] = array();
+            }
+            $response = &$response[$completeKey];
+            $key = array_shift($fields);
+        }
+        if (isset($response[$key])) {
+            $response[$key] += $validations;
+        } else {
+            $response[$key] = $validations;
+        }
+    }
+
+    private function setData(&$rules, $data, $index = '')
+    {
+        foreach ($rules as $field => $validations) {
+            $field = $index . $field;
+            if (strrpos($field, '.*.')) {
+                $field = substr($field, 0, -3);
+                $value = $this->getValue($field, $data);
+                foreach ($value as $index => $value) {
+                    $this->setData($validations, $data, $field . '.' . $index . '.');
+                }
+            } else {
+                $value = $this->getValue($field, $data);
+                foreach ($validations as $validation) {
+                    $params = array('@name' => $field);
+                    $validation->setData($data);
+                    $this->executeRule($validation, $params, $value);
+                }
+                $this->setValue($field, $value);
+            }
+        }
+    }
+
+    private function validateArgs($field, $args)
+    {
+        if (!$field) {
+            throw new \InvalidArgumentException('no field has been sent to validate');
+        }
+        if (!is_string($field)) {
+            throw new \InvalidArgumentException('Field must be a string');
+        }
+        foreach ($args as $index => $validation) {
+            if (!($validation instanceof \Scoop\Validation\Rule)) {
+                throw new \InvalidArgumentException('Parameter ' . ($index + 2) . ' not is a Validation');
+            }
+        }
     }
 }

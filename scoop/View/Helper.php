@@ -7,6 +7,7 @@ class Helper
     private $components;
     private $environment;
     private $request;
+    private $messages;
     private static $assets = array(
         'path' => 'public/',
         'img' => 'images/',
@@ -23,6 +24,7 @@ class Helper
         $this->request = $request;
         $this->components = $components;
         $this->environment = \Scoop\Context::getEnvironment();
+        $this->messages = $this->getConfig('messages.' . $this->getConfig('language', 'es'));
         self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 
@@ -88,9 +90,14 @@ class Helper
         return $this->route($queryString);
     }
 
-    public function getConfig($name)
+    public function getConfig($name, $default = '')
     {
-        return $this->environment->getConfig($name);
+        return $this->environment->getConfig($name, $default);
+    }
+
+    public function getText($field)
+    {
+        return isset($this->messages[$field]) ? $this->messages[$field] : '';
     }
 
     public function isCurrentRoute($route)

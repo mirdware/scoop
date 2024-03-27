@@ -66,9 +66,11 @@ class Mapper
         $reflectionClass->newInstanceWithoutConstructor();
         $object = new \ReflectionObject($entity);
         foreach ($row as $name => $value) {
-            $prop = $object->getProperty($fields[$name]);
-            $prop->setAccessible(true);
-            $prop->setValue($entity, $value);
+            if (isset($fields[$name])) {
+                $prop = $object->getProperty($fields[$name]);
+                $prop->setAccessible(true);
+                $prop->setValue($entity, $value);
+            }
         }
         $this->entities[$entity] = $key;
         $this->persisted[$key] = $entity;
@@ -193,9 +195,9 @@ class Mapper
     private function updateKey($entity, $className)
     {
         $idName = $this->getIdName($className);
-        if (isset($this->entityMap[$className]['properties'][$idName]['type'])) {
+        if (!$this->entities[$entity] && isset($this->entityMap[$className]['properties'][$idName]['type'])) {
             $type = explode(':', $this->entityMap[$className]['properties'][$idName]['type']);
-            $isAuto = array_pop($type) === 'SERIAL';
+            $isAuto = strtoupper(array_pop($type)) === 'SERIAL';
             if ($isAuto) {
                 $id = $this->statements[$className]->getLastId();
                 $object = new \ReflectionObject($entity);

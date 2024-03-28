@@ -13,24 +13,11 @@ class Validator
     private $rules = array();
     private static $msg = array();
 
-    /**
-     * Crea el objeto \Scoop\Validator con un tipo de validación.
-     * @param integer $typeValidation Los dos tipo de validación permitidos son
-     *  SIMPLE_VALIDATION(por defecto): arroja solo un error por campo
-     *  FULL_VALIDATION: arroja todos los errores que pueda tener un campo.
-     */
     public function __construct($typeValidation = self::SIMPLE_VALIDATION)
     {
         $this->typeValidation = $typeValidation;
     }
 
-    /**
-     * Genera la validación de los datos, retornando los errores encontrados
-     * @param  array<mixed> $data Datos a ser validados ("nombreCampo" => "valor")
-     * @return boolean Paso o no validación.
-     *  Dependiendo si es una validación simple o completa arroja un array
-     *  unidimencional o multidimencional.
-     */
     public function validate($data)
     {
         $this->errors = array();
@@ -58,23 +45,11 @@ class Validator
         return $this->errors;
     }
 
-
-    /**
-     * Establece cual sera el array de mensajes personalizados para cada regla.
-     * @param array<array<string>> $messages par ("nombreRegla" => "mensaje").
-     */
     public static function setMessages($messages)
     {
         self::$msg = (array) $messages;
     }
 
-    /**
-     * Según los datos suministrados se encarga de ejecutar las reglas pertinentes a cada uno.
-     * @param  mixed $rule   Nombre de la regla que sera ejecutada.
-     * @param  string $field  Nombre del campo que sera validado
-     * @param  array<mixed> $params Parametros pasados a la regla (max, min, etc).
-     * @param  array<mixed> $data Datos a validar
-     */
     private function executeRule($rule, $params, $value)
     {
         $field = $params['@name'];
@@ -87,13 +62,6 @@ class Validator
         }
     }
 
-    /**
-     * Obtiene el mensaje formateado dependiendo del tipo enviado.
-     * @param \scoop\Validation\Rule $rule Regla que esta siendo ejecutada.
-     * @param array<mixed> $params Parametros a ser mostrados en el mensaje.
-     * @param string $value Valor del campo.
-     * @return string Mesaje formateado.
-     */
     private function getMessage($rule, $params, $value)
     {
         $params += array('@value' => is_string($value) ? $value : json_encode($value)) + $rule->getParams();
@@ -160,15 +128,16 @@ class Validator
             if (strrpos($field, '.*.')) {
                 $field = substr($field, 0, -3);
                 $value = $this->getValue($field, $data);
-                foreach ($value as $index => $value) {
-                    $this->setData($validations, $data, $field . '.' . $index . '.');
+                foreach ($value as $i => $value) {
+                    $this->setData($validations, $data, $field . '.' . $i . '.');
                 }
             } else {
                 $value = $this->getValue($field, $data);
                 foreach ($validations as $validation) {
                     $params = array('@name' => $field);
-                    $validation->setData($data);
-                    $this->executeRule($validation, $params, $value);
+                    if ($validation->with($data)) {
+                        $this->executeRule($validation, $params, $value);
+                    }
                 }
                 $this->setValue($field, $value);
             }

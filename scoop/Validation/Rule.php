@@ -4,11 +4,19 @@ namespace Scoop\Validation;
 
 abstract class Rule
 {
+    private $validator;
     protected $data;
 
-    public function setData($data)
+    public function with($data)
     {
         $this->data = $data;
+        return !isset($this->validator) || $this->validator->validate($data);
+    }
+
+    public function when(\Scoop\Validator $happens)
+    {
+        $this->validator = $happens;
+        return $this;
     }
 
     /**
@@ -18,7 +26,7 @@ abstract class Rule
     public function getParams()
     {
         $params = get_object_vars($this);
-        unset($params['data']);
+        unset($params['data'], $params['validator']);
         return $params;
     }
 

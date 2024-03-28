@@ -5,10 +5,8 @@ namespace Scoop\Persistence\Entity;
 class Query
 {
     private $root;
-    private $sqo;
+    private $joins;
     private $fields;
-    private $reader;
-    private $idName;
     private $collector;
     private $map;
     private $aggregates;
@@ -18,34 +16,49 @@ class Query
         $this->map = $map;
         $this->root = $aggregate;
         $this->collector = $collector;
-        $this->sqo = new \Scoop\Persistence\SQO($map['entities'][$aggregate]['table'], 'r');
         $this->fields = $this->getFields($this->root, 'r', false);
-        $this->reader = $this->sqo->read($this->fields);
-        $this->idName = $collector->getTableId($this->root);
+        $this->joins = array();
         $this->aggregates = array();
     }
 
     public function add()
     {
         $aggregates = func_get_args();
-        $leftId = 'r.' . $this->idName;
+        $entityMap = $this->map['entities'][$this->root];
         foreach ($aggregates as $aggregate) {
             $alias = 'a' . count($this->aggregates);
-            $this->aggregates[$alias] = $aggregate;
-            $rightId = $alias . '.' . $this->collector->getTableId($aggregate);
-            $this->reader->join($this->map['entities'][$aggregate]['table'] . ' '.$alias, $leftId . '=' . $rightId);
-            $leftId = $rightId;
+            $aggregateMap = $this->map['entities'][$aggregate];
+            $key = $this->getRelationName($entityMap['relations'], $aggregate);
+            $this->fields += $this->getFields($aggregate, $alias, false);
+            if (!$key) throw new \Exception('Relation with ' . $aggregate . ' not found');
+            if (isset($entityMap['properties'][$key])) {
+                $property = $entityMap['properties'][$key];
+                $comparation = 'r.' . (isset($property['name']) ? $property['name'] : $key) . '=' . $alias . '.' . $this->collector->getIdName($aggregate);
+            } else {
+                $relationName = $entityMap['relations'][$key][1];
+                $property = $aggregateMap['properties'][$relationName];
+                $comparation = 'r.' . $this->collector->getIdName($aggregate) . '=' . $alias . '.' . (isset($property['name']) ? $property['name'] : $relationName);
+            }
+            $this->aggregates[$alias] = $key;
+            $this->joins[] = array($aggregateMap['table'] . ' ' . $alias, $comparation);
         }
         return $this;
     }
 
     public function get($id)
     {
-        $this->reader->restrict('r.' . $this->idName . ' = :id');
-        $result = $this->reader->run(compact('id'));
+        $idName = $this->collector->getTableId($this->root);
+        $sqo = new \Scoop\Persistence\SQO($this->map['entities'][$this->root]['table'], 'r');
+        $reader = $sqo->read($this->fields);
+        foreach ($this->joins as $join) {
+            $reader->join($join[0], $join[1]);
+        }
+        $reader->restrict('r.' . $idName . ' = :id');
+        $result = $reader->run(compact('id'));
         $fields = $this->getFields($this->root, 'r', true);
         $row = $result->fetch();
-        return $this->collector->make($this->root, $row['r_' . $this->idName], $row, $fields, $this->sqo);
+        if (!$row) return null;
+        return $this->collector->make($this->root, $row['r_' . $idName], $row, $fields, $sqo);
     }
 
     private function getFields($entity, $alias, $isProp)
@@ -56,5 +69,15 @@ class Query
             $fields[$alias . '_' . $key] = $isProp ? $key : $alias . '.' . $value;
         }
         return $fields;
+    }
+
+    private function getRelationName($relations, $aggregate)
+    {
+        foreach ($relations as $key => $relation) {
+            if ($relation[0] === $aggregate) {
+                return $key;
+            }
+        }
+        return null;
     }
 }

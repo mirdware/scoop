@@ -112,6 +112,9 @@ class Relation
                     $object = new \ReflectionObject($entity);
                     $name = $object->getName();
                     $i = array_search($name, $properties);
+                    if ($i === false) {
+                        throw new \UnexpectedValueException($name . ' not is present on ' . $key . ' relation');
+                    }
                     $prop = $object->getProperty($idNames[$i]);
                     $prop->setAccessible(true);
                     $id[$i] = $prop->getValue($entity);

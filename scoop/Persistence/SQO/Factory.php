@@ -30,10 +30,13 @@ final class Factory
         if ($this->isReader) {
             throw new \DomainException('INSERT SELECT not support multiple rows');
         }
-        if (count($values) !== $this->numFields) {
-            throw new \InvalidArgumentException('Number of elements incorrect');
+        $numValues = count($values);
+        if ($numValues !== $this->numFields) {
+            throw new \InvalidArgumentException(
+                'Number of elements incorrect values(' . $numValues . ') and fields(' . $this->numFields . ') for ' . $this->query
+            );
         }
-        if (array_keys($values) !== range(0, count($values) - 1)) {
+        if (array_keys($values) !== range(0, $numValues - 1)) {
             $order = array();
             foreach ($this->fields as $index => $key) {
                 $order[$index] = $values[$key];

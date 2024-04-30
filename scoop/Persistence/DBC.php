@@ -26,9 +26,7 @@ class DBC extends \PDO
 
     public function __destruct()
     {
-        if (parent::inTransaction()) {
-            parent::commit();
-        }
+        $this->commit();
         $this->dispatcher->dispatch(new Event\Closed($this));
     }
 
@@ -37,6 +35,14 @@ class DBC extends \PDO
     {
         if (!parent::inTransaction()) {
             return parent::beginTransaction();
+        }
+    }
+
+    #[\ReturnTypeWillChange]
+    public function commit()
+    {
+        if (parent::inTransaction()) {
+            parent::commit();
         }
     }
 

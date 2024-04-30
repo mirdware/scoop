@@ -13,6 +13,7 @@ class Dispatcher
 
     public function dispatch($event)
     {
+        \Scoop\Context::close();
         if (method_exists($event, 'isPropagationStopped') && $event->isPropagationStopped()) {
             return $event;
         }

@@ -79,6 +79,11 @@ class Filter
     protected function getParamsAllowed($sql)
     {
         $allowed = array();
+        foreach ($this->params as $name => $value) {
+            if (is_array($this->params[$name])) {
+                $this->formatQueryArray($name);
+            }
+        }
         preg_match_all('/:[\w_]+/', $sql, $matches);
         foreach ($matches[0] as $match) {
             $name = substr($match, 1);

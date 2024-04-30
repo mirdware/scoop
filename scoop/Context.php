@@ -54,6 +54,14 @@ class Context
         unset(self::$connections[$key]);
     }
 
+    public static function close()
+    {
+        foreach (self::$connections as $connection) {
+            $connection->commit();
+        }
+        self::configureInjector();
+    }
+
     public static function getLoader()
     {
         return self::$loader;

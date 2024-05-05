@@ -5,5 +5,18 @@
     "forwardPorts": [8000, 8001],
     "workspaceFolder": "/app",
     "shutdownAction": "stopCompose",
-    "postStartCommand": "npm install && composer install && php app/ice dbup && npm run dev"
+    "postStartCommand": "npm install && composer install && php app/ice dbup && npm run dev",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+                "devsense.intelli-php-vscode",
+                "devsense.phptools-vscode",
+                "devsense.profiler-php-vscode",
+                "devsense.composer-php-vscode",
+                "humao.rest-client",
+                "eamodio.gitlens",
+                "ms-azuretools.vscode-docker"
+            ]
+		}
+	}
 }

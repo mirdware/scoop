@@ -11,8 +11,14 @@ services:
       - "8001:8001"
     depends_on:
       - "db"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       PHP_DISPLAY_ERRORS: 1
+      XDEBUG_MODE: develop,coverage,debug,profile
+      #XDEBUG_SESSION_START=scoop
+      XDEBUG_IDE_KEY: scoop
+      XDEBUG_CLIENT_HOST: host.docker.internal
     tty: true
 
   db:

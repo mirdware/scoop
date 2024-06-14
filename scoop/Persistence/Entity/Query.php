@@ -21,7 +21,7 @@ class Query
         $this->aggregates = array();
     }
 
-    public function add()
+    public function aggregate()
     {
         $aggregates = func_get_args();
         $entityMap = $this->map['entities'][$this->root];
@@ -54,6 +54,7 @@ class Query
             $reader->join($join[0], $join[1]);
         }
         $reader->restrict('r.' . $idName . ' = :id');
+        echo $reader->bind(compact('id'));
         $result = $reader->run(compact('id'));
         $fields = $this->getFields($this->root, 'r', true);
         $row = $result->fetch();

@@ -195,10 +195,9 @@ class Mapper
     private function updateKey($entity, $className)
     {
         $idName = $this->getIdName($className);
-        if (!$this->entities[$entity] && isset($this->entityMap[$className]['properties'][$idName]['type'])) {
+        if (!isset($this->persisted[$this->entities[$entity]]) && isset($this->entityMap[$className]['properties'][$idName]['type'])) {
             $type = explode(':', $this->entityMap[$className]['properties'][$idName]['type']);
-            $isAuto = strtoupper(array_pop($type)) === 'SERIAL';
-            if ($isAuto) {
+            if (strtoupper(array_pop($type)) === 'SERIAL') {
                 $id = $this->statements[$className]->getLastId();
                 $object = new \ReflectionObject($entity);
                 $prop = $object->getProperty($idName);

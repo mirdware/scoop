@@ -15,11 +15,11 @@ class Bus
     public function getCommand($name)
     {
         if (!$name) {
-            throw new \RuntimeException('Should provider a command see --help');
+            throw new \RuntimeException('Should provider a command see --help', 101);
         }
         if (!isset($this->instances[$name])) {
             if (!isset($this->commands[$name])) {
-                throw new \UnexpectedValueException('Command ' . $name . ' not found');
+                throw new \UnexpectedValueException('Command ' . $name . ' not found', 102);
             }
             $this->instances[$name] = \Scoop\Context::inject($this->commands[$name]);
         }
@@ -30,7 +30,7 @@ class Bus
     {
         $baseClass = '\Scoop\Command';
         if (!is_subclass_of($className, $baseClass)) {
-            throw new \UnexpectedValueException('Class ' . $className . ' not implements ' . $baseClass);
+            throw new \UnexpectedValueException('Class ' . $className . ' not implements ' . $baseClass, 201);
         }
         $this->commands[$name] = $className;
         return $this;

@@ -50,9 +50,17 @@ class Structure extends \Scoop\Command
         return \Scoop\Context::connect($name, $options);
     }
 
-    private function getFiles()
+    private function getFiles($schema)
     {
-        $path = 'app/structs/' . $this->getOption('schema', '');
+        if (preg_match('/^\{([^\}]*)\}$/', $schema, $match)) {
+            $folders = explode(',', $match[1]);
+            $files = array();
+            foreach ($folders as $schema) {
+                $files = array_merge($files, $this->getFiles(trim($schema)));
+            }
+            return array_unique($files);
+        }
+        $path = 'app/structs/' . $schema;
         if (strrpos($path, '/') !== strlen($path) - 1) {
             $path .= '/';
         }
@@ -73,7 +81,7 @@ class Structure extends \Scoop\Command
     {
         $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $name);
         $creator = $sqoStruct->create(array('name'));
-        $files = $this->getFiles();
+        $files = $this->getFiles($this->getOption('schema', ''));
         $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);
         $con->beginTransaction();
         foreach ($files as $file) {

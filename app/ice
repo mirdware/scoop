@@ -27,10 +27,12 @@ if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
         ->getCommand($commandName)
         ->run($argv);
     } catch (Exception $ex) {
+        $code = intval($ex->getCode());
         \Scoop\Command::writeLine(
             $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : ''),
             \Scoop\Command\Color::RED
         );
+        exit($code ? $code : 1);
     }
 } else {
     echo 'ICE/SCOOP version ',

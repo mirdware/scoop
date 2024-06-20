@@ -62,7 +62,7 @@ class Manager
 
     public function clean()
     {
-        $this->collector = new Mapper($this->map);
+        $this->collector = new Mapper($this->map['entities'], $this->map['values']);
         $this->relations = new Relation($this->map, $this->collector);
     }
 

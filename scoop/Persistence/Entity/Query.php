@@ -30,16 +30,25 @@ class Query
             $aggregateMap = $this->map['entities'][$aggregate];
             $key = $this->getRelationName($entityMap['relations'], $aggregate);
             $this->fields += $this->getFields($aggregate, $alias, false);
-            if (!$key) throw new \Exception('Relation with ' . $aggregate . ' not found');
+            if (!$key) throw new \UnexpectedValueException('Relation with ' . $aggregate . ' not found');
             if (isset($entityMap['properties'][$key])) {
                 $property = $entityMap['properties'][$key];
                 $comparation = 'r.' . (isset($property['name']) ? $property['name'] : $key) . '=' . $alias . '.' . $this->collector->getIdName($aggregate);
             } else {
-                $relationName = $entityMap['relations'][$key][1];
-                $property = $aggregateMap['properties'][$relationName];
-                $comparation = 'r.' . $this->collector->getIdName($aggregate) . '=' . $alias . '.' . (isset($property['name']) ? $property['name'] : $relationName);
+                $relation = $entityMap['relations'][$key];
+                $relationName = $relation[1];
+                if ($relation[2] === Relation::MANY_TO_MANY) {
+                    $relation = explode(':', $relationName);
+                    $relation = $this->map['relations'][$relation[1]];
+                    $comparation = 'r.' . $this->collector->getIdName($this->root) . '=r' . $alias . '.' . $relation['entities'][$this->root]['column'];
+                    $this->joins[] = array($relation['table'] . ' r' . $alias, $comparation);
+                    $comparation = 'r' . $alias . '.' . $relation['entities'][$aggregate]['column'] . '=' . $alias . '.' . $this->collector->getIdName($this->root);
+                } else {
+                    $property = $aggregateMap['properties'][$relationName];
+                    $comparation = 'r.' . $this->collector->getIdName($this->root) . '=' . $alias . '.' . (isset($property['name']) ? $property['name'] : $relationName);
+                }
             }
-            $this->aggregates[$alias] = $key;
+            $this->aggregates[$alias] = compact('key', 'aggregate');
             $this->joins[] = array($aggregateMap['table'] . ' ' . $alias, $comparation);
         }
         return $this;
@@ -54,20 +63,50 @@ class Query
             $reader->join($join[0], $join[1]);
         }
         $reader->restrict('r.' . $idName . ' = :id');
-        echo $reader->bind(compact('id'));
         $result = $reader->run(compact('id'));
         $fields = $this->getFields($this->root, 'r', true);
-        $row = $result->fetch();
+        $row = $result->fetchAll();
         if (!$row) return null;
-        return $this->collector->make($this->root, $row['r_' . $idName], $row, $fields, $sqo);
+        $aggregateRoot = $this->collector->make($this->root, $row[0]['r_' . $idName], $row[0], $fields);
+        $object = new \ReflectionObject($aggregateRoot);
+        $entityMap = $this->map['entities'][$this->root];
+        foreach ($this->aggregates as $alias => $relation) {
+            $fields = $this->getFields($relation['aggregate'], $alias, true);
+            $idName = $this->collector->getTableId($relation['aggregate']);
+            $relationType = $entityMap['relations'][$relation['key']][2];
+            if ($relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY) {
+                $aggregate = array();
+                foreach ($row as $r) {
+                    $id = $r[$alias . '_' . $idName];
+                    $aggregate[$id] = $this->collector->make($relation['aggregate'], $id, $r, $fields);
+                }
+                $aggregate = array_values($aggregate);
+            } else {
+                $aggregate = $this->collector->make($relation['aggregate'], $row[0][$alias . '_' . $idName], $row[0], $fields);
+            }
+            $prop = $object->getProperty($relation['key']);
+            $prop->setAccessible(true);
+            $prop->setValue($aggregateRoot, $aggregate);
+        }
+        return $aggregateRoot;
     }
 
     private function getFields($entity, $alias, $isProp)
     {
         $fields = array();
         foreach ($this->map['entities'][$entity]['properties'] as $key => $value) {
-            $value = isset($value['name']) ? $value['name'] : $key;
-            $fields[$alias . '_' . $key] = $isProp ? $key : $alias . '.' . $value;
+            if (isset($this->map['values'][$value['type']])) {
+                if (count($this->map['values'][$value['type']]) > 1) {
+                    foreach ($this->map['values'][$value['type']] as $name => $object) {
+                        $fields[$alias . 'vo_' . $key . '$' . $name] = $alias . '.' . (isset($object['name']) ? $object['name'] : $key . '_' . $name);
+                    }
+                } else {
+                    $fields[$alias . 'vo_' . $key . '$value'] =  $alias . '.' .$key;
+                }
+            } else {
+                $value = isset($value['name']) ? $value['name'] : $key;
+                $fields[$alias . '_' . $key] = $isProp ? $key : $alias . '.' . $value;
+            }
         }
         return $fields;
     }

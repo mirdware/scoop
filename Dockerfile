@@ -6,7 +6,7 @@ COPY app/styles/. app/styles/
 COPY app/scripts/. app/scripts/
 RUN npm start
 
-FROM webdevops/php-apache:8.1-alpine
+FROM webdevops/php-apache:8.2-alpine
 WORKDIR /app
 COPY ["composer*", "./"]
 RUN composer install --optimize-autoloader --no-dev

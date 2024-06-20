@@ -98,10 +98,10 @@ class Relation
             $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
             $fields = array();
             $properties = array();
-            foreach ($this->relationMap[$key]['columns'] as $name => $column) {
+            foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
                 if (isset($column['foreign'])) {
-                    $fields[] = $name;
-                    $properties[] = $column['foreign'];
+                    $fields[] = $definition['column'];
+                    $properties[] = $name;
                 }
             }
             $idNames = array_map(array($this->collector, 'getIdName'), $properties);

@@ -34,23 +34,28 @@ class Relation
                     $objectRelation = new \ReflectionObject($e);
                     $property = $objectRelation->getProperty($relationName);
                     $property->setAccessible(true);
-                    $property->setValue($e, $entity);
+                    $value = $entity;
                     $this->collector->add($e);
                     if (!is_null($mapperKey)) {
                         $this->many[$mapperKey][] = array($entity, $e);
+                        $value = $property->getValue($e);
+                        if (!$value) {
+                            $value = array($entity);
+                        } elseif (!in_array($entity, $value)) {
+                            array_push($value, $entity);
+                        }
                     }
+                    $property->setValue($e, $value);
                 }
             } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
                 $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
-                if (is_array($value)) {
-                    if (!in_array($entity, $value)) {
-                        array_push($value, $entity);
-                    }
-                } else {
+                if (!is_array($value)) {
                     $value = $entity;
+                } elseif (!in_array($entity, $value)) {
+                    array_push($value, $entity);
                 }
                 $property->setValue($relationEntity, $value);
                 $this->collector->add($relationEntity);
@@ -99,7 +104,7 @@ class Relation
             $fields = array();
             $properties = array();
             foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
-                if (isset($column['foreign'])) {
+                if (isset($definition['column'])) {
                     $fields[] = $definition['column'];
                     $properties[] = $name;
                 }

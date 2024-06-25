@@ -29,7 +29,7 @@ class Mapper
 
     public function remove($entity)
     {
-        if (isset($this->entities[$entity])) {
+        if ($this->isMarked($entity)) {
             $key = $this->entities[$entity];
             if (isset($this->persisted[$key])) {
                 $this->removed[$key] = $entity;
@@ -82,6 +82,11 @@ class Mapper
         return $entity;
     }
 
+    public function isMarked($entity)
+    {
+        return isset($this->entities[$entity]);
+    }
+
     public function getIdName($className)
     {
         return isset($this->entityMap[$className]['id']) ? $this->entityMap[$className]['id'] : 'id';
@@ -125,15 +130,13 @@ class Mapper
                     throw new \UnexpectedValueException(gettype($value) . ' not is a ' . $valueObject);
                 }
                 $object = new \ReflectionObject($value);
-                $size = count($valueMap);
-                foreach ($valueMap as $name => $prop) {
-                    $fName = isset($prop['name']) ?
-                    $prop['name'] : (
-                        $size > 1 ?
-                        $fieldName . '_' . strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $name)) :
-                        $fieldName
-                    );
-                    $fields[$fName] = $this->getproperty($object, $name)->getValue($value);
+                if (count($valueMap) > 1) {
+                    foreach ($valueMap as $name => $prop) {
+                        $fName = $fieldName . '_' . (isset($prop['name']) ? $prop['name'] : strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $name)));
+                        $fields[$fName] = $this->getproperty($object, $name)->getValue($value);
+                    }
+                } else {
+                    $fields[$fieldName] = $this->getproperty($object, key($valueMap))->getValue($value);
                 }
             } else {
                 $fields[$fieldName] = $value;
@@ -184,7 +187,7 @@ class Mapper
 
     private function getKey($entity)
     {
-        if (isset($this->entities[$entity])) {
+        if ($this->isMarked($entity)) {
             return $this->entities[$entity];
         }
         $object = new \ReflectionObject($entity);

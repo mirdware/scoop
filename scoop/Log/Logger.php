@@ -76,6 +76,8 @@ class Logger
                 $replace['{' . $key . '}'] = var_export($value, true);
             } elseif (method_exists($value, '__toString')) {
                 $replace['{' . $key . '}'] = $value;
+            } else {
+                $replace['{' . $key . '}'] = print_r($value, true);
             }
         }
         return strtr($message, $replace);

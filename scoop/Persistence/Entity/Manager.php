@@ -5,14 +5,14 @@ namespace Scoop\Persistence\Entity;
 class Manager
 {
     private $map;
-    private $collector;
+    private $mapper;
     private $relations;
 
     public function __construct($map)
     {
         $this->map = $map;
-        $this->collector = new Mapper($map['entities'], $map['values']);
-        $this->relations = new Relation($map['relations'], $this->collector);
+        $this->mapper = new Mapper($map['entities'], $map['values']);
+        $this->relations = new Relation($map['relations'], $this->mapper, $this);
     }
 
     public function __destruct()
@@ -29,14 +29,14 @@ class Manager
                 $mapper['relations'],
                 array(Relation::ONE_TO_ONE, Relation::MANY_TO_ONE)
             ));
-            $this->collector->add($entity);
+            $this->mapper->add($entity);
             $this->relations->add($entity, $object, $this->filterRelations(
                 $mapper['relations'],
                 array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY)
             ));
             return;
         }
-        $this->collector->add($entity);
+        $this->mapper->add($entity);
     }
 
     public function remove($entity)
@@ -45,25 +45,25 @@ class Manager
         if (isset($mapper['relations'])) {
             $this->relations->remove($entity, $mapper['relations']);
         }
-        $this->collector->remove($entity);
+        $this->mapper->remove($entity);
     }
 
     public function find($classEntity)
     {
         $this->getMapper($classEntity);
-        return new Query($this->collector, $classEntity, $this->map);
+        return new Query($this->mapper, $classEntity, $this->map);
     }
 
     public function flush()
     {
-        $this->collector->save();
+        $this->mapper->save();
         $this->relations->save();
     }
 
     public function clean()
     {
-        $this->collector = new Mapper($this->map['entities'], $this->map['values']);
-        $this->relations = new Relation($this->map, $this->collector);
+        $this->mapper = new Mapper($this->map['entities'], $this->map['values']);
+        $this->relations = new Relation($this->map, $this->mapper, $this);
     }
 
     private function getMapper($classEntity)

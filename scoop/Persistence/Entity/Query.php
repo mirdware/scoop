@@ -86,44 +86,55 @@ class Query
         $rows = $result->fetchAll();
         if (!$rows) return null;
         $aggregateRoot = $this->mapper->make($this->root, $rows[0]['r_' . $idName], $rows[0], $fields);
-        $this->assignAggregates($this->root, $aggregateRoot, $this->aggregates, $rows);
+        $this->assignAggregates($this->root, 'r', $aggregateRoot, $this->aggregates, $rows);
         return $aggregateRoot;
     }
 
-    private function assignAggregates($name, $entity, $aggregateList, $rows)
+    private function assignAggregates($name, $alias, $entity, $aggregateList, $rows)
     {
         $object = new \ReflectionObject($entity);
         $entityMap = $this->map['entities'][$name];
+        $idName = $this->mapper->getTableId($name);
+        $row = $this->findRow($alias . '_' . $idName, $object->getProperty($idName)->getValue($entity), $rows);
         foreach ($aggregateList as $name => $relation) {
             $alias = $relation['alias'];
             $fields = $this->getFields($name, $alias, true);
-            $idName = $this->mapper->getTableId($name);
+            $idName = $alias . '_' . $this->mapper->getTableId($name);
             $relationType = $entityMap['relations'][$relation['key']][2];
             $isArray = $relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY;
             $aggregate = array();
-            $id = $rows[0][$alias . '_' . $idName];
+            $id = $row[$idName];
             if (!$id) {
                 if (!$isArray) continue;
             } elseif ($isArray) {
                 foreach ($rows as $r) {
-                    $id = $r[$alias . '_' . $idName];
+                    $id = $r[$idName];
                     if (!isset($aggregate[$id])) {
                         $aggregate[$id] = $this->mapper->make($name, $id, $r, $fields);
                         if (!empty($relation['aggregates'])) {
-                            $this->assignAggregates($name, $aggregate[$id], $relation['aggregates'], $rows);
+                            $this->assignAggregates($name, $alias, $aggregate[$id], $relation['aggregates'], $rows);
                         }
                     }
                 }
                 $aggregate = array_values($aggregate);
             } else {
-                $aggregate = $this->mapper->make($name, $id, $rows[0], $fields);
+                $aggregate = $this->mapper->make($name, $id, $row, $fields);
                 if (!empty($relation['aggregates'])) {
-                    $this->assignAggregates($name, $aggregate, $relation['aggregates'], $rows);
+                    $this->assignAggregates($name, $alias, $aggregate, $relation['aggregates'], $rows);
                 }
             }
             $prop = $object->getProperty($relation['key']);
             $prop->setAccessible(true);
             $prop->setValue($entity, $aggregate);
+        }
+    }
+
+    private function findRow($idName, $id, $rows)
+    {
+        foreach ($rows as $row) {
+            if ($row[$idName] === $id) {
+                return $row;
+            }
         }
     }
 

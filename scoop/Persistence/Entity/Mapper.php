@@ -44,7 +44,7 @@ class Mapper
             $className = $object->getName();
             $fields = $this->getFields($entity, $this->entityMap[$className], $object->getProperties());
             $this->execute($entity, $fields);
-            $key = $this->updateKey($entity, $className);
+            $key = $this->updateKey($entity, $object, $className);
             $this->persisted[$key] = compact('entity', 'fields');
         }
     }
@@ -84,7 +84,7 @@ class Mapper
 
     public function isMarked($entity)
     {
-        return isset($this->entities[$entity]);
+        return $this->entities->contains($entity);
     }
 
     public function getIdName($className)
@@ -192,10 +192,8 @@ class Mapper
         }
         $object = new \ReflectionObject($entity);
         $className = $object->getName();
-        $id = $this->getIdName($className);
-        $id = $this->getProperty($object, $id)->getValue($entity);
-        $key = $id ? $className . ':' . $id : $className . ':' . uniqid();
-        $this->entities[$entity] = $key;
+        $id = $this->getProperty($object, $this->getIdName($className))->getValue($entity);
+        $this->entities[$entity] = $className . ':' . ($id ? $id : uniqid());
         return $this->entities[$entity];
     }
 
@@ -222,16 +220,15 @@ class Mapper
         return $fields;
     }
 
-    private function updateKey($entity, $className)
+    private function updateKey($entity, $object, $className)
     {
         $idName = $this->getIdName($className);
         if (!isset($this->persisted[$this->entities[$entity]]) && isset($this->entityMap[$className]['properties'][$idName]['type'])) {
             $type = explode(':', $this->entityMap[$className]['properties'][$idName]['type']);
             if (strtoupper(array_pop($type)) === 'SERIAL') {
                 $id = $this->statements[$className]->getLastId();
-                $object = new \ReflectionObject($entity);
                 $this->getProperty($object, $idName)->setValue($entity, $id);
-                $this->entities[$entity] = $className . ':' . $id;
+                $this->entities->attach($entity, $className . ':' . $id);
             }
         }
         return $this->entities[$entity];

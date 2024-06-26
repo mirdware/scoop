@@ -48,7 +48,7 @@ class Manager
         $this->mapper->remove($entity);
     }
 
-    public function find($classEntity)
+    public function search($classEntity)
     {
         $this->getMapper($classEntity);
         return new Query($this->mapper, $classEntity, $this->map);

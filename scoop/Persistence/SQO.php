@@ -40,7 +40,7 @@ class SQO
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
         $query = 'SELECT ' . $fields . ' FROM ' . $this->aliasTable;
-        return new SQO\Reader($query, $this);
+        return new SQO\Reader($query, $this, $this->connectionName);
     }
 
     public function update($fields)

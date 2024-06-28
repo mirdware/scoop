@@ -9,10 +9,12 @@ class Reader extends Filter
     private $orderType = ' ASC';
     private $limit = '';
     private $having = '';
+    private $connectionName;
 
-    public function __construct($query, $sqo)
+    public function __construct($query, $sqo, $connectionName)
     {
         parent::__construct($query, \Scoop\Persistence\SQO::READ, $sqo);
+        $this->connectionName = $connectionName;
     }
 
     public function join($table, $using = 'NATURAL', $type = 'INNER')
@@ -41,7 +43,7 @@ class Reader extends Filter
         intval($params['size']) :
         \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
-        $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page');
+        $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page', $this->connectionName);
         $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
         return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
         ->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');

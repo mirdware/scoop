@@ -24,11 +24,14 @@ class Query
     public function aggregate()
     {
         $aggregates = func_get_args();
-        $entityMap = $this->map['entities'][$this->root];
+        $left = $this->root;
+        $entityMap = $this->map['entities'][$left];
         $leftAlias = 'r';
         $aggregateList = &$this->aggregates;
         $prefix = 'a';
         foreach ($aggregates as $aggregate) {
+            $leftId = $this->mapper->getIdName($left);
+            $rightId = $this->mapper->getIdName($aggregate);
             if (isset($aggregateList[$aggregate])) {
                 $leftAlias = $aggregateList[$aggregate]['alias'];
                 $prefix = $leftAlias . 'a';
@@ -46,7 +49,8 @@ class Query
                 if (!empty($property['nullable'])) {
                     $joinType = 'left';
                 }
-                $comparation = $leftAlias . '.' . (isset($property['name']) ? $property['name'] : $key) . '=' . $rightAlias . '.' . $this->mapper->getIdName($aggregate);
+                $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($key);
+                $comparation = $leftAlias . '.' . $columnName . '=' . $rightAlias . '.' . $rightId;
             } else {
                 $relation = $entityMap['relations'][$key];
                 $relationName = $relation[1];
@@ -54,18 +58,22 @@ class Query
                 if ($relation[2] === Relation::MANY_TO_MANY) {
                     $relation = explode(':', $relationName);
                     $relation = $this->map['relations'][$relation[1]];
-                    $comparation = $leftAlias . '.' . $this->mapper->getIdName($this->root) . '=' . $leftAlias . $rightAlias . '.' . $relation['entities'][$this->root]['column'];
+                    $relId = $relation['entities'][$left]['column'];
+                    $comparation = $leftAlias . '.' . $leftId . '=' . $leftAlias . $rightAlias . '.' . $relId;
                     $this->joins[] = array($relation['table'] . ' r' . $rightAlias, $comparation, $joinType);
-                    $comparation = $leftAlias . $rightAlias . '.' . $relation['entities'][$aggregate]['column'] . '=' . $rightAlias . '.' . $this->mapper->getIdName($this->root);
+                    $relId = $relation['entities'][$aggregate]['column'];
+                    $comparation = $leftAlias . $rightAlias . '.' . $relId . '=' . $rightAlias . '.' . $rightId;
                     $joinType = 'inner';
                 } else {
                     $property = $aggregateMap['properties'][$relationName];
-                    $comparation = $leftAlias . '.' . $this->mapper->getIdName($this->root) . '=' . $rightAlias . '.' . (isset($property['name']) ? $property['name'] : $relationName);
+                    $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($relationName);
+                    $comparation = $leftAlias . '.' . $leftId . '=' . $rightAlias . '.' . $columnName;
                 }
             }
             $aggregateList[$aggregate] = array('key' => $key, 'alias' => $rightAlias, 'aggregates' => array());
             $this->joins[] = array($aggregateMap['table'] . ' ' . $rightAlias, $comparation, $joinType);
             $leftAlias = $rightAlias;
+            $left = $aggregate;
             $prefix = $leftAlias . 'a';
             $aggregateList = &$aggregateList[$aggregate]['aggregates'];
         }
@@ -74,12 +82,8 @@ class Query
 
     public function get($id)
     {
+        $reader = $this->createReader();
         $idName = $this->mapper->getTableId($this->root);
-        $sqo = new \Scoop\Persistence\SQO($this->map['entities'][$this->root]['table'], 'r');
-        $reader = $sqo->read($this->fields);
-        foreach ($this->joins as $join) {
-            $reader->join($join[0], $join[1], $join[2]);
-        }
         $reader->restrict('r.' . $idName . ' = :id');
         $result = $reader->run(compact('id'));
         $fields = $this->getFields($this->root, 'r', true);
@@ -138,24 +142,43 @@ class Query
         }
     }
 
-    private function getFields($entity, $alias, $isProp)
+    private function createReader()
+    {
+        $sqo = new \Scoop\Persistence\SQO($this->map['entities'][$this->root]['table'], 'r');
+        $reader = $sqo->read($this->fields);
+        foreach ($this->joins as $join) {
+            $reader->join($join[0], $join[1], $join[2]);
+        }
+        return $reader;
+    }
+
+    private function getFields($entity, $table, $isProp)
     {
         $fields = array();
         foreach ($this->map['entities'][$entity]['properties'] as $key => $value) {
+            $key = $this->toColumn($key);
+            $alias = $table . '_' . $key;
             if (isset($this->map['values'][$value['type']])) {
                 if (count($this->map['values'][$value['type']]) > 1) {
                     foreach ($this->map['values'][$value['type']] as $name => $object) {
-                        $fields[$alias . 'vo_' . $key . '$' . $name] = $alias . '.' . $key . '_' . (isset($object['name']) ? $object['name'] : $name);
+                        $name = $this->toColumn($name);
+                        $columnname = isset($object['column']) ? $object['column'] : $name;
+                        $fields[$alias . '$' . $name] = $table . '.' . $key . '_' . $columnname;
                     }
                 } else {
-                    $fields[$alias . 'vo_' . $key . '$value'] =  $alias . '.' .$key;
+                    $fields[$alias . '$value'] =  $table . '.' . $key;
                 }
             } else {
-                $value = isset($value['name']) ? $value['name'] : $key;
-                $fields[$alias . '_' . $key] = $isProp ? $key : $alias . '.' . $value;
+                $value = isset($value['column']) ? $value['column'] : $key;
+                $fields[$alias] = $isProp ? $key : $table . '.' . $value;
             }
         }
         return $fields;
+    }
+
+    private function toColumn($property)
+    {
+        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $property));
     }
 
     private function getRelationName($relations, $aggregate)

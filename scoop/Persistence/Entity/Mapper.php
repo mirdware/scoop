@@ -60,10 +60,10 @@ class Mapper
         $valueObjects = array();
         foreach ($row as $name => $value) {
             if (isset($fields[$name])) {
-                $propName = $fields[$name];
-                if (preg_match('/a\d+vo_([^\$]+)\$(.*)/', $name, $match)) {
-                    $propName = $match[1];
-                    $voProp = $match[2];
+                $propName = $this->toProperty($fields[$name]);
+                if (preg_match('/a\d+_([^\$]+)\$(.*)/', $name, $match)) {
+                    $propName = $this->toProperty($match[1]);
+                    $voProp = $this->toProperty($match[2]);
                     if (!isset($valueObjects[$propName])) {
                         $voClass = $this->entityMap[$className]['properties'][$propName]['type'];
                         $instance = $this->createObject($voClass);
@@ -98,10 +98,10 @@ class Mapper
         if (isset($this->entityMap[$className]['id'])) {
             $idName = $this->entityMap[$className]['id'];
         }
-        if (isset($this->entityMap[$className]['properties'][$idName]['name'])) {
-            return $this->entityMap[$className]['properties'][$idName]['name'];
+        if (isset($this->entityMap[$className]['properties'][$idName]['column'])) {
+            return $this->entityMap[$className]['properties'][$idName]['column'];
         }
-        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $idName));
+        return $this->toColumn($idName);
     }
 
     private function getFields($entity, $mapper, $properties)
@@ -109,9 +109,9 @@ class Mapper
         $fields = array();
         foreach ($properties as $prop) {
             $propName = $prop->getName();
-            $fieldName = isset($mapper['properties'][$propName]['name']) ?
-            $mapper['properties'][$propName]['name'] :
-            strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $propName));
+            $fieldName = isset($mapper['properties'][$propName]['column']) ?
+            $mapper['properties'][$propName]['column'] :
+            $this->toColumn($propName);
             if (!isset($mapper['properties'][$propName])) {
                 continue;
             }
@@ -132,7 +132,7 @@ class Mapper
                 $object = new \ReflectionObject($value);
                 if (count($valueMap) > 1) {
                     foreach ($valueMap as $name => $prop) {
-                        $fName = $fieldName . '_' . (isset($prop['name']) ? $prop['name'] : strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $name)));
+                        $fName = $fieldName . '_' . (isset($prop['column']) ? $prop['column'] : $this->toColumn($name));
                         $fields[$fName] = $this->getproperty($object, $name)->getValue($value);
                     }
                 } else {
@@ -208,6 +208,16 @@ class Mapper
         $prop = $object->getProperty($name);
         $prop->setAccessible(true);
         return $prop;
+    }
+
+    private function toColumn($property)
+    {
+        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $property));
+    }
+
+    private function toProperty($column)
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
     private function getChangedFields($currFields, $prevFields) {

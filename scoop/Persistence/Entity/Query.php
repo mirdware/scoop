@@ -21,38 +21,40 @@ class Query
         $this->aggregates = array();
     }
 
-    public function aggregate()
+    public function aggregate($aggregates)
     {
-        $aggregates = func_get_args();
+        $aggregates = explode('.', $aggregates);
         $left = $this->root;
         $entityMap = $this->map['entities'][$left];
         $leftAlias = 'r';
         $aggregateList = &$this->aggregates;
-        $prefix = 'a';
-        foreach ($aggregates as $aggregate) {
-            $leftId = $this->mapper->getIdName($left);
-            $rightId = $this->mapper->getIdName($aggregate);
-            if (isset($aggregateList[$aggregate])) {
-                $leftAlias = $aggregateList[$aggregate]['alias'];
-                $prefix = $leftAlias . 'a';
-                $aggregateList = &$aggregateList[$aggregate]['aggregates'];
+        $prefix = '';
+        foreach ($aggregates as $propertyName) {
+            if (!isset($entityMap['relations'][$propertyName])) {
+                throw new \UnexpectedValueException('Relation ' . $propertyName . ' not found');
+            }
+            if (isset($aggregateList[$propertyName])) {
+                $leftAlias = $aggregateList[$propertyName]['alias'];
+                $prefix = $leftAlias . '$a$';
+                $aggregateList = &$aggregateList[$propertyName]['aggregates'];
                 continue;
             }
-            $rightAlias = $prefix . count($aggregateList);
+            $relation = $entityMap['relations'][$propertyName];
+            $aggregate = $relation[0];
+            $leftId = $this->mapper->getIdName($left);
+            $rightId = $this->mapper->getIdName($aggregate);
+            $rightAlias = $prefix . $this->toColumn($propertyName);
             $aggregateMap = $this->map['entities'][$aggregate];
-            $key = $this->getRelationName($entityMap['relations'], $aggregate);
             $joinType = 'inner';
             $this->fields += $this->getFields($aggregate, $rightAlias, false);
-            if (!$key) throw new \UnexpectedValueException('Relation with ' . $aggregate . ' not found');
-            if (isset($entityMap['properties'][$key])) {
-                $property = $entityMap['properties'][$key];
+            if (isset($entityMap['properties'][$propertyName])) {
+                $property = $entityMap['properties'][$propertyName];
                 if (!empty($property['nullable'])) {
                     $joinType = 'left';
                 }
-                $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($key);
+                $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($propertyName);
                 $comparation = $leftAlias . '.' . $columnName . '=' . $rightAlias . '.' . $rightId;
             } else {
-                $relation = $entityMap['relations'][$key];
                 $relationName = $relation[1];
                 $joinType = 'left';
                 if ($relation[2] === Relation::MANY_TO_MANY) {
@@ -70,14 +72,54 @@ class Query
                     $comparation = $leftAlias . '.' . $leftId . '=' . $rightAlias . '.' . $columnName;
                 }
             }
-            $aggregateList[$aggregate] = array('key' => $key, 'alias' => $rightAlias, 'aggregates' => array());
+            $aggregateList[$propertyName] = array('type' => $aggregate, 'alias' => $rightAlias, 'aggregates' => array());
             $this->joins[] = array($aggregateMap['table'] . ' ' . $rightAlias, $comparation, $joinType);
             $leftAlias = $rightAlias;
             $left = $aggregate;
-            $prefix = $leftAlias . 'a';
-            $aggregateList = &$aggregateList[$aggregate]['aggregates'];
+            $prefix = $leftAlias . '$a$';
+            $aggregateList = &$aggregateList[$propertyName]['aggregates'];
         }
         return $this;
+    }
+
+    public function matching($filters, $fields = null, $order = null)
+    {
+        $reader = $this->createReader();
+        if ($filters) {
+            uksort($this->fields, array($this, 'sortByLength'));
+            $columns = array_values($this->fields);
+            $alias = array_keys($this->fields);
+            $aux= array();
+            foreach ($alias as $key => $name) {
+                $alias[$key] = str_replace(array('$a$', '$v$'), array('.', ':'), $name);
+                $aux[$key] = ':' . $key . ':';
+            }
+            $filters = str_replace($alias, $aux, $filters);
+            $filters = str_replace($aux, $columns, $filters);
+            $reader->restrict($filters);
+        }
+        if ($order) {
+            $order = str_replace(array('.', ':'), array('$a$', '$v$'), $order);
+            $reader->order($order);
+        }
+        $result = $reader->run($fields);
+        $idName = $this->mapper->getTableId($this->root);
+        $fields = $this->getFields($this->root, 'r', true);
+        $rows = $result->fetchAll();
+        $aggregates = array();
+        foreach ($rows as $row) {
+            if (!isset($aggregates[$row[$idName]])) {
+                $aggregateRoot = $this->mapper->make($this->root, $row[$idName], $row, $fields);
+                $aggregates[$row[$idName]] = array('root' => $aggregateRoot, 'rows' => array());
+            }
+            $aggregates[$row[$idName]]['rows'][] = $row;
+        }
+        $aggregateRootList = array();
+        foreach ($aggregates as $aggregate) {
+            $this->assignAggregates($this->root, 'r', $aggregate['root'], $this->aggregates, $aggregate['rows']);
+            $aggregateRootList[] = $aggregate['root'];
+        }
+        return $aggregateRootList;
     }
 
     public function get($id)
@@ -89,7 +131,7 @@ class Query
         $fields = $this->getFields($this->root, 'r', true);
         $rows = $result->fetchAll();
         if (!$rows) return null;
-        $aggregateRoot = $this->mapper->make($this->root, $rows[0]['r_' . $idName], $rows[0], $fields);
+        $aggregateRoot = $this->mapper->make($this->root, $rows[0][$idName], $rows[0], $fields);
         $this->assignAggregates($this->root, 'r', $aggregateRoot, $this->aggregates, $rows);
         return $aggregateRoot;
     }
@@ -99,38 +141,46 @@ class Query
         $object = new \ReflectionObject($entity);
         $entityMap = $this->map['entities'][$name];
         $idName = $this->mapper->getTableId($name);
-        $row = $this->findRow($alias . '_' . $idName, $object->getProperty($idName)->getValue($entity), $rows);
-        foreach ($aggregateList as $name => $relation) {
-            $alias = $relation['alias'];
-            $fields = $this->getFields($name, $alias, true);
-            $idName = $alias . '_' . $this->mapper->getTableId($name);
-            $relationType = $entityMap['relations'][$relation['key']][2];
+        $prefix = $alias !== 'r' ? $alias . '$a$' : '';
+        $row = $this->findRow($prefix . $idName, $object->getProperty($idName)->getValue($entity), $rows);
+        foreach ($aggregateList as $name => $map) {
+            $alias = $map['alias'];
+            $className = $map['type'];
+            $fields = $this->getFields($className, $alias, true);
+            $prefix = $alias !== 'r' ? $alias . '$a$' : '';
+            $idName = $prefix . $this->mapper->getTableId($className);
+            $relationType = $entityMap['relations'][$name][2];
             $isArray = $relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY;
-            $aggregate = array();
+            $value = array();
             $id = $row[$idName];
             if (!$id) {
                 if (!$isArray) continue;
             } elseif ($isArray) {
                 foreach ($rows as $r) {
                     $id = $r[$idName];
-                    if (!isset($aggregate[$id])) {
-                        $aggregate[$id] = $this->mapper->make($name, $id, $r, $fields);
-                        if (!empty($relation['aggregates'])) {
-                            $this->assignAggregates($name, $alias, $aggregate[$id], $relation['aggregates'], $rows);
+                    if (!isset($value[$id])) {
+                        $value[$id] = $this->mapper->make($className, $id, $r, $fields);
+                        if (!empty($map['aggregates'])) {
+                            $this->assignAggregates($className, $alias, $value[$id], $map['aggregates'], $rows);
                         }
                     }
                 }
-                $aggregate = array_values($aggregate);
+                $value = array_values($value);
             } else {
-                $aggregate = $this->mapper->make($name, $id, $row, $fields);
+                $value = $this->mapper->make($className, $id, $row, $fields);
                 if (!empty($relation['aggregates'])) {
-                    $this->assignAggregates($name, $alias, $aggregate, $relation['aggregates'], $rows);
+                    $this->assignAggregates($className, $alias, $value, $map['aggregates'], $rows);
                 }
             }
-            $prop = $object->getProperty($relation['key']);
+            $prop = $object->getProperty($name);
             $prop->setAccessible(true);
-            $prop->setValue($entity, $aggregate);
+            $prop->setValue($entity, $value);
         }
+    }
+
+    private function sortByLength($a, $b)
+    {
+        return strlen($a) > strlen($b) ? -1 : 1;
     }
 
     private function findRow($idName, $id, $rows)
@@ -157,16 +207,16 @@ class Query
         $fields = array();
         foreach ($this->map['entities'][$entity]['properties'] as $key => $value) {
             $key = $this->toColumn($key);
-            $alias = $table . '_' . $key;
+            $alias = ($table !== 'r' ? $table . '$a$' : '') . $key;
             if (isset($this->map['values'][$value['type']])) {
                 if (count($this->map['values'][$value['type']]) > 1) {
                     foreach ($this->map['values'][$value['type']] as $name => $object) {
                         $name = $this->toColumn($name);
                         $columnname = isset($object['column']) ? $object['column'] : $name;
-                        $fields[$alias . '$' . $name] = $table . '.' . $key . '_' . $columnname;
+                        $fields[$alias . '$v$' . $name] = $table . '.' . $key . '_' . $columnname;
                     }
                 } else {
-                    $fields[$alias . '$value'] =  $table . '.' . $key;
+                    $fields[$alias . '$v$value'] =  $table . '.' . $key;
                 }
             } else {
                 $value = isset($value['column']) ? $value['column'] : $key;
@@ -179,15 +229,5 @@ class Query
     private function toColumn($property)
     {
         return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $property));
-    }
-
-    private function getRelationName($relations, $aggregate)
-    {
-        foreach ($relations as $key => $relation) {
-            if ($relation[0] === $aggregate) {
-                return $key;
-            }
-        }
-        return null;
     }
 }

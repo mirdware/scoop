@@ -61,7 +61,7 @@ class Mapper
         foreach ($row as $name => $value) {
             if (isset($fields[$name])) {
                 $propName = $this->toProperty($fields[$name]);
-                if (preg_match('/a\d+_([^\$]+)\$(.*)/', $name, $match)) {
+                if (preg_match('/([^\$]+)\$v\$(.*)/', $name, $match)) {
                     $propName = $this->toProperty($match[1]);
                     $voProp = $this->toProperty($match[2]);
                     if (!isset($valueObjects[$propName])) {

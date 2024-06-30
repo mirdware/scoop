@@ -86,9 +86,11 @@ class Query
     {
         $reader = $this->createReader();
         if ($filters) {
+            preg_match_all('/[\s=\(]\:(\w+)/', $filters, $matches);
             uksort($this->fields, array($this, 'sortByLength'));
-            $columns = array_values($this->fields);
-            $alias = array_keys($this->fields);
+            $array = array_merge(array_combine($matches[1], $matches[1]), $this->fields);
+            $columns = array_values($array);
+            $alias = array_keys($array);
             $aux= array();
             foreach ($alias as $key => $name) {
                 $alias[$key] = str_replace(array('$a$', '$v$'), array('.', ':'), $name);

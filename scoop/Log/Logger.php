@@ -72,13 +72,8 @@ class Logger
     {
         $replace = array();
         foreach ($context as $key => $value) {
-            if (!is_object($value)) {
-                $replace['{' . $key . '}'] = var_export($value, true);
-            } elseif (method_exists($value, '__toString')) {
-                $replace['{' . $key . '}'] = $value;
-            } else {
-                $replace['{' . $key . '}'] = print_r($value, true);
-            }
+            $replace['{' . $key . '}'] = !is_object($value) || method_exists($value, '__toString') ?
+            $value : print_r($value, true);
         }
         return strtr($message, $replace);
     }

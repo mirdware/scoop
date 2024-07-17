@@ -53,7 +53,7 @@ class Query
                     $joinType = 'left';
                 }
                 $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($propertyName);
-                $comparation = $leftAlias . '.' . $columnName . '=' . $rightAlias . '.' . $rightId;
+                $comparation = "$leftAlias.$columnName=$rightAlias.$rightId";
             } else {
                 $relationName = $relation[1];
                 $joinType = 'left';
@@ -61,15 +61,15 @@ class Query
                     $relation = explode(':', $relationName);
                     $relation = $this->map['relations'][$relation[1]];
                     $relId = $relation['entities'][$left]['column'];
-                    $comparation = $leftAlias . '.' . $leftId . '=' . $leftAlias . $rightAlias . '.' . $relId;
+                    $comparation = "$leftAlias.$leftId=$leftAlias$rightAlias.$relId";
                     $this->joins[] = array($relation['table'] . ' r' . $rightAlias, $comparation, $joinType);
                     $relId = $relation['entities'][$aggregate]['column'];
-                    $comparation = $leftAlias . $rightAlias . '.' . $relId . '=' . $rightAlias . '.' . $rightId;
+                    $comparation = "$leftAlias$rightAlias.$relId=$rightAlias.$rightId";
                     $joinType = 'inner';
                 } else {
                     $property = $aggregateMap['properties'][$relationName];
                     $columnName = isset($property['column']) ? $property['column'] : $this->toColumn($relationName);
-                    $comparation = $leftAlias . '.' . $leftId . '=' . $rightAlias . '.' . $columnName;
+                    $comparation = "$leftAlias.$leftId=$rightAlias.$columnName";
                 }
             }
             $aggregateList[$propertyName] = array('type' => $aggregate, 'alias' => $rightAlias, 'aggregates' => array());
@@ -87,17 +87,12 @@ class Query
         $reader = $this->createReader();
         if ($filters) {
             preg_match_all('/[\s=\(]\:(\w+)/', $filters, $matches);
-            uksort($this->fields, array($this, 'sortByLength'));
-            $array = array_merge(array_combine($matches[1], $matches[1]), $this->fields);
-            $columns = array_values($array);
-            $alias = array_keys($array);
-            $aux= array();
-            foreach ($alias as $key => $name) {
-                $alias[$key] = str_replace(array('$a$', '$v$'), array('.', ':'), $name);
-                $aux[$key] = ':' . $key . ':';
+            $replacement = array_combine($matches[1], $matches[1]);
+            foreach ($this->fields as $key => $name) {
+                $key = str_replace(array('$a$', '$v$'), array('.', ':'), $key);
+                $replacement[$key] = $name;
             }
-            $filters = str_replace($alias, $aux, $filters);
-            $filters = str_replace($aux, $columns, $filters);
+            $filters = strtr($filters, $replacement);
             $reader->restrict($filters);
         }
         if ($order) {
@@ -178,11 +173,6 @@ class Query
             $prop->setAccessible(true);
             $prop->setValue($entity, $value);
         }
-    }
-
-    private function sortByLength($a, $b)
-    {
-        return strlen($a) > strlen($b) ? -1 : 1;
     }
 
     private function findRow($idName, $id, $rows)

@@ -54,7 +54,7 @@ class Context
         unset(self::$connections[$key]);
     }
 
-    public static function close()
+    public static function reset()
     {
         foreach (self::$connections as $connection) {
             $connection->commit();

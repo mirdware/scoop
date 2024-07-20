@@ -46,7 +46,6 @@ class Query
             $rightAlias = $prefix . $this->toColumn($propertyName);
             $aggregateMap = $this->map['entities'][$aggregate];
             $joinType = 'inner';
-            $this->fields += $this->getFields($aggregate, $rightAlias, false);
             if (isset($entityMap['properties'][$propertyName])) {
                 $property = $entityMap['properties'][$propertyName];
                 if (!empty($property['nullable'])) {
@@ -78,6 +77,8 @@ class Query
             $left = $aggregate;
             $prefix = $leftAlias . '$a$';
             $aggregateList = &$aggregateList[$propertyName]['aggregates'];
+            $entityMap = $this->map['entities'][$left];
+            $this->fields += $this->getFields($aggregate, $rightAlias, false);
         }
         return $this;
     }
@@ -123,7 +124,7 @@ class Query
     {
         $reader = $this->createReader();
         $idName = $this->mapper->getTableId($this->root);
-        $reader->restrict('r.' . $idName . ' = :id');
+        $reader->restrict("r.$idName = :id");
         $result = $reader->run(compact('id'));
         $fields = $this->getFields($this->root, 'r', true);
         $rows = $result->fetchAll();
@@ -204,16 +205,45 @@ class Query
                 if (count($this->map['values'][$value['type']]) > 1) {
                     foreach ($this->map['values'][$value['type']] as $name => $object) {
                         $name = $this->toColumn($name);
-                        $columnname = isset($object['column']) ? $object['column'] : $name;
-                        $fields[$alias . '$v$' . $name] = $table . '.' . $key . '_' . $columnname;
+                        $columnName = isset($object['column']) ? $object['column'] : $name;
+                        $fields[$alias . '$v$' . $name] = "{$table}.{$key}_{$columnName}";
                     }
                 } else {
-                    $fields[$alias . '$v$value'] =  $table . '.' . $key;
+                    $fields[$alias] = "$table.$key";
                 }
             } else {
                 $value = isset($value['column']) ? $value['column'] : $key;
-                $fields[$alias] = $isProp ? $key : $table . '.' . $value;
+                $fields[$alias] = $isProp ? $key : "$table.$value";
             }
+        }
+        return $fields + $this->getParentsFields($entity, $table, $isProp);
+    }
+
+    private function getParentsFields($entity, $table, $isProp)
+    {
+        $ref = new \ReflectionClass($entity);
+        $index = 0;
+        $fields = array();
+        $id = $this->mapper->gettableId($ref->getName());
+        while ($parent = $ref->getParentClass()) {
+            $name = $parent->getName();
+            $parentAlias = 'p' . $index . '$' . $table;
+            if (!$isProp) {
+                $parentId = $this->mapper->getTableId($name);
+                $parentTable = $this->map['entities'][$name]['table'];
+                $this->joins[] = array("$parentTable $parentAlias", "$parentAlias.$parentId=$table.$id", 'inner');
+            }
+            $parentFields  = $this->getFields($name, $parentAlias, $isProp);
+            foreach ($parentFields as $name => $parentField) {
+                $name = str_replace($parentAlias, $table, $name);
+                if ($isProp) {
+                    $fields[$index][$name] = $parentField;
+                } else {
+                    $fields[$name] = $parentField;
+                }
+            }
+            $ref = $parent;
+            $index++;
         }
         return $fields;
     }

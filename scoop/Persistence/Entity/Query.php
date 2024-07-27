@@ -78,7 +78,7 @@ class Query
             $prefix = $leftAlias . '$a$';
             $aggregateList = &$aggregateList[$propertyName]['aggregates'];
             $entityMap = $this->map['entities'][$left];
-            $this->fields += $this->getFields($aggregate, $rightAlias, false);
+            $this->fields = array_merge($this->fields, $this->getFields($aggregate, $rightAlias, false));
         }
         return $this;
     }
@@ -216,7 +216,7 @@ class Query
                 $fields[$alias] = $isProp ? $key : "$table.$value";
             }
         }
-        return $fields + $this->getParentsFields($entity, $table, $isProp);
+        return array_merge($fields, $this->getParentsFields($entity, $table, $isProp));
     }
 
     private function getParentsFields($entity, $table, $isProp)

@@ -11,17 +11,14 @@ class Creator extends \Scoop\Command
 
     public function __construct()
     {
-        $this->bus = new Bus();
-        foreach (self::$commands as $command => $controller) {
-            $this->bus->addCommand($command, $controller);
-        }
+        $this->bus = new Bus(self::$commands);
     }
 
     protected function execute()
     {
         $args = $this->getArguments();
         $commandName = array_shift($args);
-        $this->bus->getCommand($commandName)->run($args);
+        $this->bus->dispatch($commandName, $args);
     }
 
     protected function help()

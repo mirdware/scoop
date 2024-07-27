@@ -290,7 +290,7 @@ class Mapper
             if (strtoupper(array_pop($type)) === 'SERIAL') {
                 $id = $this->statements[$className]->getLastId();
                 $this->getProperty($object, $idName)->setValue($entity, $id);
-                $this->entities->attach($entity, $className . ':' . $id);
+                $this->entities[$entity] = "$className:$id";
             }
         }
         return $this->entities[$entity];

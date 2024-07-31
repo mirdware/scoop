@@ -6,26 +6,20 @@ if (php_sapi_name() !== 'cli') {
 }
 require 'scoop/Context.php';
 \Scoop\Context::load('app/config');
-$commandBus = new \Scoop\Command\Bus();
 array_shift($argv);
 $commandName = array_shift($argv);
 $trace = $commandName === '--trace';
 $environment = \Scoop\Context::getEnvironment();
-$commands = $environment->getConfig('commands', array()) + array(
-    'new' => '\Scoop\Command\Creator',
-    'dbup' => '\Scoop\Command\Structure'
-);
 if ($trace) {
     $commandName = array_shift($argv);
 }
 if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
-    foreach ($commands as $command => $controller) {
-        $commandBus->addCommand($command, $controller);
-    }
+    $commandBus = new \Scoop\Command\Bus($environment->getConfig('commands', array()) + array(
+        'new' => '\Scoop\Command\Creator',
+        'dbup' => '\Scoop\Command\Structure'
+    ));
     try {
-        $commandBus
-        ->getCommand($commandName)
-        ->run($argv);
+        $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
         $code = intval($ex->getCode());
         \Scoop\Command::writeLine(

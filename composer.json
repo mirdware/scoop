@@ -24,23 +24,37 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.3"
+        "php": "^5.3|^7.0|^8.0"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.10",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpunit/phpunit": "^11.2",
-        "zircote/swagger-php": "^4.10"
+        "zircote/swagger-php": "^4.10",
+        "phpat/phpat": "^0.10.18",
+        "phpstan/extension-installer": "^1.4"
     },
     "scripts": {
         "pre-install-cmd": [
             "Composer\\Config::disableProcessTimeout"
         ],
+        "test:lint": "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
+        "test:static": "./vendor/bin/phpstan --configuration=app/phpstan.neon",
+        "test:unit" : "./vendor/bin/phpunit --configuration=app/phpunit.xml",
         "test": [
-            "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
-            "./vendor/bin/phpunit tests --colors=always"
+            "@test:lint",
+            "@test:static",
+            "@test:unit"
         ],
-        "fix": "./vendor/bin/phpcbf -p ./src --standard=app/phpcs.xml",
+        "fix:lint": "./vendor/bin/phpcbf -p ./src --standard=app/phpcs.xml",
+        "fix": [
+            "@fix:lint"
+        ],
         "api": "./vendor/bin/openapi src -o openapi.yaml"
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     }
 }

@@ -22,7 +22,7 @@ final class View
 
     /**
      * Modifica los datos que va a procesar la vista.
-     * @param string|array<string> $key   Identificador del dato en la vista, si es un
+     * @param string|array<string, string|array> $key Identificador del dato en la vista, si es un
      * array se ejecuta el par clave => valor.
      * @param mixed $value Dato a procesar por la vista.
      * @return \Scoop\View La instancia de la clase para encadenamiento.

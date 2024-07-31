@@ -21,13 +21,13 @@ class DBC extends \PDO
             $pass,
             array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC)
         );
-        $this->dispatcher->dispatch(new Event\Opened($this));
+        $this->dispatcher->dispatch(new Event\ConnectionOpened($this));
     }
 
     public function __destruct()
     {
         $this->commit();
-        $this->dispatcher->dispatch(new Event\Closed($this));
+        $this->dispatcher->dispatch(new Event\ConnectionClosed($this));
     }
 
     #[\ReturnTypeWillChange]

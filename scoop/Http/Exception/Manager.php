@@ -49,13 +49,16 @@ class Manager
         }
     }
 
-    public function handle($ex, $isJSON)
+    public function getStatusCode($ex)
     {
         $className = get_class($ex);
-        if (!isset(self::$exceptions[$className])) {
-            throw $ex;
+        if (isset(self::$exceptions[$className])) {
+            return self::$exceptions[$className];
         }
-        $status = self::$exceptions[$className];
+    }
+
+    public function handle($ex, $isJSON, $status)
+    {
         $this->addHeaders($status);
         if ($isJSON) {
             header('Content-Type: application/json');
@@ -67,10 +70,10 @@ class Manager
     private function addHeaders($status)
     {
         $headers = isset($this->config[$status]['headers']) ? $this->config[$status]['headers'] : array();
-        header('HTTP/1.1 ' . $status . ' ' . self::$errors[$status]);
         foreach ($headers as $header) {
             header($header);
         }
+        header('HTTP/1.1 ' . $status . ' ' . self::$errors[$status]);
     }
 
     private function createView($status, $ex)

@@ -2,16 +2,15 @@
 
 namespace App\Test\Controller;
 
+use Scoop\View;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\TestCase;
 use App\Controller\Home;
 use App\Repository\QuoteArray;
-use PHPUnit\Framework\TestCase;
-use Scoop\View;
 
+#[CoversMethod(Home::class, 'get')]
 class HomeTest extends TestCase
 {
-    /**
-     * @covers \App\Controller\Home
-     */
     public function testShowViewQuote()
     {
         $repository = new QuoteArray();

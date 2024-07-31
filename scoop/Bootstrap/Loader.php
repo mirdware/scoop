@@ -7,28 +7,12 @@ class Loader
     private $prefixLengthsPsr4 = array();
     private $prefixDirsPsr4 = array();
     private $fallbackDirsPsr4 = array();
-    private $prefixesPsr0 = array();
-    private $fallbackDirsPsr0 = array();
-    private $useIncludePath = false;
     private $classMap = array();
     private $classMapAuthoritative = false;
-
-    public function getPrefixes()
-    {
-        if (!empty($this->prefixesPsr0)) {
-            return call_user_func_array('array_merge', $this->prefixesPsr0);
-        }
-        return array();
-    }
 
     public function getPrefixesPsr4()
     {
         return $this->prefixDirsPsr4;
-    }
-
-    public function getFallbackDirs()
-    {
-        return $this->fallbackDirsPsr0;
     }
 
     public function getFallbackDirsPsr4()
@@ -51,40 +35,6 @@ class Loader
     }
 
     public function add($prefix, $paths, $prepend = false)
-    {
-        if (!$prefix) {
-            if ($prepend) {
-                $this->fallbackDirsPsr0 = array_merge(
-                    (array) $paths,
-                    $this->fallbackDirsPsr0
-                );
-            } else {
-                $this->fallbackDirsPsr0 = array_merge(
-                    $this->fallbackDirsPsr0,
-                    (array) $paths
-                );
-            }
-            return;
-        }
-        $first = $prefix[0];
-        if (!isset($this->prefixesPsr0[$first][$prefix])) {
-            $this->prefixesPsr0[$first][$prefix] = (array) $paths;
-            return;
-        }
-        if ($prepend) {
-            $this->prefixesPsr0[$first][$prefix] = array_merge(
-                (array) $paths,
-                $this->prefixesPsr0[$first][$prefix]
-            );
-        } else {
-            $this->prefixesPsr0[$first][$prefix] = array_merge(
-                $this->prefixesPsr0[$first][$prefix],
-                (array) $paths
-            );
-        }
-    }
-
-    public function addPsr4($prefix, $paths, $prepend = false)
     {
         if (!$prefix) {
             if ($prepend) {
@@ -121,15 +71,6 @@ class Loader
     public function set($prefix, $paths)
     {
         if (!$prefix) {
-            $this->fallbackDirsPsr0 = (array) $paths;
-        } else {
-            $this->prefixesPsr0[$prefix[0]][$prefix] = (array) $paths;
-        }
-    }
-
-    public function setPsr4($prefix, $paths)
-    {
-        if (!$prefix) {
             $this->fallbackDirsPsr4 = (array) $paths;
         } else {
             $length = strlen($prefix);
@@ -144,11 +85,6 @@ class Loader
     public function setUseIncludePath($useIncludePath)
     {
         $this->useIncludePath = $useIncludePath;
-    }
-
-    public function getUseIncludePath()
-    {
-        return $this->useIncludePath;
     }
 
     public function setClassMapAuthoritative($classMapAuthoritative)
@@ -221,32 +157,6 @@ class Loader
             if (file_exists($file = $myLocation . $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
                 return $file;
             }
-        }
-        $pos = strrpos($class, '\\');
-        if ($pos !== false) {
-            $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
-                . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
-        } else {
-            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
-        }
-        if (isset($this->prefixesPsr0[$first])) {
-            foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
-                if (strpos($class, $prefix) === 0) {
-                    foreach ($dirs as $dir) {
-                        if (file_exists($file = $myLocation . $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                            return $file;
-                        }
-                    }
-                }
-            }
-        }
-        foreach ($this->fallbackDirsPsr0 as $dir) {
-            if (file_exists($file = $myLocation . $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                return $file;
-            }
-        }
-        if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
-            return $file;
         }
     }
 }

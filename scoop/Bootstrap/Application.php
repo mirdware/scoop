@@ -25,8 +25,12 @@ class Application
             }
             return $this->formatResponse($ex->handle());
         } catch (\Exception $ex) {
-            $em = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
-            return $this->formatResponse($em->handle($ex, $request->isAjax()));
+            $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
+            $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+            $status = $exceptionManager->getStatusCode($ex);
+            $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
+            if (!$status) throw $ex;
+            return $this->formatResponse($exceptionManager->handle($ex, $request->isAjax(), $status));
         }
     }
 

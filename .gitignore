@@ -71,10 +71,6 @@ composer.lock
 /node_modules/
 package-lock.json
 
-#tests
-/.phpunit.cache/
-phpunit.xml
-
 *.architect~
 !.gitkeep
 

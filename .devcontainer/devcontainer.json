@@ -15,8 +15,12 @@
                 "devsense.composer-php-vscode",
                 "humao.rest-client",
                 "eamodio.gitlens",
-                "ms-azuretools.vscode-docker"
-            ]
+                "ms-azuretools.vscode-docker",
+                "sanderronde.phpstan-vscode"
+            ],
+            "settings": {
+                "phpstan.configFile": "app/phpstan.neon"
+            }
 		}
 	}
 }

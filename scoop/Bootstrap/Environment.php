@@ -72,6 +72,7 @@ class Environment
     {
         $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
         \Scoop\Controller::setRequest($request);
+        \Scoop\Http\Controller::setRequest($request);
         \Scoop\View::setRequest($request);
         return $this->router->route($request);
     }

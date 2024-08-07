@@ -62,7 +62,7 @@ class Context
     }
 
     /**
-     * @deprecated
+     * @deprecated [7.3] No use
      */
     public static function getLoader()
     {

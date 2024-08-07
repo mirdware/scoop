@@ -1,32 +1,34 @@
 <?php
 
-namespace Scoop\Command;
+namespace Scoop\Command\Handler;
 
-class Creator extends \Scoop\Command
+class Creator implements \Scoop\Command\Handler
 {
     private static $commands = array(
         'struct' => '\Scoop\Command\Creator\Struct'
     );
     private $bus;
+    private $writer;
 
-    public function __construct()
+    public function __construct(\Scoop\Command\Writer $writer)
     {
-        $this->bus = new Bus(self::$commands);
+        $this->writer = $writer;
+        $this->bus = new \Scoop\Command\Bus(self::$commands);
     }
 
-    protected function execute()
+    public function execute($command)
     {
-        $args = $this->getArguments();
+        $args = $command->getArguments();
         $commandName = array_shift($args);
         $this->bus->dispatch($commandName, $args);
     }
 
-    protected function help()
+    public function help()
     {
         echo 'create new starter artifacts', PHP_EOL, PHP_EOL,
         'Commands:', PHP_EOL;
         foreach (self::$commands as $command => $controller) {
-            echo $command, ' => ', self::writeLine($controller . '.php', Color::BLUE);
+            echo $command, ' => ', $this->writer->writeLine("$controller.php", \Scoop\Command\Style\Color::BLUE);
         }
         echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
     }

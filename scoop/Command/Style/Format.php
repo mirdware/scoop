@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Command;
+namespace Scoop\Command\Style;
 
 abstract class Format
 {

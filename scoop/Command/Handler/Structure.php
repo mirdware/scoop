@@ -1,24 +1,30 @@
 <?php
 
-namespace Scoop\Command;
+namespace Scoop\Command\Handler;
 
-class Structure extends \Scoop\Command
+class Structure implements \Scoop\Command\Handler
 {
-    protected function execute()
+    private $writer;
+
+    public function __construct(\Scoop\Command\Writer $writer)
     {
-        $name = $this->getOption('name', 'default');
-        $con = $this->getConnection($name);
+        $this->writer = $writer;
+    }
+    public function execute($command)
+    {
+        $name = $command->getOption('name', 'default');
+        $con = $this->getConnection($name, $command->getOption('user'), $command->getOption('password'));
         $this->createTable($con);
-        $creator = $this->update($name, $con);
+        $creator = $this->update($name, $command->getOption('schema', ''), $con);
         if ($creator->hasData()) {
             $creator->run();
-            self::writeLine('Structure changed!', Color::BLUE);
+            $this->writer->writeLine('Structure changed!', \Scoop\Command\Style\Color::BLUE);
         } else {
-            self::writeLine('Nothing to do!', Color::RED);
+            $this->writer->writeLine('Nothing to do!', \Scoop\Command\Style\Color::RED);
         }
     }
 
-    protected function help()
+    public function help()
     {
         echo 'Update database with the struct files', PHP_EOL, PHP_EOL,
         'Options:', PHP_EOL,
@@ -36,14 +42,12 @@ class Structure extends \Scoop\Command
          )');
     }
 
-    private function getConnection($name)
+    private function getConnection($name, $user, $password)
     {
         $options = array();
-        $user = $this->getOption('user');
         if ($user) {
             $options['user'] = $user;
         }
-        $password = $this->getOption('password');
         if ($password) {
             $options['password'] = $password;
         }
@@ -77,11 +81,11 @@ class Structure extends \Scoop\Command
         return $files;
     }
 
-    private function update($name, $con)
+    private function update($name, $schema, $con)
     {
         $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $name);
         $creator = $sqoStruct->create(array('name'));
-        $files = $this->getFiles($this->getOption('schema', ''));
+        $files = $this->getFiles($schema);
         $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);
         $con->beginTransaction();
         foreach ($files as $file) {
@@ -92,9 +96,9 @@ class Structure extends \Scoop\Command
                 if ($content) {
                     $con->exec($content);
                     $creator->create(array($name));
-                    self::writeLine('updated!', Color::GREEN);
+                    $this->writer->writeLine('updated!', \Scoop\Command\Style\Color::GREEN);
                 } else {
-                    self::writeLine('pending!', Color::YELLOW);
+                    $this->writer->writeLine('pending!', \Scoop\Command\Style\Color::YELLOW);
                 }
             }
         }

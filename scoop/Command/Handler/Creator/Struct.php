@@ -1,19 +1,27 @@
 <?php
 
-namespace Scoop\Command\Creator;
+namespace Scoop\Command\Handler\Creator;
 
-class Struct extends \Scoop\Command
+class Struct implements \Scoop\Command\Handler
 {
-    protected function execute()
+    private $writer;
+
+    public function __construct(\Scoop\Command\Writer $writer)
     {
-        $path = $this->getPath() . date('YmdGisv') . $this->getName() . '.sql';
+        $this->writer = $writer;
+    }
+    public function execute($command)
+    {
+        $name = $this->normalizeName($command->getOption('name'));
+        $path = $this->getPath($command->getOption('schema', ''));
+        $path = $path . date('YmdGisv') . $name . '.sql';
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        echo 'File ', self::write($path, \Scoop\Command\Color::BLUE), ' created', PHP_EOL;
+        echo 'File ', $this->writer->write($path, \Scoop\Command\Style\Color::BLUE), ' created', PHP_EOL;
     }
 
-    protected function help()
+    public function help()
     {
         echo 'Create file of struct on folder app/structs', PHP_EOL, PHP_EOL,
         'Options:', PHP_EOL,
@@ -21,9 +29,8 @@ class Struct extends \Scoop\Command
         '--schema => enter the new structure in a "scheme"(folder)', PHP_EOL;
     }
 
-    private function getName()
+    private function normalizeName($name)
     {
-        $name = $this->getOption('name');
         if (!$name) {
             return '';
         }
@@ -31,9 +38,9 @@ class Struct extends \Scoop\Command
         return str_replace(' ', '_', $name);
     }
 
-    private function getPath()
+    private function getPath($schema)
     {
-        $path = 'app/structs/' . $this->getOption('schema', '');
+        $path = "app/structs/$schema";
         if (strrpos($path, '/') !== strlen($path) - 1) {
             $path .= '/';
         }

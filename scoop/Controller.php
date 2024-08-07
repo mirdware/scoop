@@ -2,6 +2,9 @@
 
 namespace Scoop;
 
+/**
+ * @deprecated [7.4] use \Scoop\Http\Controller
+ */
 abstract class Controller
 {
     private static $request;
@@ -57,7 +60,7 @@ abstract class Controller
 
     /**
      * Atajo para lanzar una excepción 404 desde el controlador.
-     * @deprecated 7.1
+     * @deprecated [7.1] use Exception handler
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\NotFoundException
      */
@@ -68,7 +71,7 @@ abstract class Controller
 
     /**
      * Atajo para lanzar una excepción 403 desde el controlador.
-     * @deprecated 7.1
+     * @deprecated [7.1] use exception handler
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\accessDeniedException
      */
@@ -82,7 +85,7 @@ abstract class Controller
      * @param \Scoop\Validator $validator Objeto que contiene las validaciones a realizar.
      * @param array<mixed> $data contiene los datos a ser validados.
      * @throws \Scoop\Http\BadRequestException
-     * @deprecated 7.2
+     * @deprecated [7.2] use exception handler
     */
     protected function validate($validator, $data)
     {

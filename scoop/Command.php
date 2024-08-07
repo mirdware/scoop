@@ -2,6 +2,9 @@
 
 namespace Scoop;
 
+/**
+ * @deprecated [7.4] use \Scoop\Command\Handler
+ */
 abstract class Command
 {
     private $options = array();

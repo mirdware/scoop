@@ -23,20 +23,18 @@ class Router
             $controller = $this->getController($route['controller'], $method);
             if ($controller) {
                 $this->intercept($request);
-                $controllerReflection = new \ReflectionClass($controller);
-                if (!$controllerReflection->hasMethod($method)) {
-                    throw new \Scoop\Http\Exception\MethodNotAllowed(
-                        $controllerReflection->getName() . ' not implement ' . $method . ' method'
-                    );
+                if (is_object($controller)) {
+                    $controllerReflection = new \ReflectionClass($controller);
+                    if (is_callable($controller)) {
+                        $method = '__invoke';
+                    } elseif (!$controllerReflection->hasMethod($method)) {
+                        throw new \Scoop\Http\Exception\MethodNotAllowed(
+                            $controllerReflection->getName() . ' not implement ' . $method . ' method'
+                        );
+                    }
+                    return $this->execute($controllerReflection->getMethod($method), $route['params'], $controller);
                 }
-                $method = $controllerReflection->getMethod($method);
-                $numParams = count($route['params']);
-                if (
-                    $numParams >= $method->getNumberOfRequiredParameters() &&
-                    $numParams <= $method->getNumberOfParameters()
-                ) {
-                    return $method->invokeArgs($controller, $route['params']);
-                }
+                return $this->execute(new \ReflectionFunction($controller), $route['params']);
             }
         }
         throw new \Scoop\Http\Exception\NotFound();
@@ -93,18 +91,28 @@ class Router
     {
         if (is_array($controller)) {
             if (!isset($controller[$method])) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed('There not controller for ' . $method . ' method');
+                throw new \Scoop\Http\Exception\MethodNotAllowed("There not controller for $method method");
             }
             $controller = $controller[$method];
+            if (is_callable($controller)) {
+                return $controller;
+            }
         }
         if (!class_exists($controller)) {
-            throw new \Scoop\Http\Exception\NotFound('Class ' . $controller . ' not found');
-        }
-        $baseController = '\Scoop\Controller';
-        if (!is_subclass_of($controller, $baseController)) {
-            throw new \UnexpectedValueException($controller . ' not implement ' . $baseController);
+            throw new \Scoop\Http\Exception\NotFound("Class $controller not found");
         }
         return \Scoop\Context::inject($controller);
+    }
+
+    private function execute($callable, $params, $controller = null)
+    {
+        $numParams = count($params);
+        if (
+            $numParams >= $callable->getNumberOfRequiredParameters() &&
+            $numParams <= $callable->getNumberOfParameters()
+        ) {
+            return $controller ? $callable->invokeArgs($controller, $params) : $callable->invokeArgs($params);
+        }
     }
 
     private function getRoute($url)

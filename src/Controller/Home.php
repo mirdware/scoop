@@ -8,6 +8,9 @@ use App\Repository\Quote;
 
 class Home extends Controller
 {
+    /**
+     * @var array<array<string, string>>
+     */
     private $quotes;
 
     public function __construct(Quote $quote)
@@ -15,6 +18,9 @@ class Home extends Controller
         $this->quotes = $quote->publish();
     }
 
+    /**
+     * @return View
+     */
     public function get()
     {
         $view = new View('home');

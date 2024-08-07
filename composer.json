@@ -1,7 +1,7 @@
 {
     "name": "mirdware/scoop",
     "description": "Simple Characteristics of Object Oriented PHP",
-    "keywords": ["bootstrap", "scoop"],
+    "keywords": ["scoop", "ddd", "hexagonal", "cqrs", "onion", "engine"],
     "license": "MIT",
     "type": "project",
     "homepage": "http://getscoop.org",
@@ -32,7 +32,8 @@
         "phpunit/phpunit": "^11.2",
         "zircote/swagger-php": "^4.10",
         "phpat/phpat": "^0.10.18",
-        "phpstan/extension-installer": "^1.4"
+        "phpstan/extension-installer": "^1.4",
+        "veewee/composer-run-parallel": "^1.3"
     },
     "scripts": {
         "pre-install-cmd": [
@@ -41,20 +42,15 @@
         "test:lint": "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
         "test:static": "./vendor/bin/phpstan --configuration=app/phpstan.neon",
         "test:unit" : "./vendor/bin/phpunit --configuration=app/phpunit.xml",
-        "test": [
-            "@test:lint",
-            "@test:static",
-            "@test:unit"
-        ],
-        "fix:lint": "./vendor/bin/phpcbf -p ./src --standard=app/phpcs.xml",
-        "fix": [
-            "@fix:lint"
-        ],
+        "test": "@parallel test:lint test:static test:unit",
+        "fix:lint": "./vendor/bin/phpcbf --standard=app/phpcs.xml -p",
+        "fix": "@fix:lint ./src",
         "api": "./vendor/bin/openapi src -o openapi.yaml"
     },
     "config": {
         "allow-plugins": {
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "veewee/composer-run-parallel": true
         }
     }
 }

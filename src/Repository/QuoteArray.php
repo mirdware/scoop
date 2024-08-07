@@ -4,6 +4,9 @@ namespace App\Repository;
 
 class QuoteArray implements Quote
 {
+    /**
+     * @return array<array<string, string>>
+     */
     public function publish()
     {
         return array(

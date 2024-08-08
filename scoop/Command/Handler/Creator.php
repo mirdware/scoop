@@ -2,7 +2,7 @@
 
 namespace Scoop\Command\Handler;
 
-class Creator implements \Scoop\Command\Handler
+class Creator
 {
     private static $commands = array(
         'struct' => '\Scoop\Command\Creator\Struct'

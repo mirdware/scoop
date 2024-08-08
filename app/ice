@@ -25,7 +25,7 @@ if (preg_match('/^[a-z][\w-]*$/', $commandName)) {
         $code = intval($ex->getCode());
         $writer->writeLine(
             $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : ''),
-            \Scoop\Command\Color::RED
+            \Scoop\Command\Style\Color::RED
         );
         exit($code ? $code : 1);
     }

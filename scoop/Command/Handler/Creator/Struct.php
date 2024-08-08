@@ -2,7 +2,7 @@
 
 namespace Scoop\Command\Handler\Creator;
 
-class Struct implements \Scoop\Command\Handler
+class Struct
 {
     private $writer;
 

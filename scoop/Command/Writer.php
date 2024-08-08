@@ -2,7 +2,7 @@
 
 namespace Scoop\Command;
 
-final class Writer
+class Writer
 {
     public function writeLine()
     {

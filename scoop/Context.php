@@ -5,7 +5,6 @@ namespace Scoop;
 class Context
 {
     private static $connections = array();
-    private static $configParameters = array();
     private static $loader;
     private static $injector;
     private static $environment;
@@ -76,9 +75,6 @@ class Context
 
     public static function inject($id)
     {
-        if (!self::$injector->has($id) && isset(self::$configParameters[$id])) {
-            return self::$injector->create($id, self::$configParameters[$id]);
-        }
         return self::$injector->get($id);
     }
 
@@ -103,17 +99,9 @@ class Context
     private static function configure()
     {
         self::configureInjector();
-        self::configureLogger();
         $lang = self::$environment->getConfig('language', 'es');
         \Scoop\Validator::setMessages(self::$environment->getConfig('messages.' . $lang . '.fail', array()));
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
-        self::$configParameters['Scoop\Persistence\Vault'] = self::$environment->getConfig('vault', array());
-        self::$configParameters['Scoop\Event\Bus'] = array(
-            'providers' => self::$environment->getConfig('events', array())
-        );
-        self::$configParameters['Scoop\Persistence\Entity\Manager'] = array(
-            'map' => self::$environment->getConfig('model', array())
-        );
     }
 
     private static function configureInjector()
@@ -124,21 +112,5 @@ class Context
         if (!(self::$injector instanceof $baseInjector)) {
             throw new \UnexpectedValueException($injector . ' not implement ' . $baseInjector);
         }
-    }
-
-    private static function configureLogger()
-    {
-        $logHandlers = self::$environment->getConfig('log', array());
-        $handlers = array();
-        foreach ($logHandlers as $level => $params) {
-            if (!isset($params['handler'])) {
-                throw new \UnexpectedValueException('Handler not configured for ' . $level . ' level');
-            }
-            $handler = $params['handler'] . ':' . $level;
-            unset($params['handler']);
-            $handlers[$level] = $handler;
-            self::$configParameters[$handler] = $params;
-        }
-        self::$configParameters['Scoop\Log\Logger'] = compact('handlers');
     }
 }

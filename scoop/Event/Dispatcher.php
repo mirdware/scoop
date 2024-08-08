@@ -7,7 +7,7 @@ class Dispatcher
     private $bus;
     private $lastResponse;
 
-    public function __construct(Bus $bus)
+    public function __construct(\Scoop\Event\Bus $bus)
     {
         $this->bus = $bus;
     }

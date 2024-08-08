@@ -5,11 +5,11 @@ namespace Scoop\Log;
 class Logger
 {
     protected const DEFAULT_DATETIME_FORMAT = 'c';
-    private $handlers;
+    private $handlerFactory;
 
-    public function __construct($handlers)
+    public function __construct(\Scoop\Log\Factory\Handler $handlerFactory)
     {
-        $this->handlers = $handlers;
+        $this->handlerFactory = $handlerFactory;
     }
 
     public function emergency($message, $context = array())
@@ -54,18 +54,15 @@ class Logger
 
     public function log($level, $message, $context = array())
     {
-        $levelClass = '\Scoop\Log\Level::' . strtoupper($level);
-        if (!defined($levelClass)) {
-            throw new \InvalidArgumentException($level . ' not support level');
-        }
-        if (isset($this->handlers[$level])) {
-            $handler = \Scoop\Context::inject($this->handlers[$level]);
-            return $handler->handle(array(
-                'message' => self::interpolate(var_export($message, true), $context),
-                'level' => $level,
-                'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)
-            ));
-        }
+            $handlers = $this->handlerFactory->create($level);
+            foreach ($handlers as $handler) {
+                $handler->handle(array(
+                    'message' => self::interpolate(var_export($message, true), $context),
+                    'context' => $context,
+                    'level' => $level,
+                    'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)
+                ));
+            }
     }
 
     protected static function interpolate($message, $context = array())

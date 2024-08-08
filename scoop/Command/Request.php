@@ -2,7 +2,7 @@
 
 namespace Scoop\Command;
 
-final class Request
+class Request
 {
     private $options = array();
     private $flags = array();

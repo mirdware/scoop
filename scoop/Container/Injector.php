@@ -8,7 +8,12 @@ abstract class Injector
 
     public function __construct($environment)
     {
-        $this->bind($environment->getConfig('providers', array()));
+        $this->bind(array(
+            '\Scoop\Log\Logger' => '\Scoop\Log\Factory\Logger:create',
+            '\Scoop\Event\Bus' => '\Scoop\Event\Factory\Bus:create',
+            '\Scoop\Persistence\Vault' => '\Scoop\Persistence\Factory\Vault:create',
+            '\Scoop\Persistence\Entity\Manager' => '\Scoop\Persistence\Factory\EntityManager:create'
+        ) + $environment->getConfig('providers', array()));
     }
 
     public static function formatClassName($className)
@@ -30,29 +35,47 @@ abstract class Injector
         $id = self::formatClassName($id);
         if (!$this->has($id)) {
             if (isset($this->rules[$id])) {
-                return $this->get($this->rules[$id]);
+                return $this->create($this->rules[$id], $id);
             }
-            $this->create($id);
+            return $this->create($id);
         }
         return $this->getInstance($id);
     }
 
-    public function create($id, $args = array())
+    public function create($id, $inheritance = null)
     {
-        $index = strpos($id, ':');
-        $className = $index === false ? $id : substr($id, 0, $index);
+        $method = explode(':', $id);
+        $instance = $this->instantiate($method[0], isset($method[1]) ? $method[1] : null);
+        if ($inheritance) {
+            if (!is_a($instance, $inheritance) && !is_subclass_of($instance, $inheritance)) {
+                $className = get_class($instance);
+                throw new \Scoop\Container\Exception("Object of type $className does not instance of $inheritance", 1105);
+            }
+            $id = $inheritance;
+        }
+        $this->setInstance($id, $instance);
+        return $instance;
+    }
+
+    private function instantiate($className, $method)
+    {
+        if (!class_exists($className)) {
+            throw new \Scoop\Container\Exception\NotFound("Class $className not found");
+        }
         $class = new \ReflectionClass($className);
         if (!$class->isInstantiable()) {
-            throw new \Exception('Cannot inject ' . $className . ' because it cannot be instantiated');
+            throw new \Scoop\Container\Exception("Cannot inject $className because it cannot be instantiated", 1101);
         }
         $constructor = $class->getConstructor();
         if ($constructor) {
-            $args = $this->getArguments($constructor->getParameters(), $args);
+            $args = $this->getArguments($constructor->getParameters());
             $instance = $class->newInstanceArgs($args);
         } else {
             $instance = $class->newInstanceWithoutConstructor();
         }
-        $this->setInstance($id, $instance);
+        if ($method && $class->hasMethod($method)) {
+            $instance = $class->getMethod($method)->invoke($instance);
+        }
         return $instance;
     }
 
@@ -65,17 +88,13 @@ abstract class Injector
         }
     }
 
-    private function getArguments($params, $definitions)
+    private function getArguments($params)
     {
         $args = array();
         foreach ($params as $param) {
-            if (isset($definitions[$param->getName()])) {
-                $args[] = $definitions[$param->getName()];
-            } else {
-                $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-                if ($class) {
-                    $args[] = \Scoop\Context::inject($class->getName());
-                }
+            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
+            if ($class) {
+                $args[] = \Scoop\Context::inject($class->getName());
             }
         }
         return $args;

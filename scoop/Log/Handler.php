@@ -10,7 +10,9 @@ abstract class Handler
     {
         $output = self::DEFAULT_FORMAT;
         foreach ($log as $var => $value) {
-            $output = str_replace('%' . $var . '%', $value, $output);
+            if (is_string($value)) {
+                $output = str_replace("%$var%", $value, $output);
+            }
         }
         return $output;
     }

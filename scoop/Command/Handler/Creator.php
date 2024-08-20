@@ -5,7 +5,7 @@ namespace Scoop\Command\Handler;
 class Creator
 {
     private static $commands = array(
-        'struct' => '\Scoop\Command\Creator\Struct'
+        'struct' => 'Scoop\Command\Handler\Creator\Struct'
     );
     private $bus;
     private $writer;
@@ -25,11 +25,16 @@ class Creator
 
     public function help()
     {
-        echo 'create new starter artifacts', PHP_EOL, PHP_EOL,
-        'Commands:', PHP_EOL;
+        $this->writer->write(
+            array('create new starter artifacts' . PHP_EOL),
+            array(PHP_EOL . 'Commands:')
+        );
         foreach (self::$commands as $command => $controller) {
-            echo $command, ' => ', $this->writer->writeLine("$controller.php", \Scoop\Command\Style\Color::BLUE);
+            $this->writer->write(
+                array("$command => "),
+                array("$controller.php", \Scoop\Command\Style\Color::BLUE)
+            );
         }
-        echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
+        $this->writer->write(PHP_EOL . 'Run app/ice new COMMAND --help for more information');
     }
 }

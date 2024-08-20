@@ -18,15 +18,21 @@ class Struct
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        echo 'File ', $this->writer->write($path, \Scoop\Command\Style\Color::BLUE), ' created', PHP_EOL;
+        $this->writer->write(
+            array('File '),
+            array($path, \Scoop\Command\Style\Color::BLUE),
+            array(' created')
+        );
     }
 
     public function help()
     {
-        echo 'Create file of struct on folder app/structs', PHP_EOL, PHP_EOL,
-        'Options:', PHP_EOL,
-        '--name => add a description to end of genered file', PHP_EOL,
-        '--schema => enter the new structure in a "scheme"(folder)', PHP_EOL;
+        $this->writer->write(
+            array('Create file of struct on folder app/structs' . PHP_EOL),
+            array('Options:'),
+            array('--name => add a description to end of genered file'),
+            array('--schema => enter the new structure in a "scheme"(folder)')
+        );
     }
 
     private function normalizeName($name)

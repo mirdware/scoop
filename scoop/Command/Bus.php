@@ -41,7 +41,7 @@ class Bus
         if (is_subclass_of($this->instances[$name], '\Scoop\Command')) {
             $this->instances[$name]->run($args);
         } else {
-            if (isset($args['--help'])) {
+            if (in_array('--help', $args)) {
                 $this->instances[$name]->help();
             } else {
                 $command = new \Scoop\Command\Request($args);

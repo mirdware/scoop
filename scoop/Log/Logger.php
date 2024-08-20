@@ -4,7 +4,6 @@ namespace Scoop\Log;
 
 class Logger
 {
-    protected const DEFAULT_DATETIME_FORMAT = 'c';
     private $handlerFactory;
 
     public function __construct(\Scoop\Log\Factory\Handler $handlerFactory)
@@ -54,15 +53,15 @@ class Logger
 
     public function log($level, $message, $context = array())
     {
-            $handlers = $this->handlerFactory->create($level);
-            foreach ($handlers as $handler) {
-                $handler->handle(array(
-                    'message' => self::interpolate(var_export($message, true), $context),
-                    'context' => $context,
-                    'level' => $level,
-                    'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)
-                ));
-            }
+        $handlers = $this->handlerFactory->create($level);
+        foreach ($handlers as $handler) {
+            $handler->handle(array(
+                'message' => self::interpolate(var_export($message, true), $context),
+                'context' => $context,
+                'level' => $level,
+                'timestamp' => new \DateTimeImmutable()
+            ));
+        }
     }
 
     protected static function interpolate($message, $context = array())

@@ -18,20 +18,22 @@ class Structure
         $creator = $this->update($name, $command->getOption('schema', ''), $con);
         if ($creator->hasData()) {
             $creator->run();
-            $this->writer->writeLine('Structure changed!', \Scoop\Command\Style\Color::BLUE);
+            $this->writer->write('Structure changed!', \Scoop\Command\Style\Color::BLUE);
         } else {
-            $this->writer->writeLine('Nothing to do!', \Scoop\Command\Style\Color::RED);
+            $this->writer->write('Nothing to do!', \Scoop\Command\Style\Color::RED);
         }
     }
 
     public function help()
     {
-        echo 'Update database with the struct files', PHP_EOL, PHP_EOL,
-        'Options:', PHP_EOL,
-        '--schema => update only structs of a specific "schema"(folder)', PHP_EOL,
-        '--name => use a diferent database connection than "default"', PHP_EOL,
-        '--user => change the user of the database connection', PHP_EOL,
-        '--password => change the password of the database connection', PHP_EOL;
+        $this->writer->write(
+            array('Update database with the struct files' . PHP_EOL),
+            array(PHP_EOL . 'Options:'),
+            array(PHP_EOL . '--schema => update only structs of a specific "schema"(folder)'),
+            array(PHP_EOL . '--name => use a diferent database connection than "default"'),
+            array(PHP_EOL . '--user => change the user of the database connection'),
+            array(PHP_EOL . '--password => change the password of the database connection')
+        );
     }
 
     private function createTable($con)
@@ -91,14 +93,14 @@ class Structure
         foreach ($files as $file) {
             $name = basename($file);
             if (!in_array($name, $structs)) {
-                echo 'File ', $file, '... ';
+                $this->writer->write('File ' . $file . '... ');
                 $content = file_get_contents($file);
                 if ($content) {
                     $con->exec($content);
                     $creator->create(array($name));
-                    $this->writer->writeLine('updated!', \Scoop\Command\Style\Color::GREEN);
+                    $this->writer->write('updated!', \Scoop\Command\Style\Color::GREEN);
                 } else {
-                    $this->writer->writeLine('pending!', \Scoop\Command\Style\Color::YELLOW);
+                    $this->writer->write('pending!', \Scoop\Command\Style\Color::YELLOW);
                 }
             }
         }

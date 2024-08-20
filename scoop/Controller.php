@@ -60,7 +60,7 @@ abstract class Controller
 
     /**
      * Atajo para lanzar una excepción 404 desde el controlador.
-     * @deprecated [7.1] use Exception handler
+     * @deprecated [7.1] use exception handler
      * @param string $msg Mensaje enviado a la excepción.
      * @throws \Scoop\Http\NotFoundException
      */

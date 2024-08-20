@@ -4,18 +4,32 @@ namespace Scoop\Command;
 
 class Writer
 {
-    public function writeLine()
+    private $stream;
+
+    public function __construct()
     {
-        echo call_user_func_array(array($this, 'write'), func_get_args()), PHP_EOL;
+        $this->stream = 'php://stdout';
+    }
+    public function writeError()
+    {
+        $this->stream = 'php://stderr';
+        return call_user_func_array(array($this, 'write'), func_get_args());
     }
 
     public function write()
     {
-        $styles = func_get_args();
-        $msg = array_shift($styles);
-        if (!is_string($msg)) {
-            throw new \InvalidArgumentException('first parameter should be string');
+        $args = func_get_args();
+        if (is_string($args[0])) {
+            $args = array($args);
         }
-        echo "\e[", implode(';', $styles), 'm', $msg, "\e[0m";
+        $std = fopen($this->stream, 'w');
+        foreach ($args as $styles) {
+            $msg = array_shift($styles);
+            fwrite($std, "\e[" . implode(';', $styles) . 'm' . $msg . "\e[0m");
+        }
+        fwrite($std, PHP_EOL);
+        fclose($std);
+        $this->stream = 'php://stdout';
+        return $this;
     }
 }

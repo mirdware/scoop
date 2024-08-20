@@ -3,7 +3,7 @@
 namespace Scoop;
 
 /**
- * @deprecated [7.4] use \Scoop\Command\Handler
+ * @deprecated [7.4] use execute and help public methods
  */
 abstract class Command
 {

@@ -22,13 +22,33 @@ class Handler
             return $this->instances[$level];
         }
         $this->instances[$level] = array();
-        if (!$this->handlers[$level]) {
-            return $this->instances[$level];
+        if (isset($this->handlers['all'])) {
+            $this->handlers[$level] = array_merge(
+                $this->handlers['all'],
+                isset($this->handlers[$level]) ? $this->handlers[$level] : array()
+            );
         }
-        foreach ($this->handlers[$level] as $className => $args) {
-            $ref = new \ReflectionClass($className);
-            $this->instances[$level][] = $ref->newInstanceArgs((array) $args);
+        if (!empty($this->handlers[$level])) {
+            $this->instantiate($level);
         }
         return $this->instances[$level];
+    }
+
+    private function instantiate($level)
+    {
+        foreach ($this->handlers[$level] as $className => $args) {
+            $ref = new \ReflectionClass($className);
+            if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
+                $env = \Scoop\Context::getEnvironment();
+                $args['file'] = $env->getConfig('storage', 'app/storage/')
+                . 'logs/' . $env->getConfig('app.name')
+                . '-' . date('Y-m-d') . '.log';
+            }
+            if (!isset($args['formatter'])) {
+                $args['formatter'] = 'Scoop\Log\Formatter';
+            }
+            $args['formatter'] = \Scoop\Context::inject($args['formatter']);
+            $this->instances[$level][] = $ref->newInstanceArgs((array) $args);
+        }
     }
 }

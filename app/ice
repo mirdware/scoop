@@ -13,38 +13,31 @@ $environment = \Scoop\Context::getEnvironment();
 if ($trace) {
     $commandName = array_shift($argv);
 }
-$writer = new \Scoop\Command\Writer();
-$commands = $environment->getConfig('commands', array()) + array(
-    'new' => 'Scoop\Command\Handler\Creator',
-    'dbup' => 'Scoop\Command\Handler\Structure'
-);
+$writer = \Scoop\Context::inject('\Scoop\Command\Writer');
+$commandBus = \Scoop\Context::inject('\Scoop\Command\Bus');
 if ($commandName !== null && preg_match('/^[a-z][\w-]*$/', $commandName)) {
-    $commandBus = new \Scoop\Command\Bus($commands);
     try {
         $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
         $code = intval($ex->getCode());
-        $writer->writeError(
-            $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : ''),
-            \Scoop\Command\Style\Color::RED
-        );
+        $writer->writeError('<error!' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
         exit($code ? $code : 1);
     }
 } else {
+    $commands = $commandBus->getCommands();
     $writer->write(
-        array('ICE/SCOOP version '),
-        array($environment->getVersion(), \Scoop\Command\Style\Color::YELLOW, \Scoop\Command\Style\Format::BOLD),
-        array(PHP_EOL . PHP_EOL . 'Commands:')
+        'ICE/SCOOP version <high!' . $environment->getVersion() . '!>',
+        '',
+        'Commands:'
     );
     foreach ($commands as $command => $controller) {
-        $writer->write(
-            array("$command => "),
-            array($controller . '.php', \Scoop\Command\Style\Color::BLUE)
-        );
+        $writer->write("$command => <link!$controller.php!>");
     }
     $writer->write(
-        array(PHP_EOL . 'Options:'),
-        array(PHP_EOL . '--trace => show exception stack when execute a command'),
-        array(PHP_EOL . 'Run app/ice COMMAND --help for more information')
+        '',
+        'Options:',
+        '--trace => show exception stack when execute a command',
+        '',
+        'Run app/ice COMMAND --help for more information'
     );
 }

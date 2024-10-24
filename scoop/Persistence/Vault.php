@@ -7,7 +7,7 @@ class Vault
     private $secret;
     private $encoding;
 
-    public function __construct($secret, $encoding = 'base64')
+    public function __construct($secret, $encoding)
     {
         $this->secret = $secret;
         $this->encoding = $encoding;

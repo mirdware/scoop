@@ -46,6 +46,14 @@ class DBC extends \PDO
         }
     }
 
+    #[\ReturnTypeWillChange]
+    public function rollBack()
+    {
+        if (parent::inTransaction()) {
+            parent::rollBack();
+        }
+    }
+
     private function __clone()
     {
     }

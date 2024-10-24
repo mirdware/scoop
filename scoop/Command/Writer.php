@@ -5,10 +5,16 @@ namespace Scoop\Command;
 class Writer
 {
     private $stream;
+    private $styles = array("\e[0m");
+    private $names = array('!>');
 
-    public function __construct()
+    public function __construct($styles)
     {
         $this->stream = 'php://stdout';
+        foreach ($styles as $name => $style) {
+            array_push($this->names, "<$name!");
+            array_push($this->styles, "\e[" . implode(';', $style) . 'm');
+        }
     }
     public function writeError()
     {
@@ -19,17 +25,18 @@ class Writer
     public function write()
     {
         $args = func_get_args();
-        if (is_string($args[0])) {
-            $args = array($args);
-        }
+        $inline = is_bool($args[0]) ? array_shift($args) : false;
         $std = fopen($this->stream, 'w');
-        foreach ($args as $styles) {
-            $msg = array_shift($styles);
-            fwrite($std, "\e[" . implode(';', $styles) . 'm' . $msg . "\e[0m");
+        foreach ($args as $msg) {
+            fwrite($std, $this->process($msg, $inline));
         }
-        fwrite($std, PHP_EOL);
         fclose($std);
         $this->stream = 'php://stdout';
         return $this;
+    }
+
+    public function process($msg, $inline = false)
+    {
+        return str_replace($this->names, $this->styles, $msg) . ($inline ? '' : PHP_EOL);
     }
 }

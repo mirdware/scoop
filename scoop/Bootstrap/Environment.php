@@ -23,9 +23,9 @@ class Environment
             'data' => array()
         );
         if (isset($_SERVER['HTTP_HOST'])) {
-            $http = !empty($_SERVER['HTTPS']) &&
-                $_SERVER['HTTPS'] !== 'off' ||
-                $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
+            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
             define('ROOT', $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
         self::$loaders += $this->getConfig('loaders', array());

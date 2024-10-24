@@ -18,20 +18,17 @@ class Struct
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        $this->writer->write(
-            array('File '),
-            array($path, \Scoop\Command\Style\Color::BLUE),
-            array(' created')
-        );
+        $this->writer->write("File <link!$path!> created");
     }
 
     public function help()
     {
         $this->writer->write(
-            array('Create file of struct on folder app/structs' . PHP_EOL),
-            array('Options:'),
-            array('--name => add a description to end of genered file'),
-            array('--schema => enter the new structure in a "scheme"(folder)')
+            'Create file of struct on folder app/structs',
+            '',
+            'Options:',
+            '--name => add a description to end of genered file',
+            '--schema => enter the new structure in a "scheme"(folder)'
         );
     }
 

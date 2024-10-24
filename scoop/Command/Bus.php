@@ -49,4 +49,9 @@ class Bus
             }
         }
     }
+
+    public function getCommands()
+    {
+        return $this->commands;
+    }
 }

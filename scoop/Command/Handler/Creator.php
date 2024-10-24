@@ -26,15 +26,13 @@ class Creator
     public function help()
     {
         $this->writer->write(
-            array('create new starter artifacts' . PHP_EOL),
-            array(PHP_EOL . 'Commands:')
+            'create new starter artifacts',
+            '',
+            'Commands:'
         );
         foreach (self::$commands as $command => $controller) {
-            $this->writer->write(
-                array("$command => "),
-                array("$controller.php", \Scoop\Command\Style\Color::BLUE)
-            );
+            $this->writer->write("$command => <link!$controller.php!>");
         }
-        $this->writer->write(PHP_EOL . 'Run app/ice new COMMAND --help for more information');
+        $this->writer->write('', 'Run app/ice new COMMAND --help for more information');
     }
 }

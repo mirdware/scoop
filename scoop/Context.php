@@ -55,7 +55,7 @@ class Context
     public static function reset()
     {
         foreach (self::$connections as $connection) {
-            $connection->commit();
+            $connection->rollBack();
         }
         self::configureInjector();
     }

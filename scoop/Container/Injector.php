@@ -8,12 +8,14 @@ abstract class Injector
 
     public function __construct($environment)
     {
-        $this->bind(array(
-            '\Scoop\Log\Logger' => '\Scoop\Log\Factory\Logger:create',
+        $this->bind($environment->getConfig('providers', array()) + array(
             '\Scoop\Event\Bus' => '\Scoop\Event\Factory\Bus:create',
+            '\Scoop\Log\Logger' => '\Scoop\Log\Factory\Logger:create',
+            '\Scoop\Command\Bus' => '\Scoop\Command\Factory\Bus:create',
+            '\Scoop\Command\Writer' => '\Scoop\Command\Factory\Writer:create',
             '\Scoop\Persistence\Vault' => '\Scoop\Persistence\Factory\Vault:create',
             '\Scoop\Persistence\Entity\Manager' => '\Scoop\Persistence\Factory\EntityManager:create'
-        ) + $environment->getConfig('providers', array()));
+        ));
     }
 
     public static function formatClassName($className)

@@ -27,6 +27,7 @@ class Application
         } catch (\Exception $ex) {
             $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
             $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+            \Scoop\Context::reset();
             $status = $exceptionManager->getStatusCode($ex);
             $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
             if (!$status) throw $ex;

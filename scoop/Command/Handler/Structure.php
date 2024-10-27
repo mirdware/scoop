@@ -18,7 +18,7 @@ class Structure
         $creator = $this->update($name, $command->getOption('schema', ''), $con);
         if ($creator->hasData()) {
             $creator->run();
-            $this->writer->write('<fine!Structure changed!!>');
+            $this->writer->write('<done!Structure changed!!>');
         } else {
             $this->writer->write('<info!Nothing to do!!>');
         }
@@ -27,7 +27,7 @@ class Structure
     public function help()
     {
         $this->writer->write(
-            'Update database with the struct files',
+            'Update database with the struct files.',
             '',
             'Options:',
             '--schema => update only structs of a specific "schema"(folder)',

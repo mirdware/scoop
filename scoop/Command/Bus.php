@@ -4,8 +4,8 @@ namespace scoop\Command;
 
 class Bus
 {
-    private $commands;
-    private $instances;
+    private $commands = array();
+    private $instances = array();
 
     public function __construct($commands)
     {
@@ -13,7 +13,6 @@ class Bus
          * @deprecated [7.4]
          */
         $baseClass = '\Scoop\Command';
-        $this->commands = array();
         foreach ($commands as $command => $handler) {
             $ref = new \ReflectionClass($handler);
             $isValidHandler = $ref->hasMethod('help') && $ref->hasMethod('execute');
@@ -41,10 +40,10 @@ class Bus
         if (is_subclass_of($this->instances[$name], '\Scoop\Command')) {
             $this->instances[$name]->run($args);
         } else {
-            if (in_array('--help', $args)) {
+            $command = new \Scoop\Command\Request($args);
+            if ($command->getOption('help')) {
                 $this->instances[$name]->help();
             } else {
-                $command = new \Scoop\Command\Request($args);
                 $this->instances[$name]->execute($command);
             }
         }

@@ -2,10 +2,10 @@
 
 namespace Scoop\Bootstrap\Loader;
 
-class Json
+class Importer
 {
     public function load($url)
     {
-        return json_decode(file_get_contents($url . '.json'), true);
+        return require $url . '.php';
     }
 }

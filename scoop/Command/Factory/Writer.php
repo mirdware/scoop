@@ -13,8 +13,8 @@ class Writer
                 'alert' => array(\Scoop\Command\Style\Color::YELLOW),
                 'success' => array( \Scoop\Command\Style\Color::GREEN),
                 'info' => array(\Scoop\Command\Style\Background::BLUE),
-                'danger' => array(\Scoop\Command\Style\Background::RED),
-                'fine' => array(\Scoop\Command\Style\Background::GREEN),
+                'fail' => array(\Scoop\Command\Style\Background::RED),
+                'done' => array(\Scoop\Command\Style\Background::GREEN),
                 'warning' => array(\Scoop\Command\Style\Background::YELLOW),
                 'high' => array(\Scoop\Command\Style\Color::YELLOW, \Scoop\Command\Style\Format::BOLD)
             ))

@@ -24,7 +24,7 @@ class Struct
     public function help()
     {
         $this->writer->write(
-            'Create file of struct on folder app/structs',
+            'Create file of struct on folder app/structs.',
             '',
             'Options:',
             '--name => add a description to end of genered file',

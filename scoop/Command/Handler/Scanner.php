@@ -2,16 +2,16 @@
 
 namespace Scoop\Command\Handler;
 
-class Creator extends Router
+class Scanner extends Router
 {
     public function __construct(\Scoop\Command\Writer $writer)
     {
         parent::__construct(
-            'create new starter artifacts',
+            'Scan project folders',
             $writer,
             new \Scoop\Command\Bus( array(
-                'struct' => 'Scoop\Command\Handler\Creator\Struct'
-            )
-        ));
+            'types' => 'Scoop\Command\Handler\Scanner\Type',
+            'routes' => 'Scoop\Command\Handler\Scanner\Route'
+        )));
     }
 }

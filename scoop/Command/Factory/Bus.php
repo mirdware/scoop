@@ -10,6 +10,7 @@ class Bus
 
             \Scoop\Context::getEnvironment()->getConfig('commands', array()) + array(
                 'new' => 'Scoop\Command\Handler\Creator',
+                'scan' => 'Scoop\Command\Handler\Scanner',
                 'dbup' => 'Scoop\Command\Handler\Structure'
             )
         );

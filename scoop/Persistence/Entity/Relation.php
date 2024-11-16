@@ -25,6 +25,7 @@ class Relation
     {
         foreach ($relations as $name => $relation) {
             $property = $object->getProperty($name);
+            if (!$property->isInitialized($entity)) continue;
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
             list($relationName, $mapperKey) = $this->getPropertyRelation($relation);

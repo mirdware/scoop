@@ -7,7 +7,7 @@ class Route extends \Scoop\Bootstrap\Scanner
     public function __construct($directory) {
         $cacheFilePath = $this->getPath('/cache/', 'routes.index.php');
         $metaFilePath = $this->getPath('/cache/', 'routes.meta.php');
-        parent::__construct($directory, '/route\.php$/', $cacheFilePath, $metaFilePath);
+        parent::__construct($directory, '/endpoint\.php$/', $cacheFilePath, $metaFilePath);
     }
 
     protected function buildMap()
@@ -16,7 +16,7 @@ class Route extends \Scoop\Bootstrap\Scanner
         foreach ($this->map as $filePath => $metaInfo) {
             if ($metaInfo['id'] !== null) {
                 $map[$metaInfo['id']] = '/' . str_replace(
-                    array($this->directory, 'route.php'),
+                    array($this->directory, 'endpoint.php'),
                     '',
                     $filePath
                  );

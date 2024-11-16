@@ -14,7 +14,7 @@ class Min extends Rule
     public function validate($value)
     {
         if (is_numeric($value)) {
-            return $value <= $this->min;
+            return $value >= $this->min;
         }
         return false;
     }

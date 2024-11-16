@@ -13,11 +13,7 @@ class Manager
         $this->map = $map;
         $this->mapper = new Mapper($map['entities'], $map['values']);
         $this->relations = new Relation($map['relations'], $this->mapper, $this);
-    }
-
-    public function __destruct()
-    {
-        $this->flush();
+        register_shutdown_function(array($this, 'flush'));
     }
 
     public function save($entity)

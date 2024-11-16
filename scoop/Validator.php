@@ -64,16 +64,29 @@ class Validator
 
     private function getMessage($rule, $params, $value)
     {
-        $params += array('@value' => is_string($value) ? $value : json_encode($value)) + $rule->getParams();
-        $name = get_class($rule);
-        if (isset(self::$msg[$name])) {
+        $params += array('@value' => is_string($value) ? $value : json_encode(value: $value)) + $rule->getParams();
+        $template = $this->getTemplateMessage($rule, self::$msg);
+        if ($template) {
             $keys = array_keys($params);
             foreach ($keys as &$key) {
                 $key = '{' . $key . '}';
             }
-            return str_replace($keys, $params, self::$msg[$name]);
+            return str_replace($keys, $params, $template);
         }
         return self::DEFAULT_MSG;
+    }
+
+    private function getTemplateMessage($rule, $messages)
+    {
+        $className = get_class($rule);
+        if (isset($messages[$className])) {
+            $unwrapped = $rule->unwrap();
+            if ($unwrapped) {
+                return $this->getTemplateMessage($unwrapped, $messages[$className]);
+            }
+            return $messages[$className];
+        }
+        return null;
     }
 
     private function getValue($field, $value) {

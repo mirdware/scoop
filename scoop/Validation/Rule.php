@@ -19,6 +19,11 @@ abstract class Rule
         return $this;
     }
 
+    public function unwrap()
+    {
+        return null;
+    }
+
     /**
      * Obtiene los párametros de apoyo (max, min, etc).
      * @return array<string|integer> Párametros de apoyo

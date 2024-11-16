@@ -7,16 +7,18 @@ class Same extends Rule
     private $subjects;
     protected $fail;
 
-    public function __construct()
+    public function __construct($subjects)
     {
-        $this->subjects = func_get_args();
+        $this->subjects = $subjects;
     }
 
     public function validate($value)
     {
-        foreach ($this->subjects as $subject) {
-            if ($value !== $this->data[$subject]) {
-                $this->fail = $subject;
+        foreach ($this->subjects as $subject => $name) {
+            $subject = is_numeric($subject) ? $name : $subject;
+            $data = isset($this->data[$subject]) ? $this->data[$subject] : null;
+            if ($value !== $data) {
+                $this->fail = $name;
                 return false;
             }
         }

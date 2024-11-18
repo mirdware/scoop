@@ -1,16 +1,16 @@
 <?php
 
-use App\Controller\Home;
-
 return array(
     'home' => array(
         'url' => '/',
-        'controller' => Home::class
+        'controller' => 'App\Controller\Home'
     ),
     'health-check' => array(
         'url' => '/health',
         'controller' => array(
-            'get' => fn() => array('status' => 'OK')
+            'get' => function() {
+                return array('status' => 'OK');
+            }
         )
     )
 );

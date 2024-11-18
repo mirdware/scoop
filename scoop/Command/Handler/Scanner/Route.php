@@ -22,7 +22,7 @@ class Route
     public function help()
     {
         $this->writer->write(
-            'Scan routes folder searching files route.php with correct structure.',
+            'Scan routes folder searching files route.php with correct structure.'
         );
     }
 }

@@ -31,7 +31,7 @@ class Type
     public function help()
     {
         $this->writer->write(
-            'Scan source folder for abstractions and their implementations.',
+            'Scan source folder for abstractions and their implementations.'
         );
     }
 }

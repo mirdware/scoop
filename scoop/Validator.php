@@ -64,7 +64,7 @@ class Validator
 
     private function getMessage($rule, $params, $value)
     {
-        $params += array('@value' => is_string($value) ? $value : json_encode(value: $value)) + $rule->getParams();
+        $params += array('@value' => is_string($value) ? $value : json_encode($value)) + $rule->getParams();
         $template = $this->getTemplateMessage($rule, self::$msg);
         if ($template) {
             $keys = array_keys($params);

@@ -68,6 +68,9 @@ class Context
         return self::$loader;
     }
 
+    /**
+     * @return \Scoop\Bootstrap\Environment
+     */
     public static function getEnvironment()
     {
         return self::$environment;
@@ -100,7 +103,10 @@ class Context
     {
         self::configureInjector();
         $lang = self::$environment->getConfig('language', 'es');
-        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.' . $lang . '.fail', array()));
+        \Scoop\Validator::setMessages(
+            self::$environment->getConfig('messages.' . $lang . '.fail', array()),
+            self::$environment->getConfig('messages.' . $lang . '.fields', array())
+        );
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
     }
 

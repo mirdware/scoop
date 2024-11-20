@@ -61,7 +61,7 @@ class Query
                     $relation = $this->map['relations'][$relation[1]];
                     $relId = $relation['entities'][$left]['column'];
                     $comparation = "$leftAlias.$leftId=$leftAlias$rightAlias.$relId";
-                    $this->joins[] = array($relation['table'] . ' r' . $rightAlias, $comparation, $joinType);
+                    $this->joins[] = array($relation['table'] . ' ' . $leftAlias . $rightAlias, $comparation, $joinType);
                     $relId = $relation['entities'][$aggregate]['column'];
                     $comparation = "$leftAlias$rightAlias.$relId=$rightAlias.$rightId";
                     $joinType = 'inner';

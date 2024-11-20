@@ -60,7 +60,7 @@ abstract class Scanner
         $storagePath = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
         $path = rtrim($storagePath, '/') . $path;
         if (!is_dir($path)) {
-            mkdir($path, 700, true);
+            mkdir($path, 755, true);
         }
         return $path . $fileName;
     }

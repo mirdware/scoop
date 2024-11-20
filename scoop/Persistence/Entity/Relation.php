@@ -24,24 +24,27 @@ class Relation
     public function add($entity, $object, $relations)
     {
         foreach ($relations as $name => $relation) {
+            if (!$object->hasProperty($name)) continue;
             $property = $object->getProperty($name);
             if (!$property->isInitialized($entity)) continue;
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
+            if (!$relationEntity) continue;
             list($relationName, $mapperKey) = $this->getPropertyRelation($relation);
-            if (!$relationEntity) {
-                continue;
-            }
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
-                    if ($this->mapper->isMarked($e)) continue;
+                    if (!$this->mapper->contains($e)) {
+                        $this->manager->save($e);
+                    }
                     $objectRelation = new \ReflectionObject($e);
+                    if ($mapperKey !== null) {
+                        $this->many[$mapperKey][] = array($entity, $e);
+                    }
+                    if (!$objectRelation->hasProperty($relationName)) continue;
                     $property = $objectRelation->getProperty($relationName);
                     $property->setAccessible(true);
                     $value = $entity;
-                    $this->manager->save($e);
-                    if (!is_null($mapperKey)) {
-                        $this->many[$mapperKey][] = array($entity, $e);
+                    if ($mapperKey !== null) {
                         $value = $property->getValue($e);
                         if (!$value) {
                             $value = array($entity);
@@ -52,8 +55,11 @@ class Relation
                     $property->setValue($e, $value);
                 }
             } elseif (is_object($relationEntity)) {
-                if ($this->mapper->isMarked($relationEntity)) continue;
+                if (!$this->mapper->contains($relationEntity)) {
+                    $this->manager->save($relationEntity);
+                }
                 $objectRelation = new \ReflectionObject($relationEntity);
+                if (!$objectRelation->hasProperty($relationName)) continue;
                 $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
@@ -63,7 +69,6 @@ class Relation
                     array_push($value, $entity);
                 }
                 $property->setValue($relationEntity, $value);
-                $this->manager->save($relationEntity);
             }
         }
     }
@@ -72,6 +77,7 @@ class Relation
     {
         $object = new \ReflectionObject($entity);
         foreach ($relations as $name => $relation) {
+            if (!$object->hasProperty($name)) continue;
             $property = $object->getProperty($name);
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
@@ -84,6 +90,7 @@ class Relation
                 }
             } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
+                if (!$objectRelation->hasProperty($relationName)) continue;
                 $relationName = $this->getPropertyRelation($relation)[0];
                 $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);

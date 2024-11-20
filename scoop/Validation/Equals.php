@@ -15,6 +15,9 @@ class Equals extends Rule
 
     public function validate($value)
     {
+        if (!$value) {
+            $value = '';
+        }
         if (!$this->caseSensitive) {
             $value = strtolower($value);
         }

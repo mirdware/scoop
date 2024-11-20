@@ -6,10 +6,12 @@ abstract class Rule
 {
     private $validator;
     protected $data;
+    protected $fields;
 
-    public function with($data)
+    public function with($data, $fields)
     {
         $this->data = $data;
+        $this->fields = $fields;
         return !isset($this->validator) || $this->validator->validate($data);
     }
 
@@ -31,7 +33,7 @@ abstract class Rule
     public function getParams()
     {
         $params = get_object_vars($this);
-        unset($params['data'], $params['validator']);
+        unset($params['data'], $params['fields'], $params['validator']);
         return $params;
     }
 

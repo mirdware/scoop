@@ -5,14 +5,16 @@ namespace Scoop\Persistence\Entity;
 class Manager
 {
     private $map;
+    private $typeMapper;
     private $mapper;
     private $relations;
 
-    public function __construct($map)
+    public function __construct($entities, $values, $relations, $types)
     {
-        $this->map = $map;
-        $this->mapper = new Mapper($map['entities'], $map['values']);
-        $this->relations = new Relation($map['relations'], $this->mapper, $this);
+        $this->map = compact('entities', 'values', 'relations');
+        $this->typeMapper = new TypeMapper($types);
+        $this->mapper = new Mapper($entities, $values, $this->typeMapper);
+        $this->relations = new Relation($relations, $this->mapper, $this);
         register_shutdown_function(array($this, 'flush'));
     }
 
@@ -58,8 +60,8 @@ class Manager
 
     public function clean()
     {
-        $this->mapper = new Mapper($this->map['entities'], $this->map['values']);
-        $this->relations = new Relation($this->map, $this->mapper, $this);
+        $this->mapper = new Mapper($this->map['entities'], $this->map['values'], $this->typeMapper);
+        $this->relations = new Relation($this->map['relations'], $this->mapper, $this);
     }
 
     private function getMapper($classEntity)

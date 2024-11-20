@@ -12,6 +12,7 @@ class Validator
     private $data;
     private $rules = array();
     private static $msg = array();
+    private static $fields = array();
 
     public function __construct($typeValidation = self::SIMPLE_VALIDATION)
     {
@@ -45,9 +46,10 @@ class Validator
         return $this->errors;
     }
 
-    public static function setMessages($messages)
+    public static function setMessages($messages, $fields)
     {
-        self::$msg = (array) $messages;
+        self::$msg = $messages;
+        self::$fields = $fields;
     }
 
     private function executeRule($rule, $params, $value)
@@ -64,7 +66,11 @@ class Validator
 
     private function getMessage($rule, $params, $value)
     {
-        $params += array('@value' => is_string($value) ? $value : json_encode($value)) + $rule->getParams();
+        $params += $rule->getParams();
+        $params['@value'] = is_string($value) ? $value : json_encode($value);
+        if (isset(self::$fields[$params['@name']])) {
+            $params['@name'] = self::$fields[$params['@name']];
+        }
         $template = $this->getTemplateMessage($rule, self::$msg);
         if ($template) {
             $keys = array_keys($params);
@@ -148,7 +154,7 @@ class Validator
                 $value = $this->getValue($field, $data);
                 foreach ($validations as $validation) {
                     $params = array('@name' => $field);
-                    if ($validation->with($data)) {
+                    if ($validation->with($data, self::$fields)) {
                         $this->executeRule($validation, $params, $value);
                     }
                 }

@@ -7,7 +7,7 @@ class Helper
     private $components;
     private $environment;
     private $request;
-    private $messages;
+    private static $keyMessages = 'messages.';
     private static $assets = array(
         'path' => 'public/',
         'img' => 'images/',
@@ -24,7 +24,6 @@ class Helper
         $this->request = $request;
         $this->components = $components;
         $this->environment = \Scoop\Context::getEnvironment();
-        $this->messages = $this->getConfig('messages.' . $this->getConfig('language', 'es'));
         self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 
@@ -95,9 +94,9 @@ class Helper
         return $this->environment->getConfig($name, $default);
     }
 
-    public function getText($field)
+    public function translate($msg)
     {
-        return isset($this->messages[$field]) ? $this->messages[$field] : '';
+        return $this->environment->getConfig(self::$keyMessages . $msg);
     }
 
     public function isCurrentRoute($route)
@@ -127,5 +126,9 @@ class Helper
             return ($component instanceof \Scoop\View) ? $component->render() : $component;
         }
         throw new \BadMethodCallException('Component ' . $component . ' unregistered');
+    }
+    public static function setKeyMessages($key)
+    {
+        self::$keyMessages = $key;
     }
 }

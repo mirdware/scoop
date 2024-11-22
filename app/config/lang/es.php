@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'fail' => array(
+    'failures' => array(
         'Scoop\Validation\Date' => 'Fecha invalida',
         'Scoop\Validation\Required' => 'Complete este campo',
         'Scoop\Validation\Length' => 'La longitud del texto debe encontrarse en un rango entre {min} y {max} (actualmente tiene {length})',

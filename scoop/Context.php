@@ -8,6 +8,7 @@ class Context
     private static $loader;
     private static $injector;
     private static $environment;
+    private static $configuration;
 
     public static function load($configPath)
     {
@@ -26,7 +27,9 @@ class Context
             }
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        self::configure();
+        self::configureInjector();
+        self::$configuration = self::inject('Scoop\Bootstrap\Configuration');
+        self::$configuration->configure();
     }
 
     public static function connect($bundle = 'default', $options = array())
@@ -81,12 +84,9 @@ class Context
         return self::$injector->get($id);
     }
 
-    public static function setLanguage($language)
+    public static function useLanguage($language)
     {
-        \Scoop\Validator::setMessages(
-            self::$environment->getConfig('messages.' . $language . '.fail', array()),
-            self::$environment->getConfig('messages.' . $language . '.fields', array())
-        );
+        self::$configuration->setLanguage($language);
     }
 
     private static function normalizeConnection($bundle, $options)
@@ -105,17 +105,6 @@ class Context
             'port' => null,
             'driver' => 'pgsql'
         ), $config);
-    }
-
-    private static function configure()
-    {
-        self::configureInjector();
-        $language = self::$environment->getConfig('language', 'es');
-        \Scoop\Validator::setMessages(
-            self::$environment->getConfig('messages.' . $language . '.fail', array()),
-            self::$environment->getConfig('messages.' . $language . '.fields', array())
-        );
-        \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
     }
 
     private static function configureInjector()

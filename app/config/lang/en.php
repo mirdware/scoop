@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'fail' => array(
+    'failures' => array(
         'Scoop\Validation\Date' => 'Invalid date',
         'Scoop\Validation\Required' => 'Please fill out this field',
         'Scoop\Validation\Length' => 'Please modify the length of this text to a range between {min} and {max} (currently {length})',

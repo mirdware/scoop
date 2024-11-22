@@ -8,6 +8,7 @@ abstract class Injector
 
     public function __construct($environment)
     {
+        $this->setInstance('Scoop\Bootstrap\Environment', $environment);
         $this->bind($environment->getConfig('providers', array()) + array(
             '\Scoop\Event\Bus' => '\Scoop\Event\Factory\Bus:create',
             '\Scoop\Log\Logger' => '\Scoop\Log\Factory\Logger:create',

@@ -5,6 +5,7 @@ namespace Scoop\Http\Exception;
 class Manager
 {
     const VIEW = 'exceptions/default';
+    private static $messages = array();
     private static $exceptions = array(
         'Scoop\Http\Exception\NotFound' => 404,
         'Scoop\Http\Exception\MethodNotAllowed' => 405
@@ -59,12 +60,21 @@ class Manager
 
     public function handle($ex, $isJSON, $status)
     {
+        $code = $ex->getCode();
         $this->addHeaders($status);
+        if (isset(self::$messages[$code])) {
+            $ex = new \Scoop\Http\Exception\Proxy($ex, self::$messages[$code]);
+        }
         if ($isJSON) {
             header('Content-Type: application/json');
-            return array('code' => $ex->getCode(), 'message' => $ex->getMessage());
+            return array('code' => $code, 'message' => $ex->getMessage());
         }
         return $this->createView($status, $ex);
+    }
+
+    public static function setMessages($messages)
+    {
+        self::$messages = $messages;
     }
 
     private function addHeaders($status)

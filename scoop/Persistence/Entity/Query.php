@@ -10,15 +10,21 @@ class Query
     private $mapper;
     private $map;
     private $aggregates;
+    private $discriminator;
 
     public function __construct($mapper, $aggregate, $map)
     {
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
-        $this->fields = $this->getFields($this->root, 'r', false);
         $this->joins = array();
+        $this->fields = $this->getFields($this->root, 'r', false);
         $this->aggregates = array();
+        $this->discriminator = new DiscriminatorMapper($aggregate, $map['entities']);
+        $discriminatorColumn = $this->discriminator->getColumn();
+        if ($discriminatorColumn) {
+            $this->fields[$discriminatorColumn] = 'r.' . $discriminatorColumn;
+        }
     }
 
     public function aggregate($aggregates)
@@ -102,12 +108,13 @@ class Query
         }
         $result = $reader->run($fields);
         $idName = $this->mapper->getTableId($this->root);
-        $fields = $this->getFields($this->root, 'r', true);
         $rows = $result->fetchAll();
         $aggregates = array();
         foreach ($rows as $row) {
             if (!isset($aggregates[$row[$idName]])) {
-                $aggregateRoot = $this->mapper->make($this->root, $row[$idName], $row, $fields);
+                $root = $this->discriminator->discriminate($row);
+                $fields = $this->getFields($root, 'r', true);
+                $aggregateRoot = $this->mapper->make($root, $row[$idName], $row, $fields);
                 $aggregates[$row[$idName]] = array('root' => $aggregateRoot, 'rows' => array());
             }
             $aggregates[$row[$idName]]['rows'][] = $row;
@@ -126,10 +133,11 @@ class Query
         $idName = $this->mapper->getTableId($this->root);
         $reader->restrict("r.$idName = :id");
         $result = $reader->run(compact('id'));
-        $fields = $this->getFields($this->root, 'r', true);
         $rows = $result->fetchAll();
         if (!$rows) return null;
-        $aggregateRoot = $this->mapper->make($this->root, $rows[0][$idName], $rows[0], $fields);
+        $root = $this->discriminator->discriminate($rows[0]);
+        $fields = $this->getFields($root, 'r', true);
+        $aggregateRoot = $this->mapper->make($root, $rows[0][$idName], $rows[0], $fields);
         $this->assignAggregates($this->root, 'r', $aggregateRoot, $this->aggregates, $rows);
         return $aggregateRoot;
     }
@@ -140,7 +148,8 @@ class Query
         $entityMap = $this->map['entities'][$name];
         $idName = $this->mapper->getTableId($name);
         $prefix = $alias !== 'r' ? $alias . '$a$' : '';
-        $row = $this->findRow($prefix . $idName, $object->getProperty($idName)->getValue($entity), $rows);
+        $id = $this->getId($object, $entity, $idName);
+        $row = $this->findRow($prefix . $idName, $id, $rows);
         foreach ($aggregateList as $name => $map) {
             $alias = $map['alias'];
             $className = $map['type'];
@@ -185,6 +194,17 @@ class Query
         }
     }
 
+    private function getId($object, $entity, $idName)
+    {
+        if ($object->hasProperty($idName)) {
+            return $object->getProperty($idName)->getValue($entity);
+        }
+        $parent = $object->getParentClass();
+        if ($parent) {
+            return $this->getId($parent, $entity, $idName);
+        }
+    }
+
     private function createReader()
     {
         $sqo = new \Scoop\Persistence\SQO($this->map['entities'][$this->root]['table'], 'r');
@@ -224,7 +244,7 @@ class Query
         $ref = new \ReflectionClass($entity);
         $index = 0;
         $fields = array();
-        $id = $this->mapper->gettableId($ref->getName());
+        $id = $this->mapper->getTableId($ref->getName());
         while ($parent = $ref->getParentClass()) {
             $name = $parent->getName();
             $parentAlias = 'p' . $index . '$' . $table;
@@ -235,7 +255,7 @@ class Query
             }
             $parentFields  = $this->getFields($name, $parentAlias, $isProp);
             foreach ($parentFields as $name => $parentField) {
-                $name = str_replace($parentAlias, $table, $name);
+                $name = str_replace($parentAlias . '$a$', '', $name);
                 if ($isProp) {
                     $fields[$index][$name] = $parentField;
                 } else {

@@ -9,6 +9,7 @@ class TypeMapper
         'serial' => 'Scoop\Persistence\Entity\Type\Serial',
         'numeric' => 'Scoop\Persistence\Entity\Type\Numeric',
         'int' => 'Scoop\Persistence\Entity\Type\Integer',
+        'bool' => 'Scoop\Persistence\Entity\Type\Boolean',
         'date' => 'Scoop\Persistence\Entity\Type\Date'
     );
     private $instances = array();

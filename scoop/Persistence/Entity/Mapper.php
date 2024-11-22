@@ -93,7 +93,7 @@ class Mapper
         while ($parent = $object->getParentClass()) {
             $className = $parent->getName();
             $this->setFields($parent, $entity, $names[$index], $row);
-            $fields[$className] = $this->getRowFields($row, $names, $this->entityMap[$className]['properties']);
+            $fields[$className] = $this->getRowFields($row, $names[$index], $this->entityMap[$className]['properties']);
             $index++;
             $object = $parent;
         }
@@ -151,10 +151,11 @@ class Mapper
         }
     }
 
-    private function getRowFields($row, $names, $mapper)
+    private function getRowFields($row, $names, $map)
     {
         $fields = array();
         foreach ($names as $name => $column) {
+            if (!is_string($column)) continue;
             $vo = explode('.', $column);
             if (isset($vo[1])) {
                 $column = $vo[1];
@@ -163,11 +164,11 @@ class Mapper
                 $vo = explode('$v$', $vo);
                 $property = $this->toProperty($vo[0]);
                 $vo = isset($vo[1]) ? $vo[1] : 'value';
-                $type = $this->valueMap[$mapper[$property]['type']][$vo]['type'];
+                $type = $this->valueMap[$map[$property]['type']][$vo]['type'];
             } else {
                 $property = $this->toProperty($column);
-                $column = isset($mapper[$property]['column']) ? $mapper[$property]['column'] : $column;
-                $type = $mapper[$property]['type'];
+                $column = isset($map[$property]['column']) ? $map[$property]['column'] : $column;
+                $type = $map[$property]['type'];
             }
             $fields[$column] = $this->typeMapper->getRowValue($type, $row[$name]);
         }
@@ -246,15 +247,23 @@ class Mapper
                 }
             }
         } else {
+            $baseClassName = array_keys($fields)[0];
             $fields = array_reverse($fields, true);
             $id = null;
             foreach ($fields as $className => $value) {
+                if (isset($this->entityMap[$className]['discriminator'])) {
+                    extract($this->entityMap[$className]['discriminator']);
+                    if (isset($column, $map[$baseClassName])) {
+                        $value[$column] = $map[$baseClassName];
+                    }
+                }
                 $idName = $this->getTableId($className);
                 $value[$idName] = isset($value[$idName]) ? $value[$idName] : $id;
                 $statement = $this->getStatement($className);
                 $value = $this->clearNulls($value);
                 $statement->create($value)->run();
                 $id = isset($value[$idName]) ? $value[$idName] : $statement->getLastId();
+                $baseClassName = $className;
             }
         }
     }

@@ -81,6 +81,14 @@ class Context
         return self::$injector->get($id);
     }
 
+    public static function setLanguage($language)
+    {
+        \Scoop\Validator::setMessages(
+            self::$environment->getConfig('messages.' . $language . '.fail', array()),
+            self::$environment->getConfig('messages.' . $language . '.fields', array())
+        );
+    }
+
     private static function normalizeConnection($bundle, $options)
     {
         $config = self::$environment->getConfig('db.' . $bundle, array()) + $options;
@@ -102,10 +110,10 @@ class Context
     private static function configure()
     {
         self::configureInjector();
-        $lang = self::$environment->getConfig('language', 'es');
+        $language = self::$environment->getConfig('language', 'es');
         \Scoop\Validator::setMessages(
-            self::$environment->getConfig('messages.' . $lang . '.fail', array()),
-            self::$environment->getConfig('messages.' . $lang . '.fields', array())
+            self::$environment->getConfig('messages.' . $language . '.fail', array()),
+            self::$environment->getConfig('messages.' . $language . '.fields', array())
         );
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
     }

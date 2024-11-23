@@ -23,7 +23,7 @@ class Configuration
         \Scoop\View\Helper::setKeyMessages("messages.$language.messages." );
     }
 
-    public function configure()
+    public function setUp()
     {
         $this->setLanguage(
             $this->environment->getConfig('language', 'es')

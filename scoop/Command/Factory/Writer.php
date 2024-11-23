@@ -4,10 +4,17 @@ namespace Scoop\Command\Factory;
 
 class Writer
 {
+    private $environment;
+
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    {
+        $this->environment = $environment;
+    }
+
     public function create()
     {
         return new \Scoop\Command\Writer(
-            \Scoop\Context::getEnvironment()->getConfig('ice.styles', array() + array(
+            $this->environment->getConfig('ice.styles', array() + array(
                 'link' => array(\Scoop\Command\Style\Color::BLUE),
                 'error' => array(\Scoop\Command\Style\Color::RED),
                 'alert' => array(\Scoop\Command\Style\Color::YELLOW),

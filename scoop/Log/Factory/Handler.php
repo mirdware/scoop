@@ -4,12 +4,14 @@ namespace Scoop\Log\Factory;
 
 class Handler
 {
+    private $environment;
     private $handlers;
     private $instances;
 
-    public function __construct($handlers)
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $this->handlers = $handlers;
+        $this->environment = $environment;
+        $this->handlers = $environment->getConfig('log', array());
         $this->instances = array();
     }
 
@@ -38,14 +40,13 @@ class Handler
     {
         foreach ($this->handlers[$level] as $className => $args) {
             $ref = new \ReflectionClass($className);
-            if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
-                $env = \Scoop\Context::getEnvironment();
-                $args['file'] = $env->getConfig('storage', 'app/storage/')
-                . 'logs/' . $env->getConfig('app.name')
-                . '-' . date('Y-m-d') . '.log';
-            }
             if (!isset($args['formatter'])) {
                 $args['formatter'] = 'Scoop\Log\Formatter';
+            }
+            if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
+                $args['file'] = $this->environment->getConfig('storage', 'app/storage/')
+                . 'logs/' . $this->environment->getConfig('app.name')
+                . '-' . date('Y-m-d') . '.log';
             }
             $args['formatter'] = \Scoop\Context::inject($args['formatter']);
             $this->instances[$level][] = $ref->newInstanceArgs((array) $args);

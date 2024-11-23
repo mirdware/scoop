@@ -8,7 +8,6 @@ class Context
     private static $loader;
     private static $injector;
     private static $environment;
-    private static $configuration;
 
     public static function load($configPath)
     {
@@ -26,10 +25,10 @@ class Context
                 self::$loader->register(true);
             }
         }
-        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        self::configureInjector();
-        self::$configuration = self::inject('Scoop\Bootstrap\Configuration');
-        self::$configuration->configure();
+        self::configureInjector(
+            new \Scoop\Bootstrap\Environment($configPath)
+        );
+        self::inject('Scoop\Bootstrap\Configuration')->setUp();
     }
 
     public static function connect($bundle = 'default', $options = array())
@@ -60,7 +59,9 @@ class Context
         foreach (self::$connections as $connection) {
             $connection->rollBack();
         }
-        self::configureInjector();
+        self::configureInjector(
+            self::inject('Scoop\Bootstrap\Environment')
+        );
     }
 
     /**
@@ -72,6 +73,7 @@ class Context
     }
 
     /**
+     * @deprecated [7.4] Inject \Scoop\Bootstrap\Environment
      * @return \Scoop\Bootstrap\Environment
      */
     public static function getEnvironment()
@@ -82,11 +84,6 @@ class Context
     public static function inject($id)
     {
         return self::$injector->get($id);
-    }
-
-    public static function useLanguage($language)
-    {
-        self::$configuration->setLanguage($language);
     }
 
     private static function normalizeConnection($bundle, $options)
@@ -107,13 +104,14 @@ class Context
         ), $config);
     }
 
-    private static function configureInjector()
+    private static function configureInjector($environment)
     {
-        $injector = self::$environment->getConfig('injector', '\Scoop\Container\BasicInjector');
+        $injector = $environment->getConfig('injector', '\Scoop\Container\BasicInjector');
         $baseInjector = '\Scoop\Container\Injector';
-        self::$injector = new $injector(self::$environment);
+        self::$environment = $environment;
+        self::$injector = new $injector($environment);
         if (!(self::$injector instanceof $baseInjector)) {
-            throw new \UnexpectedValueException($injector . ' not implement ' . $baseInjector);
+            throw new \UnexpectedValueException("$injector not implement $baseInjector");
         }
     }
 }

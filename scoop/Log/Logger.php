@@ -59,7 +59,7 @@ class Logger
                 'message' => self::interpolate(var_export($message, true), $context),
                 'context' => $context,
                 'level' => $level,
-                'timestamp' => new \DateTimeImmutable()
+                'timestamp' => new \DateTime()
             ));
         }
     }

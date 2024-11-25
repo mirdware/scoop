@@ -5,13 +5,14 @@ namespace Scoop\Bootstrap\Loader;
 class TypeMapper
 {
     private $pattern;
-    
-    public function __construct()
+
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $storagePath = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
+        $storagePath = $environment->getConfig('storage', 'app/storage/');
         $storagePath = rtrim($storagePath, '/') . '/';
         $this->pattern = "{$storagePath}cache/project/*types.php";
     }
+
     public function load($type)
     {
         $files = DEBUG_MODE ? $this->scanTypes() : glob($this->pattern);

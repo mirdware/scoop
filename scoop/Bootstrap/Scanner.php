@@ -4,6 +4,7 @@ namespace Scoop\Bootstrap;
 
 abstract class Scanner
 {
+    private static $storagePath = 'app/storage';
     private $metaFilePath;
     private $cacheFilePath;
     private $filePattern;
@@ -28,7 +29,12 @@ abstract class Scanner
         }
         return $this->cacheFilePath;
     }
-    
+
+    public static function setStorage($path)
+    {
+        self::$storagePath = $path;
+    }
+
     private function save($data, $filePath)
     {
         $content = "<?php\n\nreturn " . var_export($data, true) . ";\n";
@@ -57,8 +63,7 @@ abstract class Scanner
 
     protected function getPath($path, $fileName)
     {
-        $storagePath = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
-        $path = rtrim($storagePath, '/') . $path;
+        $path = rtrim(self::$storagePath, '/') . $path;
         if (!is_dir($path)) {
             mkdir($path, 755, true);
         }
@@ -66,6 +71,6 @@ abstract class Scanner
     }
 
     abstract protected function checkFile($filePath);
-    
+
     abstract protected function buildMap();
 }

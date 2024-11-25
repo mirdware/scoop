@@ -53,7 +53,7 @@ abstract class Heritage
             isset($infoPath['extension']) &&
             isset(self::$templates[$infoPath['extension']])
         ) ? $infoPath['extension'] : 'sdt.php';
-        $path = $infoPath['dirname'] . DIRECTORY_SEPARATOR . $infoPath['filename'];
+        $path = $infoPath['dirname'] . '/' . $infoPath['filename'];
         $template = \Scoop\Context::inject(self::$templates[$ext]);
         return $template->parse($path, self::$data);
     }

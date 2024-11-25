@@ -14,7 +14,6 @@ class Type
     public function execute($command)
     {
         $composerJson = json_decode(file_get_contents('composer.json'), true);
-        $storagePath = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
         $psr4 = $composerJson['autoload']['psr-4'];
         foreach ($psr4 as $namespace => $directory) {
             if (strpos($namespace, 'Scoop\\') === 0) {

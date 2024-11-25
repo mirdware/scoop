@@ -6,6 +6,8 @@ final class Template
 {
     const HERITAGE = '\Scoop\View\Heritage';
     const SERVICE = '\Scoop\View\Service';
+    private static $cachePath = 'app/storage/cache/views';
+    private static $viewPath = 'app/views/';
 
     /**
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
@@ -16,9 +18,8 @@ final class Template
      */
     public function parse($templatePath)
     {
-        $storage = \Scoop\Context::getEnvironment()->getConfig('storage', 'app/storage/');
-        $template = 'app/views/' . $templatePath . '.sdt.php';
-        $view = $storage . 'cache/views/' . $templatePath . '.php';
+        $template = self::$viewPath . $templatePath . '.sdt.php';
+        $view = self::$cachePath . $templatePath . '.php';
         if (!is_readable($template)) {
             throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
@@ -27,6 +28,12 @@ final class Template
         }
         $this->create($view, $template);
         return $view;
+    }
+
+    public static function setPath($viewPath, $cachePath)
+    {
+        self::$viewPath = $viewPath;
+        self::$cachePath = $cachePath;
     }
 
     /**

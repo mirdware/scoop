@@ -38,9 +38,9 @@ class Manager
     );
     private $config;
 
-    public function __construct()
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $this->config = \Scoop\Context::getEnvironment()->getConfig('http.errors', array());
+        $this->config = $environment->getConfig('http.errors', array());
         foreach ($this->config as $status => $config) {
             if (isset(self::$errors[$status]) && isset($config['exceptions'])) {
                 foreach ($config['exceptions'] as $exception) {

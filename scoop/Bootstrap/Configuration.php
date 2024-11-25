@@ -4,7 +4,7 @@ namespace Scoop\Bootstrap;
 
 class Configuration
 {
-    private $environment;
+    protected $environment;
 
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
@@ -23,10 +23,19 @@ class Configuration
         \Scoop\View\Helper::setKeyMessages("messages.$language.messages." );
     }
 
+    public function setStorage($storage)
+    {
+        \Scoop\Bootstrap\Scanner::setStorage($storage);
+        \Scoop\View\Template::setPath('app/views/', "{$storage}cache/views/");
+    }
+
     public function setUp()
     {
         $this->setLanguage(
             $this->environment->getConfig('language', 'es')
+        );
+        $this->setStorage(
+            $this->environment->getConfig('storage', 'app/storage/')
         );
         \Scoop\View::registerComponents(
             $this->environment->getConfig('components', array())

@@ -4,14 +4,14 @@ namespace Scoop\Log\Factory;
 
 class Handler
 {
-    private $environment;
+    private $logPath;
     private $handlers;
     private $instances;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct($handlers, $logPath)
     {
-        $this->environment = $environment;
-        $this->handlers = $environment->getConfig('log', array());
+        $this->logPath = $logPath;
+        $this->handlers = $handlers;
         $this->instances = array();
     }
 
@@ -44,9 +44,7 @@ class Handler
                 $args['formatter'] = 'Scoop\Log\Formatter';
             }
             if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
-                $args['file'] = $this->environment->getConfig('storage', 'app/storage/')
-                . 'logs/' . $this->environment->getConfig('app.name')
-                . '-' . date('Y-m-d') . '.log';
+                $args['file'] = $this->logPath;
             }
             $args['formatter'] = \Scoop\Context::inject($args['formatter']);
             $this->instances[$level][] = $ref->newInstanceArgs((array) $args);

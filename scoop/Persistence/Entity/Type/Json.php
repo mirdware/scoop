@@ -2,15 +2,15 @@
 
 namespace Scoop\Persistence\Entity\Type;
 
-class Date
+class Json
 {
     public function disassemble($value)
     {
-        return $value->format('Y-m-d H:i:s');
+        return json_encode($value);
     }
 
     public function assemble($value)
     {
-        return new \DateTime($value);
+        return json_decode($value);
     }
 }

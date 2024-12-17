@@ -20,5 +20,4 @@ app/scripts \
 gulpfile.js \
 jsconfig.json \
 package-lock.json \
-composer.json \
 composer.lock

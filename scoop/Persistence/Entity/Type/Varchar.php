@@ -13,4 +13,9 @@ class Varchar
     {
         return trim($value);
     }
+
+    public function comparate($oldValue, $newValue)
+    {
+        return trim($oldValue) === $newValue;
+    }
 }

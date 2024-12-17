@@ -10,7 +10,9 @@ class TypeMapper
         'numeric' => 'Scoop\Persistence\Entity\Type\Numeric',
         'int' => 'Scoop\Persistence\Entity\Type\Integer',
         'bool' => 'Scoop\Persistence\Entity\Type\Boolean',
-        'date' => 'Scoop\Persistence\Entity\Type\Date'
+        'date' => 'Scoop\Persistence\Entity\Type\Date',
+        'json' => 'Scoop\Persistence\Entity\Type\Json',
+        'json:array' => 'Scoop\Persistence\Entity\Type\JsonArray'
     );
     private $instances = array();
 
@@ -39,6 +41,14 @@ class TypeMapper
         return $instance &&
         method_exists($instance, 'isAutoincremental') &&
         $instance->isAutoincremental();
+    }
+
+    public function isSame($type, $oldValue, $newValue)
+    {
+        $instance = $this->getInstance($type);
+        return $instance && method_exists($instance, 'comparate') ?
+        $instance->comparate($oldValue, $newValue) :
+        $oldValue === $newValue;
     }
 
     private function getInstance($type)

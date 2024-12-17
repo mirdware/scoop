@@ -11,6 +11,11 @@ class Boolean
 
     public function assemble($value)
     {
-        return !!$value;
+        return $value;
+    }
+
+    public function comparate($oldValue, $newValue)
+    {
+        return $oldValue === !!$newValue;
     }
 }

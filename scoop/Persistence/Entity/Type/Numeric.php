@@ -13,4 +13,9 @@ class Numeric
     {
         return floatval($value);
     }
+
+    public function comparate($oldValue, $newValue)
+    {
+        return floatval($oldValue) === $newValue;
+    }
 }

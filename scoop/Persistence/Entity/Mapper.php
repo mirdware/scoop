@@ -170,7 +170,7 @@ class Mapper
                 $column = isset($map[$property]['column']) ? $map[$property]['column'] : $column;
                 $type = $map[$property]['type'];
             }
-            $fields[$column] = $this->typeMapper->getRowValue($type, $row[$name]);
+            $fields[$column] = array('type' => $type, 'value' => $row[$name]);
         }
         return $fields;
     }
@@ -234,11 +234,10 @@ class Mapper
                 }
             } else {
                 foreach ($fields as $className => $value) {
-                    $updatedFields = $this->getChangedFields($value, $this->persisted[$key]['fields'][$className]);
+                    $updatedFields = $this->getChangedFields($this->persisted[$key]['fields'][$className], $value);
                     if (empty($updatedFields)) {
                         continue;
                     }
-                    $this->persisted[$key]['fields'][$className] = $fields;
                     $idName = $this->getTableId($className);
                     $this->getStatement($className)
                     ->update($updatedFields)
@@ -299,8 +298,8 @@ class Mapper
         $className = $object->getName();
         $idName = $this->getIdName($className);
         while ($parent = $object->getParentClass()) {
-            $className = $parent->getName();
-            $idName = $this->getIdName($className);
+            $classParentName = $parent->getName();
+            $idName = $this->getIdName($classParentName);
             $object = $parent;
         }
         $id = $this->getProperty($object, $idName)->getValue($entity);
@@ -345,11 +344,12 @@ class Mapper
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
-    private function getChangedFields($currFields, $prevFields) {
+    private function getChangedFields(&$persistedFields, $entityFields) {
         $fields = array();
-        foreach ($currFields as $key => $field) {
-            if ($currFields[$key] !== $prevFields[$key]) {
-                $fields[$key] = $currFields[$key];
+        foreach ($persistedFields as $key => $field) {
+            if (!$this->typeMapper->isSame($field['type'], $field['value'], $entityFields[$key])) {
+                $fields[$key] = $entityFields[$key];
+                $persistedFields[$key]['value'] = $fields[$key];
             }
         }
         return $fields;

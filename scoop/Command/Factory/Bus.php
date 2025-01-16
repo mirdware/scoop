@@ -17,7 +17,8 @@ class Bus
             $this->environment->getConfig('commands', array()) + array(
                 'new' => 'Scoop\Command\Handler\Creator',
                 'scan' => 'Scoop\Command\Handler\Scanner',
-                'dbup' => 'Scoop\Command\Handler\Structure'
+                'dbup' => 'Scoop\Command\Handler\Structure',
+                'preload' => 'Scoop\Command\Handler\PreLoader'
             )
         );
     }

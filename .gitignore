@@ -73,6 +73,7 @@ package-lock.json
 
 *.architect~
 !.gitkeep
+.env
 
 #docker
 /.devcontainer/docker-compose.override.yml

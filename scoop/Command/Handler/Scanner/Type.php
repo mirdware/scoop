@@ -22,9 +22,9 @@ class Type
             $directory = rtrim($directory, '/') . '/';
             $this->writer->write(true, "scanning $directory folder... ");
             $scanner = new \Scoop\Bootstrap\Scanner\Type($directory);
-            $this->writer->write('<link!' . $scanner->scan() . '!> <success!created!>');
+            $this->writer->write('<link:' . $scanner->scan() . '!> <success:created!>');
         }
-        $this->writer->write('<done!scan finished!!>');
+        $this->writer->write('<done:scan finished!!>');
     }
 
     public function help()

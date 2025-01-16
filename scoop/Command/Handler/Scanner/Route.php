@@ -16,7 +16,7 @@ class Route
         $pathRoutes = 'app/routes/';
         $this->writer->write(true, "scanning $pathRoutes folder... ");
         $scanner = new \Scoop\Bootstrap\Scanner\Route($pathRoutes);
-        $this->writer->write('<link!' . $scanner->scan() . '!> <success!created!>');
+        $this->writer->write('<link:' . $scanner->scan() . '!> <success:created!>');
     }
 
     public function help()

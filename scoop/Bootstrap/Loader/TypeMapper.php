@@ -15,7 +15,7 @@ class TypeMapper
 
     public function load($type)
     {
-        $files = DEBUG_MODE ? $this->scanTypes() : glob($this->pattern);
+        $files = DEBUG_MODE && is_readable('composer.json') ? $this->scanTypes() : glob($this->pattern);
         foreach ($files as $file) {
             $map = require $file;
             if (isset($map[$type])) {

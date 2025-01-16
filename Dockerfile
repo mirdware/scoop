@@ -13,11 +13,13 @@ RUN composer install --optimize-autoloader --no-dev
 COPY --from=node /app/public/ ./public/
 COPY --chmod=0644 .devcontainer/etc/  /opt/docker/etc/
 COPY --chown=application:application . .
-RUN rm -rf \
+RUN su application -c "composer build" && rm -rf \
 app/styles \
 app/scripts \
 .devcontainer \
 gulpfile.js \
 jsconfig.json \
+package.json \
 package-lock.json \
+composer.json \
 composer.lock

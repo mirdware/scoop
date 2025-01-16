@@ -27,7 +27,7 @@ class Router
         $commands = $this->bus->getCommands();
         $this->writer->write($this->msg, '', 'Commands:');
         foreach ($commands as $command => $controller) {
-            $this->writer->write("$command => <link!$controller.php!>");
+            $this->writer->write("$command => <link:$controller.php!>");
         }
         $this->writer->write('', 'Run app/ice new COMMAND --help for more information');
     }

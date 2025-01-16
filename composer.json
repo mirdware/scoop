@@ -24,7 +24,7 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "^5.3|^7.0|^8.0"
+        "php": "^5.4|^7.0|^8.0"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.10",
@@ -38,6 +38,10 @@
     "scripts": {
         "pre-install-cmd": [
             "Composer\\Config::disableProcessTimeout"
+        ],
+        "build": [
+            "@php app/ice scan types",
+            "@php app/ice preload json:package"
         ],
         "test:lint": "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
         "test:static": "./vendor/bin/phpstan --configuration=app/phpstan.neon",

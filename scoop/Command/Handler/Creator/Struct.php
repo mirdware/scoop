@@ -18,7 +18,7 @@ class Struct
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        $this->writer->write("File <link!$path!> created");
+        $this->writer->write("File <link:$path!> created");
     }
 
     public function help()
@@ -48,7 +48,7 @@ class Struct
             $path .= '/';
         }
         if (!is_dir($path)) {
-            mkdir($path, 700, true);
+            mkdir($path, 0755, true);
         }
         return $path;
     }

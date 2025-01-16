@@ -18,9 +18,9 @@ class Structure
         $creator = $this->update($name, $command->getOption('schema', ''), $con);
         if ($creator->hasData()) {
             $creator->run();
-            $this->writer->write('<done!Structure changed!!>');
+            $this->writer->write('<done:Structure changed!!>');
         } else {
-            $this->writer->write('<info!Nothing to do!!>');
+            $this->writer->write('<info:Nothing to do!!>');
         }
     }
 
@@ -94,14 +94,14 @@ class Structure
         foreach ($files as $file) {
             $name = basename($file);
             if (!in_array($name, $structs)) {
-                $this->writer->write(true, "File <link!$file!> ... ");
+                $this->writer->write(true, "File <link:$file!> ... ");
                 $content = file_get_contents($file);
                 if ($content) {
                     $con->exec($content);
                     $creator->create(array($name));
-                    $this->writer->write('<success!updated!!>');
+                    $this->writer->write('<success:updated!!>');
                 } else {
-                    $this->writer->write('<alert!pending!!>');
+                    $this->writer->write('<alert:pending!!>');
                 }
             }
         }

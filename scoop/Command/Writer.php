@@ -12,7 +12,7 @@ class Writer
     {
         $this->stream = 'php://stdout';
         foreach ($styles as $name => $style) {
-            array_push($this->names, "<$name!");
+            array_push($this->names, "<$name:");
             array_push($this->styles, "\e[" . implode(';', $style) . 'm');
         }
     }

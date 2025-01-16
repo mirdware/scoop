@@ -20,18 +20,18 @@ if ($commandName !== null && preg_match('/^[a-z][\w-]*$/', $commandName)) {
         $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
         $code = intval($ex->getCode());
-        $writer->writeError('<error!' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
+        $writer->writeError('<error:' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
         exit($code ? $code : 1);
     }
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version <high!' . $environment->getVersion() . '!>',
+        'ICE/SCOOP version <high:' . $environment->getVersion() . '!>',
         '',
         'Commands:'
     );
     foreach ($commands as $command => $controller) {
-        $writer->write("$command => <link!$controller.php!>");
+        $writer->write("$command => <link:$controller.php!>");
     }
     $writer->write(
         '',

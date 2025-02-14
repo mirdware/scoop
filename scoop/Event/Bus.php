@@ -15,7 +15,7 @@ class Bus
             $eventType = \Scoop\Container\Injector::formatClassName($eventType);
             foreach ($listeners as $listener) {
                 if (!method_exists($listener, $method)) {
-                    throw new \UnexpectedValueException("$eventType does not implement $method method");
+                    throw new \UnexpectedValueException("$listener does not implement $method method");
                 }
             }
             $this->events[$eventType] = $listeners;

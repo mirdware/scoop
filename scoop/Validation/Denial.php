@@ -11,9 +11,9 @@ class Denial extends Rule
         $this->rule = $rule;
     }
 
-    public function with($data)
+    public function with($data, $fields)
     {
-        return parent::with($data) && $this->rule->with($data);
+        return parent::with($data, $fields) && $this->rule->with($data, $fields);
     }
 
     public function unwrap()

@@ -64,23 +64,6 @@ class Context
         );
     }
 
-    /**
-     * @deprecated [7.3] No use
-     */
-    public static function getLoader()
-    {
-        return self::$loader;
-    }
-
-    /**
-     * @deprecated [7.4] Inject \Scoop\Bootstrap\Environment
-     * @return \Scoop\Bootstrap\Environment
-     */
-    public static function getEnvironment()
-    {
-        return self::$environment;
-    }
-
     public static function inject($id)
     {
         return self::$injector->get($id);

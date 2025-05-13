@@ -9,15 +9,10 @@ class Bus
 
     public function __construct($commands)
     {
-        /**
-         * @deprecated [7.4]
-         */
-        $baseClass = '\Scoop\Command';
         foreach ($commands as $command => $handler) {
             $ref = new \ReflectionClass($handler);
-            $isValidHandler = $ref->hasMethod('help') && $ref->hasMethod('execute');
-            if (!$ref->isSubclassOf($baseClass) && !$isValidHandler) {
-                throw new \UnexpectedValueException("Class $handler not implements $baseClass", 9901);
+            if (!$ref->hasMethod('help') || !$ref->hasMethod('execute')) {
+                throw new \UnexpectedValueException("$handler does not implement help and execute methods", 9901);
             }
             $this->commands[$command] = $handler;
         }
@@ -34,18 +29,11 @@ class Bus
             }
             $this->instances[$name] = \Scoop\Context::inject($this->commands[$name]);
         }
-        /**
-         * @deprecated [7.4]
-         */
-        if (is_subclass_of($this->instances[$name], '\Scoop\Command')) {
-            $this->instances[$name]->run($args);
+        $command = new \Scoop\Command\Request($args);
+        if ($command->getOption('help')) {
+            $this->instances[$name]->help();
         } else {
-            $command = new \Scoop\Command\Request($args);
-            if ($command->getOption('help')) {
-                $this->instances[$name]->help();
-            } else {
-                $this->instances[$name]->execute($command);
-            }
+            $this->instances[$name]->execute($command);
         }
     }
 

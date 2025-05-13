@@ -1,0 +1,270 @@
+<?php
+
+namespace Scoop\Http\Message\Server;
+
+class Request extends \Scoop\Http\Message\Request
+{
+    private $serverParams;
+    private $cookieParams;
+    private $queryParams;
+    private $uploadedFiles;
+    private $parsedBody;
+    private $attributes;
+    private $referencer;
+    private $realPath;
+    private static $redirects = array(
+        300 => 'HTTP/1.1 300 Multiple Choices',
+        301 => 'HTTP/1.1 301 Moved Permanently',
+        302 => 'HTTP/1.1 302 Found',
+        303 => 'HTTP/1.1 303 See Other',
+        304 => 'HTTP/1.1 304 Not Modified',
+        305 => 'HTTP/1.1 305 Use Proxy',
+        306 => 'HTTP/1.1 306 Not Used',
+        307 => 'HTTP/1.1 307 Temporary Redirect',
+        308 => 'HTTP/1.1 308 Permanent Redirect'
+    );
+
+    public function __construct(
+        $uri,
+        $method,
+        $realPath,
+        $headers = array(),
+        $body = null,
+        $referencer = null,
+        $serverParams = null,
+        $cookies = null
+    ) {
+        parent::__construct($uri, $method, $body, $headers);
+        $this->realPath = $realPath;
+        $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
+        $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
+        $this->queryParams = $_GET;
+        $this->uploadedFiles = $this->normalizeFiles($_FILES);
+        $this->parsedBody = null;
+        $this->attributes = array();
+        $this->referencer = $referencer === null ? $this->getReferencer() : $referencer;
+    }
+
+    public function getServerParams()
+    {
+        return $this->serverParams;
+    }
+
+    public function getCookieParams()
+    {
+        return $this->cookieParams;
+    }
+
+    public function withCookieParams($cookies)
+    {
+        $new = clone $this;
+        $new->cookieParams = $cookies;
+        return $new;
+    }
+
+    public function getQueryParams()
+    {
+        return $this->queryParams;
+    }
+
+    public function withQueryParams($query)
+    {
+        $new = clone $this;
+        $new->queryParams = $query;
+        return $new;
+    }
+
+    public function getUploadedFiles()
+    {
+        return $this->uploadedFiles;
+    }
+
+    public function withUploadedFiles($uploadedFiles)
+    {
+        $new = clone $this;
+        $new->uploadedFiles = $uploadedFiles;
+        return $new;
+    }
+
+    public function getParsedBody()
+    {
+        if ($this->parsedBody !== null) {
+            return $this->parsedBody;
+        }
+        $this->parsedBody = array();
+        $body = $this->getBody()->getContents();
+        if (!$body) {
+            return $this->parsedBody;
+        }
+        $contentType = $this->getHeaderLine('Content-Type');
+        if (strpos($contentType, 'application/json') !== false) {
+            $body = json_decode($body, true);
+            $this->parsedBody = $this->purge($body);
+            return $this->parsedBody;
+        }
+        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
+        $boundary = $matches[1];
+        $blocks = preg_split("/-+$boundary/", $body);
+        array_pop($blocks);
+        foreach ($blocks as $block) {
+            if (!empty($block)) {
+                $regex = strpos($block, 'application/') ?
+                "/name=\"([^\"]*)\"[^\n]*[\n|\r]+([^\n\r].*)?$/s" :
+                '/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s';
+                preg_match($regex, $block, $matches);
+                $this->parsedBody[$matches[1]] = isset($matches[2]) ? $matches[2] : '';
+            }
+        }
+        $this->parsedBody = $this->purge($this->parsedBody);
+        return $this->parsedBody;
+    }
+
+    public function withParsedBody($data)
+    {
+        $new = clone $this;
+        $new->parsedBody = $data;
+        return $new;
+    }
+
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    public function getAttribute($name, $default = null)
+    {
+        return isset($this->attributes[$name]) ? $this->attributes[$name] : $default;
+    }
+
+    public function withAttribute($name, $value)
+    {
+        $new = clone $this;
+        $new->attributes[$name] = $value;
+        return $new;
+    }
+
+    public function withoutAttribute($name)
+    {
+        $new = clone $this;
+        unset($new->attributes[$name]);
+        return $new;
+    }
+
+    public function get($type = null)
+    {
+        if ($type !== null && !class_exists($type)) {
+            throw new \InvalidArgumentException("The type $type not exist");
+        }
+        return new Payload($this, $this->realPath, $type);
+    }
+
+    public function redirect($url, $status = 302)
+    {
+        header(self::$redirects[$status], true, $status);
+        if (is_array($url)) {
+            $config = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
+            $url = $config->getURL($url);
+        }
+        header('Location:' . $url);
+        exit;
+    }
+
+    public function goBack()
+    {
+        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->reference('http');
+        if ($http_referer) {
+            $this->redirect($http_referer);
+        }
+        throw new \RuntimeException('HTTP reference losed');
+    }
+
+    public function reference($name)
+    {
+        $name = explode('.', $name);
+        $ref = $this->referencer;
+        foreach ($name as $key) {
+            if (!isset($ref[$key])) {
+                return '';
+            }
+            $ref = $ref[$key];
+        }
+        return $ref;
+    }
+
+    private function getReferencer()
+    {
+        $referencer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
+        $contentType = $this->getHeaderLine('Content-Type');
+        if (strpos($contentType, 'application/json') === false) {
+            $_SESSION['data-scoop'] = array(
+                'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)) . $_SERVER['REQUEST_URI']
+            );
+        }
+        return $referencer;
+    }
+
+    private function purge($array)
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = $this->purge($value);
+            } elseif (is_string($value)) {
+                $array[$key] = $this->filterXSS($value);
+            }
+        }
+        return $array;
+    }
+
+    private static function filterXSS($data)
+    {
+        $data = str_replace(array('&amp;','&lt;','&gt;'), array('&amp;amp;','&amp;lt;','&amp;gt;'), $data);
+        $data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
+        $data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
+        $data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
+        $data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
+        $data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
+        $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
+        $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
+        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
+        $data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
+        do {
+            $old_data = $data;
+            $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
+        } while ($old_data !== $data);
+        return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    }
+
+    private function normalizeFiles($files)
+    {
+        $normalized = [];
+        foreach ($files as $key => $value) {
+            if ($value instanceof UploadedFile) {
+                $normalized[$key] = $value;
+            } elseif (is_array($value) && isset($value['tmp_name'])) {
+                if (is_array($value['tmp_name'])) {
+                   $normalized[$key] = [];
+                   foreach ($value['tmp_name'] as $i => $tmp_name) {
+                       $normalized[$key][] = new UploadedFile(
+                           $tmp_name,
+                           (int)$value['size'][$i],
+                           (int)$value['error'][$i],
+                           $value['name'][$i],
+                           $value['type'][$i]
+                       );
+                   }
+                } else {
+                    $normalized[$key] = new UploadedFile(
+                        $value['tmp_name'],
+                        (int)$value['size'],
+                        (int)$value['error'],
+                        $value['name'],
+                        $value['type']
+                    );
+                }
+            }
+        }
+        return $normalized;
+    }
+}

@@ -1,4 +1,4 @@
-#!/usr/bin/env  php
+#!/usr/bin/env php
 <?php
 
 if (php_sapi_name() !== 'cli') {
@@ -9,7 +9,6 @@ require 'scoop/Context.php';
 array_shift($argv);
 $commandName = array_shift($argv);
 $trace = $commandName === '--trace';
-$environment = \Scoop\Context::getEnvironment();
 if ($trace) {
     $commandName = array_shift($argv);
 }
@@ -26,7 +25,7 @@ if ($commandName !== null && preg_match('/^[a-z][\w-]*$/', $commandName)) {
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version <high:' . $environment->getVersion() . '!>',
+        'ICE/SCOOP version <high:' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion() . '!>',
         '',
         'Commands:'
     );

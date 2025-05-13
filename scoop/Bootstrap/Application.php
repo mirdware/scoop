@@ -8,7 +8,7 @@ class Application
 
     public function __construct()
     {
-        $this->environment = \Scoop\Context::getEnvironment();
+        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         $this->enableCORS();
     }
 
@@ -19,11 +19,6 @@ class Application
             $response = $this->environment->route($request);
             gc_collect_cycles();
             return $this->formatResponse($response);
-        } catch (\Scoop\Http\Exception $ex) {
-            if ($request->isAjax()) {
-                $ex->addHeader('Content-Type: application/json');
-            }
-            return $this->formatResponse($ex->handle());
         } catch (\Exception $ex) {
             $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
             $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');

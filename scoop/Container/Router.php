@@ -171,7 +171,7 @@ class Router
         if (isset($route['routes'])) {
             $routes = $route['routes'];
             if (is_string($routes)) {
-                $routes = \Scoop\Context::getEnvironment()->loadLazily($routes);
+                $routes = \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->loadLazily($routes);
                 if (is_string($routes)) {
                     throw new \InvalidArgumentException('routes ' . $routes . ' not supported');
                 }

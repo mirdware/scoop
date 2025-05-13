@@ -147,7 +147,7 @@ class Validator
             if (strrpos($field, '.*.')) {
                 $field = substr($field, 0, -3);
                 $value = $this->getValue($field, $data);
-                foreach ($value as $i => $value) {
+                foreach ($value as $i => $v) {
                     $this->setData($validations, $data, $field . '.' . $i . '.');
                 }
             } else {

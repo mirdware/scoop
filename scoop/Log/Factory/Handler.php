@@ -31,23 +31,70 @@ class Handler
             );
         }
         if (!empty($this->handlers[$level])) {
-            $this->instantiate($level);
+            $this->createHandler($level);
         }
         return $this->instances[$level];
     }
 
-    private function instantiate($level)
+    private function createHandler($level)
     {
-        foreach ($this->handlers[$level] as $className => $args) {
-            $ref = new \ReflectionClass($className);
-            if (!isset($args['formatter'])) {
-                $args['formatter'] = 'Scoop\Log\Formatter';
-            }
-            if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
-                $args['file'] = $this->logPath;
-            }
-            $args['formatter'] = \Scoop\Context::inject($args['formatter']);
-            $this->instances[$level][] = $ref->newInstanceArgs((array) $args);
+        if (!isset($this->handlers[$level]) || !is_array($this->handlers[$level])) {
+            return;
         }
+        foreach ($this->handlers[$level] as $className => $args) {
+            $instance = $this->createHandlerInstance($className, $args);
+            if ($instance !== null) {
+                $this->instances[$level][] = $instance;
+            }
+        }
+    }
+
+    private function createHandlerInstance($className, $args)
+    {
+        if (!class_exists($className)) {
+            throw new \InvalidArgumentException(
+                "Handler class '$className' does not exist"
+            );
+        }
+        if (!is_array($args)) {
+            $args = array();
+        }
+        $args = $this->prepareHandlerArguments($className, $args);
+        $reflection = new \ReflectionClass($className);
+        $constructor = $reflection->getConstructor();
+        if ($constructor) {
+            return $reflection->newInstanceArgs($this->mapConstructorParameters($constructor, $args));
+        }
+        return $reflection->newInstance();
+    }
+
+    private function mapConstructorParameters($constructor, $args)
+    {
+        $params = array();
+        foreach ($constructor->getParameters() as $param) {
+            $name = $param->getName();
+            if (array_key_exists($name, $args)) {
+                $params[] = $args[$name];
+            } else if ($param->isDefaultValueAvailable()) {
+                $params[] = $param->getDefaultValue();
+            } else {
+                throw new \InvalidArgumentException(
+                    "Missing required constructor parameter: $name"
+                );
+            }
+        }
+        return $params;
+    }
+
+    private function prepareHandlerArguments($className, array $args)
+    {
+        if (!isset($args['formatter'])) {
+            $args['formatter'] = 'Scoop\Log\Formatter';
+        }
+        if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
+            $args['file'] = $this->logPath;
+        }
+        $args['formatter'] = \Scoop\Context::inject($args['formatter']);
+        return $args;
     }
 }

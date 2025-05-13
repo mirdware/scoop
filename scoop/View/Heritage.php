@@ -18,7 +18,7 @@ abstract class Heritage
         self::$data = $data;
         self::$templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
-            \Scoop\Context::getEnvironment()->getConfig('templates', array())
+            \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getConfig('templates', array())
         );
         array_push(self::$stack, array(
             'footer' => '',

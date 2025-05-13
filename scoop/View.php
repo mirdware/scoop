@@ -66,7 +66,7 @@ final class View
     {
         $helperView = new View\Helper(self::$request, self::$components);
         View\Service::inject('view', $helperView);
-        View\Service::inject('config', \Scoop\Context::getEnvironment());
+        View\Service::inject('config', \Scoop\Context::inject('\Scoop\Bootstrap\Environment'));
         View\Heritage::init($this->viewData);
         extract($this->viewData);
         require View\Heritage::getCompilePath($this->viewPath);

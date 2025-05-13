@@ -2,6 +2,9 @@
 
 namespace Scoop\Http;
 
+/**
+ * @deprecated [8.0] no use
+ */
 abstract class Controller
 {
     private static $request;
@@ -31,7 +34,7 @@ abstract class Controller
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $config = \Scoop\Context::getEnvironment();
+            $config = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
             $url = $config->getURL($url);
         }
         header('Location:' . $url);

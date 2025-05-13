@@ -2,6 +2,9 @@
 
 namespace Scoop\Http;
 
+/**
+ * @deprecated [8.0] no use
+ */
 class Request
 {
     private $body;
@@ -82,7 +85,7 @@ class Request
     private function setURL()
     {
         if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-            \Scoop\Controller::redirect(
+            \Scoop\Http\Controller::redirect(
                 str_replace('index.php', '', $_SERVER['REQUEST_URI']),
                 301
             );
@@ -181,6 +184,6 @@ class Request
             'query' => $this->getQuery(),
             'error' => $errors
         );
-        \Scoop\Controller::goBack();
+        \Scoop\Http\Controller::goBack();
     }
 }

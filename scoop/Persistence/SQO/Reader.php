@@ -41,7 +41,7 @@ class Reader extends Filter
         $page = isset($params['page']) ? intval($params['page']) : 0;
         $size = isset($params['size']) ?
         intval($params['size']) :
-        \Scoop\Context::getEnvironment()->getConfig('page.size', 12);
+        \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
         $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page', $this->connectionName);
         $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();

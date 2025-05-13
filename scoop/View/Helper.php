@@ -23,7 +23,7 @@ class Helper
     {
         $this->request = $request;
         $this->components = $components;
-        $this->environment = \Scoop\Context::getEnvironment();
+        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 

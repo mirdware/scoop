@@ -73,7 +73,7 @@ final class View
         return View\Heritage::getContent();
     }
 
-    public static function setRequest(\Scoop\Http\Request $request)
+    public static function setRequest(\Scoop\Http\Message\server\Request $request)
     {
         foreach (self::$components as $className) {
             $reflectionClass = new \ReflectionClass($className);

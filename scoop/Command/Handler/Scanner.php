@@ -11,7 +11,7 @@ class Scanner extends Router
             $writer,
             new \Scoop\Command\Bus( array(
             'types' => 'Scoop\Command\Handler\Scanner\Type',
-            'routes' => 'Scoop\Command\Handler\Scanner\Route'
-        )));
+            'routes' => 'Scoop\Command\Handler\Scanner\Route'))
+        );
     }
 }

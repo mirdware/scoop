@@ -20,9 +20,14 @@ class Type
                 continue;
             }
             $directory = rtrim($directory, '/') . '/';
-            $this->writer->write(true, "scanning $directory folder... ");
             $scanner = new \Scoop\Bootstrap\Scanner\Type($directory);
-            $this->writer->write('<link:' . $scanner->scan() . '!> <success:created!>');
+            $this->writer->write(true, "scanning $directory folder... ");
+            $this->writer->write(true, "<link:{$scanner->getCacheFilePath()}!> ");
+            if ($scanner->scan()) {
+                $this->writer->write('<success:created!>');
+            } else {
+                $this->writer->write('<alert:cached!>');
+            }
         }
         $this->writer->write('<done:scan finished!!>');
     }

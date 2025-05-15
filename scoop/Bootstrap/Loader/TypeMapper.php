@@ -36,7 +36,8 @@ class TypeMapper
             }
             $directory = rtrim($directory, '/') . '/';
             $scanner = new \Scoop\Bootstrap\Scanner\Type($directory);
-            $scannedTypes[] = $scanner->scan();
+            $scanner->scan();
+            $scannedTypes[] = $scanner->getCacheFilePath();
         }
         return $scannedTypes;
     }

@@ -5,13 +5,11 @@ namespace Scoop\Http\Message\Server;
 class Payload
 {
     private $request;
-    private $realPath;
     private $type;
 
-    public function __construct($request, $realPath, $type)
+    public function __construct($request, $type)
     {
         $this->request = $request;
-        $this->realPath = $realPath;
         $this->type = $type;
     }
 
@@ -23,11 +21,6 @@ class Payload
     public function fromQuery(\Scoop\Validator $validator)
     {
         return $this->validate($validator, $this->request->getQueryParams());
-    }
-
-    public function fromPath(\Scoop\Validator $validator)
-    {
-        return $this->validate($validator, $this->realPath);
     }
 
     private function validate($validator, $data)

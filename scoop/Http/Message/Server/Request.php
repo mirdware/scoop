@@ -2,6 +2,9 @@
 
 namespace Scoop\Http\Message\Server;
 
+use Scoop\Http\Message\URI;
+use Scoop\View\Message;
+
 class Request extends \Scoop\Http\Message\Request
 {
     private $serverParams;
@@ -11,7 +14,7 @@ class Request extends \Scoop\Http\Message\Request
     private $parsedBody;
     private $attributes;
     private $referencer;
-    private $realPath;
+    private $urlPath;
     private static $redirects = array(
         300 => 'HTTP/1.1 300 Multiple Choices',
         301 => 'HTTP/1.1 301 Moved Permanently',
@@ -25,24 +28,32 @@ class Request extends \Scoop\Http\Message\Request
     );
 
     public function __construct(
-        $uri,
-        $method,
-        $realPath,
-        $headers = array(),
-        $body = null,
+        \Scoop\Http\Message\URI $uri = null,
+        \Scoop\Http\Message\Stream $body = null,
+        $method = null,
+        $headers = null,
+        $queryParams = null,
+        $uploadedFiles = null,
         $referencer = null,
         $serverParams = null,
         $cookies = null
     ) {
-        parent::__construct($uri, $method, $body, $headers);
-        $this->realPath = $realPath;
+        $this->urlPath = $uri ? $uri->getPath() : $this->getURLPath();
+        parent::__construct(
+            $uri ? $uri : new \Scoop\Http\Message\URI(
+                trim(ROOT, '/') . $this->urlPath . (isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '')
+            ),
+            $method === null ? strtolower($_SERVER['REQUEST_METHOD']) : strtolower($method),
+            $headers === null ? $this->getAllHeaders() : $headers,
+            $body === null ? new \Scoop\Http\Message\Stream(fopen('php://input', 'r')) : $body
+        );
         $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
         $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
-        $this->queryParams = $_GET;
-        $this->uploadedFiles = $this->normalizeFiles($_FILES);
+        $this->queryParams = $queryParams === null ? $_GET : $queryParams;
+        $this->uploadedFiles = $uploadedFiles === null ? $this->normalizeFiles($_FILES) : $uploadedFiles;
+        $this->referencer = $referencer === null ? $this->getReferencer() : $referencer;
         $this->parsedBody = null;
         $this->attributes = array();
-        $this->referencer = $referencer === null ? $this->getReferencer() : $referencer;
     }
 
     public function getServerParams()
@@ -53,6 +64,11 @@ class Request extends \Scoop\Http\Message\Request
     public function getCookieParams()
     {
         return $this->cookieParams;
+    }
+
+    public function getPath()
+    {
+        return $this->urlPath;
     }
 
     public function withCookieParams($cookies)
@@ -155,7 +171,7 @@ class Request extends \Scoop\Http\Message\Request
         if ($type !== null && !class_exists($type)) {
             throw new \InvalidArgumentException("The type $type not exist");
         }
-        return new Payload($this, $this->realPath, $type);
+        return new Payload($this, $type);
     }
 
     public function redirect($url, $status = 302)
@@ -189,6 +205,31 @@ class Request extends \Scoop\Http\Message\Request
             $ref = $ref[$key];
         }
         return $ref;
+    }
+
+    private function getURLPath()
+    {
+        $url = '/';
+        if (isset($_GET['route'])) {
+            $url .= filter_var($_GET['route'], FILTER_SANITIZE_URL);
+            unset($_GET['route'], $_REQUEST['route']);
+        }
+        return $url;
+    }
+
+    private function getAllHeaders()
+    {
+        $headers = array();
+        foreach ($_SERVER as $name => $value) {
+            if (strpos($name, 'HTTP_') === 0) {
+                $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+                $headers[$headerName] = explode(', ', $value);
+            } elseif (in_array($name, array('CONTENT_TYPE', 'CONTENT_LENGTH', 'CONTENT_MD5'), true)) {
+                $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $name))));
+                $headers[$headerName] = explode(', ', $value);
+            }
+        }
+        return $headers;
     }
 
     private function getReferencer()

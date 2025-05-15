@@ -35,7 +35,7 @@ class Message implements Component
         </div>');
     }
 
-    public static function setRequest(\Scoop\Http\Request $request)
+    public static function setRequest(\Scoop\Http\Message\Server\Request $request)
     {
         self::$request = $request;
     }

@@ -8,8 +8,8 @@ abstract class Scanner
     private $metaFilePath;
     private $cacheFilePath;
     private $filePattern;
-    protected $directory;
-    protected $map;
+    private $directory;
+    private $map;
 
     public function __construct($directory, $filePattern, $cacheFilePath, $metaFilePath)
     {
@@ -24,10 +24,24 @@ abstract class Scanner
         $this->map = array();
         $isModified = $this->analyzeDirectory();
         if ($isModified) {
+            $this->save($this->build($this->map), $this->cacheFilePath);
             $this->save($this->map, $this->metaFilePath);
-            $this->save($this->buildMap(), $this->cacheFilePath);
         }
+        return $isModified;
+    }
+
+    public function getCacheFilePath()
+    {
         return $this->cacheFilePath;
+    }
+    public function getMetaFilePath()
+    {
+        return $this->metaFilePath;
+    }
+
+    public function getDirectory()
+    {
+        return $this->directory;
     }
 
     public static function setStorage($path)
@@ -45,14 +59,14 @@ abstract class Scanner
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->directory));
         $regex = new \RegexIterator($iterator, $this->filePattern);
         $isModified = !is_readable($this->metaFilePath);
-        $meta = !$isModified ? require $this->metaFilePath : [];
+        $meta = !$isModified ? require $this->metaFilePath : array();
         foreach ($regex as $fileInfo) {
-            $fileName = $fileInfo->getPathname();
+            $fileName = str_replace(DIRECTORY_SEPARATOR, '/', $fileInfo->getPathname());
             $fileTime = $fileInfo->getMTime();
             if (isset($meta[$fileName]) && $meta[$fileName]['time'] === $fileTime) {
                 $this->map[$fileName] = $meta[$fileName];
             } else {
-                $fileData = $this->checkFile($fileName);
+                $fileData = $this->check($fileName);
                 $fileData['time'] = $fileTime;
                 $this->map[$fileName] = $fileData;
                 $isModified = true;
@@ -70,7 +84,7 @@ abstract class Scanner
         return $path . $fileName;
     }
 
-    abstract protected function checkFile($filePath);
+    abstract protected function check($filePath);
 
-    abstract protected function buildMap();
+    abstract protected function build($map);
 }

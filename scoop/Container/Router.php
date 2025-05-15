@@ -4,54 +4,45 @@ namespace Scoop\Container;
 
 class Router
 {
-    private $routes = array();
+    private $routes;
     private $current;
 
-    public function __construct($routes)
+    public function __construct(\Scoop\Bootstrap\Scanner\Route $scanner)
     {
-        foreach ($routes as $key => $route) {
-            $this->load($route, $key);
-        }
-        uasort($this->routes, array($this, 'sortByURL'));
+        $scanner->scan();
+        $this->routes = require $scanner->getCacheFilePath();
     }
 
-    public function route($request)
+    public function route(\Scoop\Http\Message\Server\Request $request)
     {
-        $route = $this->getRoute($request->getURL());
+        $route = $this->getRoute($request->getPath());
         if ($route) {
-            $method = strtolower($_SERVER['REQUEST_METHOD']);
+            if ($route['validator']) {
+                $this->validateRoute($route['validator'], $route['params']);
+            }
+            $method = $request->getMethod();
             $controller = $this->getController($route['controller'], $method);
             if ($controller) {
-                $this->intercept($request);
-                if (is_object($controller)) {
-                    $controllerReflection = new \ReflectionClass($controller);
-                    if (is_callable($controller)) {
-                        $method = '__invoke';
-                    } elseif (!$controllerReflection->hasMethod($method)) {
-                        throw new \Scoop\Http\Exception\MethodNotAllowed(
-                            $controllerReflection->getName() . ' not implement ' . $method . ' method'
-                        );
-                    }
-                    return $this->execute($controllerReflection->getMethod($method), $route['params'], $controller);
+                if (!empty($routeDefinition['middlewares'])) {
+                    $this->executeMiddlewares($route['middlewares'], $request, $route['params']);
                 }
-                return $this->execute(new \ReflectionFunction($controller), $route['params']);
+                $controllerReflection = new \ReflectionClass($controller);
+                if (is_callable($controller)) {
+                    $method = '__invoke';
+                } elseif (!$controllerReflection->hasMethod($method)) {
+                    throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+                }
+                $callable = $controllerReflection->getMethod($method);
+                $args = $this->getArguments($callable->getParameters(), $route['params'], $request);
+                return $callable->invokeArgs($controller, $args);
             }
         }
         throw new \Scoop\Http\Exception\NotFound();
     }
 
-    public function intercept($request)
-    {
-        $matches = $this->filterProxy($request->getURL());
-        foreach ($matches as $route) {
-            $proxy = \Scoop\Context::inject($route['proxy']);
-            $proxy->process($request);
-        }
-    }
-
     public function getURL($key, $params, $query)
     {
-        $path = preg_split('/\{\w+\}/', $this->routes[$key]['url']);
+        $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
         $url = array_shift($path);
         $count = count($path);
         if (count($params) > $count) {
@@ -87,122 +78,98 @@ class Router
         return $this->current;
     }
 
+    private function validateRoute($validatorName, $params)
+    {
+        if (!is_subclass_of($validatorName, '\Scoop\Validator')) {
+            throw new \RuntimeException("Validator $validatorName not supported");
+        }
+        $validator = \Scoop\Context::inject($validatorName);
+        if (!$validator->validate($params)) {
+            throw new \Scoop\Http\Exception\NotFound();
+        }
+    }
+
     private function getController($controller, $method)
     {
         if (is_array($controller)) {
             if (!isset($controller[$method])) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed("There not controller for $method method");
+                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
             }
             $controller = $controller[$method];
-            if (is_callable($controller)) {
-                return $controller;
-            }
         }
         if (!class_exists($controller)) {
-            throw new \Scoop\Http\Exception\NotFound("Class $controller not found");
+            throw new \Scoop\Http\Exception\NotFound();
         }
         return \Scoop\Context::inject($controller);
     }
 
-    private function execute($callable, $params, $controller = null)
+    /**
+     * TODO: Refactor this method to use a middleware stack
+     * @param mixed $middlewareDefinitions
+     * @param mixed $request
+     * @param mixed $routeParams
+     * @return void
+     */
+    private function executeMiddlewares($middlewareDefinitions, $request, $routeParams)
     {
-        $numParams = count($params);
-        if (
-            $numParams >= $callable->getNumberOfRequiredParameters() &&
-            $numParams <= $callable->getNumberOfParameters()
-        ) {
-            return $controller ? $callable->invokeArgs($controller, $params) : $callable->invokeArgs($params);
+        foreach ($middlewareDefinitions as $mwDefinition) {
+            $middlewareInstance = null;
+            if (is_string($mwDefinition) && class_exists($mwDefinition)) {
+                $middlewareInstance = \Scoop\Context::inject($mwDefinition);
+            } elseif (is_callable($mwDefinition)) {
+                $middlewareInstance = $mwDefinition;
+            }
+            if ($middlewareInstance) {
+                if (method_exists($middlewareInstance, 'handle')) {
+                    $middlewareInstance->handle($request, $routeParams);
+                } elseif (method_exists($middlewareInstance, 'process')) {
+                    $middlewareInstance->process($request, $routeParams);
+                } elseif (is_callable($middlewareInstance)) {
+                    call_user_func($middlewareInstance, $request, $routeParams);
+                } else {
+                     trigger_error("Middleware no invocable: " . print_r($mwDefinition, true), E_USER_WARNING);
+                }
+            }
         }
+    }
+
+    private function getArguments($parameters, $params, $request)
+    {
+        $args = array();
+        foreach ($parameters as $reflectionParam) {
+            $paramName = $reflectionParam->getName();
+            $paramClass = $reflectionParam->getClass();
+            if ($paramClass !== null && $request !== null && is_object($request) && $paramClass->getName() === get_class($request)) {
+                $args[] = $request;
+            } elseif (isset($params[$paramName])) {
+                $args[] = $params[$paramName];
+            } elseif ($reflectionParam->isDefaultValueAvailable()) {
+                $args[] = $reflectionParam->getDefaultValue();
+            } elseif (!$reflectionParam->isOptional()) {
+                throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
+            }
+        }
+        return $args;
     }
 
     private function getRoute($url)
     {
-        $matches = $this->filterRoute($url);
-        if ($matches) {
-            $route = end($matches);
-            $this->current = key($matches);
-            array_shift($route['params']);
-            $lenght = 0;
-            foreach ($route['params'] as $key => $param) {
-                if ($param !== '') {
-                    $param = urldecode($param);
-                    $lenght = ++$key;
+        foreach ($this->routes as $routeDefinition) {
+            $urlPattern = $routeDefinition['url'];
+            $regex = preg_quote($urlPattern, '#');
+            $regex = preg_replace('/\\\\\[(\w+)\\\\\]/', '([^/]+)', $regex);
+            if (preg_match("#^$regex$#", $url, $matches)) {
+                $routeDefinition['params'] = array();
+                preg_match_all('/\[(\w+)\]/', $urlPattern, $paramNames);
+                $numParams = count($paramNames[1]);
+                for ($i = 0; $i < $numParams; $i++) {
+                    if (isset($matches[$i + 1])) {
+                        $routeDefinition['params'][$paramNames[1][$i]] = urldecode($matches[$i + 1]);
+                    }
                 }
-            }
-            $route['params'] = array_splice($route['params'], 0, $lenght);
-            return $route;
-        }
-    }
-
-    private function filterRoute($url)
-    {
-        $matches = array();
-        foreach ($this->routes as $key => $route) {
-            if (
-                isset($route['controller']) &&
-                preg_match('/^' . self::normalizeURL($route['url']) . '$/', $url, $route['params'])
-            ) {
-                $matches[$key] = $route;
+                return $routeDefinition;
             }
         }
-        return $matches;
-    }
-
-    private function filterProxy($url)
-    {
-        $matches = array();
-        foreach ($this->routes as $route) {
-            if (
-                isset($route['proxy']) &&
-                preg_match('/^' . self::normalizeURL($route['url']) . '/', $url)
-            ) {
-                $matches[] = $route;
-            }
-        }
-        return $matches;
-    }
-
-    private function load($route, $key, $oldURL = '')
-    {
-        if (!isset($route['url'])) {
-            throw new \OutOfBoundsException('url\'s key has not been defined for the route');
-        }
-        $route['url'] = $oldURL . $route['url'];
-        if (isset($route['routes'])) {
-            $routes = $route['routes'];
-            if (is_string($routes)) {
-                $routes = \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->loadLazily($routes);
-                if (is_string($routes)) {
-                    throw new \InvalidArgumentException('routes ' . $routes . ' not supported');
-                }
-            }
-            foreach ($routes as $k => $r) {
-                $this->load($r, $k, $route['url']);
-            }
-            unset($route['routes']);
-        }
-        $this->routes[$key] = $route;
-    }
-
-    private static function sortByURL($a, $b)
-    {
-        return strcasecmp($b['url'], $a['url']);
-    }
-
-    private static function normalizeURL($url)
-    {
-        $url = str_replace(array(
-            '/{var}/',
-            '/{int}/',
-            '{var}',
-            '{int}'
-        ), array(
-            '/([\w\+\-\s\.]*)/?',
-            '/(\d*)/?',
-            '([\w\+\-\s\.]*)',
-            '(\d*)'
-        ), $url) . ((substr($url, -1) === '/') ? '?' : '/?');
-        return addcslashes($url, '/');
     }
 
     private static function encodeURL($str)

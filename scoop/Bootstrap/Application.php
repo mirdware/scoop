@@ -14,7 +14,8 @@ class Application
 
     public function run()
     {
-        $request = new \Scoop\Http\Request();
+        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Factory\Request:createFromGlobals');
+        $request = \Scoop\Context::inject($requestType);
         try {
             $response = $this->environment->route($request);
             gc_collect_cycles();
@@ -26,7 +27,11 @@ class Application
             $status = $exceptionManager->getStatusCode($ex);
             $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
             if (!$status) throw $ex;
-            return $this->formatResponse($exceptionManager->handle($ex, $request->isAjax(), $status));
+            return $this->formatResponse($exceptionManager->handle(
+                $ex,
+                $request->getHeaderLine('accept') === 'application/json',
+                $status
+            ));
         }
     }
 

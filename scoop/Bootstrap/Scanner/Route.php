@@ -4,36 +4,76 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Route extends \Scoop\Bootstrap\Scanner
 {
-    public function __construct($directory) {
-        $cacheFilePath = $this->getPath('/cache/', 'routes.index.php');
-        $metaFilePath = $this->getPath('/cache/', 'routes.meta.php');
-        parent::__construct($directory, '/endpoint\.php$/', $cacheFilePath, $metaFilePath);
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    {
+        parent::__construct(
+            $environment->getConfig('routes', 'app/routes'),
+            '/(endpoint|middlewares)\.php$/',
+            $this->getPath('/cache/', 'routes.php'),
+            $this->getPath('/cache/', 'routes.meta.php')
+        );
     }
 
-    protected function buildMap()
+    protected function build($map)
     {
-        $map = array();
-        foreach ($this->map as $filePath => $metaInfo) {
-            if ($metaInfo['id'] !== null) {
-                $map[$metaInfo['id']] = '/' . str_replace(
-                    array($this->directory, 'endpoint.php'),
-                    '',
-                    $filePath
-                 );
+        uasort($map, function ($a, $b) {
+            if ($a['priority'] !== $b['priority']) {
+                return $a['priority'] - $b['priority'];
+            }
+            if ($a['holdersCount'] !== $b['holdersCount']) {
+                return $a['holdersCount'] - $b['holdersCount'];
+            }
+            return strcmp($a['url'], $b['url']);
+        });
+        $routesMap = array();
+        $middlewaresMap = array();
+        foreach ($map as $filePath => $route) {
+            if (isset($route['id'])) {
+                if (isset($routesMap[$route['id']])) {
+                    throw new \RuntimeException("Duplicate route ID '{$route['id']}' found in file $filePath");
+                }
+                $applicableMiddlewares = array();
+                foreach ($middlewaresMap as $url => $middlewares) {
+                    if (strpos($route['url'], $url) === 0) {
+                        $applicableMiddlewares = array_merge($applicableMiddlewares, $middlewares);
+                    }
+                }
+                $routesMap[$route['id']] = array(
+                    'url' => $route['url'],
+                    'controller' => $route['controller'],
+                    'validator' => $route['validator'],
+                    'middlewares' => array_unique($applicableMiddlewares),
+                );
+            } else {
+                $middlewaresMap[$route['url']] = $route['middlewares'];
             }
         }
-        return $map;
+        return $routesMap;
     }
 
-    protected function checkFile($filePath) {
+    protected function check($filePath)
+    {
+        $file = basename($filePath);
+        $url = '/' . str_replace(array($this->getDirectory(), $file), '', $filePath);
+        $priority = trim($url) !== '' ? substr_count($filePath, '/') : 0;
         $route = include $filePath;
-        if (!is_array($route) || !isset($route['controller'])) {
-            throw new \RuntimeException("Invalid route definition in file '$filePath'");
+        if ($file === 'endpoint.php') {
+            if (!is_array($route) || !isset($route['controller'])) {
+                throw new \RuntimeException("Invalid route definition in file '$filePath'");
+            }
+            $content = array(
+                'id' => isset($route['id']) ? $route['id'] : uniqid(),
+                'controller' => $route['controller'],
+                'validator' => isset($route['validator']) ? $route['validator'] : null,
+            );
+        } else {
+            $content = array('middlewares' => $route);
+            $priority -= 1;
         }
-        $id = isset($route['id']) ? $route['id'] : null;
-        if ($id !== null && isset($this->routesMap[$id])) {
-            throw new \RuntimeException("Duplicate id found: '$id' in file '$filePath'");
-        }
-        return array('id' => $id);
+        return $content + array(
+            'url' => $url,
+            'priority' => $priority,
+            'holdersCount' => preg_match_all('/\[\w+\]/', $url)
+        );
     }
 }

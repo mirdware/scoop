@@ -7,6 +7,5 @@ return array(
         'en' => 'import:app/config/lang/en'
     ),
     'db' => require 'config/db.php',
-    'routes' => require 'config/routes.php',
     'providers' => require 'config/providers.php'
 );

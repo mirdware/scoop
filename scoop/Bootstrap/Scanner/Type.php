@@ -4,32 +4,33 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Type extends \Scoop\Bootstrap\Scanner
 {
-
-    public function __construct($directory) {
+    public function __construct($directory)
+    {
         $prefix = str_replace('/', '_', $directory);
         $cacheFilePath = $this->getPath('/cache/project/', "{$prefix}types.php");
         $metaFilePath = $this->getPath('/cache/project/', "{$prefix}meta.php");
         parent::__construct($directory, '/\.php$/', $cacheFilePath, $metaFilePath);
     }
 
-    protected function buildMap()
+    protected function build($metaMap)
     {
-        $map = array();
-        foreach ($this->map as $classTyped) {
+        $typeMap = array();
+        foreach ($metaMap as $classTyped) {
             if (isset($classTyped['types'])) {
                 $className = $classTyped['class'];
                 foreach ($classTyped['types'] as $typeName) {
-                    if (!isset($map[$typeName])) {
-                        $map[$typeName] = array();
+                    if (!isset($typeMap[$typeName])) {
+                        $typeMap[$typeName] = array();
                     }
-                    $map[$typeName][] = $className;
+                    $typeMap[$typeName][] = $className;
                 }
             }
         }
-        return $map;
+        return $typeMap;
     }
 
-    protected function checkFile($filePath) {
+    protected function check($filePath)
+    {
         if (!is_readable($filePath)) return;
         $content = file_get_contents($filePath);
         if ($content === false) return;
@@ -40,7 +41,7 @@ class Type extends \Scoop\Bootstrap\Scanner
         $hasTypes = false;
         foreach ($tokens as $index => $token) {
             if ($tokens[$index][0] === T_NAMESPACE) {
-                $namespace = $tokens[$index + 2][1] ? $tokens[$index + 2][1] : '';
+                $namespace = $this->getNamespace($index, $tokens);
             } elseif ($token[0] === T_CLASS) {
                 $fullClassName = trim(($namespace ? $namespace . '\\' : '') . $tokens[$index + 2][1]);
                 $hasTypes = $this->containsTypeDefinitions($tokens, $index + 2);
@@ -53,12 +54,26 @@ class Type extends \Scoop\Bootstrap\Scanner
                 'types' => $this->getTypeNames($fullClassName)
             );
         }
-        return array();
     }
 
-    private function containsTypeDefinitions($tokens, $startIndex) {
+    private function getNamespace($startIndex, $tokens)
+    {
+        $namespace = '';
+        for ($index = $startIndex + 2; isset($tokens[$index]); $index++) {
+            if ($tokens[$index] === ';') {
+                return trim($namespace, '\\');
+            }
+            if (is_array($tokens[$index]) && $tokens[$index][0] === T_STRING) {
+                $namespace .= '\\' . $tokens[$index][1];
+            }
+        }
+        return trim($namespace, '\\');
+    }
+
+    private function containsTypeDefinitions($tokens, $startIndex)
+    {
         for ($index = $startIndex; isset($tokens[$index]); $index++) {
-            if (is_array($tokens[$index]) && 
+            if (is_array($tokens[$index]) &&
                 ($tokens[$index][0] === T_EXTENDS || $tokens[$index][0] === T_IMPLEMENTS)) {
                 return true;
             }
@@ -66,7 +81,8 @@ class Type extends \Scoop\Bootstrap\Scanner
         return false;
     }
 
-    private function getTypeNames($className) {
+    private function getTypeNames($className)
+    {
         if (!class_exists($className)) return;
         $reflection = new \ReflectionClass($className);
         $typeNames = $reflection->getInterfaceNames();

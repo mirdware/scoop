@@ -9,7 +9,7 @@ class Router
 
     public function __construct(\Scoop\Bootstrap\Scanner\Route $scanner)
     {
-        $scanner->scan();
+        if (DEBUG_MODE) $scanner->scan();
         $this->routes = require $scanner->getCacheFilePath();
     }
 
@@ -23,9 +23,6 @@ class Router
             $method = $request->getMethod();
             $controller = $this->getController($route['controller'], $method);
             if ($controller) {
-                if (!empty($routeDefinition['middlewares'])) {
-                    $this->executeMiddlewares($route['middlewares'], $request, $route['params']);
-                }
                 $controllerReflection = new \ReflectionClass($controller);
                 if (is_callable($controller)) {
                     $method = '__invoke';
@@ -33,8 +30,8 @@ class Router
                     throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
                 }
                 $callable = $controllerReflection->getMethod($method);
-                $args = $this->getArguments($callable->getParameters(), $route['params'], $request);
-                return $callable->invokeArgs($controller, $args);
+                $requestHandler = new \Scoop\Http\Handler\Request($controller, $callable, $route);
+                return $requestHandler->handle($request);
             }
         }
         throw new \Scoop\Http\Exception\NotFound();
@@ -101,55 +98,6 @@ class Router
             throw new \Scoop\Http\Exception\NotFound();
         }
         return \Scoop\Context::inject($controller);
-    }
-
-    /**
-     * TODO: Refactor this method to use a middleware stack
-     * @param mixed $middlewareDefinitions
-     * @param mixed $request
-     * @param mixed $routeParams
-     * @return void
-     */
-    private function executeMiddlewares($middlewareDefinitions, $request, $routeParams)
-    {
-        foreach ($middlewareDefinitions as $mwDefinition) {
-            $middlewareInstance = null;
-            if (is_string($mwDefinition) && class_exists($mwDefinition)) {
-                $middlewareInstance = \Scoop\Context::inject($mwDefinition);
-            } elseif (is_callable($mwDefinition)) {
-                $middlewareInstance = $mwDefinition;
-            }
-            if ($middlewareInstance) {
-                if (method_exists($middlewareInstance, 'handle')) {
-                    $middlewareInstance->handle($request, $routeParams);
-                } elseif (method_exists($middlewareInstance, 'process')) {
-                    $middlewareInstance->process($request, $routeParams);
-                } elseif (is_callable($middlewareInstance)) {
-                    call_user_func($middlewareInstance, $request, $routeParams);
-                } else {
-                     trigger_error("Middleware no invocable: " . print_r($mwDefinition, true), E_USER_WARNING);
-                }
-            }
-        }
-    }
-
-    private function getArguments($parameters, $params, $request)
-    {
-        $args = array();
-        foreach ($parameters as $reflectionParam) {
-            $paramName = $reflectionParam->getName();
-            $paramClass = $reflectionParam->getClass();
-            if ($paramClass !== null && $request !== null && is_object($request) && $paramClass->getName() === get_class($request)) {
-                $args[] = $request;
-            } elseif (isset($params[$paramName])) {
-                $args[] = $params[$paramName];
-            } elseif ($reflectionParam->isDefaultValueAvailable()) {
-                $args[] = $reflectionParam->getDefaultValue();
-            } elseif (!$reflectionParam->isOptional()) {
-                throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
-            }
-        }
-        return $args;
     }
 
     private function getRoute($url)

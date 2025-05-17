@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Equals extends Rule
+class Equals extends \Scoop\Validation\Rule
 {
     protected $subject;
     private $caseSensitive;

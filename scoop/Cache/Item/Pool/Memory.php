@@ -2,7 +2,7 @@
 
 namespace Scoop\Cache\Item;
 
-class MemoryPool extends Pool
+class Memory extends \Scoop\Cache\Item\Pool
 {
     private $items;
 

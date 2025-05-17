@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Cache\Item;
+namespace Scoop\Cache\Item\Pool;
 
-class FilePool extends Pool
+class File extends \Scoop\Cache\Item\Pool
 {
     private $cacheDir;
     private $directoryLevels;
@@ -65,6 +65,9 @@ class FilePool extends Pool
     {
         $filePath = $this->getFilePath($key);
         $data = $this->unserialize($filePath);
+        if ($data === null) {
+            return null;
+        }
         $expirationTimestamp = $data['expiration'];
         $expirationDateTime =  null;
         if ($expirationTimestamp !== null) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Container;
+namespace Scoop\Container\Injector;
 
-class BasicInjector extends Injector
+class Memory extends \Scoop\Container\Injector
 {
     private $instances = array();
 

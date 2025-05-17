@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Min extends Rule
+class Min extends \Scoop\Validation\Rule
 {
     protected $min;
 

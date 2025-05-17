@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Length extends Rule
+class Length extends \Scoop\Validation\Rule
 {
     protected $max;
     protected $min;

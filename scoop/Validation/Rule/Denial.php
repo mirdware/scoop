@@ -1,12 +1,12 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Denial extends Rule
+class Denial extends \Scoop\Validation\Rule
 {
     private $rule;
 
-    public function __construct(Rule $rule)
+    public function __construct(\Scoop\Validation\Rule $rule)
     {
         $this->rule = $rule;
     }

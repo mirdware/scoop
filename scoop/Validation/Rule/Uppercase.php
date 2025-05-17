@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Uppercase extends Rule
+class Uppercase extends \Scoop\Validation\Rule
 {
     public function validate($value)
     {

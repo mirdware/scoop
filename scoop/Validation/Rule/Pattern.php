@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Pattern extends Rule
+class Pattern extends \Scoop\Validation\Rule
 {
     protected $pattern;
 

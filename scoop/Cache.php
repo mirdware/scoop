@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Cache;
+namespace Scoop;
 
 class Cache
 {

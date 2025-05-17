@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Email extends Rule
+class Email extends \Scoop\Validation\Rule
 {
     public function validate($value)
     {

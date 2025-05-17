@@ -25,9 +25,8 @@ class Context
                 self::$loader->register(true);
             }
         }
-        self::configureInjector(
-            new \Scoop\Bootstrap\Environment($configPath)
-        );
+        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
+        self::configureInjector();
         self::inject('Scoop\Bootstrap\Configuration')->setUp();
     }
 
@@ -59,9 +58,7 @@ class Context
         foreach (self::$connections as $connection) {
             $connection->rollBack();
         }
-        self::configureInjector(
-            self::inject('Scoop\Bootstrap\Environment')
-        );
+        self::configureInjector();
     }
 
     public static function inject($id)
@@ -87,12 +84,11 @@ class Context
         ), $config);
     }
 
-    private static function configureInjector($environment)
+    private static function configureInjector()
     {
-        $injector = $environment->getConfig('injector', '\Scoop\Container\BasicInjector');
+        $injector = self::$environment->getConfig('injector', '\Scoop\Container\Injector\Memory');
         $baseInjector = '\Scoop\Container\Injector';
-        self::$environment = $environment;
-        self::$injector = new $injector($environment);
+        self::$injector = new $injector(self::$environment);
         if (!(self::$injector instanceof $baseInjector)) {
             throw new \UnexpectedValueException("$injector not implement $baseInjector");
         }

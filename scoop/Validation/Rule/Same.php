@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Same extends Rule
+class Same extends \Scoop\Validation\Rule
 {
     private $env;
     private $subjects;

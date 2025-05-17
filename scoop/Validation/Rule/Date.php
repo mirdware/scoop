@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Validation;
+namespace Scoop\Validation\Rule;
 
-class Date extends Rule
+class Date extends \Scoop\Validation\Rule
 {
     protected $format;
 

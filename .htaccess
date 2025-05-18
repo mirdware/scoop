@@ -25,24 +25,26 @@
     #que ya utiliza mod_rewrite:
     #RewriteBase /
 
-    #ocultar las carpetas de la app
-    RewriteRule ^(app|vendor|scoop|src)/ - [F]
+    RewriteCond %{THE_REQUEST} \s/+(.*?/)?index\.php(\?[^\s]*)?\sHTTP [NC]
+        RewriteRule ^(.*?/)?index\.php$ /%1%2 [R=301,L,NE]
 
     #Forzar a usar la barra o slash (/) final dentro de la URL
     RewriteCond %{REQUEST_URI} /+[^\.]+$
         RewriteRule ^(.*[^/])$ %{REQUEST_URI}/ [R=308,L]
+
     RewriteCond %{REQUEST_URI} ^(.*)//(.*)$
         RewriteRule . %1/%2 [R=308,L]
+
+    #ocultar las carpetas de la app
+     RewriteRule ^(app|vendor|scoop|src|node_modules|tests)(/.*)?$ index.php?route=$1$2 [L,QSA]
 
     RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
         RewriteRule ^ %{ENV:PROTO}://%1%{REQUEST_URI} [R=301,L]
 
-    #Redirigir cualquier petición a index.php
-    #Si la url solicitada no es un fichero(existente), continuar...
     RewriteCond %{REQUEST_FILENAME} !-f
-        #Si la url solicitada no es una carpeta(existente), continuar...
         RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
+            RewriteCond %{REQUEST_URI} !^/(app|vendor|scoop|src|node_modules|tests)/
+                RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
 </IfModule>
 
 <FilesMatch "\.(htaccess|htpasswd|ini|log|bak)$">

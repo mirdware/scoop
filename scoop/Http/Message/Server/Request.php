@@ -10,7 +10,7 @@ class Request extends \Scoop\Http\Message\Request
     private $serverParams;
     private $cookieParams;
     private $queryParams;
-    private $uploadedFiles;
+    private $body;
     private $parsedBody;
     private $attributes;
     private $referencer;
@@ -33,7 +33,6 @@ class Request extends \Scoop\Http\Message\Request
         $method = null,
         $headers = null,
         $queryParams = null,
-        $uploadedFiles = null,
         $referencer = null,
         $serverParams = null,
         $cookies = null
@@ -49,10 +48,8 @@ class Request extends \Scoop\Http\Message\Request
         );
         $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
         $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
-        $this->queryParams = $queryParams === null ? $_GET : $queryParams;
-        $this->uploadedFiles = $uploadedFiles === null ? $this->normalizeFiles($_FILES) : $uploadedFiles;
+        $this->queryParams = $queryParams === null ? $this->purge($_GET) : $queryParams;
         $this->referencer = $referencer === null ? $this->getReferencer() : $referencer;
-        $this->parsedBody = null;
         $this->attributes = array();
     }
 
@@ -92,7 +89,14 @@ class Request extends \Scoop\Http\Message\Request
 
     public function getUploadedFiles()
     {
-        return $this->uploadedFiles;
+        if (!$this->body) {
+            $this->body = new \Scoop\Http\Message\Parser\Body(
+                $this->getBody()->getContents(),
+                $this->getMethod(),
+                $this->getHeaderLine('Content-Type')
+            );
+        }
+        return $this->body->getFiles();
     }
 
     public function withUploadedFiles($uploadedFiles)
@@ -104,34 +108,14 @@ class Request extends \Scoop\Http\Message\Request
 
     public function getParsedBody()
     {
-        if ($this->parsedBody !== null) {
-            return $this->parsedBody;
+        if (!$this->body) {
+            $this->body = new \Scoop\Http\Message\Parser\Body(
+                $this->getBody()->getContents(),
+                $this->getMethod(),
+                $this->getHeaderLine('Content-Type')
+            );
+            $this->parsedBody = $this->purge($this->body->getData());
         }
-        $this->parsedBody = array();
-        $body = $this->getBody()->getContents();
-        if (!$body) {
-            return $this->parsedBody;
-        }
-        $contentType = $this->getHeaderLine('Content-Type');
-        if (strpos($contentType, 'application/json') !== false) {
-            $body = json_decode($body, true);
-            $this->parsedBody = $this->purge($body);
-            return $this->parsedBody;
-        }
-        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
-        $boundary = $matches[1];
-        $blocks = preg_split("/-+$boundary/", $body);
-        array_pop($blocks);
-        foreach ($blocks as $block) {
-            if (!empty($block)) {
-                $regex = strpos($block, 'application/') ?
-                "/name=\"([^\"]*)\"[^\n]*[\n|\r]+([^\n\r].*)?$/s" :
-                '/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s';
-                preg_match($regex, $block, $matches);
-                $this->parsedBody[$matches[1]] = isset($matches[2]) ? $matches[2] : '';
-            }
-        }
-        $this->parsedBody = $this->purge($this->parsedBody);
         return $this->parsedBody;
     }
 
@@ -223,10 +207,10 @@ class Request extends \Scoop\Http\Message\Request
         foreach ($_SERVER as $name => $value) {
             if (strpos($name, 'HTTP_') === 0) {
                 $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
-                $headers[$headerName] = explode(', ', $value);
+                $headers[$headerName] = array_map('trim', explode(',', $value));
             } elseif (in_array($name, array('CONTENT_TYPE', 'CONTENT_LENGTH', 'CONTENT_MD5'), true)) {
                 $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $name))));
-                $headers[$headerName] = explode(', ', $value);
+                $headers[$headerName] = array_map('trim', explode(',', $value));
             }
         }
         return $headers;
@@ -275,37 +259,5 @@ class Request extends \Scoop\Http\Message\Request
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
         } while ($old_data !== $data);
         return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
-    }
-
-    private function normalizeFiles($files)
-    {
-        $normalized = [];
-        foreach ($files as $key => $value) {
-            if ($value instanceof UploadedFile) {
-                $normalized[$key] = $value;
-            } elseif (is_array($value) && isset($value['tmp_name'])) {
-                if (is_array($value['tmp_name'])) {
-                   $normalized[$key] = [];
-                   foreach ($value['tmp_name'] as $i => $tmp_name) {
-                       $normalized[$key][] = new UploadedFile(
-                           $tmp_name,
-                           (int)$value['size'][$i],
-                           (int)$value['error'][$i],
-                           $value['name'][$i],
-                           $value['type'][$i]
-                       );
-                   }
-                } else {
-                    $normalized[$key] = new UploadedFile(
-                        $value['tmp_name'],
-                        (int)$value['size'],
-                        (int)$value['error'],
-                        $value['name'],
-                        $value['type']
-                    );
-                }
-            }
-        }
-        return $normalized;
     }
 }

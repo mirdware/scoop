@@ -41,6 +41,7 @@
         ],
         "build": [
             "@php app/ice scan types",
+            "@php app/ice scan routes",
             "@php app/ice preload json:package"
         ],
         "test:lint": "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",

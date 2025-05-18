@@ -14,7 +14,7 @@ class Application
 
     public function run()
     {
-        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Factory\Request:createFromGlobals');
+        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Factory\ServerRequest:createFromGlobals');
         $request = \Scoop\Context::inject($requestType);
         try {
             $response = $this->environment->route($request);

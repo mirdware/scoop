@@ -13,7 +13,7 @@ class Request extends \Scoop\Http\Message
             $headers,
             $body === null ? new Stream(fopen('php://temp', 'r+')) : $body
         );
-        $this->method = strtoupper($method);
+        $this->method = strtolower($method);
         $this->uri = $uri;
     }
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Http\Message\Factory;
+namespace Scoop\Http\Factory;
 
-class Request
+class ServerRequest
 {
     public function createFromGlobals()
     {

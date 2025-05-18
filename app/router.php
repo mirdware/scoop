@@ -97,6 +97,14 @@ function test($expression)
 set_environment($_SERVER['REQUEST_URI']);
 $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
 $page = __dir__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . trim($uri, '/');
+if (preg_match('#^(.*?/)?index\.php(\?.*)?$#i', $_SERVER['REQUEST_URI'], $matches)) {
+    $subDirectory = isset($matches[1]) ? $matches[1] : '';
+    $queryString = isset($matches[2]) ? $matches[2] : '';
+    $targetPathAndQuery = $subDirectory . $queryString;
+    $newUrl = '/' . ltrim($targetPathAndQuery, '/');
+    header("Location: " . $newUrl, true, 301);
+    exit;
+}
 if (file_exists($page) && is_file($page)) {
     return false;
 }

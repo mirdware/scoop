@@ -13,11 +13,11 @@ class UploadedFile
     private $stream;
 
     public function __construct(
-        string $file,
-        int $size,
-        int $error,
-        string $clientFilename,
-        string $clientMediaType
+        $file,
+        $size,
+        $error,
+        $clientFilename,
+        $clientMediaType
     ) {
         $this->file = $file;
         $this->size = $size;

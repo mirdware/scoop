@@ -67,6 +67,9 @@ class Route extends \Scoop\Bootstrap\Scanner
                 'validator' => isset($route['validator']) ? $route['validator'] : null,
             );
         } else {
+            if (!is_array($route) || array_keys($route) !== range(0, count($route) - 1)) {
+                throw new \RuntimeException("Invalid middlewares definition in file '$filePath'");
+            }
             $content = array('middlewares' => $route);
             $priority -= 1;
         }

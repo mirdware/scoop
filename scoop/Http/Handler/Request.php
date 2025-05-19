@@ -37,10 +37,11 @@ class Request
     private function getArguments($parameters, $params, $request)
     {
         $args = array();
+        $hasType = empty($parameters) ? false : method_exists($parameters[0], 'getType');
         foreach ($parameters as $reflectionParam) {
             $paramName = $reflectionParam->getName();
-            $paramClass = $reflectionParam->getClass();
-            if ($paramClass !== null && $request !== null && is_object($request) && $paramClass->getName() === get_class($request)) {
+            $paramClass = $hasType ? $reflectionParam->getType() : $reflectionParam->getClass();
+            if ($paramClass !== null && $paramClass->getName() === get_class($request)) {
                 $args[] = $request;
             } elseif (isset($params[$paramName])) {
                 $args[] = $params[$paramName];

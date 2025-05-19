@@ -63,24 +63,22 @@ class Handler
         $reflection = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();
         if ($constructor) {
-            return $reflection->newInstanceArgs($this->mapConstructorParameters($constructor, $args));
+            return $reflection->newInstanceArgs($this->mapConstructorParameters($constructor->getParameters(), $args));
         }
         return $reflection->newInstance();
     }
 
-    private function mapConstructorParameters($constructor, $args)
+    private function mapConstructorParameters($parameters, $args)
     {
         $params = array();
-        foreach ($constructor->getParameters() as $param) {
+        foreach ($parameters as $param) {
             $name = $param->getName();
             if (array_key_exists($name, $args)) {
                 $params[] = $args[$name];
             } else if ($param->isDefaultValueAvailable()) {
                 $params[] = $param->getDefaultValue();
             } else {
-                throw new \InvalidArgumentException(
-                    "Missing required constructor parameter: $name"
-                );
+                throw new \InvalidArgumentException("Missing required constructor parameter: $name");
             }
         }
         return $params;

@@ -10,7 +10,11 @@ abstract class Message
 
     public function __construct($headers, $body)
     {
-        $this->headers = $headers;
+        $this->headers = array();
+        foreach ($headers as $name => $value) {
+            $name = strtolower($name);
+            $this->headers[$name] = is_array($value) ? $value : array($value);
+        }
         $this->body = $body;
         $this->protocolVersion = '1.1';
     }
@@ -35,21 +39,14 @@ abstract class Message
     public function hasHeader($name)
     {
         $name = strtolower($name);
-        foreach (array_keys($this->headers) as $key) {
-            if (strtolower($key) === $name) {
-                return true;
-            }
-        }
-        return false;
+        return isset($this->headers[$name]);
     }
 
     public function getHeader($name)
     {
-         $name = strtolower($name);
-        foreach (array_keys($this->headers) as $key) {
-            if (strtolower($key) === $name) {
-                return $this->headers[$key];
-            }
+        $name = strtolower($name);
+        if ($this->hasHeader($name)) {
+            return $this->headers[$name];
         }
         return array();
     }
@@ -61,8 +58,9 @@ abstract class Message
 
     public function withHeader($name, $value)
     {
+        $name = strtolower($name);
         $new = clone $this;
-        $new->headers[$name] = is_array($value) ? $value : array($value);
+        $new->headers[] = is_array($value) ? $value : array($value);
         return $new;
     }
 

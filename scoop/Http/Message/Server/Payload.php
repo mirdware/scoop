@@ -30,22 +30,22 @@ class Payload
         }
         $errors = $validator->getErrors();
         $contentType = $this->request->getHeaderLine('Accept');
-        header('HTTP/1.0 400 Bad Request');
-        if (strpos($contentType, 'application/json') !== false) {
-            header('Content-Type: application/json');
-            exit (json_encode(array('code' => 400, 'message' => $errors)));
+        if (strpos($contentType, 'application/json') === false) {
+            $_SESSION['data-scoop'] += array(
+                'body' => $this->request->getParsedBody(),
+                'query' => $this->request->getQueryParams(),
+                'error' => $errors
+            );
+            $this->request->goBack();
         }
-        $_SESSION['data-scoop'] += array(
-            'body' => $this->request->getParsedBody(),
-            'query' => $this->request->getQueryParams(),
-            'error' => $errors
-        );
-        $this->request->goBack();
+        header('HTTP/1.0 400 Bad Request');
+        header('Content-Type: application/json');
+        exit (json_encode(array('code' => 400, 'message' => $errors)));
     }
 
     private function transform($data)
     {
-        if (!$data || !$this->type || !is_array($data)) {
+        if (!$this->type) {
             return $data;
         }
         if (!class_exists($this->type)) {
@@ -54,17 +54,17 @@ class Payload
         return $this->createInstance($data);
     }
 
-    private function mapConstructorParameters($constructor, $data)
+    private function mapConstructorParameters($parameters, $data)
     {
         $params = array();
-        foreach ($constructor->getParameters() as $param) {
+        foreach ($parameters as $param) {
             $name = $param->getName();
             if (array_key_exists($name, $data)) {
                 $params[] = $data[$name];
             } else if ($param->isDefaultValueAvailable()) {
                 $params[] = $param->getDefaultValue();
             } else {
-                throw new \InvalidArgumentException("Missing required constructor parameter: {$name}");
+                throw new \InvalidArgumentException("Missing required constructor parameter: $name");
             }
         }
         return $params;
@@ -72,13 +72,10 @@ class Payload
 
     private function createInstance($data)
     {
-        if (is_object($data) && get_class($data) === $this->type) {
-            return $data;
-        }
         $reflection = new \ReflectionClass($this->type);
         $constructor = $reflection->getConstructor();
         if ($constructor && $constructor->getNumberOfParameters() > 0) {
-            return $reflection->newInstanceArgs($this->mapConstructorParameters($constructor, $data));
+            return $reflection->newInstanceArgs($this->mapConstructorParameters($constructor->getParameters(), $data));
         }
         if (is_array($data)) {
             $instance = $reflection->newInstance();

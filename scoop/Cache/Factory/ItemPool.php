@@ -13,8 +13,8 @@ class ItemPool
 
     public function create()
     {
-        $storagePath = $this->environment->getConfig('storage', 'app/storage');
-        $lifetime = $this->environment->getConfig('cache', 0);
-        return new \Scoop\Cache\Item\Pool\File($storagePath . '/cache', $lifetime);
+        $storagePath = $this->environment->getConfig('cache.storage', 'app/storage/cache');
+        $lifetime = $this->environment->getConfig('cache.time', 0);
+        return new \Scoop\Cache\Item\Pool\File($storagePath, $lifetime);
     }
 }

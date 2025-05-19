@@ -175,7 +175,6 @@ class Request extends \Scoop\Http\Message\Request
         if ($http_referer) {
             $this->redirect($http_referer);
         }
-        throw new \RuntimeException('HTTP reference losed');
     }
 
     public function reference($name)

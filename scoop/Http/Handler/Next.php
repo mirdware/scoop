@@ -16,7 +16,7 @@ class Next
     {
         if ($this->called) {
             throw new \LogicException(
-                'The next handler in the middleware chain has already been called. A middleware should only call \$handler->handle() once.'
+                'The next handler in the middleware chain has already been called. A middleware should only call once.'
             );
         }
         $this->called = true;

@@ -20,7 +20,7 @@ class Request
     public function handle($request)
     {
         if (empty($this->middlewares)) {
-            $args = $this->getArguments($this->callable->getParameters(), $this->params, $request);
+            $args = $this->getArguments($request);
             return $this->callable->invokeArgs($this->controller, $args);
         }
         $middlewareDefinition = array_shift($this->middlewares);
@@ -34,8 +34,10 @@ class Request
         return $middlewareInstance->process($request, new Next($this));
     }
 
-    private function getArguments($parameters, $params, $request)
+    private function getArguments($request)
     {
+        $parameters = $this->callable->getParameters();
+        $params = $this->params;
         $args = array();
         $hasType = empty($parameters) ? false : method_exists($parameters[0], 'getType');
         foreach ($parameters as $reflectionParam) {
@@ -45,11 +47,15 @@ class Request
                 $args[] = $request;
             } elseif (isset($params[$paramName])) {
                 $args[] = $params[$paramName];
+                unset($params[$paramName]);
             } elseif ($reflectionParam->isDefaultValueAvailable()) {
                 $args[] = $reflectionParam->getDefaultValue();
             } elseif (!$reflectionParam->isOptional()) {
                 throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
             }
+        }
+        if (!empty($params)) {
+            throw new \Scoop\Http\Exception\NotFound();
         }
         return $args;
     }

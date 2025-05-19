@@ -11,9 +11,9 @@ class Denial extends \Scoop\Validation\Rule
         $this->rule = $rule;
     }
 
-    public function with($data, $fields)
+    public function attach($data, $fields)
     {
-        return parent::with($data, $fields) && $this->rule->with($data, $fields);
+        return parent::attach($data, $fields) && $this->rule->attach($data, $fields);
     }
 
     public function unwrap()

@@ -154,7 +154,7 @@ class Validator
                 $value = $this->getValue($field, $data);
                 foreach ($validations as $validation) {
                     $params = array('@name' => $field);
-                    if ($validation->with($data, self::$fields)) {
+                    if ($validation->attach($data, self::$fields)) {
                         $this->executeRule($validation, $params, $value);
                     }
                 }

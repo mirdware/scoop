@@ -8,7 +8,7 @@ abstract class Rule
     protected $data;
     protected $fields;
 
-    public function with($data, $fields)
+    public function attach($data, $fields)
     {
         $this->data = $data;
         $this->fields = $fields;

@@ -109,6 +109,7 @@ if (file_exists($page) && is_file($page)) {
     return false;
 }
 if (substr($uri, -1) !== '/') {
+    header('HTTP/1.1 308 Permanent Redirect');
     header('Location: ' . $uri . '/');
     exit;
 }

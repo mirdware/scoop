@@ -6,11 +6,20 @@ class Payload
 {
     private $request;
     private $type;
+    private $data;
 
     public function __construct($request, $type)
     {
         $this->request = $request;
         $this->type = $type;
+        $this->data = array();
+    }
+
+    public function with($data)
+    {
+        $new = clone $this;
+        $new->data = array_merge($new->data, $data);
+        return $new;
     }
 
     public function fromBody(\Scoop\Validator $validator)
@@ -26,7 +35,7 @@ class Payload
     private function validate($validator, $data)
     {
         if ($validator->validate($data)) {
-            return $this->transform($validator->getData());
+            return $this->transform($validator->getData() + $this->data);
         }
         $errors = $validator->getErrors();
         $contentType = $this->request->getHeaderLine('Accept');

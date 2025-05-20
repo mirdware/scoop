@@ -162,8 +162,8 @@ class Request extends \Scoop\Http\Message\Request
     {
         header(self::$redirects[$status], true, $status);
         if (is_array($url)) {
-            $config = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
-            $url = $config->getURL($url);
+            $router = \Scoop\Context::inject('\Scoop\Http\Router');
+            $url = $router->getURL($url);
         }
         header('Location:' . $url);
         exit;

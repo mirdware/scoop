@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Container;
+namespace Scoop\Http;
 
 class Router
 {
@@ -17,6 +17,7 @@ class Router
     {
         $route = $this->getRoute($request->getPath());
         if ($route) {
+            $this->current = $route;
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
             }
@@ -37,42 +38,56 @@ class Router
         throw new \Scoop\Http\Exception\NotFound();
     }
 
-    public function getURL($key, $params, $query)
+    public function getCurrentRoute()
     {
+        return $this->current;
+    }
+
+    public function getURL($key, $params = array(), $query = array())
+    {
+        if (!isset($this->routes[$key])) {
+            throw new \InvalidArgumentException("Route $key not found");
+        }
         $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
         $url = array_shift($path);
         $count = count($path);
-        if (count($params) > $count) {
+        if (count($params) !== $count) {
             throw new \InvalidArgumentException('Unformed URL');
         }
-        for ($i = 0; $i < $count; $i++) {
-            if (isset($params[$i])) {
-                $url .= self::encodeURL(trim($params[$i])) . $path[$i];
+        if (array_keys($params) === range(0, $count - 1)) {
+            for ($i = 0; $i < $count; $i++) {
+                if (isset($params[$i])) {
+                    $url .= self::encodeURL(trim($params[$i])) . $path[$i];
+                }
+            }
+            return ROOT . substr($url, 1) . $this->formatQueryString($query);
+        }
+        $urlKeys = array_keys($params);
+        foreach ($urlKeys as $i => $urlKey) {
+            $urlKeys[$i] = "[$urlKey]";
+            if (strpos($this->routes[$key]['url'], $urlKeys[$i]) === false) {
+                throw new \InvalidArgumentException("{$urlKeys[$i]} not found in URL");
             }
         }
-        if (strrpos($url, '/') !== strlen($url) - 1) {
-            $url .= '/';
-        }
-        return ROOT . substr($url, 1) . $this->formatQueryString($query);
+        return trim(ROOT, '/') . str_replace(
+            $urlKeys,
+            array_values($params),
+            $this->routes[$key]['url']
+        ) . $this->formatQueryString($query);
     }
 
     public function formatQueryString($query)
     {
-        if (!is_array($query)) {
+        if (empty($query)) {
             return '';
         }
-        $queryString = '';
-        foreach ($query as $key => $value) {
-            if ($value) {
-                $queryString .= '&' . filter_var($key, FILTER_UNSAFE_RAW) . '=' . filter_var($value, FILTER_UNSAFE_RAW);
-            }
+        if (is_string($query)) {
+            return (strpos($query, '?') === 0 ? '' : '?') . $query;
         }
-        return $queryString ? '?' . substr($queryString, 1) : '';
-    }
-
-    public function getCurrentRoute()
-    {
-        return $this->current;
+        if (is_array($query)) {
+            return '?' . http_build_query($query);
+        }
+        return '';
     }
 
     private function validateRoute($validatorName, $params)

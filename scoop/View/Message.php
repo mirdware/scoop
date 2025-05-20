@@ -5,7 +5,7 @@ namespace Scoop\View;
 /**
  * Clase componente de los mensajes usados por el Bootstrap.
  */
-class Message implements Component
+class Message
 {
     const INFO = 'info';
     const SUCCESS = 'success';

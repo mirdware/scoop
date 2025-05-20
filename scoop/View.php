@@ -101,7 +101,7 @@ final class View
             $method = implode('', $array);
             return call_user_func_array(array(self::$components[$component], $method), $args);
         }
-        throw new \BadMethodCallException('Component ' . $component . ' unregistered');
+        throw new \BadMethodCallException("Component $component unregistered");
     }
 
     /**
@@ -112,9 +112,8 @@ final class View
     public static function registerComponents($components)
     {
         foreach ($components as $name => $className) {
-            $componentInterface = 'Scoop\View\Component';
-            if (!is_subclass_of($className, $componentInterface)) {
-                throw new \InvalidArgumentException($className . ' not implement ' . $componentInterface);
+            if (!method_exists($className, 'render')) {
+                throw new \InvalidArgumentException("$className not implement render method");
             }
             self::$components[strtolower($name)] = $className;
         }

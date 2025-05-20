@@ -7,6 +7,7 @@ class Helper
     private $components;
     private $environment;
     private $request;
+    private $router;
     private static $keyMessages = 'messages.';
     private static $assets = array(
         'path' => 'public/',
@@ -15,15 +16,12 @@ class Helper
         'js' => 'js/'
     );
 
-    /**
-     * Establece la configuración inicial de los atributos del Helper
-     * @param array<\Scoop\View\Component> $components colección de componentes usados por la vista.
-     */
     public function __construct($request, $components)
     {
         $this->request = $request;
         $this->components = $components;
         $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
+        $this->router = \Scoop\Context::inject('\Scoop\Http\Router');
         self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 
@@ -75,7 +73,17 @@ class Helper
      */
     public function route()
     {
-        return $this->environment->getURL(func_get_args());
+        $args = func_get_args();
+        $query = array_pop($args);
+        if ($query !== null && !is_array($query)) {
+            array_push($args, $query);
+            $query = array();
+        }
+        if (empty($args)) {
+            $currentPath = '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            return $this->mergeQuery($currentPath, $query);
+        }
+        return $this->router->getURL(array_shift($args), $args, $query);
     }
 
     public function addPage($data, $quantity, $name = 'page')
@@ -99,9 +107,10 @@ class Helper
         return $this->environment->getConfig(self::$keyMessages . $msg);
     }
 
-    public function isCurrentRoute($route)
+    public function isCurrentRoute($routeKey)
     {
-        return $this->environment->getCurrentRoute() === $route;
+        $route = $this->router->getCurrentRoute();
+        return $route['key'] === $routeKey;
     }
 
     public function fetch($name)
@@ -130,5 +139,25 @@ class Helper
     public static function setKeyMessages($key)
     {
         self::$keyMessages = $key;
+    }
+
+    private function mergeQuery($url, $query)
+    {
+        $url = explode('?', $url);
+        if (isset($url[1])) {
+            $query += $this->getQuery($url[1]);
+        }
+        return $url[0] . $this->formatQueryString($query);
+    }
+
+    private function getQuery($params)
+    {
+        $query = array();
+        $params = explode('&', $params);
+        foreach ($params as $param) {
+            $param = explode('=', $param);
+            $query[$param[0]] = $param[1];
+        }
+        return $query;
     }
 }

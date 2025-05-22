@@ -13,9 +13,10 @@ class Structure
     public function execute($command)
     {
         $name = $command->getOption('name', 'default');
+        $tag = $command->getOption('tag', false);
         $con = $this->getConnection($name, $command->getOption('user'), $command->getOption('password'));
-        $this->createTable($con);
-        $creator = $this->update($name, $command->getOption('schema', ''), $con);
+        $this->createTable($con, $tag);
+        $creator = $this->update($name, $command->getOption('schema', ''), $tag, $con);
         if ($creator->hasData()) {
             $creator->run();
             $this->writer->write('<done:Structure changed!!>');
@@ -33,16 +34,20 @@ class Structure
             '--schema => update only structs of a specific "schema"(folder)',
             '--name => use a diferent database connection than "default"',
             '--user => change the user of the database connection',
-            '--password => change the password of the database connection'
+            '--password => change the password of the database connection',
+            '--tag => creates a tag name for the executed structs',
         );
     }
 
-    private function createTable($con)
+    private function createTable($con, $tag)
     {
         $con->exec('CREATE TABLE IF NOT EXISTS structs(
             name VARCHAR(255) PRIMARY KEY NOT NULL,
             date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
          )');
+         if ($tag) {
+            $con->exec('ALTER TABLE structs ADD COLUMN IF NOT EXISTS tag VARCHAR(255)');
+         }
     }
 
     private function getConnection($name, $user, $password)
@@ -84,14 +89,14 @@ class Structure
         return $files;
     }
 
-    private function update($name, $schema, $con)
+    private function update($connectionName, $schema, $tag, $con)
     {
-        $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $name);
+        $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $connectionName);
         $creator = $sqoStruct->create(array('name'));
         $files = $this->getFiles($schema);
         $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);
         $con->beginTransaction();
-        foreach ($files as $file) {
+        foreach ($files as $index => $file) {
             $name = basename($file);
             if (!in_array($name, $structs)) {
                 $this->writer->write(true, "File <link:$file!> ... ");
@@ -104,6 +109,12 @@ class Structure
                     $this->writer->write('<alert:pending!!>');
                 }
             }
+            $files[$index] = $name;
+        }
+        if ($tag) {
+            $sqoStruct->update(array('tag' => $tag))
+            ->filter('name IN(:files)')
+            ->run(compact('files'));
         }
         return $creator;
     }

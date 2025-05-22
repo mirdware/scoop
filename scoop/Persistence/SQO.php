@@ -20,7 +20,7 @@ class SQO
         $this->connectionName = $connectionName;
     }
 
-    public function create($fields, SQO\Reader $select = null)
+    public function create($fields, $select = null)
     {
         if ($this->isReader) {
             throw new \DomainException('Subquery on FROM clausule not support CREATE');

@@ -4,10 +4,13 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width" />
         <title>{{isset($title) ? $title : 'Welcome'}} » {{#view->getConfig('app.name')}}</title>
+        @if getenv('VITE_ENVIRONMENT')
+            <script type="module" src="{{getenv('VITE_ENVIRONMENT')}}/@vite/client"></script>
+        :if
         <link rel="author" href="{{#view->asset('humans.txt')}}" />
         <link rel="shortcut icon" type="image/x-icon" href="{{#view->asset('favicon.ico')}}" />
-        <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}?v={{#view->getConfig('app.version')}}" rel="preload" as="style" />
-        <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}?v={{#view->getConfig('app.version')}}" defer></script>
+        <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}" rel="preload" as="style" />
+        <script type="module" src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" defer></script>
         @if isset($meta)
             @foreach $meta as $name => $value
                 <meta name="{{$name}}" content="{{$value}}" />

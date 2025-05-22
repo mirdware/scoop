@@ -32,7 +32,7 @@ class Body
         }
         if ($method === 'post') {
             $this->parsedBody = $_POST;
-            $this->UploadedFile = $this->normalizeFiles($_FILES);
+            $this->uploadedFiles = $this->normalizeFiles($_FILES);
             return;
         }
         if (!$body) {

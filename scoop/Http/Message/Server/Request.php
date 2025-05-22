@@ -28,8 +28,8 @@ class Request extends \Scoop\Http\Message\Request
     );
 
     public function __construct(
-        \Scoop\Http\Message\URI $uri = null,
-        \Scoop\Http\Message\Stream $body = null,
+        $uri = null,
+        $body = null,
         $method = null,
         $headers = null,
         $queryParams = null,

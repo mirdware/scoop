@@ -1,12 +1,12 @@
-FROM node:20-alpine AS node
+FROM node:22-alpine3.20 AS node
 WORKDIR /app
-COPY ["gulpfile.js", "jsconfig.json", "package*.json", "./"]
+COPY ["vite.config.js", "jsconfig.json", "package*.json", "./"]
 RUN npm install
 COPY app/styles/. app/styles/
 COPY app/scripts/. app/scripts/
 RUN npm start
 
-FROM webdevops/php-apache:8.2-alpine
+FROM webdevops/php-apache:8.4-alpine
 WORKDIR /app
 COPY ["composer*", "./"]
 RUN composer install --optimize-autoloader --no-dev
@@ -17,7 +17,7 @@ RUN su application -c "composer build" && rm -rf \
 app/styles \
 app/scripts \
 .devcontainer \
-gulpfile.js \
+vite.config.js \
 jsconfig.json \
 package.json \
 package-lock.json \

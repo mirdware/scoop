@@ -9,7 +9,7 @@
  * @license http://opensource.org/licenses/MIT MIT
  * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
- * @version 0.7
+ * @version 0.8
  */
 
 require 'scoop/Context.php';

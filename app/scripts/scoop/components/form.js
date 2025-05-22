@@ -59,7 +59,9 @@ export default class Form extends Component {
       form.resource = {};
     }
     if (!form.resource[form.action]) {
-      const options = {};
+      const options = {
+        redirect: false
+      };
       if (form.enctype !== 'multipart/form-data') {
         options.headers = {'Content-Type': 'application/json'};
       }

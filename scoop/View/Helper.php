@@ -32,7 +32,8 @@ class Helper
      */
     public function asset($resource)
     {
-        return ROOT . self::$assets['path'] . $resource;
+        $host = getenv('VITE_ENVIRONMENT');
+        return ($host ? "$host/" : ROOT) . self::$assets['path'] . $resource;
     }
 
     /**
@@ -52,7 +53,11 @@ class Helper
      */
     public function css($styleSheet)
     {
-        return $this->asset(self::$assets['css'] . $styleSheet);
+        $host = getenv('VITE_ENVIRONMENT');
+        if ($host) {
+            return "$host/app/styles/app.styl";
+        }
+        return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->environment->getConfig('app.version');
     }
 
     /**
@@ -62,7 +67,11 @@ class Helper
      */
     public function js($javaScript)
     {
-        return $this->asset(self::$assets['js'] . $javaScript);
+        $host = getenv('VITE_ENVIRONMENT');
+        if ($host) {
+            return "$host/app/scripts/app.js";
+        }
+        return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->environment->getConfig('app.version');
     }
 
     /**

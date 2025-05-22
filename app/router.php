@@ -42,6 +42,7 @@ function set_environment($url)
     $_SERVER['REQUEST_URI'] = $request_uri;
     $_SERVER['SCRIPT_NAME'] = $script_name;
     $_SERVER['QUERY_STRING'] = $query_string;
+    putenv("VITE_ENVIRONMENT=http://localhost:8000");
 }
 
 /**
@@ -109,8 +110,8 @@ if (file_exists($page) && is_file($page)) {
     return false;
 }
 if (substr($uri, -1) !== '/') {
-    header('HTTP/1.1 308 Permanent Redirect');
     header('Location: ' . $uri . '/');
+    header('HTTP/1.1 308 Permanent Redirect');
     exit;
 }
 // Your rewrite rules here.

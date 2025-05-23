@@ -35,7 +35,7 @@ class Structure
             '--name => use a diferent database connection than "default"',
             '--user => change the user of the database connection',
             '--password => change the password of the database connection',
-            '--tag => creates a tag name for the executed structs',
+            '--tag => creates a tag name for the executed structs'
         );
     }
 

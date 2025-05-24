@@ -8,6 +8,7 @@ class Helper
     private $environment;
     private $request;
     private $router;
+    private $viteHost;
     private static $keyMessages = 'messages.';
     private static $assets = array(
         'path' => 'public/',
@@ -23,6 +24,7 @@ class Helper
         $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         $this->router = \Scoop\Context::inject('\Scoop\Http\Router');
         self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
+        $this->viteHost = getenv('VITE_HOST');
     }
 
     /**
@@ -32,8 +34,7 @@ class Helper
      */
     public function asset($resource)
     {
-        $host = getenv('VITE_ENVIRONMENT');
-        return ($host ? "$host/" : ROOT) . self::$assets['path'] . $resource;
+        return ($this->viteHost ? "{$this->viteHost}/" : ROOT) . self::$assets['path'] . $resource;
     }
 
     /**
@@ -53,9 +54,8 @@ class Helper
      */
     public function css($styleSheet)
     {
-        $host = getenv('VITE_ENVIRONMENT');
-        if ($host) {
-            return "$host/app/styles/app.styl";
+        if ($this->viteHost) {
+            return "{$this->viteHost}/app/styles/app.styl";
         }
         return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->environment->getConfig('app.version');
     }
@@ -67,9 +67,8 @@ class Helper
      */
     public function js($javaScript)
     {
-        $host = getenv('VITE_ENVIRONMENT');
-        if ($host) {
-            return "$host/app/scripts/app.js";
+        if ($this->viteHost) {
+            return "{$this->viteHost}/app/scripts/app.js";
         }
         return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->environment->getConfig('app.version');
     }
@@ -124,7 +123,7 @@ class Helper
 
     public function fetch($name)
     {
-        return $this->request->reference($name);
+        return $this->request->flash($name);
     }
 
     /**
@@ -133,13 +132,18 @@ class Helper
      */
     public function compose($name, $props, $children)
     {
-
+        if (strpos($name, 'view.') === 0) {
+            $viewName = substr($name, 5);
+            $view = new \Scoop\View($viewName);
+            $view->set($props);
+            return str_replace('@slot', $children, $view->render());
+        }
         if (!isset($this->components[$name])) {
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
         $component = \Scoop\Context::inject($this->components[$name]);
         $component = $component->render($props);
-        $subject = ($component instanceof \Scoop\View) ? $component->render() : $component;
+        $subject = ($component instanceof \Scoop\View) ? $component->render() : Template::clearHTML($component);
         return str_replace('@slot', $children, $subject);
     }
 

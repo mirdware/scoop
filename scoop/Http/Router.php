@@ -17,7 +17,8 @@ class Router
     {
         $route = $this->getRoute($request->getPath());
         if ($route) {
-            $this->current = $route;
+            $this->current = new \Scoop\Http\Message\Route($route['key']);
+            $this->current = $this->current->withVariables($route['params']);
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
             }

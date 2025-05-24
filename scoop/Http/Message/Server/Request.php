@@ -161,9 +161,8 @@ class Request extends \Scoop\Http\Message\Request
     public function redirect($url, $status = 302)
     {
         header(self::$redirects[$status], true, $status);
-        if (is_array($url)) {
-            $router = \Scoop\Context::inject('\Scoop\Http\Router');
-            $url = $router->getURL($url);
+        if ($url instanceof \Scoop\Http\Message\Route) {
+            $url = $url->getURL(\Scoop\Context::inject('\Scoop\Http\Router'));
         }
         header('Location:' . $url);
         exit;
@@ -171,13 +170,13 @@ class Request extends \Scoop\Http\Message\Request
 
     public function goBack()
     {
-        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->reference('http');
+        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->flash('http');
         if ($http_referer) {
             $this->redirect($http_referer);
         }
     }
 
-    public function reference($name)
+    public function flash($name)
     {
         $name = explode('.', $name);
         $ref = $this->referencer;

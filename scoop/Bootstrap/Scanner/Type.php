@@ -4,9 +4,8 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Type extends \Scoop\Bootstrap\Scanner
 {
-    public function __construct($directory)
+    public function __construct($directory, $prefix)
     {
-        $prefix = str_replace('/', '_', $directory);
         $cacheFilePath = $this->getPath('/cache/project/', "{$prefix}types.php");
         $metaFilePath = $this->getPath('/cache/project/', "{$prefix}meta.php");
         parent::__construct($directory, '/\.php$/', $cacheFilePath, $metaFilePath);
@@ -43,7 +42,7 @@ class Type extends \Scoop\Bootstrap\Scanner
             if ($tokens[$index][0] === T_NAMESPACE) {
                 $namespace = $this->getNamespace($index, $tokens);
             } elseif ($token[0] === T_CLASS) {
-                $fullClassName = trim(($namespace ? $namespace . '\\' : '') . $tokens[$index + 2][1]);
+                $fullClassName = ($namespace ? $namespace . '\\' : '') . $tokens[$index + 2][1];
                 $hasTypes = $this->containsTypeDefinitions($tokens, $index + 2);
                 break;
             }
@@ -61,13 +60,14 @@ class Type extends \Scoop\Bootstrap\Scanner
         $namespace = '';
         for ($index = $startIndex + 2; isset($tokens[$index]); $index++) {
             if ($tokens[$index] === ';') {
-                return trim($namespace, '\\');
+                return ltrim($namespace, '\\');
             }
-            if (is_array($tokens[$index]) && $tokens[$index][0] === T_STRING) {
+            $tokenType = defined('T_NAME_QUALIFIED') ? T_NAME_QUALIFIED : T_STRING;
+            if (is_array($tokens[$index]) && $tokens[$index][0] === $tokenType) {
                 $namespace .= '\\' . $tokens[$index][1];
             }
         }
-        return trim($namespace, '\\');
+        return ltrim($namespace, '\\');
     }
 
     private function containsTypeDefinitions($tokens, $startIndex)

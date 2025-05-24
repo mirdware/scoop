@@ -86,14 +86,14 @@ final class Template
             'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
         );
         preg_match(
-            '/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
+            '/\s*<\s*html\s*(.*?)\s*>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
             $html,
             $matches
         );
         if (isset($matches[0])) {
             $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
             $head = preg_replace('/>\s+</', '><', $head);
-            $html = str_replace($matches[0], '<html' . $matches[1] . '><head>' . $head . '</head><body>', $html);
+            $html = str_replace($matches[0], '<html ' . $matches[1] . '><head>' . $head . '</head><body>', $html);
         }
         $html = preg_replace(
             array(
@@ -180,7 +180,7 @@ final class Template
                 ':for',
                 ':while',
                 '@else',
-                '@sprout'
+                '@slot'
             ),
             array(
                 '[php endif php]',

@@ -42,7 +42,7 @@ function set_environment($url)
     $_SERVER['REQUEST_URI'] = $request_uri;
     $_SERVER['SCRIPT_NAME'] = $script_name;
     $_SERVER['QUERY_STRING'] = $query_string;
-    putenv("VITE_ENVIRONMENT=http://localhost:8000");
+    putenv("VITE_HOST=http://localhost:8000");
 }
 
 /**

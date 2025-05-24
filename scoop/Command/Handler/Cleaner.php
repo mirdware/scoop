@@ -2,7 +2,7 @@
 
 namespace Scoop\Command\Handler;
 
-class Cache extends Router
+class Cleaner extends Router
 {
     public function __construct(\Scoop\Command\Writer $writer)
     {
@@ -10,8 +10,8 @@ class Cache extends Router
             'Manages application cache: prune expired items or fully clear all cached data.',
             $writer,
             new \Scoop\Command\Bus( array(
-            'prune' => 'Scoop\Command\Handler\Cache\Pruner',
-            'clear' => 'Scoop\Command\Handler\Cache\Cleaner'))
+            'cache' => 'Scoop\Command\Handler\Cleaner\Cache',
+            'views' => 'Scoop\Command\Handler\Cleaner\View'))
         );
     }
 }

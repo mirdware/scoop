@@ -19,7 +19,7 @@ class Bus
                 'scan' => 'Scoop\Command\Handler\Scanner',
                 'dbup' => 'Scoop\Command\Handler\Structure',
                 'preload' => 'Scoop\Command\Handler\PreLoader',
-                'cache' => 'Scoop\Command\Handler\Cache'
+                'clean' => 'Scoop\Command\Handler\Cleaner'
             )
         );
     }

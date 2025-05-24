@@ -4,8 +4,8 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width" />
         <title>{{isset($title) ? $title : 'Welcome'}} » {{#view->getConfig('app.name')}}</title>
-        @if getenv('VITE_ENVIRONMENT')
-            <script type="module" src="{{getenv('VITE_ENVIRONMENT')}}/@vite/client"></script>
+        @if getenv('VITE_HOST')
+            <script type="module" src="{{getenv('VITE_HOST')}}/@vite/client"></script>
         :if
         <link rel="author" href="{{#view->asset('humans.txt')}}" />
         <link rel="shortcut icon" type="image/x-icon" href="{{#view->asset('favicon.ico')}}" />
@@ -30,7 +30,7 @@
                 </a>
             </header>
             <section class="jumbotron">
-                @sprout
+                @slot
             </section>
         </div>
         <footer class="main">

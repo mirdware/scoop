@@ -61,7 +61,7 @@ abstract class Heritage
     /**
      * Se aplica a un template en el lugar en donde la vista hija debe ser incluida.
      */
-    public static function sprout()
+    public static function getChildren()
     {
         ob_start();
     }

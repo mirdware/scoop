@@ -138,9 +138,9 @@ class Helper
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
         $component = \Scoop\Context::inject($this->components[$name]);
-        $props['children'] = $children;
         $component = $component->render($props);
-        return ($component instanceof \Scoop\View) ? $component->render() : $component;
+        $subject = ($component instanceof \Scoop\View) ? $component->render() : $component;
+        return str_replace('@slot', $children, $subject);
     }
 
     public static function setKeyMessages($key)

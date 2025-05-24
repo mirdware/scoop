@@ -188,7 +188,7 @@ final class Template
                 '[php endfor php]',
                 '[php endwhile php]',
                 '[php else: php]',
-                '[php ' . self::HERITAGE . '::sprout() php]'
+                '[php ' . self::HERITAGE . '::getChildren() php]'
             ),
             $line,
             $count

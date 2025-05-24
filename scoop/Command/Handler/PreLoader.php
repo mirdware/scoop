@@ -19,6 +19,7 @@ class PreLoader
     {
         $args = $command->getArguments();
         $this->environment->loadLazily($args[0]);
+        $this->writer->write("<alert:{$args[0]}!> loaded successfully.");
     }
 
     public function help()

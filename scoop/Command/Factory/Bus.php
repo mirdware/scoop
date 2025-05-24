@@ -18,7 +18,8 @@ class Bus
                 'new' => 'Scoop\Command\Handler\Creator',
                 'scan' => 'Scoop\Command\Handler\Scanner',
                 'dbup' => 'Scoop\Command\Handler\Structure',
-                'preload' => 'Scoop\Command\Handler\PreLoader'
+                'preload' => 'Scoop\Command\Handler\PreLoader',
+                'cache' => 'Scoop\Command\Handler\Cache'
             )
         );
     }

@@ -70,7 +70,7 @@ class Structure
 
     private function collectFiles($filePatten, $collectedSqlFiles)
     {
-        $rootSqlFiles = glob($filePatten . '/*.sql', GLOB_NOSORT);
+        $rootSqlFiles = glob($filePatten . '/*.sql');
         if ($rootSqlFiles !== false) {
             $collectedSqlFiles = array_merge($collectedSqlFiles, $rootSqlFiles);
         }
@@ -84,7 +84,7 @@ class Structure
         if (empty($schema)) {
             return $this->collectFiles($baseStructPath, $collectedSqlFiles);
         }
-        if (preg_match('/^\{\w+(,\w+)*\}$/', $schema, $match)) {
+        if (preg_match('/^\{([^\}]+)\}$/', $schema, $match)) {
             $individualPatterns = explode(',', $match[1]);
             foreach ($individualPatterns as $pattern) {
                 $collectedSqlFiles = array_merge($collectedSqlFiles, $this->getFiles(trim($pattern)));

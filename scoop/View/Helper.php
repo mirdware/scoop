@@ -131,20 +131,18 @@ class Helper
      * Compone la clase dependiendo de los parametros dados.
      * @return string Estructura HTML del componente generado.
      */
-    public function __call($method, $args)
+    public function compose($name, $props, $children)
     {
-        if (strpos($method, 'compose') !== 0) {
-            trigger_error('Call to undefined method ' . __CLASS__ . '::' . $method . '()', E_USER_ERROR);
+
+        if (!isset($this->components[$name])) {
+            throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
-        $component = lcfirst(substr($method, 7));
-        if (isset($this->components[$component])) {
-            $component = new \ReflectionClass($this->components[$component]);
-            $component = $component->newInstanceArgs($args);
-            $component = $component->render();
-            return ($component instanceof \Scoop\View) ? $component->render() : $component;
-        }
-        throw new \BadMethodCallException('Component ' . $component . ' unregistered');
+        $component = \Scoop\Context::inject($this->components[$name]);
+        $props['children'] = $children;
+        $component = $component->render($props);
+        return ($component instanceof \Scoop\View) ? $component->render() : $component;
     }
+
     public static function setKeyMessages($key)
     {
         self::$keyMessages = $key;
@@ -156,7 +154,7 @@ class Helper
         if (isset($url[1])) {
             $query += $this->getQuery($url[1]);
         }
-        return $url[0] . $this->formatQueryString($query);
+        return $url[0] . $this->router->formatQueryString($query);
     }
 
     private function getQuery($params)

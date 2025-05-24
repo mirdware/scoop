@@ -47,6 +47,13 @@ final class Template
         preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
         $matches = $matches[0];
         $content = self::clearHTML($content);
+        $content = preg_replace_callback(
+            '~<sc-([a-zA-Z0-9_-]+)
+            \s*((?:\s+[a-zA-Z0-9_-]+\s*=\s*(?:\{.+?\}|"[^"]*"|\'[^\']*\'))*)?
+            \s*>(.*?)<\/sc-\1>~six',
+            array('Scoop\View\Template', 'parseCustomTag'),
+            $content
+        );
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
         $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
         $search += array(': ?><?php ', ' ?><?php ');
@@ -200,5 +207,35 @@ final class Template
             $content = str_replace($search, $replace, $content);
         }
         return $content;
+    }
+
+    private static function parseCustomTag($matches)
+    {
+        $componentName = $matches[1];
+        $attributesString = $matches[2] ? $matches[2] : '';
+        $contentValue = trim($matches[3]);
+        $props = array();
+        $attrPattern = '~([a-zA-Z0-9_-]+)\s*=\s*(?:\{(.+?)\}|"([^"]*)"|\'([^\']*)\')~ix';
+        if (preg_match_all($attrPattern, $attributesString, $attr_matches, PREG_SET_ORDER)) {
+            foreach ($attr_matches as $attr) {
+                $propName = $attr[1];
+                $propValuePhpCode = '';
+                if (!empty($attr[2])) {
+                    $propValuePhpCode = trim($attr[2]);
+                } elseif (isset($attr[3])) {
+                    $propValuePhpCode = "'" . addslashes($attr[3]) . "'";
+                } elseif (isset($attr[4])) {
+                    $propValuePhpCode = "'" . addslashes($attr[4]) . "'";
+                }
+                $props[$propName] = $propValuePhpCode;
+            }
+        }
+        $propsPhpArray = array();
+        foreach ($props as $key => $phpCodeForValue) {
+            $propsPhpArray[] = "'" . addslashes($key) . "' => " . $phpCodeForValue;
+        }
+        $propsPhpString = '[' . implode(', ', $propsPhpArray) . ']';
+        $escapedContentValue = addslashes($contentValue);
+        return '<?php echo ' . self::SERVICE . "::get('view')->compose('{$componentName}', {$propsPhpString}, '{$escapedContentValue}'); ?>";
     }
 }

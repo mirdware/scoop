@@ -30,7 +30,7 @@
                 </a>
             </header>
             <section class="jumbotron">
-                @slot
+                @sprout
             </section>
         </div>
         <footer class="main">

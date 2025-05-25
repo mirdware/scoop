@@ -164,7 +164,7 @@ class Request extends \Scoop\Http\Message\Request
         if ($url instanceof \Scoop\Http\Message\Route) {
             $url = $url->getURL(\Scoop\Context::inject('\Scoop\Http\Router'));
         }
-        header('Location:' . $url);
+        header('Location:' . $url, $status);
         exit;
     }
 

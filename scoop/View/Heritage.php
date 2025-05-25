@@ -15,10 +15,11 @@ abstract class Heritage
     public static function init($data)
     {
         $content = ob_get_contents();
+        $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         self::$data = $data;
         self::$templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
-            \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getConfig('templates', array())
+            $environment->getConfig('templates', array())
         );
         array_push(self::$stack, array(
             'footer' => '',

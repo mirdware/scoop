@@ -48,7 +48,7 @@ final class Template
         $matches = $matches[0];
         $content = self::clearHTML($content);
         $content = preg_replace_callback(
-            '~<sc-([a-zA-Z0-9_-]+)
+            '~<sc-([\.a-zA-Z0-9_-]+)
             \s*((?:\s+[a-zA-Z0-9_-]+\s*=\s*(?:\{.+?\}|"[^"]*"|\'[^\']*\'))*)?
             \s*>(.*?)<\/sc-\1>~six',
             array('Scoop\View\Template', 'parseCustomTag'),
@@ -180,7 +180,7 @@ final class Template
                 ':for',
                 ':while',
                 '@else',
-                '@slot'
+                '@sprout'
             ),
             array(
                 '[php endif php]',
@@ -234,8 +234,14 @@ final class Template
         foreach ($props as $key => $phpCodeForValue) {
             $propsPhpArray[] = "'" . addslashes($key) . "' => " . $phpCodeForValue;
         }
-        $propsPhpString = '[' . implode(', ', $propsPhpArray) . ']';
-        $escapedContentValue = addslashes($contentValue);
-        return '<?php echo ' . self::SERVICE . "::get('view')->compose('{$componentName}', {$propsPhpString}, '{$escapedContentValue}'); ?>";
+        $propsPhpString = 'array(' . implode(', ', $propsPhpArray) . ')';
+        if (empty($contentValue)) {
+            $variable = '\'\'';
+            $contentValue = '<?php ';
+        } else {
+            $variable = uniqid('$t_');
+            $contentValue = "<?php ob_start(); ?>$contentValue<?php $variable = ob_get_clean();";
+        }
+        return $contentValue . 'echo ' . self::SERVICE . "::get('view')->compose('$componentName', $propsPhpString, $variable); ?>";
     }
 }

@@ -14,7 +14,7 @@ class Message
     private $request;
 
     public function __construct(\Scoop\Http\Message\Server\Request $request)
-    {;
+    {
         $this->request = $request;
     }
 
@@ -24,13 +24,13 @@ class Message
      */
     public function render()
     {
-        $message = $this->request->reference('message');
-        list($type, $msg) = $message ? $message : array('type' => 'not', 'msg' => '');
-        return <<<HTML
-        <div id="msg" data-attr="className:type" class="$type">
-            <i class="close"></i>
-            <span data-bind="msg">$msg</span>
-        </div>
-        HTML;
+        $message = (array) $this->request->flash('message') + array('type' => 'not', 'text' => '');
+        return
+<<<HTML
+<div id="msg" data-attr="className:type" class="{$message['type']}">
+    <i class="close"></i>
+    <span data-bind="msg">{$message['text']}</span>
+</div>
+HTML;
     }
 }

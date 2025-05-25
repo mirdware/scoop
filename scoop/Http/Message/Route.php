@@ -4,20 +4,20 @@ namespace Scoop\Http\Message;
 
 class Route
 {
-    private $key;
+    private $id;
     private $variables;
     private $query;
 
-    public function __construct($key)
+    public function __construct($id)
     {
-        $this->key = $key;
+        $this->id = $id;
         $this->variables = array();
         $this->query = array();
     }
 
-    public function getKey()
+    public function getId()
     {
-        return $this->key;
+        return $this->id;
     }
 
     public function getVariables()
@@ -68,6 +68,6 @@ class Route
 
     public function getURL(\Scoop\Http\Router $router)
     {
-        return $router->getURL($this->key, $this->variables, $this->query);
+        return $router->getURL($this->id, $this->variables, $this->query);
     }
 }

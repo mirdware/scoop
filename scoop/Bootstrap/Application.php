@@ -14,10 +14,9 @@ class Application
 
     public function run()
     {
-        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Factory\ServerRequest:createFromGlobals');
+        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Server\Request');
         $router = \Scoop\Context::inject('\Scoop\Http\Router');
         $request = \Scoop\Context::inject($requestType);
-        \Scoop\View::setRequest($request);
         try {
             $response = $router->route($request);
             gc_collect_cycles();

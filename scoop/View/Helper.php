@@ -17,13 +17,18 @@ class Helper
         'js' => 'js/'
     );
 
-    public function __construct($request, $components)
-    {
+    public function __construct(
+        \Scoop\Http\Message\Server\Request $request,
+        \Scoop\Bootstrap\Environment $environment,
+        \Scoop\Http\Router $router
+    ) {
+        $this->environment = $environment;
         $this->request = $request;
-        $this->components = $components;
-        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
-        $this->router = \Scoop\Context::inject('\Scoop\Http\Router');
-        self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
+        $this->router = $router;
+        $this->components = array(
+            'message' => '\Scoop\View\Message'
+        ) + $environment->getConfig('components', array());
+        self::$assets = $environment->getConfig('assets', array()) + self::$assets;
         $this->viteHost = getenv('VITE_HOST');
     }
 
@@ -34,7 +39,7 @@ class Helper
      */
     public function asset($resource)
     {
-        return ($this->viteHost ? "{$this->viteHost}/" : ROOT) . self::$assets['path'] . $resource;
+        return ROOT . self::$assets['path'] . $resource;
     }
 
     /**
@@ -96,7 +101,7 @@ class Helper
 
     public function addPage($data, $quantity, $name = 'page')
     {
-        $queryString = $this->request->getQuery();
+        $queryString = $this->request->getQueryParams();
         $nextPage = $data['page'] + $quantity;
         if ($nextPage < 0 || $nextPage * $data['size'] >= $data['total']) {
             return $this->route();
@@ -115,10 +120,10 @@ class Helper
         return $this->environment->getConfig(self::$keyMessages . $msg);
     }
 
-    public function isCurrentRoute($routeKey)
+    public function isCurrentRoute($routeId)
     {
         $route = $this->router->getCurrentRoute();
-        return $route['key'] === $routeKey;
+        return $route->getId() === $routeId;
     }
 
     public function fetch($name)
@@ -133,7 +138,7 @@ class Helper
     public function compose($name, $props, $children)
     {
         if (strpos($name, 'view.') === 0) {
-            $viewName = substr($name, 5);
+            $viewName = str_replace('.', '/', substr($name, 5));
             $view = new \Scoop\View($viewName);
             $view->set($props);
             return str_replace('@slot', $children, $view->render());

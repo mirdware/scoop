@@ -37,8 +37,5 @@ class Configuration
         $this->setStorage(
             $this->environment->getConfig('storage', 'app/storage/')
         );
-        \Scoop\View::registerComponents(
-            $this->environment->getConfig('components', array())
-        );
     }
 }

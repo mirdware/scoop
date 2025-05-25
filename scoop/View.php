@@ -5,11 +5,7 @@ namespace Scoop;
 final class View
 {
     private $viewPath;
-    private $viewData = array();
-    private static $request;
-    private static $components = array(
-        'message' => '\Scoop\View\Message'
-    );
+    private $viewData;
 
     /**
      * Genera la vista partiendo desde el nombre de la misma.
@@ -18,6 +14,7 @@ final class View
     public function __construct($viewPath)
     {
         $this->viewPath = $viewPath;
+        $this->viewData = array();
     }
 
     /**
@@ -64,58 +61,11 @@ final class View
      */
     public function render()
     {
-        $helperView = new View\Helper(self::$request, self::$components);
-        View\Service::inject('view', $helperView);
+        View\Service::inject('view', \Scoop\Context::inject('\Scoop\View\Helper'));
         View\Service::inject('config', \Scoop\Context::inject('\Scoop\Bootstrap\Environment'));
         View\Heritage::init($this->viewData);
         extract($this->viewData);
         require View\Heritage::getCompilePath($this->viewPath);
         return View\Heritage::getContent();
-    }
-
-    public static function setRequest(\Scoop\Http\Message\server\Request $request)
-    {
-        foreach (self::$components as $className) {
-            $reflectionClass = new \ReflectionClass($className);
-            if ($reflectionClass->hasMethod('setRequest')) {
-                $reflectionMethod = $reflectionClass->getMethod('setRequest');
-                if ($reflectionMethod->isStatic()) {
-                    $reflectionMethod->invoke($reflectionClass, $request);
-                }
-            }
-        }
-        self::$request = $request;
-    }
-
-    /**
-     * Convierte el llamado a un componente previamente registrado.
-     * @param  string $method Nombre del método llamado.
-     * @param  array<mixed> $args Argumentos pasados al metodo.
-     * @return \Scoop\View La instancia de la clase para encadenamiento.
-     */
-    public static function __callStatic($method, $args)
-    {
-        $array = preg_split('/(?=[A-Z])/', $method);
-        $component = strtolower(array_pop($array));
-        if (isset(self::$components[$component])) {
-            $method = implode('', $array);
-            return call_user_func_array(array(self::$components[$component], $method), $args);
-        }
-        throw new \BadMethodCallException("Component $component unregistered");
-    }
-
-    /**
-     * Registra los componentes que seran utilizados en la vista.
-     * @param  string $name Nombre con el que se identificara el componente internamente.
-     * @param  string $className Referencia a la clase que sera componentizada.
-     */
-    public static function registerComponents($components)
-    {
-        foreach ($components as $name => $className) {
-            if (!method_exists($className, 'render')) {
-                throw new \InvalidArgumentException("$className not implement render method");
-            }
-            self::$components[strtolower($name)] = $className;
-        }
     }
 }

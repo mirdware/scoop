@@ -17,7 +17,7 @@ class Router
     {
         $route = $this->getRoute($request->getPath());
         if ($route) {
-            $this->current = new \Scoop\Http\Message\Route($route['key']);
+            $this->current = new \Scoop\Http\Message\Route($route['id']);
             $this->current = $this->current->withVariables($route['params']);
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
@@ -118,7 +118,7 @@ class Router
 
     private function getRoute($url)
     {
-        foreach ($this->routes as $routeDefinition) {
+        foreach ($this->routes as $key => $routeDefinition) {
             $urlPattern = $routeDefinition['url'];
             $regex = preg_quote($urlPattern, '#');
             $regex = preg_replace('/\\\\\[(\w+)\\\\\]/', '([^/]+)', $regex);
@@ -131,6 +131,7 @@ class Router
                         $routeDefinition['params'][$paramNames[1][$i]] = urldecode($matches[$i + 1]);
                     }
                 }
+                $routeDefinition['id'] = $key;
                 return $routeDefinition;
             }
         }

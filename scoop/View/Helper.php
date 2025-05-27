@@ -60,7 +60,7 @@ class Helper
     public function css($styleSheet)
     {
         if ($this->viteHost) {
-            return "{$this->viteHost}/app/styles/app.styl";
+            return "{$this->viteHost}app/styles/app.styl";
         }
         return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->environment->getConfig('app.version');
     }
@@ -73,7 +73,7 @@ class Helper
     public function js($javaScript)
     {
         if ($this->viteHost) {
-            return "{$this->viteHost}/app/scripts/app.js";
+            return "{$this->viteHost}app/scripts/app.js";
         }
         return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->environment->getConfig('app.version');
     }

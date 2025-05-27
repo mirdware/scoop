@@ -4,7 +4,7 @@ namespace Scoop\View;
 
 abstract class Heritage
 {
-    private static $stack = array();
+    private static $parent;
     private static $data;
     private static $templates;
 
@@ -12,35 +12,14 @@ abstract class Heritage
      * Inicia los atributos estaticos de la clase.
      * @param array<mixed> $data Los datos que seran renderizados por la plantilla.
      */
-    public static function init($data)
+    public static function init()
     {
-        $content = ob_get_contents();
         $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
-        self::$data = $data;
         self::$templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
             $environment->getConfig('templates', array())
         );
-        array_push(self::$stack, array(
-            'footer' => '',
-            'content' => trim($content)
-        ));
         ob_start();
-    }
-
-    /**
-     * Invoca una plantilla padre a la vista.
-     * @param string $parent Ubicacion del template que sera aplicado a la vista.
-     */
-    public static function extend($parent)
-    {
-        $template = \Scoop\Context::inject(self::$templates['sdt.php']);
-        extract(self::$data);
-        require $template->parse($parent);
-        $index = count(self::$stack) - 1;
-        $footer = &self::$stack[$index]['footer'];
-        $footer = trim(ob_get_contents()) . $footer;
-        ob_end_clean();
     }
 
     /**
@@ -62,8 +41,14 @@ abstract class Heritage
     /**
      * Se aplica a un template en el lugar en donde la vista hija debe ser incluida.
      */
-    public static function getChildren()
+    public static function setParent()
     {
+        $content = ob_get_clean();
+        if (isset(self::$parent)) {
+            self::$parent = str_replace('@slot', $content, self::$parent);
+        } else {
+            self::$parent = $content;
+        }
         ob_start();
     }
 
@@ -73,9 +58,9 @@ abstract class Heritage
      */
     public static function getContent()
     {
-        $item = array_pop(self::$stack);
-        $view = ob_get_contents() . $item['footer'];
-        ob_end_clean();
-        return $view;
+        if (isset(self::$parent)) {
+            return str_replace('@slot', ob_get_clean(), self::$parent);
+        }
+        return ob_get_clean();
     }
 }

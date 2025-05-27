@@ -162,7 +162,7 @@ final class Template
             "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
         ), array(
             '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
-            '[php ' . self::HERITAGE . '::extend(${1}) php]',
+            '[php require ' . self::HERITAGE . '::getCompilePath(${1});' . self::HERITAGE . '::setParent() php]',
             '[php require ' . self::HERITAGE . '::getCompilePath(${1}) php]',
             '[php if(${1}): php]',
             '[php elseif(${1}): php]',
@@ -179,16 +179,14 @@ final class Template
                 ':foreach',
                 ':for',
                 ':while',
-                '@else',
-                '@sprout'
+                '@else'
             ),
             array(
                 '[php endif php]',
                 '[php endforeach php]',
                 '[php endfor php]',
                 '[php endwhile php]',
-                '[php else: php]',
-                '[php ' . self::HERITAGE . '::getChildren() php]'
+                '[php else: php]'
             ),
             $line,
             $count
@@ -239,8 +237,8 @@ final class Template
             $variable = '\'\'';
             $contentValue = '<?php ';
         } else {
-            $variable = uniqid('$t_');
-            $contentValue = "<?php ob_start(); ?>$contentValue<?php $variable = ob_get_clean();";
+            $variable = uniqid('$t');
+            $contentValue = "$contentValue<?php $variable = ob_get_clean();";
         }
         return $contentValue . 'echo ' . self::SERVICE . "::get('view')->compose('$componentName', $propsPhpString, $variable); ?>";
     }

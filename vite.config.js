@@ -32,7 +32,7 @@ export default defineConfig(({ command, mode }) => {
       port: 8000,
       origin: 'http://localhost:8000',
       proxy: {
-        '^/(?!@vite|@fs|app/|node_modules/|src/|css/|js/|assets/|fonts/|favicon.ico|.*\.js|.*\.css|.*\.styl|.*\.woff2?|.*\.ttf|.*\.eot|.*\.svg).*$': {
+        '^/(?!@vite|@fs|node_modules/|src/|css/|js/|assets/|fonts/|favicon.ico|.*\.js|.*\.css|.*\.styl|.*\.woff2?|.*\.ttf|.*\.eot|.*\.svg).*$': {
           target: phpHost,
           changeOrigin: true,
           secure: false,

@@ -45,11 +45,20 @@ abstract class Heritage
     {
         $content = ob_get_clean();
         if (isset(self::$parent)) {
-            self::$parent = str_replace('@slot', $content, self::$parent);
+            self::$parent = self::parseBlocks($content, self::$parent);
         } else {
             self::$parent = $content;
         }
         ob_start();
+    }
+
+    public static function parseBlocks($content, $parent)
+    {
+        $res =preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#', function ($matches) use (&$parent) {
+            $parent = str_replace("@slot[{$matches[1]}]", $matches[2], $parent, $count);
+            return $count ? '' : $matches[0];
+        }, $content);
+        return preg_replace('#@slot([^\[])#', trim($res) . '$1', $parent);
     }
 
     /**
@@ -59,7 +68,7 @@ abstract class Heritage
     public static function getContent()
     {
         if (isset(self::$parent)) {
-            return str_replace('@slot', ob_get_clean(), self::$parent);
+            return self::parseBlocks(ob_get_clean(), self::$parent);
         }
         return ob_get_clean();
     }

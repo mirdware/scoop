@@ -141,7 +141,7 @@ class Helper
             $viewName = str_replace('.', '/', substr($name, 5));
             $view = new \Scoop\View($viewName);
             $view->set($props);
-            return str_replace('@slot', $children, $view->render());
+            return Heritage::parseBlocks($children, $view->render());
         }
         if (!isset($this->components[$name])) {
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
@@ -149,7 +149,7 @@ class Helper
         $component = \Scoop\Context::inject($this->components[$name]);
         $component = $component->render($props);
         $subject = ($component instanceof \Scoop\View) ? $component->render() : Template::clearHTML($component);
-        return str_replace('@slot', $children, $subject);
+        return Heritage::parseBlocks($children, $subject);
     }
 
     public static function setKeyMessages($key)

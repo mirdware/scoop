@@ -5,7 +5,6 @@ namespace Scoop\View;
 abstract class Heritage
 {
     private static $parent;
-    private static $data;
     private static $templates;
 
     /**
@@ -35,7 +34,7 @@ abstract class Heritage
         ) ? $infoPath['extension'] : 'sdt.php';
         $path = $infoPath['dirname'] . '/' . $infoPath['filename'];
         $template = \Scoop\Context::inject(self::$templates[$ext]);
-        return $template->parse($path, self::$data);
+        return $template->parse($path);
     }
 
     /**

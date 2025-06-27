@@ -38,8 +38,7 @@ class Payload
             return $this->transform($validator->getData() + $this->data);
         }
         $errors = $validator->getErrors();
-        $contentType = $this->request->getHeaderLine('Accept');
-        if (strpos($contentType, 'application/json') === false) {
+        if ($this->request->isAjax()) {
             $_SESSION['data-scoop'] += array(
                 'body' => $this->request->getParsedBody(),
                 'query' => $this->request->getQueryParams(),

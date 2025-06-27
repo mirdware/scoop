@@ -4,18 +4,10 @@ namespace Scoop\View;
 
 final class Template
 {
-    const HERITAGE = '\Scoop\View\Heritage';
     const SERVICE = '\Scoop\View\Service';
     private static $cachePath = 'app/storage/cache/views';
     private static $viewPath = 'app/views/';
 
-    /**
-     * Convierte las platillas sdt a vistas php, en caso que la vista sea más
-     * antiguas que el template.
-     * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
-     * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
-     * @throws \UnderflowException No se puede generar la vista, pues no existe template.
-     */
     public function parse($templatePath)
     {
         $template = self::$viewPath . $templatePath . '.sdt.php';
@@ -36,11 +28,6 @@ final class Template
         self::$cachePath = $cachePath;
     }
 
-    /**
-     * Almacena la vista PHP en el disco.
-     * @param string $viewName Nombre de la vista a almacenar.
-     * @param string $content Contenido de la plantilla aplicando los reemplazos.
-     */
     protected function create($viewName, $templateName)
     {
         $content = self::compile($templateName);
@@ -73,11 +60,6 @@ final class Template
         fclose($view);
     }
 
-    /**
-     * Reglas para limpiar y minificar la vista.
-     * @param  string $html Contenido completo de la plantilla.
-     * @return string Plantilla limpia y minificada.
-     */
     public static function clearHTML($html)
     {
         $blockElements = array(
@@ -120,11 +102,6 @@ final class Template
         return $html;
     }
 
-    /**
-     * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera la vista.
-     * @param string $template Nombre del template que se usara
-     * @return string Contenido básico de la vista a ser mostrada
-     */
     private static function compile($template)
     {
         $content = '';
@@ -136,12 +113,6 @@ final class Template
         return self::convertViewServices($content);
     }
 
-    /**
-     * Reglas de reemplazo para cada uno de los comandos de la plantilla.
-     * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param string $line Linea que se encuentra analizando el parseador.
-     * @return string Linea con los cambios realizados.
-     */
     private static function replace($line)
     {
         $quotes = '\'[^\']*\'|"[^"]*"';
@@ -162,8 +133,8 @@ final class Template
             "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
         ), array(
             '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
-            '[php require ' . self::HERITAGE . '::getCompilePath(${1});' . self::HERITAGE . '::setParent() php]',
-            '[php require ' . self::HERITAGE . '::getCompilePath(${1}) php]',
+            '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1});' . self::SERVICE . '::get(\'view\')->setParent() php]',
+            '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1}) php]',
             '[php if(${1}): php]',
             '[php elseif(${1}): php]',
             '[php while(${1}): php]',

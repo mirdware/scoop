@@ -1,7 +1,12 @@
 {
-    "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
-        "experimentalDecorators": true
-    },
-    "exclude": ["node_modules", "public"]
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./app/scripts/*"],
+      "~styles/*": ["./app/styles/*"]
+    }
+  },
+  "include": ["app/**/*"],
+  "exclude": ["node_modules", "public"]
 }

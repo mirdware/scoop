@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import scalarHmrPlugin from './app/scripts/scoop/vite-plugin-scalar-hmr';
+import babel from 'vite-plugin-babel';
 import path from 'path';
 import pkg from './package.json';
 
@@ -16,6 +18,18 @@ export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production';
   return {
     plugins: [
+      !isProduction && scalarHmrPlugin(),
+      babel({
+        filter: /\.js$/,
+        babelConfig: {
+          babelrc: false,
+          configFile: false,
+          plugins: [
+            ["@babel/plugin-proposal-decorators", { "version": "legacy" }],
+            ["@babel/plugin-proposal-class-properties", { "loose": true }]
+          ]
+        }
+      }),
       viteStaticCopy({
         targets: [
           {
@@ -32,7 +46,7 @@ export default defineConfig(({ command, mode }) => {
       port: 8000,
       origin: 'http://localhost:8000',
       proxy: {
-        '^/(?!@vite|@fs|node_modules/|src/|css/|js/|assets/|fonts/|favicon.ico|.*\.js|.*\.css|.*\.styl|.*\.woff2?|.*\.ttf|.*\.eot|.*\.svg).*$': {
+        '^/(?!@vite|@fs|app/scripts|app/styles|node_modules|public|fonts).*$': {
           target: phpHost,
           changeOrigin: true,
           secure: false,

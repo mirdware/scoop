@@ -9,6 +9,8 @@ class Helper
     private $request;
     private $router;
     private $viteHost;
+    private $data;
+    private $heritage;
     private static $keyMessages = 'messages.';
     private static $assets = array(
         'path' => 'public/',
@@ -20,11 +22,15 @@ class Helper
     public function __construct(
         \Scoop\Http\Message\Server\Request $request,
         \Scoop\Bootstrap\Environment $environment,
-        \Scoop\Http\Router $router
+        \Scoop\Http\Router $router,
+        \Scoop\View\Heritage $heritage,
+        $data
     ) {
         $this->environment = $environment;
+        $this->heritage = $heritage;
         $this->request = $request;
         $this->router = $router;
+        $this->data = $data;
         $this->components = array(
             'message' => '\Scoop\View\Message'
         ) + $environment->getConfig('components', array());
@@ -32,31 +38,16 @@ class Helper
         $this->viteHost = getenv('VITE_HOST');
     }
 
-    /**
-     * Obtiene la ruta configurada hasta el path publico.
-     * @param string $resource Nombre del recurso a obtener.
-     * @return string ruta al recurso especificado.
-     */
     public function asset($resource)
     {
         return ROOT . self::$assets['path'] . $resource;
     }
 
-    /**
-     * Obtiene la ruta configurada hasta el path de imagenes.
-     * @param string $image Nombre de la imagen a obtener.
-     * @return string ruta a la imagen especificada.
-     */
     public function img($image)
     {
         return $this->asset(self::$assets['img'] . $image);
     }
 
-    /**
-     * Obtiene la ruta configurada hasta el path de hojas de estilos.
-     * @param string $styleSheet Nombre del archivo css a obtener.
-     * @return string ruta a la hoja de estilos especificada.
-     */
     public function css($styleSheet)
     {
         if ($this->viteHost) {
@@ -65,11 +56,6 @@ class Helper
         return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->environment->getConfig('app.version');
     }
 
-    /**
-     * Obtiene la ruta configurada hasta el path de javascript.
-     * @param string $javaScript Nombre del archivo javascript a obtener.
-     * @return string ruta al archivo javascript especificada.
-     */
     public function js($javaScript)
     {
         if ($this->viteHost) {
@@ -78,36 +64,35 @@ class Helper
         return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->environment->getConfig('app.version');
     }
 
-    /**
-     * Obtiene la URL formateada según la ruta y parametros enviados.
-     * @param mixed $args Recibe como parametros ($nombreRuta, $params...).
-     * @return string URL formateada según el nombre de la ruta y los parámetros
-     * enviados.
-     */
     public function route()
     {
         $args = func_get_args();
-        $query = array_pop($args);
-        if ($query !== null && !is_array($query)) {
-            array_push($args, $query);
-            $query = array();
+        $query = array();
+        if (!empty($args)) {
+            if (is_array($args[count($args) - 1])) {
+                $query = array_pop($args);
+            }
+            if (!empty($args)) {
+                $route = new \Scoop\Http\Message\Server\Route(array_shift($args));
+                return $this->router->getURL($route
+                    ->withVariables($args)
+                    ->withQuery($query)
+                );
+            }
         }
-        if (empty($args)) {
-            $currentPath = '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            return $this->mergeQuery($currentPath, $query);
-        }
-        return $this->router->getURL(array_shift($args), $args, $query);
+        $currentPath = ($this->viteHost ? rtrim($this->viteHost, '/') : '//' . $_SERVER['HTTP_HOST']) . $_SERVER['REQUEST_URI'];
+        return $this->mergeQuery($currentPath, $query);
     }
 
     public function addPage($data, $quantity, $name = 'page')
     {
-        $queryString = $this->request->getQueryParams();
+        $query = $this->request->getQueryParams();
         $nextPage = $data['page'] + $quantity;
         if ($nextPage < 0 || $nextPage * $data['size'] >= $data['total']) {
             return $this->route();
         }
-        $queryString[$name] = $nextPage;
-        return $this->route($queryString);
+        $query[$name] = $nextPage;
+        return $this->route($query);
     }
 
     public function getConfig($name, $default = '')
@@ -128,13 +113,9 @@ class Helper
 
     public function fetch($name)
     {
-        return $this->request->flash($name);
+        return $this->request->flash()->get($name);
     }
 
-    /**
-     * Compone la clase dependiendo de los parametros dados.
-     * @return string Estructura HTML del componente generado.
-     */
     public function compose($name, $props, $children)
     {
         if (strpos($name, 'view.') === 0) {
@@ -147,9 +128,19 @@ class Helper
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
         $component = \Scoop\Context::inject($this->components[$name]);
-        $component = $component->render($props);
+        $component = $component->render($props, $this->data);
         $subject = ($component instanceof \Scoop\View) ? $component->render() : Template::clearHTML($component);
         return Heritage::parseBlocks($children, $subject);
+    }
+
+    public function getCompilePath($path)
+    {
+        return $this->heritage->getCompilePath($path);
+    }
+
+    public function setParent()
+    {
+        $this->heritage->setParent();
     }
 
     public static function setKeyMessages($key)

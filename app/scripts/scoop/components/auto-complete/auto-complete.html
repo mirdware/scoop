@@ -1,0 +1,11 @@
+<div class="autocomplete">
+    <input type="search" data-attr="name:name;placeholder:placeholder;required:required" data-bind="value" />
+    <div class="autocomplete-items" data-bind="_values">
+        <script type="text/template">
+            <div data-attr="id: _currentFocus === ${index} ? 'active' : ''" data-key="${index}">
+                <span>${data.mask}</span>
+                <input type="hidden" value="data.value" />
+            </div>
+        </script>
+    </div>
+</div>

@@ -2,9 +2,6 @@
 
 namespace Scoop\Http\Message\Server;
 
-use Scoop\Http\Message\URI;
-use Scoop\View\Message;
-
 class Request extends \Scoop\Http\Message\Request
 {
     private $serverParams;
@@ -13,7 +10,7 @@ class Request extends \Scoop\Http\Message\Request
     private $body;
     private $parsedBody;
     private $attributes;
-    private $referencer;
+    private $flash;
     private $urlPath;
     private static $redirects = array(
         300 => 'HTTP/1.1 300 Multiple Choices',
@@ -37,19 +34,19 @@ class Request extends \Scoop\Http\Message\Request
         $serverParams = null,
         $cookies = null
     ) {
-        $this->urlPath = $uri ? $uri->getPath() : $this->getURLPath();
+        $this->urlPath = $uri === null ? $this->getURLPath() : $uri->getPath();
         parent::__construct(
-            $uri ? $uri : new \Scoop\Http\Message\URI(
+            $uri === null ? new \Scoop\Http\Message\URI(
                 trim(ROOT, '/') . $this->urlPath . (isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '')
-            ),
-            $method === null ? strtolower($_SERVER['REQUEST_METHOD']) : strtolower($method),
+            ) : $uri,
+            strtolower($method === null ? $_SERVER['REQUEST_METHOD'] : $method),
             $headers === null ? $this->getAllHeaders() : $headers,
             $body === null ? new \Scoop\Http\Message\Stream(fopen('php://input', 'r')) : $body
         );
         $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
         $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
         $this->queryParams = $queryParams === null ? $this->purge($_GET) : $queryParams;
-        $this->referencer = $referencer === null ? $this->getReferencer() : $referencer;
+        $this->flash = new \Scoop\Http\Message\Server\Flash($referencer === null ? $this->getReferencer() : $referencer);
         $this->attributes = array();
     }
 
@@ -161,32 +158,30 @@ class Request extends \Scoop\Http\Message\Request
     public function redirect($url, $status = 302)
     {
         header(self::$redirects[$status], true, $status);
-        if ($url instanceof \Scoop\Http\Message\Route) {
-            $url = $url->getURL(\Scoop\Context::inject('\Scoop\Http\Router'));
+        if (!$url instanceof \Scoop\Http\Message\Server\Route) {
+            $url->flushMessage($this->flash);
+            $url = \Scoop\Context::inject('\Scoop\Http\Router')->getURL($url);
         }
-        header('Location:' . $url, $status);
+        header("Location:$url", $status);
         exit;
     }
 
     public function goBack()
     {
-        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->flash('http');
+        $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->flash->get('http');
         if ($http_referer) {
             $this->redirect($http_referer);
         }
     }
 
-    public function flash($name)
+    public function isAjax()
     {
-        $name = explode('.', $name);
-        $ref = $this->referencer;
-        foreach ($name as $key) {
-            if (!isset($ref[$key])) {
-                return '';
-            }
-            $ref = $ref[$key];
-        }
-        return $ref;
+        return strpos($this->getHeaderLine('accept'), 'application/json') !== false;
+    }
+
+    public function flash()
+    {
+        return $this->flash;
     }
 
     private function getURLPath()

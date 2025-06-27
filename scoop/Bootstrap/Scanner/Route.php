@@ -38,6 +38,9 @@ class Route extends \Scoop\Bootstrap\Scanner
                         $applicableMiddlewares = array_merge($applicableMiddlewares, $middlewares);
                     }
                 }
+                if (isset($route['middlewares'])) {
+                    $applicableMiddlewares = array_merge($applicableMiddlewares, $route['middlewares']);
+                }
                 $routesMap[$route['id']] = array(
                     'url' => $route['url'],
                     'controller' => $route['controller'],

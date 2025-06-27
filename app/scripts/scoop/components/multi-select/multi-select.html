@@ -1,0 +1,25 @@
+<select data-attr="name:name; required:required" style="display:none;" data-bind="value" multiple></select>
+    <div class="dropdown" tabindex="0">
+        <div class="list-wrapper" data-attr="style.display: show">
+        <input type="search" class="search" data-attr="placeholder:_txtSearch; style.display: search ? '' : 'none'">
+        <div class="list" data-bind="checkList">
+            <script type="text/template">
+            <label data-attr="id: _currentFocus === ${index} ? 'active' : ''" data-key="${index}" class="${(data.all ? 'all-selector ' : '') + (data.selected ? 'checked' : '')}">
+                <input type="checkbox" ${data.selected ? 'checked' : ''} />
+                ${data.text}
+            </label>
+            </script>
+        </div>
+        </div>
+        <div data-bind="badgeList">
+        <script type="text/template">
+            <span data-key="${index}" class="optext">
+            ${data.text}
+            <span class="optdel" data-attr="title:_txtRemove;style.display: hideClose ? 'none' : ''">🗙</span>
+            </span>
+        </script>
+        </div>
+        <span class="placeholder" data-attr="textContent: placeholder; style.display: numSelected ? 'none' : ''"></span>
+        <span class="optext maxselected" data-attr="textContent: numSelected + ' selected'; style.display: showItems ? 'none' : ''"></span>
+    </div>
+<slot></slot>

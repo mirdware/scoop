@@ -2,9 +2,6 @@
 
 namespace Scoop\View;
 
-/**
- * Clase componente de los mensajes usados por el Bootstrap.
- */
 class Message
 {
     const INFO = 'info';
@@ -18,13 +15,9 @@ class Message
         $this->request = $request;
     }
 
-    /**
-     * Crea el componente en la vista.
-     * @return string Renderiza el mensaje.
-     */
     public function render()
     {
-        $message = (array) $this->request->flash('message') + array('type' => 'not', 'text' => '');
+        $message = (array) $this->request->flash()->get('message') + array('type' => 'not', 'text' => '');
         return
 <<<HTML
 <div id="msg" data-attr="className:type" class="{$message['type']}">

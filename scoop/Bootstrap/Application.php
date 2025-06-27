@@ -30,7 +30,7 @@ class Application
             if (!$status) throw $ex;
             return $this->formatResponse($exceptionManager->handle(
                 $ex,
-                $request->getHeaderLine('accept') === 'application/json',
+                $request->isAjax(),
                 $status
             ));
         }

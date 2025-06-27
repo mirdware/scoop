@@ -54,9 +54,6 @@ class Request
                 throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
             }
         }
-        if (!empty($params)) {
-            throw new \Scoop\Http\Exception\NotFound();
-        }
         return $args;
     }
 }

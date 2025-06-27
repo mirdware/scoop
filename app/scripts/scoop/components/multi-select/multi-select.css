@@ -1,0 +1,89 @@
+.dropdown {
+    display: inline-block;
+    padding: 2px 5px 0px 5px;
+    border-radius: 4px;
+    border: solid 1px #777;
+    background-color: white;
+    position: relative;
+    max-width: 100%;
+}
+.optext, .placeholder {
+    margin-right:0.5em;
+    margin-bottom:2px;
+    padding:1px 0;
+    border-radius: 4px;
+    display:inline-block;
+}
+.optext {
+    background-color:lightgray;
+    padding:1px 0.75em;
+}
+.optdel {
+    float: right;
+    font-size: .7em;
+    margin-left: .5em;
+    margin-right: -.5em;
+    cursor: pointer;
+    color: #666;
+}
+.optdel:hover {
+    color: #c66;
+}
+.placeholder {
+    color: #777;
+}
+.list-wrapper {
+    box-shadow: gray 0 3px 8px;
+    z-index: 100;
+    padding:2px;
+    border-radius: 4px;
+    border: solid 1px #ced4da;
+    display: none;
+    margin: -1px;
+    position: absolute;
+    top:0;
+    left: 0;
+    right: 0;
+    background: white;
+}
+.search {
+    padding: .5em;
+    box-sizing: border-box;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    width: 100%;
+}
+.list {
+    padding:2px;
+    max-height: 15rem;
+    overflow-y:auto;
+    overflow-x: hidden;
+}
+.list::-webkit-scrollbar {
+    width: 6px;
+}
+.list::-webkit-scrollbar-thumb {
+    background-color: #bec4ca;
+    border-radius:3px;
+}
+.list label {
+    cursor: pointer;
+    display: block;
+    padding: 5px;
+}
+.list input {
+    height: 1.15em;
+    width: 1.15em;
+    margin-right: 0.35em;
+}
+.list label:hover, #active {
+    background-color: #ced4da;
+}
+.maxselected {
+    width:100%;
+    box-sizing: border-box;
+}
+.all-selector {
+    border-bottom:solid 1px #999;
+}

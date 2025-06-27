@@ -17,8 +17,10 @@ class Router
     {
         $route = $this->getRoute($request->getPath());
         if ($route) {
-            $this->current = new \Scoop\Http\Message\Route($route['id']);
-            $this->current = $this->current->withVariables($route['params']);
+            $this->current = new \Scoop\Http\Message\Server\Route($route['id']);
+            $this->current = $this->current
+            ->withVariables($route['params'])
+            ->withQuery($request->getQueryParams());
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
             }
@@ -44,37 +46,9 @@ class Router
         return $this->current;
     }
 
-    public function getURL($key, $params = array(), $query = array())
+    public function getURL(\Scoop\Http\Message\Server\Route $route)
     {
-        if (!isset($this->routes[$key])) {
-            throw new \InvalidArgumentException("Route $key not found");
-        }
-        $path = preg_split('/\[\w+\]/', $this->routes[$key]['url']);
-        $url = array_shift($path);
-        $count = count($path);
-        if (count($params) !== $count) {
-            throw new \InvalidArgumentException('Unformed URL');
-        }
-        if (array_keys($params) === range(0, $count - 1)) {
-            for ($i = 0; $i < $count; $i++) {
-                if (isset($params[$i])) {
-                    $url .= self::encodeURL(trim($params[$i])) . $path[$i];
-                }
-            }
-            return ROOT . substr($url, 1) . $this->formatQueryString($query);
-        }
-        $urlKeys = array_keys($params);
-        foreach ($urlKeys as $i => $urlKey) {
-            $urlKeys[$i] = "[$urlKey]";
-            if (strpos($this->routes[$key]['url'], $urlKeys[$i]) === false) {
-                throw new \InvalidArgumentException("{$urlKeys[$i]} not found in URL");
-            }
-        }
-        return trim(ROOT, '/') . str_replace(
-            $urlKeys,
-            array_values($params),
-            $this->routes[$key]['url']
-        ) . $this->formatQueryString($query);
+        return $route->getURL($this, $this->routes);
     }
 
     public function formatQueryString($query)
@@ -135,40 +109,5 @@ class Router
                 return $routeDefinition;
             }
         }
-    }
-
-    private static function encodeURL($str)
-    {
-        $str = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
-            'a',
-            $str
-        );
-        $str = str_replace(
-            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
-            'e',
-            $str
-        );
-        $str = str_replace(
-            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
-            'i',
-            $str
-        );
-        $str = str_replace(
-            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
-            'o',
-            $str
-        );
-        $str = str_replace(
-            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
-            'u',
-            $str
-        );
-        $str = str_replace(
-            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'),
-            array('-', 'n', 'N', 'c', 'C'),
-            $str
-        );
-        return urlencode($str);
     }
 }

@@ -91,6 +91,6 @@ class Manager
         $title = isset($this->config[$status]['title']) ? $this->config[$status]['title'] : self::$errors[$status];
         $view = isset($this->config[$status]['view']) ? $this->config[$status]['view'] : self::VIEW;
         $view = new \Scoop\View($view);
-        return $view->set(compact('title', 'status', 'ex'));
+        return $view->add(compact('title', 'status', 'ex'));
     }
 }

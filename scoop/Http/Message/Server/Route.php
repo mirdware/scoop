@@ -5,14 +5,14 @@ namespace Scoop\Http\Message\Server;
 class Route
 {
     private $id;
-    private $variables;
+    private $parameters;
     private $query;
     private $message;
 
     public function __construct($id)
     {
         $this->id = $id;
-        $this->variables = array();
+        $this->parameters = array();
         $this->query = array();
         $this->message = array();
     }
@@ -22,18 +22,23 @@ class Route
         return $this->id;
     }
 
-    public function getVariable($name)
+    public function getParameter($name)
     {
-        if (isset($this->variables[$name])) {
-            return $this->variables[$name];
+        if (isset($this->parameters[$name])) {
+            return $this->parameters[$name];
         }
         return null;
     }
 
-    public function withVariables($variables)
+    public function withParameters()
     {
         $new = clone $this;
-        $new->variables += $variables;
+        $args = func_get_args();
+        if (is_array($args[0])) {
+            $new->parameters += $args[0];
+            return $new;
+        }
+        $new->parameters += $args;
         return $new;
     }
 
@@ -61,7 +66,7 @@ class Route
         }
     }
 
-    public function getURL(\Scoop\Http\Router $router, $routes)
+    public function getURL($routes)
     {
         if (!isset($routes[$this->id])) {
             throw new \InvalidArgumentException("Route '$this->id' not found");
@@ -69,64 +74,79 @@ class Route
         $path = preg_split('/\[\w+\]/', $routes[$this->id]['url']);
         $url = array_shift($path);
         $count = count($path);
-        if (count($this->variables) !== $count) {
-            $plural = $count > 1 ? 's' : '';
-            throw new \InvalidArgumentException("'$this->id' unformed URL with $count variable{$plural}");
+        if (count($this->parameters) !== $count) {
+            throw new \InvalidArgumentException("$this->id unformed URL {$routes[$this->id]['url']}");
         }
-        if (array_keys($this->variables) === range(0, $count - 1)) {
+        $queryString = http_build_query($this->query);
+        if ($queryString) {
+            $queryString = "?$queryString";
+        }
+        if (array_keys($this->parameters) === range(0, $count - 1)) {
             for ($i = 0; $i < $count; $i++) {
-                if (isset($this->variables[$i])) {
-                    $url .= self::encodeURL(trim($this->variables[$i])) . $path[$i];
-                }
+                $slug = self::transliterate($$this->parameters[$i]);
+                $url .= self::normalizeURL($slug) . $path[$i];
             }
-            return rtrim(ROOT, '/') . $url . $router->formatQueryString($this->query);
+            return rtrim(ROOT, '/') . $url . $queryString;
         }
-        $urlKeys = array_keys($this->variables);
+        $urlKeys = array_keys($this->parameters);
+        $urlValues = array_values($this->parameters);
         foreach ($urlKeys as $i => $urlKey) {
             $urlKeys[$i] = "[$urlKey]";
             if (strpos($routes[$this->id]['url'], $urlKeys[$i]) === false) {
                 throw new \InvalidArgumentException("{$urlKeys[$i]} not found in URL");
             }
+            $slug = self::transliterate($urlValues[$i]);
+            $urlValues[$i] = self::normalizeURL($slug);
         }
         return rtrim(ROOT, '/') . str_replace(
             $urlKeys,
-            array_values($this->variables),
+            $urlValues,
             $routes[$this->id]['url']
-        ) . $router->formatQueryString($this->query);
+        ) . $queryString;
     }
 
-    private static function encodeURL($str)
+    private static function transliterate($str)
     {
-        $str = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
-            'a',
+        if (class_exists('Transliterator')) {
+            $transliterator = \Transliterator::create('Any-Latin; Latin-ASCII;');
+            return $transliterator->transliterate($str);
+        }
+        if (function_exists('iconv')) {
+            $originalLocale = setlocale(LC_ALL, 0);
+            setlocale(LC_ALL, 'en_US.UTF-8');
+            $transliterated = iconv('UTF-8', 'ASCII//TRANSLIT', $str);
+            setlocale(LC_ALL, $originalLocale);
+            if ($transliterated !== false) {
+                return $transliterated;
+            }
+        }
+        return str_replace(
+            array(
+                'á', 'à', 'ä', 'â', 'ª',  'Á', 'À', 'Ä', 'Â',
+                'é', 'è', 'ë', 'ê', 'É', 'È', 'Ë', 'Ê',
+                'í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î',
+                'ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô',
+                'ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Ü', 'Û',
+                'ñ', 'Ñ', 'ç', 'Ç',' '
+            ), array(
+                'a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A',
+                'e', 'e', 'e', 'e', 'E', 'E', 'E', 'E',
+                'i', 'i', 'i', 'i', 'I', 'I', 'I', 'I',
+                'o', 'o', 'o', 'o', 'O', 'O', 'O', 'O',
+                'u', 'u', 'u', 'u', 'U', 'U', 'U', 'U',
+                'n', 'N', 'c', 'C', '-'
+            ),
             $str
         );
-        $str = str_replace(
-            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
-            'e',
-            $str
-        );
-        $str = str_replace(
-            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
-            'i',
-            $str
-        );
-        $str = str_replace(
-            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
-            'o',
-            $str
-        );
-        $str = str_replace(
-            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
-            'u',
-            $str
-        );
-        $str = str_replace(
-            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'),
-            array('-', 'n', 'N', 'c', 'C'),
-            $str
-        );
-        return urlencode($str);
+    }
+
+    private static function normalizeURL($str)
+    {
+        $str = preg_replace('/(?<![ -])([A-Z])/', ' $1', $str);
+        $str = strtolower($str);
+        $str = preg_replace('/[^a-z0-9]+/', '-', $str);
+        $str = trim($str, '-');
+        $str = preg_replace('/-+/', '-', $str);
+        return empty($str) ? 'void' : $str;
     }
 }

@@ -158,7 +158,7 @@ class Request extends \Scoop\Http\Message\Request
     public function redirect($url, $status = 302)
     {
         header(self::$redirects[$status], true, $status);
-        if (!$url instanceof \Scoop\Http\Message\Server\Route) {
+        if ($url instanceof \Scoop\Http\Message\Server\Route) {
             $url->flushMessage($this->flash);
             $url = \Scoop\Context::inject('\Scoop\Http\Router')->getURL($url);
         }
@@ -176,7 +176,8 @@ class Request extends \Scoop\Http\Message\Request
 
     public function isAjax()
     {
-        return strpos($this->getHeaderLine('accept'), 'application/json') !== false;
+        return strpos($this->getHeaderLine('accept'), 'application/json') !== false
+        || $this->getHeaderLine('x-requested-with') === 'XMLHttpRequest';
     }
 
     public function flash()

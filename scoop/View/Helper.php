@@ -75,13 +75,21 @@ class Helper
             if (!empty($args)) {
                 $route = new \Scoop\Http\Message\Server\Route(array_shift($args));
                 return $this->router->getURL($route
-                    ->withVariables($args)
+                    ->withParameters($args)
                     ->withQuery($query)
                 );
             }
         }
         $currentPath = ($this->viteHost ? rtrim($this->viteHost, '/') : '//' . $_SERVER['HTTP_HOST']) . $_SERVER['REQUEST_URI'];
         return $this->mergeQuery($currentPath, $query);
+    }
+
+    public function getRoutePath($id) {
+        $path = $this->router->getPath($id);
+        if (!$path) {
+            throw new \InvalidArgumentException("route with id $id not found");
+        }
+        return $path;
     }
 
     public function addPage($data, $quantity, $name = 'page')
@@ -121,7 +129,7 @@ class Helper
         if (strpos($name, 'view.') === 0) {
             $viewName = str_replace('.', '/', substr($name, 5));
             $view = new \Scoop\View($viewName);
-            $view->set($props);
+            $view->add($props);
             return Heritage::parseBlocks($children, $view->render());
         }
         if (!isset($this->components[$name])) {
@@ -152,19 +160,8 @@ class Helper
     {
         $url = explode('?', $url);
         if (isset($url[1])) {
-            $query += $this->getQuery($url[1]);
+            parse_str($url[1], $query);
         }
-        return $url[0] . $this->router->formatQueryString($query);
-    }
-
-    private function getQuery($params)
-    {
-        $query = array();
-        $params = explode('&', $params);
-        foreach ($params as $param) {
-            $param = explode('=', $param);
-            $query[$param[0]] = $param[1];
-        }
-        return $query;
+        return $url[0] . '?' . http_build_query($query);
     }
 }

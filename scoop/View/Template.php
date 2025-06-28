@@ -115,6 +115,9 @@ final class Template
 
     private static function replace($line)
     {
+        if (self::replaceSingle($line)) {
+            return $line;
+        }
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
         $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[(' . $quotes . '|\d+|\$\w+)\])*';
@@ -123,49 +126,45 @@ final class Template
         $safeExp = $quotes . '|' . $conditional . '|' . $fn;
         $uri = '(\w+:)?[\$\w\/-]+';
         $line = preg_replace(array(
-            "/@inject ([\\\\\w]+)#(\w+)/",
-            "/@extends ('$uri')/",
-            "/@import ('$uri'|\"$uri\")/",
-            "/@if (($safeExp)+)/",
-            "/@elseif (($safeExp)+)/",
-            "/@while (($conditional|$fn)+)/",
-            "/@foreach (($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/",
-            "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
+            "/@inject\s([\\\\\w]+)#(\w+)/",
+            "/@extends\s('$uri')/",
+            "/@import\s('$uri'|\"$uri\")/",
+            "/@foreach\s(($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/"
         ), array(
             '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
             '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1});' . self::SERVICE . '::get(\'view\')->setParent() php]',
             '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1}) php]',
-            '[php if(${1}): php]',
-            '[php elseif(${1}): php]',
-            '[php while(${1}): php]',
-            '[php foreach(${1}): php]',
-            '[php for(${1}): php]'
+            '[php foreach(${1}): php]'
         ), $line, 1, $count);
         if ($count !== 0) {
             return $line;
         }
-        $line = str_replace(
-            array(
-                ':if',
-                ':foreach',
-                ':for',
-                ':while',
-                '@else'
-            ),
-            array(
-                '[php endif php]',
-                '[php endforeach php]',
-                '[php endfor php]',
-                '[php endwhile php]',
-                '[php else: php]'
-            ),
-            $line,
-            $count
-        );
-        if ($count !== 0) {
+        if (self::replaceRegex($line, "/@(if|elseif|while)\s(($safeExp)+)/")) {
+            return $line;
+        }
+        if (self::replaceRegex($line, "/@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/")) {
             return $line;
         }
         return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line);
+    }
+
+    private static function replaceSingle(&$line)
+    {
+        $line = str_replace(
+            array(':if', ':foreach', ':for', ':while', '@else'),
+            array('[php endif php]', '[php endforeach php]', '[php endfor php]', '[php endwhile php]', '[php else: php]'),
+            $line,
+            $count
+        );
+        return $count !== 0;
+    }
+
+    private static function replaceRegex(&$line, $regex)
+    {
+        $line = preg_replace_callback($regex, function ($matches) {
+            return '[php ' . $matches[1] . '(' . trim($matches[2]) . '): php]';
+        }, $line, 1, $count);
+        return $count !== 0;
     }
 
     private static function convertViewServices($content)
@@ -209,7 +208,7 @@ final class Template
             $contentValue = '<?php ';
         } else {
             $variable = uniqid('$t');
-            $contentValue = "$contentValue<?php $variable = ob_get_clean();";
+            $contentValue = "<?php ob_start() ?>$contentValue<?php $variable=ob_get_clean();";
         }
         return $contentValue . 'echo ' . self::SERVICE . "::get('view')->compose('$componentName', $propsPhpString, $variable); ?>";
     }

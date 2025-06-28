@@ -4,44 +4,30 @@ namespace Scoop;
 
 final class View
 {
-    private $viewPath;
-    private $viewData;
-    private $componentData;
+    private $path;
+    private $data;
 
-    public function __construct($viewPath)
+    public function __construct($path)
     {
-        $this->viewPath = $viewPath;
-        $this->viewData = array();
+        $this->path = $path;
+        $this->data = array();
     }
-    public function set($key, $value = null)
+    public function add($key, $value = null)
     {
         if (is_array($key)) {
-            $this->viewData += $key;
+            $this->data += $key;
             return $this;
         }
-        $this->viewData[$key] = $value;
+        $this->data[$key] = $value;
         return $this;
     }
 
-    public function remove($keys = null)
+    public function remove()
     {
-        if (!$keys) {
-            $this->viewData = array();
-            return $this;
+        $args = func_get_args();
+        foreach ($args as $arg) {
+            unset($this->data[$arg]);
         }
-        if (is_array($keys)) {
-            foreach ($keys as $key) {
-                unset($this->viewData[$key]);
-            }
-            return $this;
-        }
-        unset($this->viewData[$keys]);
-        return $this;
-    }
-
-    public function transfer($data)
-    {
-        $this->componentData = $data;
         return $this;
     }
 
@@ -51,10 +37,10 @@ final class View
         $environment = Context::inject('Scoop\Bootstrap\Environment');
         $router = Context::inject('Scoop\Http\Router');
         $heritage = new View\Heritage($environment);
-        $helper = new View\Helper($request, $environment, $router, $heritage, $this->componentData);
+        $helper = new View\Helper($request, $environment, $router, $heritage, $this->data);
         View\Service::inject('view', $helper);
-        extract($this->viewData);
-        require $heritage->getCompilePath($this->viewPath);
+        extract($this->data);
+        require $heritage->getCompilePath($this->path);
         return $heritage->getContent();
     }
 }

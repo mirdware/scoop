@@ -24,11 +24,11 @@ class Home
     {
         $view = new View('home');
         $index = rand(0, count($this->quotes) - 1);
-        return $view->set(array(
+        return $view->add(array(
             'meta' => array(
                 'description' => 'Engine PHP for development of web applications',
                 'keywords' => 'engine,PHP,web,scoop,scalar,development'
             )
-        ))->set($this->quotes[$index]);
+        ))->add($this->quotes[$index]);
     }
 }

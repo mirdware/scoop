@@ -19,7 +19,7 @@ class Router
         if ($route) {
             $this->current = new \Scoop\Http\Message\Server\Route($route['id']);
             $this->current = $this->current
-            ->withVariables($route['params'])
+            ->withParameters($route['params'])
             ->withQuery($request->getQueryParams());
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
@@ -48,21 +48,15 @@ class Router
 
     public function getURL(\Scoop\Http\Message\Server\Route $route)
     {
-        return $route->getURL($this, $this->routes);
+        return $route->getURL($this->routes);
     }
 
-    public function formatQueryString($query)
+    public function getPath($id)
     {
-        if (empty($query)) {
-            return '';
+        if (isset($this->routes[$id])) {
+            return $this->routes[$id]['url'];
         }
-        if (is_string($query)) {
-            return (strpos($query, '?') === 0 ? '' : '?') . $query;
-        }
-        if (is_array($query)) {
-            return '?' . http_build_query($query);
-        }
-        return '';
+        return null;
     }
 
     private function validateRoute($validatorName, $params)

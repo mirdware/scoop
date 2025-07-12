@@ -45,7 +45,7 @@ class Request extends \Scoop\Http\Message\Request
         );
         $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
         $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
-        $this->queryParams = $queryParams === null ? $this->purge($_GET) : $queryParams;
+        $this->queryParams = $queryParams === null ? self::sanitizeArray($_GET) : $queryParams;
         $this->flash = new \Scoop\Http\Message\Server\Flash($referencer === null ? $this->getReferencer() : $referencer);
         $this->attributes = array();
     }
@@ -111,7 +111,7 @@ class Request extends \Scoop\Http\Message\Request
                 $this->getMethod(),
                 $this->getHeaderLine('Content-Type')
             );
-            $this->parsedBody = $this->purge($this->body->getData());
+            $this->parsedBody = self::sanitizeArray($this->body->getData());
         }
         return $this->parsedBody;
     }
@@ -222,36 +222,43 @@ class Request extends \Scoop\Http\Message\Request
         return $referencer;
     }
 
-    private function purge($array)
+    private static function sanitizeArray($data)
     {
-        foreach ($array as $key => $value) {
+        return array_map(function ($value) {
             if (is_array($value)) {
-                $array[$key] = $this->purge($value);
-            } elseif (is_string($value)) {
-                $array[$key] = $this->filterXSS($value);
+                return self::sanitizeArray($value);
             }
-        }
-        return $array;
+            if (is_string($value)) {
+                return self::sanitizeString($value);
+            }
+            return $value;
+        }, $data);
     }
-
-    private static function filterXSS($data)
+    
+    private static function sanitizeString($string)
     {
-        $data = str_replace(array('&amp;','&lt;','&gt;'), array('&amp;amp;','&amp;lt;','&amp;gt;'), $data);
-        $data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
-        $data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
-        $data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
-        $data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
-        $data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
-        $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
-        $data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
-        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
-        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
-        $data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
-        $data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
+        $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
+        $string = preg_replace(array(
+            '/(&#x*[0-9A-F]+);*/iu',
+            '/(&#*\w+)[\x00-\x20]+;/u',
+            '#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu',
+            '#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu',
+            '#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u',
+            '#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu',
+            '#</*\w+:\w[^>]*+>#i'
+        ), array(
+            '$1;',
+            '$1;',
+            '$1=$2nojavascript...',
+            '$1=$2novbscript...',
+            '$1=$2nomozbinding...',
+            '$1>',
+            ''
+        ), $string);
         do {
-            $old_data = $data;
-            $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
-        } while ($old_data !== $data);
-        return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+            $oldString = $string;
+            $string = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
+        } while ($oldString !== $string);
+        return trim($string);
     }
 }

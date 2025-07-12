@@ -49,7 +49,7 @@ class Route
         return $new;
     }
 
-    public function withMessage($text, $type = 'sucess')
+    public function withMessage($text, $type = 'success')
     {
         $new = clone $this;
         $new->message = array(
@@ -66,43 +66,66 @@ class Route
         }
     }
 
-    public function getURL($routes)
+    public function generateURL($routes)
     {
         if (!isset($routes[$this->id])) {
-            throw new \InvalidArgumentException("Route '$this->id' not found");
+            throw new \InvalidArgumentException("route '{$this->id}' not found");
         }
-        $path = preg_split('/\[\w+\]/', $routes[$this->id]['url']);
-        $url = array_shift($path);
-        $count = count($path);
-        if (count($this->parameters) !== $count) {
-            throw new \InvalidArgumentException("$this->id unformed URL {$routes[$this->id]['url']}");
+        $url = $routes[$this->id]['url'];
+        preg_match_all('/\[(\w+)\]/', $url, $matches);
+        $placeholders = isset($matches[1]) ? $matches[1] : array();
+        $placeholdersQuantity = count($placeholders);
+        $parametersQuantity = count($this->parameters);
+        if ($parametersQuantity !== $placeholdersQuantity) {
+            throw new \InvalidArgumentException(
+                "route '{$this->id}' expects $placeholdersQuantity parameters, but $parametersQuantity were given"
+            );
         }
+        $keys = array_keys($this->parameters);
+        $path = empty($this->parameters) || $keys === range(0, $parametersQuantity - 1) ?
+        $this->buildFromPositional($url) :
+        $this->buildFromNamed($url, $placeholders, $keys);
         $queryString = http_build_query($this->query);
         if ($queryString) {
             $queryString = "?$queryString";
         }
-        if (array_keys($this->parameters) === range(0, $count - 1)) {
-            for ($i = 0; $i < $count; $i++) {
-                $slug = self::transliterate($$this->parameters[$i]);
-                $url .= self::normalizeURL($slug) . $path[$i];
+        return rtrim(ROOT, '/') . $path . $queryString;
+    }
+
+    private function buildFromPositional($url)
+    {
+        $i = 0;
+        return preg_replace_callback('/\[\w+\]/', function($matches) use (&$i) {
+            if (isset($this->parameters[$i])) {
+                return self::slugify($this->parameters[$i++]);
             }
-            return rtrim(ROOT, '/') . $url . $queryString;
+            return $matches[0];
+        }, $url);
+    }
+
+    private function buildFromNamed($url, $placeholders, $keys)
+    {
+        $missingParams = array_diff($placeholders, $keys);
+        if (!empty($missingParams)) {
+            throw new \InvalidArgumentException("Missing parameters for route '{$this->id}': " . implode(', ', $missingParams));
         }
-        $urlKeys = array_keys($this->parameters);
-        $urlValues = array_values($this->parameters);
-        foreach ($urlKeys as $i => $urlKey) {
-            $urlKeys[$i] = "[$urlKey]";
-            if (strpos($routes[$this->id]['url'], $urlKeys[$i]) === false) {
-                throw new \InvalidArgumentException("{$urlKeys[$i]} not found in URL");
-            }
-            $slug = self::transliterate($urlValues[$i]);
-            $urlValues[$i] = self::normalizeURL($slug);
+        $extraParams = array_diff($keys, $placeholders);
+         if (!empty($extraParams)) {
+             throw new \InvalidArgumentException("Unknown parameters for route '{$this->id}': " . implode(', ', $extraParams));
         }
-        return rtrim(ROOT, '/') . str_replace(
-            $urlKeys,
-            $urlValues,
-            $routes[$this->id]['url']
-        ) . $queryString;
+        $search = array();
+        $replace = array();
+        foreach ($this->parameters as $key => $value) {
+            $search[] = "[$key]";
+            $replace[] = self::slugify($value);
+        }
+        return str_replace($search, $replace, $url);
+    }
+
+    private static function slugify($str)
+    {
+        $str = self::transliterate($str);
+        return self::normalizeURL($str);
     }
 
     private static function transliterate($str)
@@ -122,7 +145,7 @@ class Route
         }
         return str_replace(
             array(
-                'á', 'à', 'ä', 'â', 'ª',  'Á', 'À', 'Ä', 'Â',
+                'á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Ä', 'Â',
                 'é', 'è', 'ë', 'ê', 'É', 'È', 'Ë', 'Ê',
                 'í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î',
                 'ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô',

@@ -9,15 +9,15 @@ class SQO
     const DELETE = 3;
     private $table;
     private $aliasTable;
-    private $connectionName;
+    private $connection;
     private $isReader;
 
-    public function __construct($table, $alias = '', $connectionName = 'default')
+    public function __construct($table, $alias = '', $connection = 'default')
     {
         $this->isReader = is_a($table, '\Scoop\Persistence\SQO\Reader');
         $this->table = $this->isReader ? '(' . $table . ')' : $table;
         $this->aliasTable = $this->table . ' ' . $alias;
-        $this->connectionName = $connectionName;
+        $this->connection = $connection;
     }
 
     public function create($fields, $select = null)
@@ -40,7 +40,7 @@ class SQO
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
         $query = 'SELECT ' . $fields . ' FROM ' . $this->aliasTable;
-        return new SQO\Reader($query, $this, $this->connectionName);
+        return new SQO\Reader($query, $this, $this->connection);
     }
 
     public function update($fields)
@@ -81,7 +81,10 @@ class SQO
 
     public function getConnection()
     {
-        return \Scoop\Context::connect($this->connectionName);
+        if (is_string($this->connection)) {
+            $this->connection = \Scoop\Context::connect($this->connection);
+        }
+        return $this->connection;
     }
 
     public function nullify($parameters)

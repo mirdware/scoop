@@ -13,24 +13,17 @@ class Structure
     public function execute($command)
     {
         $name = $command->getOption('name', 'default');
-        $con = $this->getConnection(
+        $connection = $this->getConnection(
             $name,
             $command->getOption('user'),
             $command->getOption('password')
         );
-        $this->createTable($con);
-        $creator = $this->update(
+        $this->createTable($connection);
+        $this->update(
             $name,
             $command->getOption('schema', ''),
-            $command->getOption('tag', false),
-            $con
+            $command->getOption('tag', false)
         );
-        if ($creator->hasData()) {
-            $creator->run();
-            $this->writer->write('<done:Structure changed!!>');
-        } else {
-            $this->writer->write('<info:Nothing to do!!>');
-        }
     }
 
     public function help()
@@ -106,33 +99,63 @@ class Structure
         return $collectedSqlFiles;
     }
 
-    private function update($connectionName, $schema, $tag, $con)
+    private function update($connection, $schema, $tag)
     {
-        $sqoStruct = new \Scoop\Persistence\SQO($con->is('pgsql') ? 'public.structs' : 'structs', 's', $connectionName);
+        $sqoStruct = new \Scoop\Persistence\SQO($connection->is('pgsql') ? 'public.structs' : 'structs', 's', $connection);
         $creator = $sqoStruct->create(array('name'));
         $files = array_unique($this->getFiles($schema));
         $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $con->beginTransaction();
-        foreach ($files as $index => $file) {
-            $name = basename($file);
-            if (!in_array($name, $structs)) {
-                $this->writer->write(true, "File <link:$file!> ... ");
-                $content = file_get_contents($file);
-                if ($content) {
-                    $con->exec($content);
-                    $creator->create(array($name));
-                    $this->writer->write('<success:updated!!>');
-                } else {
-                    $this->writer->write('<alert:pending!!>');
-                }
+        $fileMap = $this->getFileMap($files);
+        $files = array_keys($fileMap);
+        $updater = $this->getUpdater($sqoStruct, $tag, $files);
+        $files = array_diff($files, $structs);
+        $connection->beginTransaction();
+        foreach ($files as $name) {
+            $file = $fileMap[$name];
+            $this->writer->write(true, "File <link:$file!> ... ");
+            $content = file_get_contents($file);
+            if ($content) {
+                $connection->exec($content);
+                $creator->create(array($name));
+                $this->writer->write('<success:updated!!>');
+            } else {
+                $this->writer->write('<alert:pending!!>');
             }
-            $files[$index] = $name;
         }
+        $this->save($creator, $updater);
+        $connection->commit();
+    }
+
+    private function save($creator, $updater)
+    {
+        if ($creator->hasData()) {
+            $creator->run();
+            $this->writer->write('<done:Structure changed!!>');
+        } else {
+            $this->writer->write('<info:Nothing to do!!>');
+        }
+        if ($updater) {
+            $updater->run();
+        }
+    }
+
+    private function getFileMap($files)
+    {
+        $fileMap = array();
+        foreach ($files as $filePath) {
+            $fileMap[basename($filePath)] = $filePath;
+        }
+        return $fileMap;
+    }
+
+    private function getUpdater($sqoStruct, $tag, $files)
+    {
         if ($tag) {
-            $sqoStruct->update(array('tag' => $tag))
+            return $sqoStruct
+            ->update(array('tag' => $tag))
             ->filter('name IN(:files)')
-            ->run(compact('files'));
+            ->bind(compact($files));
         }
-        return $creator;
+        return null;
     }
 }

@@ -48,7 +48,7 @@ class Router
 
     public function getURL(\Scoop\Http\Message\Server\Route $route)
     {
-        return $route->getURL($this->routes);
+        return $route->generateURL($this->routes);
     }
 
     public function getPath($id)

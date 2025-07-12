@@ -68,20 +68,23 @@ class Helper
     {
         $args = func_get_args();
         $query = array();
-        if (!empty($args)) {
-            if (is_array($args[count($args) - 1])) {
-                $query = array_pop($args);
-            }
-            if (!empty($args)) {
-                $route = new \Scoop\Http\Message\Server\Route(array_shift($args));
-                return $this->router->getURL($route
-                    ->withParameters($args)
-                    ->withQuery($query)
-                );
-            }
+        if (!empty($args) && is_array(end($args))) {
+            $query = array_pop($args);
         }
-        $currentPath = ($this->viteHost ? rtrim($this->viteHost, '/') : '//' . $_SERVER['HTTP_HOST']) . $_SERVER['REQUEST_URI'];
-        return $this->mergeQuery($currentPath, $query);
+        if (!empty($args)) {
+            $route = new \Scoop\Http\Message\Server\Route(array_shift($args));
+            return $this->router->getURL($route
+                ->withParameters($args)
+                ->withQuery($query)
+            );
+        }
+        $host = $this->viteHost ? rtrim($this->viteHost, '/') : '//' . $_SERVER['HTTP_HOST'];
+        $query = array_merge($this->request->getQueryParams(), $query);
+        $queryString = http_build_query($query);
+        if ($queryString) {
+            $queryString = "?$queryString";
+        }
+        return $host . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . $queryString;
     }
 
     public function getRoutePath($id) {
@@ -89,7 +92,7 @@ class Helper
         if (!$path) {
             throw new \InvalidArgumentException("route with id $id not found");
         }
-        return $path;
+        return rtrim(ROOT, '/') . $path;
     }
 
     public function addPage($data, $quantity, $name = 'page')
@@ -151,17 +154,16 @@ class Helper
         $this->heritage->setParent();
     }
 
+    public function escape($string)
+    {
+        if (is_string($string)) {
+            return htmlspecialchars($string, ENT_QUOTES);
+        }
+        return $string;
+    }
+
     public static function setKeyMessages($key)
     {
         self::$keyMessages = $key;
-    }
-
-    private function mergeQuery($url, $query)
-    {
-        $url = explode('?', $url);
-        if (isset($url[1])) {
-            parse_str($url[1], $query);
-        }
-        return $url[0] . '?' . http_build_query($query);
     }
 }

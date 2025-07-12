@@ -12,6 +12,7 @@ app/phpunit.xml
 app/phpcs.xml
 app/phpstan.neon
 app/router.php
+jsconfig.json
 README.md
 .DS_Store
 .DS_Store?

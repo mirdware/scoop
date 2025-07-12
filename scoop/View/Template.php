@@ -42,9 +42,8 @@ final class Template
             $content
         );
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
-        $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
-        $search += array(': ?><?php ', ' ?><?php ');
-        $matches += array(':', ';');
+        $search += array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php ', '{{=', '{{', '}}');
+        $matches += array(':', ';', ':', ';', '<?php echo(', '<?php echo #view->escape(',  ') ?>');
         $content = str_replace($search, $matches, $content);
         $path = explode('/', $viewName);
         $count = count($path) - 1;
@@ -56,7 +55,7 @@ final class Template
             }
         }
         $view = fopen($viewName, 'w');
-        fwrite($view, $content);
+        fwrite($view, self::convertViewServices($content));
         fclose($view);
     }
 
@@ -73,27 +72,12 @@ final class Template
             $matches
         );
         if (isset($matches[0])) {
-            $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
-            $head = preg_replace('/>\s+</', '><', $head);
-            $html = str_replace($matches[0], '<html ' . $matches[1] . '><head>' . $head . '</head><body>', $html);
+            $head = preg_replace('/>\s+</', '><', $matches[2]);
+            $html = str_replace($matches[0], "<html {$matches[1]}><head>$head</head><body>", $html);
         }
         $html = preg_replace(
-            array(
-                '/\s+/',
-                '/<!--.*?-->/s',
-                '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/',
-                '/(;|=)\s*(\"|\')/',
-                '/\s*(\/?)\s*>/',
-                '/<\s/'
-            ),
-            array(
-                ' ',
-                '',
-                '</${1}></${2}>',
-                '${1}${2}',
-                '${1}>',
-                '<'
-            ),
+            array('/\s+/', '/<!--.*?-->/s', '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/', '/(;|=)\s*(\"|\')/', '/\s*(\/?)\s*>/', '/<\s/'),
+            array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<' ),
             $html
         );
         foreach ($blockElements as $element) {
@@ -110,7 +94,7 @@ final class Template
             $content .= self::replace(fgets($file));
         }
         fclose($file);
-        return self::convertViewServices($content);
+        return $content;
     }
 
     private static function replace($line)
@@ -131,10 +115,10 @@ final class Template
             "/@import\s('$uri'|\"$uri\")/",
             "/@foreach\s(($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/"
         ), array(
-            '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
-            '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1});' . self::SERVICE . '::get(\'view\')->setParent() php]',
-            '[php require ' . self::SERVICE . '::get(\'view\')->getCompilePath(${1}) php]',
-            '[php foreach(${1}): php]'
+            '<?php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') ?>',
+            '<?php require #view->getCompilePath(${1});#view->setParent() ?>',
+            '<?php require #view->getCompilePath(${1}) ?>',
+            '<?php foreach(${1}): ?>'
         ), $line, 1, $count);
         if ($count !== 0) {
             return $line;
@@ -142,19 +126,16 @@ final class Template
         if (self::replaceRegex($line, "/@(if|elseif|while)\s(($safeExp)+)/")) {
             return $line;
         }
-        if (self::replaceRegex($line, "/@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/")) {
-            return $line;
-        }
-        return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line);
+        self::replaceRegex($line, "/@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/");
+        return $line;
     }
 
     private static function replaceSingle(&$line)
     {
         $line = str_replace(
             array(':if', ':foreach', ':for', ':while', '@else'),
-            array('[php endif php]', '[php endforeach php]', '[php endfor php]', '[php endwhile php]', '[php else: php]'),
-            $line,
-            $count
+            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>'),
+            $line, $count
         );
         return $count !== 0;
     }
@@ -162,14 +143,14 @@ final class Template
     private static function replaceRegex(&$line, $regex)
     {
         $line = preg_replace_callback($regex, function ($matches) {
-            return '[php ' . $matches[1] . '(' . trim($matches[2]) . '): php]';
+            return '<?php ' . $matches[1] . '(' . trim($matches[2]) . '): ?>';
         }, $line, 1, $count);
         return $count !== 0;
     }
 
     private static function convertViewServices($content)
     {
-        preg_match_all('/\[php.*?php\]/is', $content, $tagsFound);
+        preg_match_all('/\<\?php.*?\?>/is', $content, $tagsFound);
         foreach ($tagsFound[0] as $search) {
             $replace = preg_replace('/#(\w*)->/is', self::SERVICE . '::get(\'${1}\')->', $search);
             $content = str_replace($search, $replace, $content);
@@ -210,6 +191,6 @@ final class Template
             $variable = uniqid('$t');
             $contentValue = "<?php ob_start() ?>$contentValue<?php $variable=ob_get_clean();";
         }
-        return $contentValue . 'echo ' . self::SERVICE . "::get('view')->compose('$componentName', $propsPhpString, $variable); ?>";
+        return "{$contentValue}echo #view->compose('$componentName', $propsPhpString, $variable); ?>";
     }
 }

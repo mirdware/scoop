@@ -19,13 +19,13 @@ if ($commandName !== null && preg_match('/^[a-z][\w-]*$/', $commandName)) {
         $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
         $code = intval($ex->getCode());
-        $writer->writeError('<error:' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
+        $writer->writeError('<error:[error] ' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
         exit($code ? $code : 1);
     }
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version <high:' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion() . '!>',
+        'ICE/SCOOP version <info:' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion() . '!>',
         '',
         'Commands:'
     );

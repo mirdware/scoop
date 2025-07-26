@@ -21,7 +21,7 @@ class Route
         if ($this->scanner->scan()) {
             $this->writer->write('<success:created!>');
         } else {
-            $this->writer->write('<alert:cached!>');
+            $this->writer->write('<warn:cached!>');
         }
     }
 

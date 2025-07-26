@@ -12,7 +12,7 @@ WORKDIR /app
 COPY composer* ./
 RUN composer install --optimize-autoloader --no-dev
 COPY --from=node /app/public/ ./public/
-COPY --chmod=0644 .devcontainer/etc/  /opt/docker/etc/
+COPY --chmod=0644 .devcontainer/docker/  /opt/docker/
 COPY --chown=application:application . .
 RUN su application -c "composer build" && rm -rf \
 app/styles \

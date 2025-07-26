@@ -10,6 +10,7 @@ class Structure
     {
         $this->writer = $writer;
     }
+
     public function execute($command)
     {
         $name = $command->getOption('name', 'default');
@@ -101,14 +102,14 @@ class Structure
 
     private function update($connection, $schema, $tag)
     {
-        $sqoStruct = new \Scoop\Persistence\SQO($connection->is('pgsql') ? 'public.structs' : 'structs', 's', $connection);
+        $tableName = $connection->is('pgsql') ? 'public.structs' : 'structs';
+        $sqoStruct = new \Scoop\Persistence\SQO($tableName, 's', $connection);
         $creator = $sqoStruct->create(array('name'));
         $files = array_unique($this->getFiles($schema));
-        $structs = $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0);
         $fileMap = $this->getFileMap($files);
         $files = array_keys($fileMap);
         $updater = $this->getUpdater($sqoStruct, $tag, $files);
-        $files = array_diff($files, $structs);
+        $files = array_diff($files, $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0));
         $connection->beginTransaction();
         foreach ($files as $name) {
             $file = $fileMap[$name];
@@ -119,7 +120,7 @@ class Structure
                 $creator->create(array($name));
                 $this->writer->write('<success:updated!!>');
             } else {
-                $this->writer->write('<alert:pending!!>');
+                $this->writer->write('<warn:pending!!>');
             }
         }
         $this->save($creator, $updater);
@@ -150,11 +151,11 @@ class Structure
 
     private function getUpdater($sqoStruct, $tag, $files)
     {
-        if ($tag) {
+        if ($tag && !empty($files)) {
             return $sqoStruct
             ->update(array('tag' => $tag))
             ->filter('name IN(:files)')
-            ->bind(compact($files));
+            ->bind(compact('files'));
         }
         return null;
     }

@@ -21,7 +21,7 @@ class Structure
         );
         $this->createTable($connection);
         $this->update(
-            $name,
+            $connection,
             $command->getOption('schema', ''),
             $command->getOption('tag', false)
         );
@@ -111,9 +111,10 @@ class Structure
         $updater = $this->getUpdater($sqoStruct, $tag, $files);
         $files = array_diff($files, $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0));
         $connection->beginTransaction();
+        $lineWriter = $this->writer->withSeparator(' ');
         foreach ($files as $name) {
             $file = $fileMap[$name];
-            $this->writer->write(true, "File <link:$file!> ... ");
+            $lineWriter->write("File <link:$file!> ...");
             $content = file_get_contents($file);
             if ($content) {
                 $connection->exec($content);

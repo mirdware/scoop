@@ -5,38 +5,46 @@ namespace Scoop\Command;
 class Writer
 {
     private $stream;
+    private $separator;
     private $styles = array("\e[0m");
     private $names = array('!>');
 
     public function __construct($styles)
     {
         $this->stream = 'php://stdout';
+        $this->separator = PHP_EOL;
         foreach ($styles as $name => $style) {
             array_push($this->names, "<$name:");
             array_push($this->styles, "\e[" . implode(';', $style) . 'm');
         }
     }
-    public function writeError()
+    public function withError()
     {
-        $this->stream = 'php://stderr';
-        return call_user_func_array(array($this, 'write'), func_get_args());
+        $new = clone $this;
+        $new->stream = 'php://stderr';
+        return $new;
+    }
+
+    public function withSeparator($separator)
+    {
+        $new = clone $this;
+        $new->separator = $separator;
+        return $new;
     }
 
     public function write()
     {
         $args = func_get_args();
-        $inline = is_bool($args[0]) ? array_shift($args) : false;
         $std = fopen($this->stream, 'w');
         foreach ($args as $msg) {
-            fwrite($std, $this->process($msg, $inline));
+            fwrite($std, $this->process($msg));
         }
         fclose($std);
-        $this->stream = 'php://stdout';
         return $this;
     }
 
-    public function process($msg, $inline = false)
+    public function process($msg)
     {
-        return str_replace($this->names, $this->styles, $msg) . ($inline ? '' : PHP_EOL);
+        return str_replace($this->names, $this->styles, $msg) . $this->separator;
     }
 }

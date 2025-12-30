@@ -2,10 +2,12 @@
     "name": "Simple Charectiristics of PHP Oriented Object",
     "dockerComposeFile": "docker-compose.yml",
     "service": "webapp",
-    "forwardPorts": [8000, 8001],
+    "forwardPorts": [8000],
     "workspaceFolder": "/app",
     "shutdownAction": "stopCompose",
-    "postStartCommand": "npm install && composer install && php app/ice dbup && npm run dev",
+    "postCreateCommand": "npm install && composer install",
+    "postStartCommand": "php app/ice dbup",
+    "postAttachCommand": "npm run dev",
 	"customizations": {
 		"vscode": {
 			"extensions": [

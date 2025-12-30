@@ -14,22 +14,24 @@ if ($trace) {
 }
 $writer = \Scoop\Context::inject('\Scoop\Command\Writer');
 $commandBus = \Scoop\Context::inject('\Scoop\Command\Bus');
-if ($commandName !== null && preg_match('/^[a-z][\w-]*$/', $commandName)) {
+if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
     try {
         $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
         $code = intval($ex->getCode());
-        $writer->writeError('<error:[error] ' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
+        $writer->withError()->write('<danger:[ERROR]!> <error:' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
         exit($code ? $code : 1);
     }
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version <info:' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion() . '!>',
+        'ICE/SCOOP version ' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion(),
         '',
         'Commands:'
     );
+    $maxlength = max(array_map('strlen', array_keys($commands)));
     foreach ($commands as $command => $controller) {
+        $command = str_pad($command, $maxlength);
         $writer->write("$command => <link:$controller.php!>");
     }
     $writer->write(

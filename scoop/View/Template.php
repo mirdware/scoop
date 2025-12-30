@@ -42,8 +42,8 @@ final class Template
             $content
         );
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
-        $search += array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php ', '{{=', '{{', '}}');
-        $matches += array(':', ';', ':', ';', '<?php echo(', '<?php echo #view->escape(',  ') ?>');
+        $search = array_merge($search, array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php ', '{{=', '{{', '}}'));
+        $matches = array_merge($matches, array(':', ';', ':', ';', '<?php echo(', '<?php echo #view->escape(',  ') ?>'));
         $content = str_replace($search, $matches, $content);
         $path = explode('/', $viewName);
         $count = count($path) - 1;

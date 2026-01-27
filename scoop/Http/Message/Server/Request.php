@@ -135,6 +135,9 @@ class Request extends \Scoop\Http\Message\Request
 
     public function withAttribute($name, $value)
     {
+        if (array_key_exists($name, $this->attributes) && $this->attributes[$name] === $value) {
+            return $this;
+        }
         $new = clone $this;
         $new->attributes[$name] = $value;
         return $new;
@@ -142,6 +145,9 @@ class Request extends \Scoop\Http\Message\Request
 
     public function withoutAttribute($name)
     {
+        if (!array_key_exists($name, $this->attributes)) {
+            return $this;
+        }
         $new = clone $this;
         unset($new->attributes[$name]);
         return $new;
@@ -234,7 +240,7 @@ class Request extends \Scoop\Http\Message\Request
             return $value;
         }, $data);
     }
-    
+
     private static function sanitizeString($string)
     {
         $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');

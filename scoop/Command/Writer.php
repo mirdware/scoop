@@ -27,6 +27,9 @@ class Writer
 
     public function withSeparator($separator)
     {
+        if ($this->separator === $separator) {
+            return $this;
+        }
         $new = clone $this;
         $new->separator = $separator;
         return $new;

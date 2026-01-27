@@ -19,17 +19,15 @@ class URI
         if ($parts === false) {
             throw new \InvalidArgumentException('Invalid URI', 793);
         }
-        $this->scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
-        $this->host = isset($parts['host']) ? $parts['host'] : '';
+        $this->scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : '';
+        $this->host = isset($parts['host']) ? strtolower($parts['host']) : '';
         $this->port = isset($parts['port']) ? $parts['port'] : null;
         $this->path = isset($parts['path']) ? $parts['path'] : '';
         $this->query = isset($parts['query']) ? $parts['query'] : '';
         $this->fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
-        if (isset($parts['user'])) {
-            $this->userInfo = $parts['user'];
-            if (isset($parts['pass'])) {
-                $this->userInfo .= ':' . $parts['pass'];
-            }
+        $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
+        if (isset($parts['pass'])) {
+            $this->userInfo .= ':' . $parts['pass'];
         }
         $this->authority = $this->getAuthorityFromParts($this->userInfo, $this->host, $this->port);
     }
@@ -77,7 +75,10 @@ class URI
     public function withScheme($scheme)
     {
         $scheme = strtolower($scheme);
-        if (!in_array($scheme, ['', 'http', 'https'])) {
+        if ($this->scheme === $scheme) {
+            return $this;
+        }
+        if (!in_array($scheme, array('', 'http', 'https'))) {
             throw new \InvalidArgumentException('Invalid schema', 794);
         }
         $new = clone $this;
@@ -92,6 +93,9 @@ class URI
         if ($password !== null) {
             $userInfo .= ':' . $password;
         }
+        if ($this->userInfo === $userInfo) {
+            return $this;
+        }
         $new = clone $this;
         $new->userInfo = $userInfo;
         $new->authority = $this->getAuthorityFromParts($new->userInfo, $new->host, $new->port);
@@ -100,6 +104,10 @@ class URI
 
     public function withHost($host)
     {
+        $host = strtolower($host);
+        if ($this->host === $host) {
+            return $this;
+        }
         $new = clone $this;
         $new->host = $host;
         $new->authority = $this->getAuthorityFromParts($this->userInfo, $new->host, $this->port);
@@ -108,6 +116,9 @@ class URI
 
     public function withPort($port)
     {
+        if ($this->port === $port) {
+            return $this;
+        }
         if ($port !== null && ($port < 1 || $port > 65535)) {
             throw new \InvalidArgumentException('Invalid port', 795);
         }
@@ -119,8 +130,18 @@ class URI
 
     public function withPath($path)
     {
-        if (preg_match('#[^a-zA-Z0-9/\-._~!$&\'()*+,;=:@%]#', $path)) {
-            throw new \InvalidArgumentException('Invalid path', 796);
+        $path = preg_replace_callback(
+            '/(?:[^a-zA-Z0-9\-\._~!\$&\'\(\)\*\+,;=%:@\/]++|%(?![A-Fa-f0-9]{2}))/',
+            function ($matches) {
+                return rawurlencode($matches[0]);
+            },
+            $path
+        );
+        if ($this->path === $path) {
+            return $this;
+        }
+        if (($this->authority && $path !== '') || strpos($path, '//') === 0) {
+            $path = '/' . ltrim($path, '/');
         }
         $new = clone $this;
         $new->path = $path;
@@ -129,6 +150,9 @@ class URI
 
     public function withQuery($query)
     {
+        if ($this->query === $query) {
+            return $this;
+        }
         $new = clone $this;
         $new->query = $query;
         return $new;
@@ -136,6 +160,9 @@ class URI
 
     public function withFragment($fragment)
     {
+        if ($this->fragment === $fragment) {
+            return $this;
+        }
         $new = clone $this;
         $new->fragment = $fragment;
         return $new;

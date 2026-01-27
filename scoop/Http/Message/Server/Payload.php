@@ -17,6 +17,9 @@ class Payload
 
     public function with($data)
     {
+        if (empty($data)) {
+            return $this;
+        }
         $new = clone $this;
         $new->data = array_merge($new->data, $data);
         return $new;
@@ -39,16 +42,16 @@ class Payload
         }
         $errors = $validator->getErrors();
         if ($this->request->isAjax()) {
-            $_SESSION['data-scoop'] += array(
-                'body' => $this->request->getParsedBody(),
-                'query' => $this->request->getQueryParams(),
-                'error' => $errors
-            );
-            $this->request->goBack();
+            header('HTTP/1.0 400 Bad Request');
+            header('Content-Type: application/json');
+            exit (json_encode(array('code' => 400, 'message' => $errors)));
         }
-        header('HTTP/1.0 400 Bad Request');
-        header('Content-Type: application/json');
-        exit (json_encode(array('code' => 400, 'message' => $errors)));
+        $_SESSION['data-scoop'] += array(
+            'body' => $this->request->getParsedBody(),
+            'query' => $this->request->getQueryParams(),
+            'error' => $errors
+        );
+        $this->request->goBack();
     }
 
     private function transform($data)

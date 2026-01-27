@@ -17,8 +17,8 @@ class Stream
         }
         $meta = stream_get_meta_data($resource);
         $this->resource = $resource;
-        $this->readable = in_array(strstr($meta['mode'], 'r', true) ?: $meta['mode'], array('r', 'w+', 'r+', 'x+', 'c+'));
-        $this->writable = in_array(strstr($meta['mode'], 'w', true) ?: $meta['mode'], array('w', 'w+', 'r+', 'x+', 'c+'));
+        $this->readable = strpbrk($meta['mode'], 'r+') !== false;
+        $this->writable = strpbrk($meta['mode'], 'waxc+') !== false;
         $this->seekable = $meta['seekable'];
         $this->size = null;
     }

@@ -15,6 +15,14 @@ abstract class Message
             $name = strtolower($name);
             $this->headers[$name] = is_array($value) ? $value : array($value);
         }
+        if (is_array($body)) {
+            $body = json_encode($body);
+        }
+        if (is_string($body)) {
+            $stream = new \Scoop\Http\Message\Stream(fopen('php://temp', 'r+'));
+            $stream->write($body);
+            $body = $stream;
+        }
         $this->body = $body;
         $this->protocolVersion = '1.1';
     }
@@ -26,6 +34,9 @@ abstract class Message
 
     public function withProtocolVersion($version)
     {
+        if ($this->protocolVersion === $version) {
+            return $this;
+        }
         $new = clone $this;
         $new->protocolVersion = $version;
         return $new;
@@ -60,14 +71,14 @@ abstract class Message
     {
         $name = strtolower($name);
         $new = clone $this;
-        $new->headers[] = is_array($value) ? $value : array($value);
+        $new->headers[$name] = is_array($value) ? $value : array($value);
         return $new;
     }
 
     public function withAddedHeader($name, $value)
     {
-        $new = clone $this;
         $name = strtolower($name);
+        $new = clone $this;
         if ($new->hasHeader($name)) {
             $new->headers[$name] = array_merge($new->getHeader($name), is_array($value) ? $value : array($value));
         } else {

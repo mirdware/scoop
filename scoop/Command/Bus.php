@@ -1,6 +1,6 @@
 <?php
 
-namespace scoop\Command;
+namespace Scoop\Command;
 
 class Bus
 {

@@ -41,6 +41,29 @@ class Application
         if ($response === null) {
             return header('HTTP/1.0 204 No Response');
         }
+        if ($response instanceof \Scoop\Http\Message\Response) {
+            $ignore = array(
+                'transfer-encoding' => 1,
+                'content-encoding' => 1,
+                'connection' => 1,
+                'keep-alive' => 1,
+                'proxy-authenticate' => 1,
+                'proxy-authorization' => 1,
+                'te' => 1,
+                'trailers' => 1,
+                'upgrade' => 1
+            );
+            http_response_code($response->getStatusCode());
+            $headers = $response->getHeaders();
+            foreach ($headers as $name => $values) {
+                if (!isset($ignore[strtolower($name)])) {
+                    foreach ($values as $value) {
+                        header("$name: $value", false);
+                    }
+                }
+            }
+            return $response->getBody();
+        }
         if ($response instanceof \Scoop\View) {
             header('Content-Type:text/html');
             return $response->render();

@@ -2,35 +2,19 @@
 
 namespace App\Controller;
 
-use Scoop\Validation\Rule\Required;
-use Scoop\Validator;
+use Scoop\Http\Message\Response;
 
 class Health
 {
     /**
-     * @return array<string, string>
+     * @return Response
      */
     public function get()
     {
-        return array('status' => 'ok');
-    }
-
-    public function post(\Scoop\Http\Message\Server\Request $request)
-    {
-        return $request->getParsedBody();
-    }
-
-    public function put(\Scoop\Http\Message\Server\Request $request, $id)
-    {
-        $validator = new Validator();
-        $validator->add('name', new Required)
-        ->add('email', new Required)
-        ->add('phone', new Required)
-        ->add('address', new Required);
-        $command = $request->get('\App\Controller\Command')
-        ->with(compact('id'))
-        ->fromBody($validator);
-        var_dump($command);
-        return $command;
+        return new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            ['status' => 'ok']
+        );
     }
 }

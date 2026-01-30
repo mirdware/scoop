@@ -2,19 +2,15 @@
 
 namespace App\Controller;
 
-use Scoop\Http\Message\Response;
+use Scoop\Http\Message\Server\Request;
 
 class Health
 {
     /**
-     * @return Response
+     * @return array<string, string>
      */
     public function get()
     {
-        return new Response(
-            200,
-            ['Content-Type' => 'application/json'],
-            ['status' => 'ok']
-        );
+        return ['status' => 'ok'];
     }
 }

@@ -21,7 +21,8 @@ class Request
     {
         if (empty($this->middlewares)) {
             $args = $this->getArguments($request);
-            return $this->callable->invokeArgs($this->controller, $args);
+            $response = $this->callable->invokeArgs($this->controller, $args);
+            return $this->transformResponse($response);
         }
         $middlewareDefinition = array_shift($this->middlewares);
         if (!class_exists($middlewareDefinition)) {
@@ -37,23 +38,60 @@ class Request
     private function getArguments($request)
     {
         $parameters = $this->callable->getParameters();
-        $params = $this->params;
         $args = array();
         $hasType = empty($parameters) ? false : method_exists($parameters[0], 'getType');
         foreach ($parameters as $reflectionParam) {
-            $paramName = $reflectionParam->getName();
             $paramClass = $hasType ? $reflectionParam->getType() : $reflectionParam->getClass();
-            if ($paramClass !== null && $paramClass->getName() === get_class($request)) {
-                $args[] = $request;
-            } elseif (isset($params[$paramName])) {
-                $args[] = $params[$paramName];
-                unset($params[$paramName]);
-            } elseif ($reflectionParam->isDefaultValueAvailable()) {
-                $args[] = $reflectionParam->getDefaultValue();
-            } elseif (!$reflectionParam->isOptional()) {
-                throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
-            }
+            $args[] = $paramClass !== null &&
+            $paramClass->getName() === get_class($request) ?
+            $request :
+            $this->getArgument($reflectionParam);
         }
         return $args;
+    }
+
+    private function getArgument($reflectionParam)
+    {
+        $paramName = $reflectionParam->getName();
+        if (isset($this->params[$paramName])) {
+            return $this->params[$paramName];
+        }
+        if ($reflectionParam->isDefaultValueAvailable()) {
+            return $reflectionParam->getDefaultValue();
+        }
+        throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
+    }
+
+    private function transformResponse($response)
+    {
+        if ($response instanceof \Scoop\Http\Message\Response) {
+            return $response;
+        }
+        if ($response instanceof \Scoop\View) {
+            return new \Scoop\Http\Message\Response(
+                200,
+                array('Content-Type' => 'text/html'),
+                $response->render()
+            );
+        }
+        if ($response === null || $response === '') {
+            return new \Scoop\Http\Message\Response();
+        }
+        if (
+            is_scalar($response) ||
+            is_object($response) &&
+            method_exists($response, '_toString')
+        ) {
+            return new \Scoop\Http\Message\Response(
+                200,
+                array('Content-Type' => 'text/plain'),
+                $response
+            );
+        }
+        return new \Scoop\Http\Message\Response(
+            200,
+            array('Content-Type' => 'application/json'),
+            json_encode($response)
+        );
     }
 }

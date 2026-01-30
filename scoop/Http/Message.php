@@ -15,10 +15,7 @@ abstract class Message
             $name = strtolower($name);
             $this->headers[$name] = is_array($value) ? $value : array($value);
         }
-        if (is_array($body)) {
-            $body = json_encode($body);
-        }
-        if (is_string($body)) {
+        if (!$body instanceof \Scoop\Http\Message\Stream) {
             $stream = new \Scoop\Http\Message\Stream(fopen('php://temp', 'r+'));
             $stream->write($body);
             $body = $stream;

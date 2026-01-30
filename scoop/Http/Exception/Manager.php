@@ -66,10 +66,17 @@ class Manager
             $ex = new \Scoop\Http\Exception\Proxy($ex, self::$messages[$code]);
         }
         if ($isJSON) {
-            header('Content-Type: application/json');
-            return array('code' => $code, 'message' => $ex->getMessage());
+            return new \Scoop\Http\Message\Response(
+                200,
+                array('Content-Type' => 'application/json'),
+                json_encode(array('code' => $code, 'message' => $ex->getMessage()))
+            );
         }
-        return $this->createView($status, $ex);
+        return new \Scoop\Http\Message\Response(
+            $status,
+            array('Content-Type' => 'text/html'),
+            $this->createView($status, $ex)->render()
+        );
     }
 
     public static function setMessages($messages)

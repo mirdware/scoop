@@ -45,7 +45,7 @@ class Request extends \Scoop\Http\Message\Request
         );
         $this->serverParams = $serverParams === null ? $_SERVER : $serverParams;
         $this->cookieParams = $cookies === null ? $_COOKIE : $cookies;
-        $this->queryParams = $queryParams === null ? self::sanitizeArray($_GET) : $queryParams;
+        $this->queryParams = $queryParams === null ? $_GET : $queryParams;
         $this->flash = new \Scoop\Http\Message\Server\Flash($referencer === null ? $this->getReferencer() : $referencer);
         $this->attributes = array();
     }
@@ -111,9 +111,8 @@ class Request extends \Scoop\Http\Message\Request
                 $this->getMethod(),
                 $this->getHeaderLine('Content-Type')
             );
-            $this->parsedBody = self::sanitizeArray($this->body->getData());
         }
-        return $this->parsedBody;
+        return $this->body->getData();
     }
 
     public function withParsedBody($data)
@@ -226,45 +225,5 @@ class Request extends \Scoop\Http\Message\Request
             );
         }
         return $referencer;
-    }
-
-    private static function sanitizeArray($data)
-    {
-        return array_map(function ($value) {
-            if (is_array($value)) {
-                return self::sanitizeArray($value);
-            }
-            if (is_string($value)) {
-                return self::sanitizeString($value);
-            }
-            return $value;
-        }, $data);
-    }
-
-    private static function sanitizeString($string)
-    {
-        $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
-        $string = preg_replace(array(
-            '/(&#x*[0-9A-F]+);*/iu',
-            '/(&#*\w+)[\x00-\x20]+;/u',
-            '#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu',
-            '#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu',
-            '#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u',
-            '#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu',
-            '#</*\w+:\w[^>]*+>#i'
-        ), array(
-            '$1;',
-            '$1;',
-            '$1=$2nojavascript...',
-            '$1=$2novbscript...',
-            '$1=$2nomozbinding...',
-            '$1>',
-            ''
-        ), $string);
-        do {
-            $oldString = $string;
-            $string = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
-        } while ($oldString !== $string);
-        return trim($string);
     }
 }

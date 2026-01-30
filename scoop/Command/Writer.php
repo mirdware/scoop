@@ -20,6 +20,9 @@ class Writer
     }
     public function withError()
     {
+        if ($this->stream === 'php://stderr') {
+            return $this;
+        }
         $new = clone $this;
         $new->stream = 'php://stderr';
         return $new;

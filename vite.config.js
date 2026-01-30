@@ -45,11 +45,13 @@ export default defineConfig(({ command, mode }) => {
       host: '0.0.0.0',
       port: 8000,
       origin: 'http://localhost:8000',
+      cors: false,
       proxy: {
         '^/(?!@vite|@fs|app/scripts|app/styles|node_modules|public|fonts).*$': {
           target: phpHost,
           changeOrigin: true,
           secure: false,
+          xfwd: true
         },
       }
     },

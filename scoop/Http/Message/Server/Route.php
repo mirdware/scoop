@@ -44,6 +44,9 @@ class Route
 
     public function withQuery($query)
     {
+        if (empty($query)) {
+            return $this;
+        }
         $new = clone $this;
         $new->query += $query;
         return $new;
@@ -51,6 +54,9 @@ class Route
 
     public function withMessage($text, $type = 'success')
     {
+        if ($text === $this->message['text'] && $type === $this->message['type']) {
+            return $this;
+        }
         $new = clone $this;
         $new->message = array(
             'text' => $text,

@@ -20,7 +20,7 @@ class Application
         try {
             $response = $router->route($request);
             gc_collect_cycles();
-            return $this->formatResponse($response);
+            return $this->printResponse($response);
         } catch (\Exception $ex) {
             $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
             $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
@@ -28,7 +28,7 @@ class Application
             $status = $exceptionManager->getStatusCode($ex);
             $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
             if (!$status) throw $ex;
-            return $this->formatResponse($exceptionManager->handle(
+            return $this->printResponse($exceptionManager->handle(
                 $ex,
                 $request->isAjax(),
                 $status
@@ -36,43 +36,33 @@ class Application
         }
     }
 
-    private function formatResponse($response)
+    private function printResponse($response)
     {
-        if ($response === null) {
-            return header('HTTP/1.0 204 No Response');
-        }
-        if ($response instanceof \Scoop\Http\Message\Response) {
-            $ignore = array(
-                'transfer-encoding' => 1,
-                'content-encoding' => 1,
-                'connection' => 1,
-                'keep-alive' => 1,
-                'proxy-authenticate' => 1,
-                'proxy-authorization' => 1,
-                'te' => 1,
-                'trailers' => 1,
-                'upgrade' => 1
-            );
-            http_response_code($response->getStatusCode());
-            $headers = $response->getHeaders();
-            foreach ($headers as $name => $values) {
-                if (!isset($ignore[strtolower($name)])) {
-                    foreach ($values as $value) {
-                        header("$name: $value", false);
-                    }
+        $ignore = array(
+            'transfer-encoding' => 1,
+            'content-encoding' => 1,
+            'connection' => 1,
+            'keep-alive' => 1,
+            'proxy-authenticate' => 1,
+            'proxy-authorization' => 1,
+            'te' => 1,
+            'trailers' => 1,
+            'upgrade' => 1
+        );
+        http_response_code($response->getStatusCode());
+        $headers = $response->getHeaders();
+        foreach ($headers as $name => $values) {
+            if (!isset($ignore[strtolower($name)])) {
+                foreach ($values as $value) {
+                    header("$name: $value", false);
                 }
             }
-            return $response->getBody();
         }
-        if ($response instanceof \Scoop\View) {
-            header('Content-Type:text/html');
-            return $response->render();
-        }
-        if (is_array($response) || is_object($response)) {
-            header('Content-Type:application/json');
-            return json_encode($response);
-        }
-        return $response;
+        $body = $response->getBody();
+        $body->rewind();
+        $resource = $body->detach();
+        fpassthru($resource);
+        fclose($resource);
     }
 
     private function enableCORS()

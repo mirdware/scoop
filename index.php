@@ -15,4 +15,4 @@
 require 'scoop/Context.php';
 \Scoop\Context::load('app/config');
 $app = new \Scoop\Bootstrap\Application();
-echo $app->run();
+$app->run();

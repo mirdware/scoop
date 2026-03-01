@@ -71,6 +71,12 @@ abstract class Injector
         }
         if ($method && $class->hasMethod($method)) {
             $instance = $class->getMethod($method)->invoke($instance);
+            if (!is_object($instance)) {
+                $type = gettype($instance);
+                throw new \Scoop\Container\Exception(
+                    "The factory method $className:$method returned $type and must resolve to an object instance."
+                );
+            }
         }
         return $instance;
     }

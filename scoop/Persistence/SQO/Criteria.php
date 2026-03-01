@@ -2,38 +2,25 @@
 
 namespace Scoop\Persistence\SQO;
 
-class Filter
+class Criteria extends Runner
 {
     protected $from = array();
-    protected $sqo;
     private $filters = array();
     private $restrictions = array();
     private $connector = 'AND';
     private $query;
-    private $params;
     private $type;
 
     public function __construct($query, $type, $sqo, $params = array())
     {
+        parent::__construct($sqo, $params);
         $this->query = $query;
         $this->type = $type;
-        $this->sqo = $sqo;
-        $this->params = $params;
     }
 
     public function getType()
     {
         return $this->type;
-    }
-
-    public function bind($key, $value = 0)
-    {
-        if (is_array($key)) {
-            $this->params += $key;
-            return $this;
-        }
-        $this->params[$key] = $value;
-        return $this;
     }
 
     public function setConnector($connector)
@@ -54,42 +41,11 @@ class Filter
         return $this;
     }
 
-    public function run($params = null)
-    {
-        if (is_array($params)) {
-            $this->params += $params;
-        }
-        $sql = $this->__toString();
-        $con = $this->sqo->getConnection();
-        $statement = $con->prepare($sql);
-        if ($this->type !== \Scoop\Persistence\SQO::READ) {
-            $con->beginTransaction();
-        }
-        $statement->execute($this->getParamsAllowed($sql));
-        return $statement;
-    }
-
     public function __toString()
     {
         return $this->query
             . implode('', $this->from)
             . $this->getRules();
-    }
-
-    protected function getParamsAllowed($sql)
-    {
-        $allowed = array();
-        foreach ($this->params as $name => $value) {
-            if (is_array($this->params[$name])) {
-                $this->formatQueryArray($name);
-            }
-        }
-        preg_match_all('/:[\w_]+/', $sql, $matches);
-        foreach ($matches[0] as $match) {
-            $name = substr($match, 1);
-            $allowed[$name] = 1;
-        }
-        return array_intersect_key($this->params, $allowed);
     }
 
     private function getRules()
@@ -115,14 +71,8 @@ class Filter
         return ' WHERE (' . implode(') ' . $this->connector . ' (', $rules) . ')';
     }
 
-    private function formatQueryArray($name)
+    protected function requiresTransaction()
     {
-        $rule = '';
-        foreach ($this->params[$name] as $index => $value) {
-            $this->params[$name . $index] = $value;
-            $rule .= ':' . $name . $index . ',';
-        }
-        unset($this->params[$name]);
-        return substr($rule, 0, -1);
+        return $this->type !== \Scoop\Persistence\SQO::READ;
     }
 }

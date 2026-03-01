@@ -2,12 +2,10 @@
 
 namespace Scoop\Persistence\SQO;
 
-class Reader extends Filter
+class Reader extends Criteria
 {
-    private $order = array();
+    use Pageable;
     private $group = array();
-    private $orderType = ' ASC';
-    private $limit = '';
     private $having = '';
     private $connection;
 
@@ -36,35 +34,6 @@ class Reader extends Filter
         return $this;
     }
 
-    public function page($params)
-    {
-        $page = isset($params['page']) ? intval($params['page']) : 0;
-        $size = isset($params['size']) ?
-        intval($params['size']) :
-        \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getConfig('page.size', 12);
-        unset($params['page'], $params['size']);
-        $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page', $this->connection);
-        $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
-        return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
-        ->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');
-    }
-
-    public function order()
-    {
-        $numArgs = func_num_args();
-        if (!$numArgs) {
-            throw new \InvalidArgumentException('Unsoported number of arguments');
-        }
-        $args = func_get_args();
-        $type = strtoupper($args[$numArgs - 1]);
-        if ($type === 'ASC' || $type === 'DESC') {
-            $this->orderType = ' ' . $type;
-            array_pop($args);
-        }
-        $this->order += array_map('trim', $args);
-        return $this;
-    }
-
     public function group()
     {
         $this->group += func_get_args();
@@ -73,14 +42,18 @@ class Reader extends Filter
 
     public function having($condition)
     {
-        $this->having = $condition;
+        $this->having = $this->having ? " AND ($condition)" : "($condition)";
         return $this;
     }
 
-    public function limit($offset, $limit = null)
+    public function union(Reader $reader)
     {
-        $this->limit = ' LIMIT ' . ($limit === null ? $offset : $limit . ' OFFSET ' . $offset);
-        return $this;
+        return new Union($this->sqo, $this, $reader, 'UNION');
+    }
+
+    public function unionAll(Reader $reader)
+    {
+        return new Union($this->sqo, $this, $reader, 'UNION ALL');
     }
 
     public function __toString()
@@ -89,20 +62,7 @@ class Reader extends Filter
             . $this->getGroup()
             . $this->getHaving()
             . $this->getOrder()
-            . $this->limit;
-    }
-
-    private function getOrder()
-    {
-        if (empty($this->order)) {
-            return '';
-        }
-        foreach ($this->order as $key => $element) {
-            if (!preg_match('/\sASC|DESC$/i', $element)) {
-                $this->order[$key] = $element . $this->orderType;
-            }
-        }
-        return ' ORDER BY ' . implode(', ', $this->order);
+            . $this->getLimit();
     }
 
     private function getHaving()

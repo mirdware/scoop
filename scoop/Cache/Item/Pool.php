@@ -14,16 +14,6 @@ abstract class Pool
         $this->defaultLifetime = (int) $defaultLifetime;
     }
 
-    abstract protected function removeAll();
-
-    abstract protected function fetch($key);
-
-    abstract protected function remove($key);
-
-    abstract protected function add(\Scoop\Cache\Item $item);
-
-    abstract public function prune();
-
     public function getItem($key)
     {
         if (isset($this->deferredItems[$key])) {
@@ -141,4 +131,14 @@ abstract class Pool
             $this->commit();
         }
     }
+
+    abstract protected function removeAll();
+
+    abstract protected function fetch($key);
+
+    abstract protected function remove($key);
+
+    abstract protected function add(\Scoop\Cache\Item $item);
+
+    abstract public function prune();
 }

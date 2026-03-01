@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use Scoop\Http\Message\Server\Request;
-
 class Health
 {
     /**

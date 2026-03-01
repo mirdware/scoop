@@ -1,6 +1,6 @@
 {
     "name": "mirdware/scoop",
-    "description": "Simple Characteristics of Object Oriented PHP",
+    "description": "Simple Components of Object-Oriented Programming",
     "keywords": ["scoop", "ddd", "hexagonal", "cqrs", "onion", "engine"],
     "license": "MIT",
     "type": "project",

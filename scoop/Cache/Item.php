@@ -12,7 +12,7 @@ class Item
 
     public function __construct(
         $key,
-        \DateTime $expirationFromPool = null,
+        \DateTime $expirationFromPool = 0,
         $valueFromPool = null,
         $wasFoundAndValidInPool = false
     ) {

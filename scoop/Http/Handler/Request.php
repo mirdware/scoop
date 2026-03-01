@@ -24,14 +24,11 @@ class Request
             $response = $this->callable->invokeArgs($this->controller, $args);
             return $this->transformResponse($response);
         }
-        $middlewareDefinition = array_shift($this->middlewares);
-        if (!class_exists($middlewareDefinition)) {
-            throw new \RuntimeException("Middleware $middlewareDefinition not found");
+        $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
+        if (!method_exists($middlewareInstance, 'process')) {
+            $className = get_class($middlewareInstance);
+            throw new \RuntimeException("Middleware $className does not implement process method");
         }
-        if (!method_exists($middlewareDefinition, 'process')) {
-            throw new \RuntimeException("Middleware $middlewareDefinition does not implement process method");
-        }
-        $middlewareInstance = \Scoop\Context::inject($middlewareDefinition);
         return $middlewareInstance->process($request, new Next($this));
     }
 

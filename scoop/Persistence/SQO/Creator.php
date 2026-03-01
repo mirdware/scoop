@@ -2,14 +2,15 @@
 
 namespace Scoop\Persistence\SQO;
 
-final class Factory
+final class Creator
 {
     private $query;
     private $values;
     private $sqo;
-    private $isReader;
+    private $isSubquery = false;
     private $fields;
     private $numFields;
+    private $conflictResolver;
 
     public function __construct($query, $values, $fields, $sqo)
     {
@@ -17,17 +18,17 @@ final class Factory
         $this->fields = $fields;
         $this->numFields = count($fields);
         if ($values) {
-            $this->isReader = is_a($values, '\Scoop\Persistence\SQO\Reader');
+            $this->isSubquery = is_a($values, '\Scoop\Persistence\SQO\Reader') || is_a($values, '\Scoop\Persistence\SQO\Union');
             $this->values = is_array($values) ? $sqo->nullify($values) : $values;
         } else {
             $this->values = array();
         }
-        $this->query = $this->isReader ? substr($query, 0, -7) : $query;
+        $this->query = $this->isSubquery ? substr($query, 0, -7) : $query;
     }
 
     public function create($values)
     {
-        if ($this->isReader) {
+        if ($this->isSubquery) {
             throw new \DomainException('INSERT SELECT not support multiple rows');
         }
         $numValues = count($values);
@@ -47,6 +48,12 @@ final class Factory
         return $this;
     }
 
+    public function resolveConflict($columns)
+    {
+        $this->conflictResolver = new Resolver($this, $this->sqo, $columns, $this->fields);
+        return $this->conflictResolver;
+    }
+
     public function hasData()
     {
         return !!count($this->values);
@@ -57,7 +64,7 @@ final class Factory
         $con = $this->sqo->getConnection();
         $statement = $con->prepare($this);
         $con->beginTransaction();
-        if ($this->isReader) {
+        if ($this->isSubquery) {
             return $statement->execute($params);
         }
         return $statement->execute($this->values);
@@ -65,12 +72,12 @@ final class Factory
 
     public function __toString()
     {
-        if ($this->isReader) {
+        if ($this->isSubquery) {
             return $this->query . ' ' . $this->values;
         }
         $numRows = count($this->values) / $this->numFields;
         $placeholder = '(' . implode(',', array_fill(0, $this->numFields, '?')) . ')';
         $values = implode(',', array_fill(0, $numRows, $placeholder));
-        return $this->query . $values;
+        return $this->query . $values . ($this->conflictResolver ? $this->conflictResolver : '');
     }
 }

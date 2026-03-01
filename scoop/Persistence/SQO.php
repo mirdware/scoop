@@ -2,6 +2,9 @@
 
 namespace Scoop\Persistence;
 
+/**
+ * @deprecated since version 0.8, use Scoop\Persistence\Builder instead
+ */
 class SQO
 {
     const READ = 1;
@@ -10,20 +13,20 @@ class SQO
     private $table;
     private $aliasTable;
     private $connection;
-    private $isReader;
+    private $isSubquery;
 
     public function __construct($table, $alias = '', $connection = 'default')
     {
-        $this->isReader = is_a($table, '\Scoop\Persistence\SQO\Reader');
-        $this->table = $this->isReader ? '(' . $table . ')' : $table;
+        $this->isSubquery = is_a($table, '\Scoop\Persistence\SQO\Reader') || is_a($table, '\Scoop\Persistence\SQO\Union');
+        $this->table = $this->isSubquery ? '(' . $table . ')' : $table;
         $this->aliasTable = $this->table . ' ' . $alias;
         $this->connection = $connection;
     }
 
     public function create($fields, $select = null)
     {
-        if ($this->isReader) {
-            throw new \DomainException('Subquery on FROM clausule not support CREATE');
+        if ($this->isSubquery) {
+            throw new \DomainException('Subquery on INTO clausule not support CREATE');
         }
         $query = 'INSERT INTO ' . $this->table;
         $values = $select;
@@ -32,7 +35,7 @@ class SQO
             $fields = array_keys($fields);
         }
         $query .= ' (' . implode(',', $fields) . ') VALUES ';
-        return new SQO\Factory($query, $values, $fields, $this);
+        return new SQO\Creator($query, $values, $fields, $this);
     }
 
     public function read()
@@ -45,8 +48,8 @@ class SQO
 
     public function update($fields)
     {
-        if ($this->isReader) {
-            throw new \DomainException('Subquery on FROM clausule not support UPDATE');
+        if ($this->isSubquery) {
+            throw new \DomainException('Subquery on SET clausule not support UPDATE');
         }
         $operators = array('+', '-', '/', '*', '%');
         $fields = $this->nullify($fields);
@@ -62,16 +65,16 @@ class SQO
                 $query .= $key . ' = :' . $key . ', ';
             }
         }
-        return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this, $fields);
+        return new SQO\Criteria(substr($query, 0, -2), self::UPDATE, $this, $fields);
     }
 
     public function delete()
     {
-        if ($this->isReader) {
+        if ($this->isSubquery) {
             throw new \DomainException('Subquery on FROM clausule not support DELETE');
         }
         $query = 'DELETE FROM ' . $this->table;
-        return new SQO\Filter($query, self::DELETE, $this);
+        return new SQO\Criteria($query, self::DELETE, $this);
     }
 
     public function getLastId($nameSeq = null)

@@ -7,6 +7,7 @@ class Manager
     const VIEW = 'exceptions/default';
     private static $messages = array();
     private static $exceptions = array(
+        'Scoop\Http\Exception\Forbiden' => 403,
         'Scoop\Http\Exception\NotFound' => 404,
         'Scoop\Http\Exception\MethodNotAllowed' => 405
     );

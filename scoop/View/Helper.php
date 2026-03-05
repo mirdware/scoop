@@ -116,6 +116,14 @@ class Helper
         return $this->environment->getConfig(self::$keyMessages . $msg);
     }
 
+    public function getCsrfToken()
+    {
+        if (!isset($_SESSION['csrf-token'])) {
+            $_SESSION['csrf-token'] = $this->generateToken();
+        }
+        return $_SESSION['csrf-token'];
+    }
+
     public function isCurrentRoute($routeId)
     {
         $route = $this->router->getCurrentRoute();
@@ -165,5 +173,30 @@ class Helper
     public static function setKeyMessages($key)
     {
         self::$keyMessages = $key;
+    }
+
+    private function generateToken()
+    {
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $bytes = openssl_random_pseudo_bytes(32, $strong);
+            if ($strong === true) {
+                return bin2hex($bytes);
+            }
+        }
+        $sources = array(
+            uniqid('', true),
+            mt_rand(),
+            microtime(true),
+            isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
+            isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+            php_uname(),
+            getmypid(),
+            memory_get_usage()
+        );
+        $token = implode('|', $sources);
+        for ($i = 0; $i < 100; $i++) {
+            $token = hash('sha256', $token . mt_rand());
+        }
+        return $token;
     }
 }

@@ -9,10 +9,10 @@ class CsrfGuard
         if (in_array($request->getMethod(), array('get', 'head', 'options', 'trace'))) {
             return $next->handle($request);
         }
-        $token = $request->flash()->get('csrf-token');
-        if (!$token) {
+        if (!isset($_SESSION['csrf-token'])) {
             throw new \Scoop\Http\Exception\Forbidden('CSRF token not found in session');
         }
+        $token = $_SESSION['csrf-token'];
         $tokenSent = $request->getHeaderLine('X-CSRF-Token');
         if (!$tokenSent) {
             $query = $request->getQueryParams();

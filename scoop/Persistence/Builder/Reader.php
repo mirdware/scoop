@@ -1,23 +1,28 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 class Reader extends Criteria
 {
     use Pageable;
     private $group = array();
     private $having = '';
-    private $connection;
 
-    public function __construct($query, $sqo, $connection)
+    public function __construct(\Scoop\Persistence\Connection $connection, $query)
     {
-        parent::__construct($query, \Scoop\Persistence\SQO::READ, $sqo);
+        parent::__construct($connection, $query, \Scoop\Persistence\SQO::READ);
         $this->connection = $connection;
     }
 
     public function join($table, $using = 'NATURAL', $type = 'INNER')
     {
         $simpleType = strtoupper($using);
+        if (preg_match('/\s+as\s+/i', $table)) {
+            list($table, $alias) = preg_split('/\s+as\s+/i', $table);
+            $table = $this->connection->quoteColumn($table) . ' AS ' . $this->connection->quoteColumn($alias);
+        } else {
+            $table = $this->connection->quoteColumn($table);
+        }
         if ($simpleType === 'CROSS' || $simpleType === 'NATURAL') {
             $this->from[] = ' ' . $simpleType . ' JOIN ' . $table;
             return $this;
@@ -28,8 +33,8 @@ class Reader extends Criteria
         }
         $this->from[] = ' ' . $type . ' JOIN ' . $table . (
             preg_match('/\s*([<>!=]{1,2}|NOT ?LIKE)\s*/', $using) ?
-                ' ON(' . $using . ')' :
-                ' USING(' . $using . ')'
+                ' ON(' . $this->connection->quoteCriteria($using) . ')' :
+                ' USING(' . implode(', ', array_map(array($this->connection, 'quoteColumn'), explode(',', $using))) . ')'
         );
         return $this;
     }
@@ -42,18 +47,19 @@ class Reader extends Criteria
 
     public function having($condition)
     {
+        $condition = $this->connection->quoteCriteria($condition);
         $this->having = $this->having ? " AND ($condition)" : "($condition)";
         return $this;
     }
 
     public function union(Reader $reader)
     {
-        return new Union($this->sqo, $this, $reader, 'UNION');
+        return new Union($this->connection, $this, $reader, 'UNION');
     }
 
     public function unionAll(Reader $reader)
     {
-        return new Union($this->sqo, $this, $reader, 'UNION ALL');
+        return new Union($this->connection, $this, $reader, 'UNION ALL');
     }
 
     public function __toString()
@@ -78,6 +84,7 @@ class Reader extends Criteria
         if (empty($this->group)) {
             return '';
         }
-        return ' GROUP BY ' . implode(', ', $this->group);
+        $group = array_map(array($this->connection, 'quoteColumn'), $this->group);
+        return ' GROUP BY ' . implode(', ', $group);
     }
 }

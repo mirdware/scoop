@@ -49,8 +49,8 @@ class CorsGuard
         if (!isset($serverParams['HTTP_ORIGIN'])) {
             return $response;
         }
-        $allowedOrigins = isset($this->config['origin']) ?
-        array_map('trim', explode(',', $this->config['origin'])) :
+        $allowedOrigins = isset($this->config['origins']) ?
+        array_map('trim', explode(',', $this->config['origins'])) :
         array($serverParams['HTTP_ORIGIN']);
         if (!$this->isOriginAllowed($serverParams['HTTP_ORIGIN'], $allowedOrigins)) {
             return $response;

@@ -17,10 +17,13 @@ class SQO
 
     public function __construct($table, $alias = '', $connection = 'default')
     {
-        $this->isSubquery = is_a($table, '\Scoop\Persistence\SQO\Reader') || is_a($table, '\Scoop\Persistence\SQO\Union');
-        $this->table = $this->isSubquery ? '(' . $table . ')' : $table;
+        $this->connection = is_string($connection) ? \Scoop\Context::connect($connection) : $connection;
+        if ($alias !== '') {
+            $alias = $this->connection->quoteColumn($alias);
+        }
+        $this->isSubquery = is_a($table, '\Scoop\Persistence\Builder\Reader') || is_a($table, '\Scoop\Persistence\Builder\Union');
+        $this->table = $this->isSubquery ? '(' . $table . ')' : $this->connection->quoteColumn($table);
         $this->aliasTable = $this->table . ' ' . $alias;
-        $this->connection = $connection;
     }
 
     public function create($fields, $select = null)
@@ -34,16 +37,17 @@ class SQO
             $values = array_values($fields);
             $fields = array_keys($fields);
         }
+        $fields = array_map(array($this->connection, 'quoteColumn'), $fields);
         $query .= ' (' . implode(',', $fields) . ') VALUES ';
-        return new SQO\Creator($query, $values, $fields, $this);
+        return new Builder\Creator($this->connection, $query, $values, $fields);
     }
 
     public function read()
     {
         $args = func_get_args();
-        $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
+        $fields = isset($args[0]) ? implode(',', $this->getFields($args)) : '*';
         $query = 'SELECT ' . $fields . ' FROM ' . $this->aliasTable;
-        return new SQO\Reader($query, $this, $this->connection);
+        return new Builder\Reader($this->connection, $query);
     }
 
     public function update($fields)
@@ -52,7 +56,7 @@ class SQO
             throw new \DomainException('Subquery on SET clausule not support UPDATE');
         }
         $operators = array('+', '-', '/', '*', '%');
-        $fields = $this->nullify($fields);
+        $fields = $this->connection->nullify($fields);
         $query = 'UPDATE ' . $this->table . ' SET ';
         foreach ($fields as $key => $value) {
             $lastChar = substr($key, -1);
@@ -60,12 +64,13 @@ class SQO
                 unset($fields[$key]);
                 $key = substr($key, 0, -1);
                 $fields[$key] = $value;
-                $query .= $key . ' = ' . $key . ' ' . $lastChar . ' :' . $key . ', ';
+                $column = $this->connection->quoteColumn($key);
+                $query .= $column . ' = ' . $column . ' ' . $lastChar . ' :' . $key . ', ';
             } else {
-                $query .= $key . ' = :' . $key . ', ';
+                $query .= $this->connection->quoteColumn($key) . ' = :' . $key . ', ';
             }
         }
-        return new SQO\Criteria(substr($query, 0, -2), self::UPDATE, $this, $fields);
+        return new Builder\Criteria($this->connection, substr($query, 0, -2), self::UPDATE, $fields);
     }
 
     public function delete()
@@ -74,42 +79,32 @@ class SQO
             throw new \DomainException('Subquery on FROM clausule not support DELETE');
         }
         $query = 'DELETE FROM ' . $this->table;
-        return new SQO\Criteria($query, self::DELETE, $this);
+        return new Builder\Criteria($this->connection, $query, self::DELETE);
     }
 
     public function getLastId($nameSeq = null)
     {
-        return $this->getConnection()->lastInsertId($nameSeq);
+        return $this->connection->lastInsertId($nameSeq);
     }
 
     public function getConnection()
     {
-        if (is_string($this->connection)) {
-            $this->connection = \Scoop\Context::connect($this->connection);
-        }
         return $this->connection;
     }
 
-    public function nullify($parameters)
-    {
-        $result = array();
-        foreach ($parameters as $key => $value) {
-            $result[$key] = $value === '' ? null : $value;
-        }
-        return $result;
-    }
-
-    private static function getFields($args)
+    private function getFields($args)
     {
         if (is_array($args[0])) {
             $args = $args[0];
         }
         foreach ($args as $key => &$value) {
-            if ($value instanceof SQO\Reader) {
+            if ($value instanceof Builder\Reader) {
                 $value = '(' . $value . ')';
-            }
-            if (!is_numeric($key)) {
-                $value .= ' AS ' . $key;
+            } else {
+                $value = $this->connection->quoteColumn($value, true);
+                if (!is_numeric($key)) {
+                    $value .= ' AS ' . $this->connection->quoteColumn($key);
+                }
             }
         }
         return $args;

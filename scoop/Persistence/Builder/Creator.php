@@ -1,25 +1,25 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 final class Creator
 {
     private $query;
     private $values;
-    private $sqo;
+    private $connection;
     private $isSubquery = false;
     private $fields;
     private $numFields;
     private $conflictResolver;
 
-    public function __construct($query, $values, $fields, $sqo)
+    public function __construct($connection, $query, $values, $fields)
     {
-        $this->sqo = $sqo;
+        $this->connection = $connection;
         $this->fields = $fields;
         $this->numFields = count($fields);
         if ($values) {
-            $this->isSubquery = is_a($values, '\Scoop\Persistence\SQO\Reader') || is_a($values, '\Scoop\Persistence\SQO\Union');
-            $this->values = is_array($values) ? $sqo->nullify($values) : $values;
+            $this->isSubquery = is_a($values, '\Scoop\Persistence\Builder\Reader') || is_a($values, '\Scoop\Persistence\Builder\Union');
+            $this->values = is_array($values) ? $connection->nullify($values) : $values;
         } else {
             $this->values = array();
         }
@@ -44,13 +44,13 @@ final class Creator
             }
             $values = $order;
         }
-        $this->values = array_merge($this->sqo->nullify($values), $this->values);
+        $this->values = array_merge($this->connection->nullify($values), $this->values);
         return $this;
     }
 
     public function resolveConflict($columns)
     {
-        $this->conflictResolver = new Resolver($this, $this->sqo, $columns, $this->fields);
+        $this->conflictResolver = new Resolver($this, $this->connection, $columns, $this->fields);
         return $this->conflictResolver;
     }
 
@@ -61,9 +61,8 @@ final class Creator
 
     public function run($params = null)
     {
-        $con = $this->sqo->getConnection();
-        $statement = $con->prepare($this);
-        $con->beginTransaction();
+        $statement = $this->connection->prepare($this);
+        $this->connection->beginTransaction();
         if ($this->isSubquery) {
             return $statement->execute($params);
         }

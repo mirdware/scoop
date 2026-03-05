@@ -1,6 +1,6 @@
 <?php
 /**
- * Scoop (Simple Characteristics of Object Oriented PHP) apoya el uso de convenciones PSR (http://www.php-fig.org/psr/).
+ * Scoop (Simple components of Object-Oriented Programming) apoya el uso de convenciones PSR (http://www.php-fig.org/psr/).
  * StudlyCaps: Clases, Interfaces, Namespaces, Packages
  * camelCase: Métodos, Propiedades, Párametro, Variable
  * ALL_CAPS: Constantes

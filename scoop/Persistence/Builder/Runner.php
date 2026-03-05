@@ -1,16 +1,16 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 abstract class Runner
 {
     protected $params = array();
 
-    protected $sqo;
+    protected $connection;
 
-    public function __construct($sqo, $params)
+    public function __construct(\Scoop\Persistence\Connection $connection, $params)
     {
-        $this->sqo = $sqo;
+        $this->connection = $connection;
         $this->params = $params;
     }
 
@@ -30,10 +30,9 @@ abstract class Runner
             $this->params += $params;
         }
         $sql = $this->__toString();
-        $con = $this->sqo->getConnection();
-        $statement = $con->prepare($sql);
+        $statement = $this->connection->prepare($sql);
         if ($this->requiresTransaction()) {
-            $con->beginTransaction();
+            $this->connection->beginTransaction();
         }
         $statement->execute($this->getParamsAllowed($sql));
         return $statement;

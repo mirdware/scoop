@@ -20,20 +20,27 @@ class Application
         try {
             $response = $router->route($request);
             gc_collect_cycles();
-            return $this->printResponse($response);
+            $this->printResponse($response);
         } catch (\Exception $ex) {
-            $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
-            $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
-            \Scoop\Context::reset();
-            $status = $exceptionManager->getStatusCode($ex);
-            $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
-            if (!$status) throw $ex;
-            return $this->printResponse($exceptionManager->handle(
-                $ex,
-                $request->isAjax(),
-                $status
-            ));
+            $this->manageError($ex, $request->isAjax());
+        } catch (\Throwable $ex) {
+            $this->manageError($ex, $request->isAjax());
         }
+    }
+
+    private function manageError($ex, $isAjax)
+    {
+        $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
+        $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+        \Scoop\Context::reset();
+        $status = $exceptionManager->getStatusCode($ex);
+        $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
+        if (!$status) throw $ex;
+        return $this->printResponse($exceptionManager->handle(
+            $ex,
+            $isAjax,
+            $status
+        ));
     }
 
     private function printResponse($response)

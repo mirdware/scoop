@@ -1,21 +1,21 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 class Resolver
 {
     private $creator;
     private $columns;
     private $action;
-    private $sqo;
+    private $connection;
     private $updateFields;
 
-    public function __construct(Creator $creator, \Scoop\Persistence\SQO $sqo, $columns, $updateFields)
+    public function __construct(Creator $creator, \Scoop\Persistence\Connection $connection, $columns, $updateFields)
     {
         $this->creator = $creator;
-        $this->sqo = $sqo;
+        $this->connection = $connection;
         $this->updateFields = $updateFields;
-        $this->columns = $columns;
+        $this->columns = array_map(array($connection, 'quoteColumn'), $columns);
     }
 
     public function doUpdate($fields = null)
@@ -36,15 +36,15 @@ class Resolver
         if (!$this->action) {
             return '';
         }
-        $connection = $this->sqo->getConnection();
+        $isMySQL = $this->connection->is('mysql');
         if ($this->action === 'NOTHING') {
-            if ($connection->is('mysql')) {
+            if ($isMySQL) {
                 return " ON DUPLICATE KEY UPDATE {$this->columns[0]}={$this->columns[0]}";
             }
             return ' ON CONFLICT (' . implode(', ', $this->columns) .') DO NOTHING';
         }
-        if ($connection->is('mysql')) {
-            return ' ON DUPLICATE KEY UPDATE ' . $this->getUpdateFields(true);
+        if ($isMySQL) {
+            return ' ON DUPLICATE KEY UPDATE ' . $this->getUpdateFields($isMySQL);
         }
         return ' ON CONFLICT (' . implode(', ', $this->columns) . ') DO UPDATE SET ' . $this->getUpdateFields(false);
     }
@@ -54,8 +54,10 @@ class Resolver
         $update = array();
         foreach ($this->updateFields as $field => $value) {
             if (is_numeric($field)) {
-                $field = $value;
+                $field = $this->connection->quoteColumn($value);
                 $value = $isMySQL ? "VALUES($field)" : "EXCLUDED.$field";
+            } else {
+                $field = $this->connection->quoteColumn($field);
             }
             if (in_array($field, $this->columns)) {
                 continue;

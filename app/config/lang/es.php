@@ -16,6 +16,8 @@ return array(
         'Scoop\Validation\Rule\Equals' => 'El campo no coincide con {subject}',
         'Scoop\Validation\Rule\Same' => 'El campo no coincide con el valor de {fail}',
         'Scoop\Validation\Rule\Lowercase' => 'El campo debe estar en minúscula',
-        'Scoop\Validation\Rule\Uppercase' => 'El campo debe estar en mayúscula'
+        'Scoop\Validation\Rule\Uppercase' => 'El campo debe estar en mayúscula',
+        'Scoop\Validation\Rule\Url' => 'El campo debe ser una URL valida',
+        'Scoop\Validation\Rule\In' => 'El campo debe ser uno de los siguientes valores: {allowed}'
     )
 );

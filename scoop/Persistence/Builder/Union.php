@@ -1,15 +1,15 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 class Union extends Runner {
     use Pageable;
     private $base;
     private $queries = array();
 
-    public function __construct(\Scoop\Persistence\SQO $sqo, Reader $base, Reader $other, $type)
+    public function __construct(\Scoop\Persistence\Connection $connection, Reader $base, Reader $other, $type)
     {
-        parent::__construct($sqo, array());
+        parent::__construct($connection, array());
         $this->base = $base;
         $this->queries[] = array('reader' => $other, 'type' => $type);
     }

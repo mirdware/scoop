@@ -54,7 +54,16 @@ class UploadedFile
         if ($this->error !== UPLOAD_ERR_OK) {
             throw new \RuntimeException('Error uploading file', 734);
         }
-        if (!move_uploaded_file($this->file, $targetPath)) {
+        $success = false;
+        if (is_uploaded_file($this->file)) {
+            $success = move_uploaded_file($this->file, $targetPath);
+        } else {
+            $success = @rename($this->file, $targetPath);
+            if (!$success) {
+                $success = copy($this->file, $targetPath) && unlink($this->file);
+            }
+        }
+        if (!$success) {
             throw new \RuntimeException('The file could not be moved', 735);
         }
         $this->moved = true;

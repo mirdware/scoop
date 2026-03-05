@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 trait Pageable
 {
@@ -64,7 +64,7 @@ trait Pageable
             return '';
         }
         $connection = $this->sqo->getConnection();
-        if ($connection->is('sqlsrv') || $connection->is('dblib')) {
+        if ($connection->is('mssql')) {
             if (empty($this->order)) {
                 throw new \LogicException('SQL Server requires ORDER BY with OFFSET');
             }

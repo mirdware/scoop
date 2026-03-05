@@ -11,21 +11,25 @@ class Context
 
     public static function load($configPath)
     {
+        require 'scoop/Bootstrap/Environment.php';
+        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
         if (!isset(self::$loader)) {
             if (is_readable('vendor/autoload.php')) {
                 self::$loader = require 'vendor/autoload.php';
             } else {
                 require 'scoop/Bootstrap/Loader.php';
+                require 'scoop/Bootstrap/Loader/JsonParser.php';
                 self::$loader = new \Scoop\Bootstrap\Loader();
-                $conf = json_decode(file_get_contents('composer.json'), true);
-                $psr4 = $conf['autoload']['psr-4'];
-                foreach ($psr4 as $key => $value) {
-                    self::$loader->set($key, $value);
+                $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser(self::$environment);
+                $conf = $jsonLoader->load('composer');
+                if (isset($conf['autoload']['psr-4'])) {
+                    foreach ($conf['autoload']['psr-4'] as $key => $value) {
+                        self::$loader->set($key, $value);
+                    }
                 }
                 self::$loader->register(true);
             }
         }
-        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
         self::configureInjector();
         self::inject('Scoop\Bootstrap\Configuration')->setUp();
     }
@@ -35,7 +39,8 @@ class Context
         $config = self::normalizeConnection($bundle, $options);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
-            self::$connections[$key] = new Persistence\DBC(
+            self::$connections[$key] = new Persistence\Connection(
+                self::inject('\Scoop\Event\Dispatcher'),
                 $config['database'],
                 $config['user'],
                 $config['password'],

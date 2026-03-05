@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Persistence\SQO;
+namespace Scoop\Persistence\Builder;
 
 class Criteria extends Runner
 {
@@ -11,9 +11,9 @@ class Criteria extends Runner
     private $query;
     private $type;
 
-    public function __construct($query, $type, $sqo, $params = array())
+    public function __construct(\Scoop\Persistence\Connection $connection,  $query, $type, $params = array())
     {
-        parent::__construct($sqo, $params);
+        parent::__construct($connection, $params);
         $this->query = $query;
         $this->type = $type;
     }
@@ -31,13 +31,13 @@ class Criteria extends Runner
 
     public function filter($rule)
     {
-        $this->filters[] = $rule;
+        $this->filters[] = $this->connection->quoteCriteria($rule);
         return $this;
     }
 
     public function restrict($rule)
     {
-        $this->restrictions[] = $rule;
+        $this->restrictions[] = $this->connection->quoteCriteria($rule);
         return $this;
     }
 

@@ -7,7 +7,7 @@ class Manager
     const VIEW = 'exceptions/default';
     private static $messages = array();
     private static $exceptions = array(
-        'Scoop\Http\Exception\Forbiden' => 403,
+        'Scoop\Http\Exception\Forbidden' => 403,
         'Scoop\Http\Exception\NotFound' => 404,
         'Scoop\Http\Exception\MethodNotAllowed' => 405
     );
@@ -62,20 +62,20 @@ class Manager
     public function handle($ex, $isJSON, $status)
     {
         $code = $ex->getCode();
-        $this->addHeaders($status);
+        $headers = isset($this->config[$status]['headers']) ? $this->config[$status]['headers'] : array();
         if (isset(self::$messages[$code])) {
             $ex = new \Scoop\Http\Exception\Proxy($ex, self::$messages[$code]);
         }
         if ($isJSON) {
             return new \Scoop\Http\Message\Response(
-                200,
-                array('Content-Type' => 'application/json'),
+                $status,
+                $headers + array('Content-Type' => 'application/json'),
                 json_encode(array('code' => $code, 'message' => $ex->getMessage()))
             );
         }
         return new \Scoop\Http\Message\Response(
             $status,
-            array('Content-Type' => 'text/html'),
+            $headers + array('Content-Type' => 'text/html'),
             $this->createView($status, $ex)->render()
         );
     }
@@ -83,15 +83,6 @@ class Manager
     public static function setMessages($messages)
     {
         self::$messages = $messages;
-    }
-
-    private function addHeaders($status)
-    {
-        $headers = isset($this->config[$status]['headers']) ? $this->config[$status]['headers'] : array();
-        foreach ($headers as $header) {
-            header($header);
-        }
-        header('HTTP/1.1 ' . $status . ' ' . self::$errors[$status]);
     }
 
     private function createView($status, $ex)

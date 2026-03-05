@@ -7,11 +7,13 @@ final class Template
     const SERVICE = '\Scoop\View\Service';
     private static $cachePath = 'app/storage/cache/views';
     private static $viewPath = 'app/views/';
+    private static $inHead;
 
     public function parse($templatePath)
     {
         $template = self::$viewPath . $templatePath . '.sdt.php';
         $view = self::$cachePath . $templatePath . '.php';
+        self::$inHead = false;
         if (!is_readable($template)) {
             throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
@@ -61,11 +63,6 @@ final class Template
 
     public static function clearHTML($html)
     {
-        $blockElements = array(
-            'div', 'main', 'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'dl', 'dt', 'fieldset',
-            'figcaption', 'figure', 'footer', 'form', 'h\d', 'header', 'hr', 'li', 'nav', 'noscript', 'ol', 'p',
-            'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
-        );
         preg_match(
             '/\s*<\s*html\s*(.*?)\s*>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
             $html,
@@ -80,9 +77,6 @@ final class Template
             array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<' ),
             $html
         );
-        foreach ($blockElements as $element) {
-            $html = preg_replace('/[\s\r\n]*(<\/?' . $element . '[^>]*>)[\s\r\n]*/is', '${1}', $html);
-        }
         return $html;
     }
 
@@ -132,11 +126,26 @@ final class Template
 
     private static function replaceSingle(&$line)
     {
+        if (preg_match('/<head[^>]*>/i', $line)) {
+            self::$inHead = true;
+        }
         $line = str_replace(
-            array(':if', ':foreach', ':for', ':while', '@else'),
-            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>'),
+            array(':if', ':foreach', ':for', ':while', '@else', '@csrf'),
+            array(
+                '<?php endif ?>',
+                '<?php endforeach ?>',
+                '<?php endfor ?>',
+                '<?php endwhile ?>',
+                '<?php else: ?>',
+                self::$inHead ?
+                '<meta name="csrf-token" content="{{ #view->getCsrfToken() }}">' :
+                '<input type="hidden" name="csrf-token" value="{{ #view->getCsrfToken() }}">'
+            ),
             $line, $count
         );
+        if (preg_match('/<\/head[^>]*>/i', $line)) {
+            self::$inHead = false;
+        }
         return $count !== 0;
     }
 

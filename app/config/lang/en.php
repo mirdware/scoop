@@ -11,11 +11,13 @@ return array(
         'Scoop\Validation\Rule\Number' => 'Please fill out a valid numerical value',
         'Scoop\Validation\Rule\Max' => 'Value must be less than or equal to {max}',
         'Scoop\Validation\Rule\Min' => 'Value must be greater than or equal to {min}',
-        'Scoop\Validation\Rule\Email' => 'Please include an @ in the email address',
+        'Scoop\Validation\Rule\Email' => 'Please include a email address valid format',
         'Scoop\Validation\Rule\Pattern' => 'Please match the request format',
         'Scoop\Validation\Rule\Equals' => 'Please match the field to {subject}',
         'Scoop\Validation\Rule\Same' => 'Please match the field to value of {fail}',
         'Scoop\Validation\Rule\Lowercase' => 'Field must be lower case',
-        'Scoop\Validation\Rule\Uppercase' => 'Field must be upper case'
+        'Scoop\Validation\Rule\Uppercase' => 'Field must be upper case',
+        'Scoop\Validation\Rule\Url' => 'Field must be a valid URL',
+        'Scoop\Validation\Rule\In' => 'Field must be one of the following values: {allowed}'
     )
 );

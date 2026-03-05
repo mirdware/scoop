@@ -5,8 +5,8 @@ namespace Scoop\Validation;
 abstract class Rule
 {
     private $validator;
-    protected $data;
-    protected $fields;
+    private $data;
+    private $fields;
 
     public function attach($data, $fields)
     {
@@ -35,6 +35,16 @@ abstract class Rule
         $params = get_object_vars($this);
         unset($params['data'], $params['fields'], $params['validator']);
         return $params;
+    }
+
+    protected function get($name)
+    {
+        return isset($this->data[$name]) ? $this->data[$name] : null;
+    }
+
+    protected function translate($field)
+    {
+        return isset($this->fields[$field]) ? $this->fields[$field] : $field;
     }
 
     /**

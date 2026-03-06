@@ -217,9 +217,9 @@ class Request extends \Scoop\Http\Message\Request
 
     private function getReferencer()
     {
-        $referencer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
-        $contentType = $this->getHeaderLine('Content-Type');
-        if (strpos($contentType, 'application/json') === false) {
+        $referencer = array();
+        if (!$this->isAjax()) {
+            $referencer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
             $_SESSION['data-scoop'] = array(
                 'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)) . $_SERVER['REQUEST_URI']
             );

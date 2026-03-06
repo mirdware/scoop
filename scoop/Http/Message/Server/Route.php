@@ -14,7 +14,10 @@ class Route
         $this->id = $id;
         $this->parameters = array();
         $this->query = array();
-        $this->message = array();
+        $this->message = array(
+            'text' => '',
+            'type' => ''
+        );
     }
 
     public function getId()
@@ -67,7 +70,7 @@ class Route
 
     public function flushMessage(\Scoop\Http\Message\Server\Flash $flash)
     {
-        if (!empty($this->message)) {
+        if (!empty($this->message['type'])) {
             $flash->set('message', $this->message);
         }
     }

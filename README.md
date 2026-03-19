@@ -1,30 +1,58 @@
 # scoop
 [![Latest Stable Version](https://poser.pugx.org/mirdware/scoop/v/stable)](https://packagist.org/packages/mirdware/scoop) [![Latest Unstable Version](https://poser.pugx.org/mirdware/scoop/v/unstable)](https://packagist.org/packages/mirdware/scoop) [![License](https://poser.pugx.org/mirdware/scoop/license)](https://opensource.org/licenses/MIT)
 
-El framework PHP open source para crear aplicaciones modernas, escalables y desacopladas, alineada con los mejores estándares de la industria.
+El framework PHP para arquitecturas que priorizan
+rigor técnico sobre conveniencia.
+
+Implementa DDD, Hexagonal, Event Sourcing o Capas con libertad
+arquitectónica total. Sin magia, sin facades, sin shortcuts.
 
 ---
 
 ## :star: ¿Qué hace a scoop diferente?
 
-Scoop es un framework PHP diseñado para desarrolladores y equipos que buscan control total, alto rendimiento y una arquitectura limpia y profesional desde el inicio.
+Scoop es un framework PHP diseñado para desarrolladores y equipos que buscan **control total, alto rendimiento y arquitectura limpia** desde el primer commit.
 
-Creemos en el código limpio, los principios SOLID y en darte las herramientas para que te concentres en la lógica de negocio, no en luchar contra el framework.
+A diferencia de los frameworks de conveniencia masiva, Scoop respeta la **soberanía del arquitecto**, proporcionando herramientas de precisión sin imponer dependencias intrusivas en tu lógica de negocio.
 
-- **Libertad Arquitectónica:** Implementa DDD, CQRS, Event Sourcing, Arquitectura Hexagonal, Cebolla o por Capas. ¡Tú eliges!
-- **Rendimiento Excepcional:** Un núcleo minimalista, sin dependencias innecesarias, para un consumo de recursos optimizado.
-- **Modularidad y Reutilización:** Construye con componentes desacoplados tanto para UI como para lógica de backend.
-- **Persistencia Desacoplada:** Define tu dominio (Entidades, Value Objects, Relaciones) de forma agnóstica al motor de base de datos.
-- **Validaciones Intuitivas:** Sistema de validación declarativo y potente para modelos y formularios.
-- **Routing Elegante y Potente:** Definición de rutas basada en archivos, clara, con soporte para middlewares y parámetros dinámicos.
-- **Inyección de Dependencias Nativa:** Fomenta el código desacoplado, testeable y mantenible.
-- **CLI Integrada (app/ice):** Potente consola de comandos para scaffolding, tareas administrativas y automatización.
-- **Sistema de Eventos Avanzado:** Un robusto Event Broker para gestionar eventos, comandos, consultas y suscriptores de forma eficiente.
-- **Configuración Flexible por Entornos:** Clara separación entre la configuración de la aplicación y los parámetros del entorno.
-- **Entorno de Desarrollo Moderno:** Soporte nativo para Docker y DevContainers, ideal para equipos y onboarding rápido.
-- **Testing y CI/CD Listos para Usar:** Herramientas y estructura pensadas para la calidad del software y la integración continua.
-- **Logging y Caché Nativos:** Observabilidad y rendimiento mejorados desde el core.
-- **Diseñado para la Perdurabilidad:** Soporte desde PHP 5.4+, asegurando que tus aplicaciones tengan una vida útil extensa y operen en una amplia gama de entornos, sin sacrificar los principios de una arquitectura moderna.
+- **Libertad Arquitectónica Real:** Implementa DDD, CQRS, Arquitectura Hexagonal o por Capas. Scoop es agnóstico y diseñado para proteger tu dominio sin dependencias de framework.
+
+- **Persistencia Agnóstica con Quoting Universal:** Modelado de dominio (Entidades, Value Objects) independiente del motor (MySQL, PostgreSQL, SQL Server). Sistema de quoting universal `[column]` que se auto-convierte a sintaxis específica de cada motor, neutralizando inyecciones SQL por diseño.
+
+- **Cifrado Versionado:** Sistema único de versiones criptográficas que permite migrar algoritmos (AES-256-CBC → AES-256-GCM) sin re-encriptar la base de datos. Cada valor almacenado preserva su versión, permitiendo evolución gradual.
+
+- **Inyección de Dependencias Explícita:** Resolución recursiva basada en tipos que unifica clases y factories. Sin escaneo de componentes pesado, sin configuraciones opacas. Control absoluto sobre el grafo de dependencias y el ciclo de vida (Scopes).
+
+- **CSRF Timing-Safe Integrado:** Protección CSRF con directivas `@csrf` que discriminan automáticamente entre contextos (meta tag en `<head>` para AJAX, hidden input en forms). Validación timing-safe nativa.
+
+- **Lazy Connection Loading:** Conexiones a base de datos que NO se abren hasta su uso real. Reducción medida de hasta 80% en conexiones por request, crítico para microservicios y arquitecturas multi-tenant.
+
+- **Routing Basado en Sistema de Archivos:** Definición jerárquica con `app/routes/middlewares.php` que permite cadenas de middlewares aditivos. Defensa en profundidad totalmente granular sin boilerplate.
+
+- **Structs como Código:** Migraciones SQL nativas con filosofía forward-only. Sin rollback mágico, sin abstracciones que ocultan el SQL real. Control total sobre tu esquema.
+
+- **CLI de Ingeniería (app/ice):** Consola integrada para scaffolding, gestión de structs, automatización de tareas y orchestración del ciclo de vida del software.
+
+- **Entorno de Desarrollo Inmutable:** Soporte nativo para Docker y DevContainers. Paridad total entre desarrollo y producción, eliminando "funciona en mi máquina".
+
+- **Compatibilidad Extendida:** Soporte desde PHP 5.4+ hasta las versiones más recientes, asegurando que tus aplicaciones operen en cualquier entorno sin sacrificar arquitectura moderna.
+
+---
+
+## :no_entry_sign: ¿Para quién NO es Scoop?
+
+Scoop requiere inversión en aprendizaje arquitectónico. **No es ideal para:**
+
+- Proyectos "quick and dirty" con deadlines de días
+- Developers buscando "5 minutos a CRUD"
+- Equipos que necesitan ecosystem masivo (1000+ packages)
+- Freelancers buscando maximum job market
+
+**Scoop es para equipos que priorizan:**
+- Arquitectura limpia sobre velocidad inicial
+- Control total sobre conveniencia
+- Mantenibilidad a largo plazo sobre shortcuts
+- Calidad de código sobre cantidad de features
 
 ---
 
@@ -51,9 +79,9 @@ npm install && composer install && npm run dev
 
 ---
 
-## :rocket: Primeros pasos
+## :classical_building: Arquitectura y Fundamentos
 
-Consulta la [documentación oficial](http://getscoop.org/docs/) para comenzar tu primer proyecto en minutos y descubrir todas las posibilidades de scoop.
+No te limites a usar Scoop; domina el motor. Invitamos a explorar [nuestra documentación](https://scoop.ct.ws/docs/) para descubrir el rigor detrás de cada pieza: desde el blindaje de la persistencia atómica hasta un sistema de seguridad adaptativo diseñado para otorgar soberanía total al arquitecto.
 
 ---
 

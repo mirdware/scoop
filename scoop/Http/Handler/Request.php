@@ -7,22 +7,20 @@ class Request
     private $controller;
     private $middlewares;
     private $params;
-    private $callable;
+    private $method;
 
-    public function __construct($controller, $callable, $route)
+    public function __construct($method, $route)
     {
         $this->middlewares = $route['middlewares'];
         $this->params = $route['params'];
-        $this->callable = $callable;
-        $this->controller = $controller;
+        $this->controller = $route['controller'];
+        $this->method = $method;
     }
 
     public function handle($request)
     {
         if (empty($this->middlewares)) {
-            $args = $this->getArguments($request);
-            $response = $this->callable->invokeArgs($this->controller, $args);
-            return $this->transformResponse($response);
+            return $this->processController($request);
         }
         $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
@@ -32,9 +30,8 @@ class Request
         return $middlewareInstance->process($request, new Next($this));
     }
 
-    private function getArguments($request)
+    private function getArguments($parameters, $request)
     {
-        $parameters = $this->callable->getParameters();
         $args = array();
         $hasType = empty($parameters) ? false : method_exists($parameters[0], 'getType');
         foreach ($parameters as $reflectionParam) {
@@ -77,7 +74,7 @@ class Request
         if (
             is_scalar($response) ||
             is_object($response) &&
-            method_exists($response, '_toString')
+            method_exists($response, '__toString')
         ) {
             return new \Scoop\Http\Message\Response(
                 200,
@@ -90,5 +87,34 @@ class Request
             array('Content-Type' => 'application/json'),
             json_encode($response)
         );
+    }
+
+    private function processController($request)
+    {
+        $controller = $this->getController();
+        $method = is_callable($controller) ? '__invoke' : $this->method;
+        $controllerReflection = new \ReflectionClass($controller);
+        if (!$controllerReflection->hasMethod($method)) {
+            throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+        }
+        $callable = $controllerReflection->getMethod($method);
+        $args = $this->getArguments($callable->getParameters(), $request);
+        $response = $callable->invokeArgs($controller, $args);
+        return $this->transformResponse($response);
+    }
+
+    private function getController()
+    {
+        $controller = $this->controller;
+        if (is_array($controller)) {
+            if (!isset($controller[$this->method])) {
+                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement {$this->method} method");
+            }
+            $controller = $controller[$this->method];
+        }
+        if (!class_exists($controller)) {
+            throw new \Scoop\Http\Exception\NotFound();
+        }
+        return \Scoop\Context::inject($controller);
     }
 }

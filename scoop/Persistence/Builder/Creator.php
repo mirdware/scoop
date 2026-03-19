@@ -9,6 +9,7 @@ final class Creator
     private $connection;
     private $isSubquery = false;
     private $fields;
+    private $fieldNames;
     private $numFields;
     private $conflictResolver;
 
@@ -16,6 +17,10 @@ final class Creator
     {
         $this->connection = $connection;
         $this->fields = $fields;
+        $this->fieldNames = array();
+        foreach ($fields as $field) {
+            $this->fieldNames[] = substr($field, 1, -1);
+        }
         $this->numFields = count($fields);
         if ($values) {
             $this->isSubquery = is_a($values, '\Scoop\Persistence\Builder\Reader') || is_a($values, '\Scoop\Persistence\Builder\Union');
@@ -39,8 +44,11 @@ final class Creator
         }
         if (array_keys($values) !== range(0, $numValues - 1)) {
             $order = array();
-            foreach ($this->fields as $index => $key) {
-                $order[$index] = $values[$key];
+            foreach ($this->fieldNames as $index => $name) {
+                if (!isset($values[$name])) {
+                    throw new \InvalidArgumentException("Column $name missing");
+                }
+                $order[$index] = $values[$name];
             }
             $values = $order;
         }
@@ -48,9 +56,9 @@ final class Creator
         return $this;
     }
 
-    public function resolveConflict($columns)
+    public function resolveConflict()
     {
-        $this->conflictResolver = new Resolver($this, $this->connection, $columns, $this->fields);
+        $this->conflictResolver = new Resolver($this, $this->connection, func_get_args(), $this->fields);
         return $this->conflictResolver;
     }
 

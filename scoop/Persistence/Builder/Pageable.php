@@ -63,8 +63,7 @@ trait Pageable
         if ($this->offset === null) {
             return '';
         }
-        $connection = $this->sqo->getConnection();
-        if ($connection->is('mssql')) {
+        if ($this->connection->is('sqlsrv') || $this->connection->is('dblib')) {
             if (empty($this->order)) {
                 throw new \LogicException('SQL Server requires ORDER BY with OFFSET');
             }

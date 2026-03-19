@@ -1,11 +1,8 @@
 <?php
 
-namespace Scoop\Persistence\Factory;
+namespace Scoop\Security\Factory;
 
-/**
- * @deprecated since version 0.8, use Scoop\Security\Factory\Cipher instead
- */
-class Vault
+class Cipher
 {
     private $environment;
 
@@ -16,12 +13,12 @@ class Vault
 
     public function create()
     {
-        $secret = $this->environment->getConfig('vault', 'aRVIKNStQR9Lr56');
+        $secret = $this->environment->getConfig('cipher', 'bVZi0dt8aN4piLCgOvA4sCYE2Zw16uH3');
         $encoding = 'base64';
         if (is_array($secret)) {
             $encoding = $secret['encoding'];
             $secret = $secret['secret'];
         }
-        return new \Scoop\Persistence\Vault($secret, $encoding);
+        return new \Scoop\Security\Cipher($secret, $encoding);
     }
 }

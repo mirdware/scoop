@@ -17,9 +17,9 @@ class Reader extends Criteria
     public function join($table, $using = 'NATURAL', $type = 'INNER')
     {
         $simpleType = strtoupper($using);
-        if (preg_match('/\s+as\s+/i', $table)) {
-            list($table, $alias) = preg_split('/\s+as\s+/i', $table);
-            $table = $this->connection->quoteColumn($table) . ' AS ' . $this->connection->quoteColumn($alias);
+        if (preg_match('/\s+(as\s+)?/i', $table)) {
+            list($table, $alias) = preg_split('/\s+(as\s+)?/i', $table);
+            $table = $this->connection->quoteColumn($table) . ' ' . $this->connection->quoteColumn($alias);
         } else {
             $table = $this->connection->quoteColumn($table);
         }

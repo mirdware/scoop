@@ -69,10 +69,12 @@ class Route extends \Scoop\Bootstrap\Scanner
                 'controller' => $route['controller'],
                 'validator' => isset($route['validator']) ? $route['validator'] : null,
             );
-        } else {
-            if (!is_array($route) || array_keys($route) !== range(0, count($route) - 1)) {
-                throw new \RuntimeException("Invalid middlewares definition in file '$filePath'");
+            if (isset($route['middlewares'])) {
+                $this->validateMiddlewares($route['middlewares'], $filePath);
+                $content['middlewares'] = $route['middlewares'];
             }
+        } else {
+            $this->validateMiddlewares($route, $filePath);
             $content = array('middlewares' => $route);
             $priority -= 1;
         }
@@ -81,5 +83,12 @@ class Route extends \Scoop\Bootstrap\Scanner
             'priority' => $priority,
             'holdersCount' => preg_match_all('/\[\w+\]/', $url)
         );
+    }
+
+    private function validateMiddlewares($middlewares, $filePath)
+    {
+        if (!is_array($middlewares) || array_keys($middlewares) !== range(0, count($middlewares) - 1)) {
+            throw new \RuntimeException("Invalid middlewares definition in file '$filePath'");
+        }
     }
 }

@@ -14,6 +14,15 @@ class Bus
             if (!$ref->hasMethod('help') || !$ref->hasMethod('execute')) {
                 throw new \UnexpectedValueException("$handler does not implement help and execute methods", 9901);
             }
+            if ($ref->hasMethod('getName')) {
+                $method = $ref->getMethod('getName');
+                if ($method->isStatic() && $method->getNumberOfParameters() === 0) {
+                    $command = $method->invoke(null);
+                }
+            }
+            if (is_numeric($command)) {
+                throw new \UnexpectedValueException("Command `$command` not is a valid name for $handler", 9902);
+            }
             $this->commands[$command] = $handler;
         }
     }

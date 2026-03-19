@@ -58,17 +58,15 @@ class Connection
 
     public function commit()
     {
-        $instance = $this->getInstance();
-        if ($instance->inTransaction()) {
-            $instance->commit();
+        if ($this->instance && $this->instance->inTransaction()) {
+            $this->instance->commit();
         }
     }
 
     public function rollBack()
     {
-        $instance = $this->getInstance();
-        if ($instance->inTransaction()) {
-            $instance->rollBack();
+        if ($this->instance && $this->instance->inTransaction()) {
+            $this->instance->rollBack();
         }
     }
 

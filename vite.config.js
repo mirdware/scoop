@@ -69,7 +69,19 @@ export default defineConfig(({ command, mode }) => {
         },
         output: {
           entryFileNames: `js/${appName}.min.js`,
-          chunkFileNames: `js/${appName}-chunk-[hash].min.js`
+          chunkFileNames: `js/${appName}-chunk-[hash].min.js`,
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name === 'main.css' || assetInfo.name === 'styles.css' || assetInfo.name.endsWith('app.css')) {
+              return `css/${appName}.min.css`;
+            }
+            if (assetInfo.name && /\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name)) {
+              return `fonts/[name]-[hash][extname]`;
+            }
+            if (assetInfo.name && /\.(svg|png|jpe?g|gif)$/i.test(assetInfo.name)) {
+              return `images/[name]-[hash][extname]`;
+            }
+            return `assets/[name]-[hash][extname]`;
+          }
         }
       }
     },

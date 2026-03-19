@@ -9,12 +9,13 @@ class Resolver
     private $action;
     private $connection;
     private $updateFields;
+    private $originalFields;
 
     public function __construct(Creator $creator, \Scoop\Persistence\Connection $connection, $columns, $updateFields)
     {
         $this->creator = $creator;
         $this->connection = $connection;
-        $this->updateFields = $updateFields;
+        $this->originalFields = $updateFields;
         $this->columns = array_map(array($connection, 'quoteColumn'), $columns);
     }
 
@@ -52,12 +53,13 @@ class Resolver
     private function getUpdateFields($isMySQL)
     {
         $update = array();
-        foreach ($this->updateFields as $field => $value) {
+        $fields = $this->updateFields ?
+        array_map(array($this->connection, 'quoteColumn'), $this->updateFields) :
+        $this->originalFields;
+        foreach ($fields as $field => $value) {
             if (is_numeric($field)) {
-                $field = $this->connection->quoteColumn($value);
+                $field = $value;
                 $value = $isMySQL ? "VALUES($field)" : "EXCLUDED.$field";
-            } else {
-                $field = $this->connection->quoteColumn($field);
             }
             if (in_array($field, $this->columns)) {
                 continue;

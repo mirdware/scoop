@@ -5,20 +5,15 @@ namespace Scoop\Bootstrap\Loader;
 class TypeMapper
 {
     private $storagePath;
-    private $instances;
 
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
         $storagePath = $environment->getConfig('storage', 'app/storage');
         $this->storagePath = rtrim($storagePath, '/') . '/cache/project/';
-        $this->instances = array();
     }
 
     public function load($type)
     {
-        if (isset($this->instances[$type])) {
-            return $this->instances[$type];
-        }
         $files = DEBUG_MODE && is_readable('composer.json') ? $this->scanTypes() : glob("{$this->storagePath}*types.php");
         $typeNormalized = $this->storagePath . str_replace('\\', '_', $type);
         foreach ($files as $file) {
@@ -26,11 +21,7 @@ class TypeMapper
             if (strpos($typeNormalized, $fileName) === 0) {
                 $map = require $file;
                 if (isset($map[$type])) {
-                    $this->instances[$type] = array();
-                    foreach ($map[$type] as $className) {
-                        $this->instances[$type][] = \Scoop\Context::inject($className);
-                    }
-                    return $this->instances[$type];
+                    return $map[$type];
                 }
             }
         }

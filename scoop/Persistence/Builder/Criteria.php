@@ -60,7 +60,7 @@ class Criteria extends Runner
                     break;
                 }
                 if (is_array($this->params[$name])) {
-                    $rules[$key] = str_replace(':' . $name, $this->formatQueryArray($name), $rule);
+                    $rules[$key] = str_replace(':' . $name, $this->formatQueryArray($name), $rules[$key]);
                 }
             }
         }

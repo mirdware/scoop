@@ -56,7 +56,7 @@ class Logger
         $handlers = $this->handlerFactory->create($level);
         foreach ($handlers as $handler) {
             $handler->handle(array(
-                'message' => self::interpolate(var_export($message, true), $context),
+                'message' => self::interpolate($message, $context),
                 'context' => $context,
                 'level' => $level,
                 'timestamp' => new \DateTime()
@@ -66,6 +66,9 @@ class Logger
 
     protected static function interpolate($message, $context = array())
     {
+        if (!is_string($message) && !method_exists($message, '__toString')) {
+            $message = print_r($message, true);
+        }
         $replace = array();
         foreach ($context as $key => $value) {
             $replace['{' . $key . '}'] = !is_object($value) || method_exists($value, '__toString') ?

@@ -7,8 +7,9 @@ class Request extends \Scoop\Http\Message\Request
     private $serverParams;
     private $cookieParams;
     private $queryParams;
-    private $body;
+    private $bodyParser;
     private $parsedBody;
+    private $uploadedFiles;
     private $attributes;
     private $flash;
     private $urlPath;
@@ -48,6 +49,8 @@ class Request extends \Scoop\Http\Message\Request
         $this->queryParams = $queryParams === null ? $_GET : $queryParams;
         $this->flash = new \Scoop\Http\Message\Server\Flash($referencer === null ? $this->getReferencer() : $referencer);
         $this->attributes = array();
+        $this->parsedBody = null;
+        $this->uploadedFiles = null;
     }
 
     public function getServerParams()
@@ -86,14 +89,17 @@ class Request extends \Scoop\Http\Message\Request
 
     public function getUploadedFiles()
     {
-        if (!$this->body) {
-            $this->body = new \Scoop\Http\Message\Parser\Body(
-                $this->getBody()->getContents(),
-                $this->getMethod(),
-                $this->getHeaderLine('Content-Type')
-            );
+        if ($this->uploadedFiles === null) {
+            if (!$this->bodyParser) {
+                $this->bodyParser = new \Scoop\Http\Message\Parser\Body(
+                    $this->getBody()->getContents(),
+                    $this->getMethod(),
+                    $this->getHeaderLine('Content-Type')
+                );
+            }
+            $this->uploadedFiles = $this->bodyParser->getFiles();
         }
-        return $this->body->getFiles();
+        return $this->uploadedFiles;
     }
 
     public function withUploadedFiles($uploadedFiles)
@@ -105,14 +111,17 @@ class Request extends \Scoop\Http\Message\Request
 
     public function getParsedBody()
     {
-        if (!$this->body) {
-            $this->body = new \Scoop\Http\Message\Parser\Body(
-                $this->getBody()->getContents(),
-                $this->getMethod(),
-                $this->getHeaderLine('Content-Type')
-            );
+        if ($this->parsedBody === null) {
+            if (!$this->bodyParser) {
+                $this->bodyParser = new \Scoop\Http\Message\Parser\Body(
+                    $this->getBody()->getContents(),
+                    $this->getMethod(),
+                    $this->getHeaderLine('Content-Type')
+                );
+            }
+            $this->parsedBody = $this->bodyParser->getData();
         }
-        return $this->body->getData();
+        return $this->parsedBody;
     }
 
     public function withParsedBody($data)
@@ -177,6 +186,7 @@ class Request extends \Scoop\Http\Message\Request
         if ($http_referer) {
             $this->redirect($http_referer);
         }
+        exit;
     }
 
     public function isAjax()

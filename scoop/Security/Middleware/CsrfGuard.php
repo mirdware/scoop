@@ -19,11 +19,8 @@ class CsrfGuard
             $tokenSent = isset($query['csrf-token']) ? $query['csrf-token'] : null;
         }
         if (!$tokenSent) {
-            $contentType = $request->getHeaderLine('Content-Type');
-            if (strpos($contentType, 'multipart/form-data') === false) {
-                $payload = $request->getParsedBody();
-                $tokenSent = isset($payload['csrf-token']) ? $payload['csrf-token'] : null;
-            }
+            $payload = $request->getParsedBody();
+            $tokenSent = isset($payload['csrf-token']) ? $payload['csrf-token'] : null;
         }
         if (!self::equals($token, $tokenSent)) {
             throw new \Scoop\Http\Exception\Forbidden('CSRF token mismatch');

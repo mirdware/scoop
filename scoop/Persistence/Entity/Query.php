@@ -175,7 +175,7 @@ class Query
                 $value = array_values($value);
             } else {
                 $value = $this->mapper->make($className, $id, $row, $fields);
-                if (!empty($relation['aggregates'])) {
+                if (!empty($map['aggregates'])) {
                     $this->assignAggregates($className, $alias, $value, $map['aggregates'], $rows);
                 }
             }

@@ -2,6 +2,9 @@
 
 namespace Scoop\Event;
 
+/**
+ * @deprecated use middlewares
+ */
 class ListenerStarted
 {
     private $listener;

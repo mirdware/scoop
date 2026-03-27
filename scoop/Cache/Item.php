@@ -60,7 +60,7 @@ class Item
 
     public function expiresAt($expiration)
     {
-        $this->expiration = $expiration ? \DateTime::createFromInterface($expiration) : null;
+        $this->expiration = $expiration instanceof \DateTime ? clone $expiration : null;
         $this->hasPendingChanges = true;
         return $this;
     }

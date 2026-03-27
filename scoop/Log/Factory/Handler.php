@@ -89,7 +89,7 @@ class Handler
         if (!isset($args['formatter'])) {
             $args['formatter'] = 'Scoop\Log\Formatter';
         }
-        if ($className === 'Scoop\Log\Handler\File' && !isset($args['file'])) {
+        if (is_a($className, 'Scoop\Log\Handler\File', true) && !isset($args['file'])) {
             $args['file'] = $this->logPath;
         }
         $args['formatter'] = \Scoop\Context::inject($args['formatter']);

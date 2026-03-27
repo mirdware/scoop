@@ -49,8 +49,8 @@ class Cache
 
     public function setMultiple($values, $ttl = null)
     {
-        $value = $this->iterableToArray($values);
-        if (empty($value)) return true;
+        $values = $this->iterableToArray($values);
+        if (empty($values)) return true;
         $success = true;
         foreach ($values as $key => $value) {
             $item = $this->itemPool->getItem((string) $key);

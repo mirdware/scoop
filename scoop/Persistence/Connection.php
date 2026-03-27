@@ -144,7 +144,7 @@ class Connection
         }
         $name = $this->quoteLeft . $name . $this->quoteRight;
         if (strpos($name, '.') !== false) {
-            return str_replace('.', $this->quoteLeft . '.' . $this->quoteRight, $name);
+            return str_replace('.', $this->quoteRight . '.' . $this->quoteLeft, $name);
         }
         return $name;
     }

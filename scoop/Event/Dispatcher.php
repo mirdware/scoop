@@ -20,25 +20,8 @@ class Dispatcher
             if ($hasStopped && $event->isPropagationStopped()) {
                 return $event;
             }
-            try {
-                $this->startListener($listener, $event);
-                call_user_func($listener, $event);
-                $this->finishListener($listener, $event, null);
-            } catch (\Throwable $e) {
-                $this->finishListener($listener, $event, $e);
-                throw $e;
-            }
+            call_user_func($listener, $event);
         }
         return $event;
-    }
-
-    protected function finishListener($listener, $event, $error)
-    {
-        $this->dispatch(new ListenerFinished($listener, $event, $error));
-    }
-
-    protected function startListener($listener, $event)
-    {
-        $this->dispatch(new ListenerStarted($listener, $event));
     }
 }

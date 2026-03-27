@@ -9,7 +9,7 @@ class Request extends \Scoop\Http\Message
 
     public function __construct($uri, $method, $headers = array(), $body = '')
     {
-        parent::__construct($headers,$body);
+        parent::__construct($headers, $body);
         $this->method = strtolower($method);
         $this->uri = is_string($uri) ? new URI($uri) : $uri;
     }

@@ -26,8 +26,12 @@ abstract class Pool
             }
             $this->remove($key);
         }
-        $expiration = new \DateTime();
-        $expiration->modify("+{$this->defaultLifetime} seconds");
+        if ($this->defaultLifetime > 0) {
+            $expiration = new \DateTime();
+            $expiration->modify("+{$this->defaultLifetime} seconds");
+        } else {
+            $expiration = null;
+        }
         return new \Scoop\Cache\Item($key, $expiration);
     }
 

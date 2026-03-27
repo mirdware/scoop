@@ -36,11 +36,7 @@ class Application
         $status = $exceptionManager->getStatusCode($ex);
         $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         if (!$status) throw $ex;
-        return $this->printResponse($exceptionManager->handle(
-            $ex,
-            $isAjax,
-            $status
-        ));
+        $this->printResponse($exceptionManager->handle($ex, $isAjax, $status));
     }
 
     private function printResponse($response)
@@ -72,6 +68,9 @@ class Application
         fclose($resource);
     }
 
+    /**
+     * @deprecated see middleware CorsGuard
+     */
     private function enableCORS()
     {
         $cors = $this->environment->getConfig('cors');

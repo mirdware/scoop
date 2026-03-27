@@ -9,11 +9,11 @@ class Request
     private $params;
     private $method;
 
-    public function __construct($method, $route)
+    public function __construct($controller, $method, $middlewares, $params)
     {
-        $this->middlewares = $route['middlewares'];
-        $this->params = $route['params'];
-        $this->controller = $route['controller'];
+        $this->middlewares = $middlewares;
+        $this->params = $params;
+        $this->controller = $controller;
         $this->method = $method;
     }
 
@@ -47,13 +47,17 @@ class Request
     private function getArgument($reflectionParam)
     {
         $paramName = $reflectionParam->getName();
-        if (isset($this->params[$paramName])) {
+        if (array_key_exists($paramName, $this->params)) {
             return $this->params[$paramName];
+        }
+        $position = $reflectionParam->getPosition();
+        if (array_key_exists($position, $this->params)) {
+            return $this->params[$position];
         }
         if ($reflectionParam->isDefaultValueAvailable()) {
             return $reflectionParam->getDefaultValue();
         }
-        throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
+        throw new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing.");
     }
 
     private function transformResponse($response)
@@ -91,30 +95,14 @@ class Request
 
     private function processController($request)
     {
-        $controller = $this->getController();
-        $method = is_callable($controller) ? '__invoke' : $this->method;
+        $controller = \Scoop\Context::inject($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
-        if (!$controllerReflection->hasMethod($method)) {
-            throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+        if (!$controllerReflection->hasMethod($this->method)) {
+            throw new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
         }
-        $callable = $controllerReflection->getMethod($method);
+        $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
         $response = $callable->invokeArgs($controller, $args);
         return $this->transformResponse($response);
-    }
-
-    private function getController()
-    {
-        $controller = $this->controller;
-        if (is_array($controller)) {
-            if (!isset($controller[$this->method])) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement {$this->method} method");
-            }
-            $controller = $controller[$this->method];
-        }
-        if (!class_exists($controller)) {
-            throw new \Scoop\Http\Exception\NotFound();
-        }
-        return \Scoop\Context::inject($controller);
     }
 }

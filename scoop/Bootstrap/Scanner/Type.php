@@ -47,12 +47,10 @@ class Type extends \Scoop\Bootstrap\Scanner
                 break;
             }
         }
-        if ($hasTypes) {
-            return array(
-                'class' => $fullClassName,
-                'types' => $this->getTypeNames($fullClassName)
-            );
-        }
+        return $hasTypes ? array(
+            'class' => $fullClassName,
+            'types' => $this->getTypeNames($fullClassName)
+        ) : array();
     }
 
     private function getNamespace($startIndex, $tokens)

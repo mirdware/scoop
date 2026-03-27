@@ -90,14 +90,14 @@ class Relation
                 }
             } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
-                if (!$objectRelation->hasProperty($relationName)) continue;
                 $relationName = $this->getPropertyRelation($relation)[0];
+                if (!$objectRelation->hasProperty($relationName)) continue;
                 $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
                 if (is_array($value)) {
                     $index = array_search($entity, $value);
-                    if ($index) {
+                    if ($index !== false) {
                         array_splice($value, $index, 1);
                     }
                 } else {

@@ -2,6 +2,9 @@
 
 namespace Scoop\Http;
 
+use BadMethodCallException;
+use InvalidArgumentException;
+
 class Router
 {
     private $routes;
@@ -24,8 +27,33 @@ class Router
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
             }
-            $requestHandler = new \Scoop\Http\Handler\Request($request->getMethod(), $route);
-            return $requestHandler->handle($request);
+            $controller = $route['controller'];
+            $method = $request->getMethod();
+            if (is_array($controller)) {
+                if (!isset($controller[$method])) {
+                    throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+                }
+                $controller = $controller[$method];
+                if (method_exists($controller, '__invoke')) {
+                    $method = '__invoke';
+                }
+            }
+            if (!class_exists($controller)) {
+                throw new \Scoop\Http\Exception\NotFound();
+            }
+            try {
+                $requestHandler = new \Scoop\Http\Handler\Request(
+                    $controller,
+                    $method,
+                    $route['middlewares'],
+                    $route['params']
+                );
+                return $requestHandler->handle($request);
+            } catch (BadMethodCallException $ex) {
+                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+            } catch (InvalidArgumentException $ex) {
+                throw new \Scoop\Http\Exception\NotFound();
+            }
         }
         throw new \Scoop\Http\Exception\NotFound();
     }

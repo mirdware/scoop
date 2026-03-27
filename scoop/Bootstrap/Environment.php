@@ -8,7 +8,7 @@ class Environment
     private static $loaders = array(
         'import' => 'Scoop\Bootstrap\Loader\Importer',
         'json' => 'Scoop\Bootstrap\Loader\JsonParser',
-        'insteadof' => 'Scoop\Bootstrap\Loader\TypeMapper',
+        'typeof' => 'Scoop\Bootstrap\Loader\TypeMapper',
         'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator'
     );
     private static $version;

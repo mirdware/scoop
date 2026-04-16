@@ -12,14 +12,14 @@ class Item
 
     public function __construct(
         $key,
-        \DateTime $expirationFromPool = 0,
+        $expirationFromPool = null,
         $valueFromPool = null,
         $wasFoundAndValidInPool = false
     ) {
         $this->validateKey($key);
         $this->key = $key;
         $this->hasPendingChanges = false;
-        $this->expiration = $expirationFromPool ? clone $expirationFromPool : null;
+        $this->expiration = $expirationFromPool instanceof \DateTime ? clone $expirationFromPool : null;
         if ($wasFoundAndValidInPool) {
             $this->value = $valueFromPool;
             $this->isHit = true;

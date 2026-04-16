@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Cache\Item;
+namespace Scoop\Cache\Item\Pool;
 
 class Memory extends \Scoop\Cache\Item\Pool
 {

@@ -60,7 +60,7 @@ class Environment
     public function loadLazily($path)
     {
         $index = strpos($path, ':');
-        if ($index !== -1) {
+        if ($index !== false) {
             $method = substr($path, 0, $index);
             if (isset(self::$loaders[$method])) {
                 $url = substr($path, $index + 1);

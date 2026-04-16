@@ -8,13 +8,15 @@ class Request
     private $middlewares;
     private $params;
     private $method;
+    private $transformer;
 
-    public function __construct($controller, $method, $middlewares, $params)
+    public function __construct($controller, $method, $middlewares, $params, $transformer = null)
     {
         $this->middlewares = $middlewares;
         $this->params = $params;
         $this->controller = $controller;
         $this->method = $method;
+        $this->transformer = is_callable($transformer) ? $transformer : null;
     }
 
     public function handle($request)
@@ -60,39 +62,6 @@ class Request
         throw new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing.");
     }
 
-    private function transformResponse($response)
-    {
-        if ($response instanceof \Scoop\Http\Message\Response) {
-            return $response;
-        }
-        if ($response instanceof \Scoop\View) {
-            return new \Scoop\Http\Message\Response(
-                200,
-                array('Content-Type' => 'text/html'),
-                $response->render()
-            );
-        }
-        if ($response === null || $response === '') {
-            return new \Scoop\Http\Message\Response();
-        }
-        if (
-            is_scalar($response) ||
-            is_object($response) &&
-            method_exists($response, '__toString')
-        ) {
-            return new \Scoop\Http\Message\Response(
-                200,
-                array('Content-Type' => 'text/plain'),
-                $response
-            );
-        }
-        return new \Scoop\Http\Message\Response(
-            200,
-            array('Content-Type' => 'application/json'),
-            json_encode($response)
-        );
-    }
-
     private function processController($request)
     {
         $controller = \Scoop\Context::inject($this->controller);
@@ -103,6 +72,9 @@ class Request
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
         $response = $callable->invokeArgs($controller, $args);
-        return $this->transformResponse($response);
+        if ($this->transformer) {
+            $response = call_user_func($this->transformer, $response);
+        }
+        return $response;
     }
 }

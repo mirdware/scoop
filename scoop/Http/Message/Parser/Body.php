@@ -158,7 +158,7 @@ class Body
     {
         $normalized = array();
         foreach ($files as $key => $value) {
-            if ($value instanceof UploadedFile) {
+            if ($value instanceof \Scoop\Http\Message\Server\UploadedFile) {
                 $normalized[$key] = $value;
             } elseif (is_array($value) && isset($value['tmp_name'])) {
                 if (is_array($value['tmp_name'])) {

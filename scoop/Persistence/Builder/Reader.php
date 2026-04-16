@@ -18,8 +18,8 @@ class Reader extends Criteria
     {
         $simpleType = strtoupper($using);
         if (preg_match('/\s+(as\s+)?/i', $table)) {
-            list($table, $alias) = preg_split('/\s+(as\s+)?/i', $table);
-            $table = $this->connection->quoteColumn($table) . ' ' . $this->connection->quoteColumn($alias);
+            list($table, $alias) = preg_split('/\s+(?:as\s+)?(?=[^\s]+$)/i', $table);
+            $table = $this->connection->quoteColumn($table, true) . ' ' . $this->connection->quoteColumn($alias);
         } else {
             $table = $this->connection->quoteColumn($table);
         }

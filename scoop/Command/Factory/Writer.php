@@ -18,7 +18,7 @@ class Writer
                 'link' => array(\Scoop\Command\Style\Color::BLUE),
                 'error' => array(\Scoop\Command\Style\Color::RED),
                 'warn' => array(\Scoop\Command\Style\Color::YELLOW),
-                'success' => array( \Scoop\Command\Style\Color::GREEN),
+                'success' => array(\Scoop\Command\Style\Color::GREEN),
                 'info' => array(\Scoop\Command\Style\Background::BLUE),
                 'danger' => array(\Scoop\Command\Style\Background::RED),
                 'done' => array(\Scoop\Command\Style\Background::GREEN),

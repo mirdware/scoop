@@ -31,9 +31,6 @@ class Helper
         $this->request = $request;
         $this->router = $router;
         $this->data = $data;
-        $this->components = array(
-            'message' => '\Scoop\View\Message'
-        ) + $environment->getConfig('components', array());
         self::$assets = $environment->getConfig('assets', array()) + self::$assets;
         $this->viteHost = getenv('VITE_HOST');
     }
@@ -143,6 +140,9 @@ class Helper
             $view->add($props);
             return Heritage::parseBlocks($children, $view->render());
         }
+        if (!$this->components) {
+            $this->loadComponents();
+        }
         if (!isset($this->components[$name])) {
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
@@ -173,6 +173,23 @@ class Helper
     public static function setKeyMessages($key)
     {
         self::$keyMessages = $key;
+    }
+
+    private function loadComponents()
+    {
+        $components = $this->environment->getConfig('components', array());
+        $this->components = array('message' => '\Scoop\View\Message');
+        foreach ($components as $name => $className) {
+            if (is_numeric($name)) {
+                $name = substr(strrchr($className, '\\'), 1);
+                $name = preg_split('/(?=[A-Z])/', $name, -1, PREG_SPLIT_NO_EMPTY);
+                $name = implode('-', array_map('strtolower', $name));
+            }
+            if (!method_exists($className, 'render')) {
+                throw new \UnexpectedValueException("Component class $className does not implement render method for component $name");
+            }
+            $this->components[$name] = $className;
+        }
     }
 
     private function generateToken()

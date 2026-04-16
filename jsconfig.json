@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./app/scripts/*"],
-      "~styles/*": ["./app/styles/*"]
+      "#/*": ["./app/styles/*"]
     }
   },
   "include": ["app/**/*"],

@@ -6,7 +6,6 @@ class Bus
 {
     private $events = array();
     private $listeners = array();
-    private $middlewares = array();
     private $method;
 
     public function __construct($providers, $method = 'listen')

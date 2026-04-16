@@ -66,7 +66,7 @@ class Logger
 
     protected static function interpolate($message, $context = array())
     {
-        if (!is_string($message) && !method_exists($message, '__toString')) {
+        if (!is_scalar($message) && !method_exists($message, '__toString')) {
             $message = print_r($message, true);
         }
         $replace = array();

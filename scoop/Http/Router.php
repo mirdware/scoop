@@ -46,7 +46,10 @@ class Router
                     $controller,
                     $method,
                     $route['middlewares'],
-                    $route['params']
+                    $route['params'],
+                    function ($response)  {
+                        return $this->transformResponse($response);
+                    }
                 );
                 return $requestHandler->handle($request);
             } catch (BadMethodCallException $ex) {
@@ -106,5 +109,25 @@ class Router
                 return $routeDefinition;
             }
         }
+    }
+
+    private function transformResponse($response)
+    {
+        if ($response instanceof \Scoop\Http\Message\Response) {
+            return $response;
+        }
+        if ($response === null || $response === '') {
+            return new \Scoop\Http\Message\Response();
+        }
+        $headers = array('Content-Type' => 'application/json');
+        if ($response instanceof \Scoop\View) {
+            $headers['Content-Type'] = 'text/html';
+            return new \Scoop\Http\Message\Response(200, $headers, $response->render());
+        }
+        if (is_scalar($response) || is_object($response) && method_exists($response, '__toString')) {
+            $headers['Content-Type'] = 'text/plain';
+            return new \Scoop\Http\Message\Response(200, $headers, $response);
+        }
+        return new \Scoop\Http\Message\Response(200, $headers, json_encode($response));
     }
 }

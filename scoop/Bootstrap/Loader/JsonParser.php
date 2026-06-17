@@ -16,15 +16,17 @@ class JsonParser
     public function load($url)
     {
         $cacheFile = "{$this->cachePath}{$url}.php";
+        if (is_readable($cacheFile)) {
+            $realFile = "$url.json";
+            if (!is_readable($realFile) || filemtime($cacheFile) > filemtime($realFile)) {
+                 return require $cacheFile;
+            }
+        }
         $realPath = dirname($cacheFile);
         if (!is_dir($realPath)) {
             mkdir($realPath, 0755, true);
-            return $this->getRealInfo($url);
         }
-        if (!is_readable($cacheFile) || filemtime("$url.json") > filemtime($cacheFile)) {
-            return $this->getRealInfo($url);
-        }
-        return require $cacheFile;
+        return $this->getRealInfo($url);
     }
 
     private function getRealInfo($url)

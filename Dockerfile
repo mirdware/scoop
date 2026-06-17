@@ -1,4 +1,4 @@
-FROM node:22-alpine3.20 AS node
+FROM node:24-alpine3.22 AS node
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY app/styles/. app/styles/
 COPY app/scripts/. app/scripts/
 RUN npm start
 
-FROM webdevops/php-apache:8.4-alpine
+FROM webdevops/php-apache:8.5-alpine
 WORKDIR /app
 COPY composer* ./
 RUN composer install --optimize-autoloader --no-dev

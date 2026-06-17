@@ -17,10 +17,10 @@ class Configuration
             $this->environment->getConfig("messages.$language.failures", array()),
             $this->environment->getConfig("messages.$language.fields", array())
         );
-        \Scoop\Http\Exception\Manager::setMessages(
+        \Scoop\Http\Error\Mapper::setMessages(
             $this->environment->getConfig("messages.$language.errors", array())
         );
-        \Scoop\View\Helper::setKeyMessages("messages.$language.messages." );
+        \Scoop\View\Helper::setKeyMessages("messages.$language." );
     }
 
     public function setStorage($storage)

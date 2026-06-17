@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Http\Handler;
+namespace Scoop\Middleware;
 
 class Next
 {

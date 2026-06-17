@@ -14,7 +14,7 @@ class Wrapper {
     }
 
     public function __invoke($event) {
-        $handler = new \Scoop\Http\Handler\Request(
+        $handler = new \Scoop\Middleware\RequestHandler(
             $this->listenerClass,
             $this->method,
             $this->middlewares,

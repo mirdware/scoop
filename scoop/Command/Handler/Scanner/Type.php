@@ -25,6 +25,10 @@ class Type
                     "scanning $directory folder...",
                     "<link:{$scanner->getCacheFilePath()}!>"
                 );
+                if ($command->hasFlag('f')) {
+                    @unlink($scanner->getCacheFilePath());
+                    @unlink($scanner->getMetaFilePath());
+                }
                 if ($scanner->scan()) {
                     $this->writer->write('<success:created!>');
                 } else {

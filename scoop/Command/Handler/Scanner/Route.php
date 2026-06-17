@@ -13,8 +13,12 @@ class Route
         $this->scanner = $scanner;
     }
 
-    public function execute()
+    public function execute($command)
     {
+        if ($command->hasFlag('f')) {
+            @unlink($this->scanner->getCacheFilePath());
+            @unlink($this->scanner->getMetaFilePath());
+        }
         $this->writer->withSeparator(' ')->write(
             "scanning {$this->scanner->getDirectory()} folder...",
             "<link:{$this->scanner->getCacheFilePath()}!>"

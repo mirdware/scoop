@@ -93,7 +93,7 @@ function test($expression)
 {
     global $matches;
     if (defined('REWRITER_FINALIZED')) return false;
-    return 0 < (integer)preg_match($expression, $_SERVER['SCRIPT_NAME'], $matches);
+    return 0 < (int) preg_match($expression, $_SERVER['SCRIPT_NAME'], $matches);
 }
 
 set_environment($_SERVER['REQUEST_URI']);

@@ -2,9 +2,6 @@
 
 namespace Scoop\Http;
 
-use BadMethodCallException;
-use InvalidArgumentException;
-
 class Router
 {
     private $routes;
@@ -31,7 +28,7 @@ class Router
             $method = $request->getMethod();
             if (is_array($controller)) {
                 if (!isset($controller[$method])) {
-                    throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
+                    throw new \Scoop\Http\Exception\MethodNotAllowed("Resource does not support $method method", $method);
                 }
                 $controller = $controller[$method];
                 if (method_exists($controller, '__invoke')) {
@@ -41,22 +38,14 @@ class Router
             if (!class_exists($controller)) {
                 throw new \Scoop\Http\Exception\NotFound();
             }
-            try {
-                $requestHandler = new \Scoop\Http\Handler\Request(
-                    $controller,
-                    $method,
-                    $route['middlewares'],
-                    $route['params'],
-                    function ($response)  {
-                        return $this->transformResponse($response);
-                    }
-                );
-                return $requestHandler->handle($request);
-            } catch (BadMethodCallException $ex) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
-            } catch (InvalidArgumentException $ex) {
-                throw new \Scoop\Http\Exception\NotFound();
-            }
+            $requestHandler = new \Scoop\Middleware\RequestHandler(
+                $controller,
+                $method,
+                $route['middlewares'],
+                $route['params'],
+                new Transformer()
+            );
+            return $requestHandler->handle($request);
         }
         throw new \Scoop\Http\Exception\NotFound();
     }
@@ -109,25 +98,5 @@ class Router
                 return $routeDefinition;
             }
         }
-    }
-
-    private function transformResponse($response)
-    {
-        if ($response instanceof \Scoop\Http\Message\Response) {
-            return $response;
-        }
-        if ($response === null || $response === '') {
-            return new \Scoop\Http\Message\Response();
-        }
-        $headers = array('Content-Type' => 'application/json');
-        if ($response instanceof \Scoop\View) {
-            $headers['Content-Type'] = 'text/html';
-            return new \Scoop\Http\Message\Response(200, $headers, $response->render());
-        }
-        if (is_scalar($response) || is_object($response) && method_exists($response, '__toString')) {
-            $headers['Content-Type'] = 'text/plain';
-            return new \Scoop\Http\Message\Response(200, $headers, $response);
-        }
-        return new \Scoop\Http\Message\Response(200, $headers, json_encode($response));
     }
 }

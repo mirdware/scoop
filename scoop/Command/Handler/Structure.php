@@ -111,17 +111,17 @@ class Structure
         $updater = $this->getUpdater($sqoStruct, $tag, $files);
         $files = array_diff($files, $sqoStruct->read('name')->run()->fetchAll(\PDO::FETCH_COLUMN, 0));
         $connection->beginTransaction();
-        $lineWriter = $this->writer->withSeparator(' ');
+        $i = 0;
         foreach ($files as $name) {
             $file = $fileMap[$name];
-            $lineWriter->write("File <link:$file!> ...");
+            $this->writer->spinner($i++, 'link', " File <link:$file!> ...");
             $content = file_get_contents($file);
             if ($content) {
                 $connection->exec($content);
                 $creator->create(array($name));
-                $this->writer->write('<success:updated!!>');
+                $this->writer->write("✔️  File <link:$file!> ... <success:updated!!>");
             } else {
-                $this->writer->write('<warn:pending!!>');
+                $this->writer->write("⚠️  File <link:$file!> ... <warn:pending!!>");
             }
         }
         $this->save($creator, $updater);

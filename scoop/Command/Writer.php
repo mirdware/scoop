@@ -72,7 +72,7 @@ class Writer
 
     public function write()
     {
-        if ($this->writer) {
+        if (isset($this->writer)) {
             $this->writer->write('');
             unset($this->writer);
         }
@@ -86,7 +86,7 @@ class Writer
     }
 
     public function spinner($iteration, $theme = 'link', $msg = 'Loading...') {
-        if (!$this->writer) {
+        if (!isset($this->writer)) {
             $this->writer = $this->withSeparator(self::CLEAR);
         }
         $frames = array('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏');

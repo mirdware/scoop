@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Http\Handler;
+namespace Scoop\Middleware;
 
-class Request
+class RequestHandler
 {
     private $controller;
     private $middlewares;
@@ -16,7 +16,7 @@ class Request
         $this->params = $params;
         $this->controller = $controller;
         $this->method = $method;
-        $this->transformer = is_callable($transformer) ? $transformer : null;
+        $this->transformer = $transformer;
     }
 
     public function handle($request)
@@ -27,7 +27,7 @@ class Request
         $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
             $className = get_class($middlewareInstance);
-            throw new \RuntimeException("Middleware $className does not implement process method");
+            throw new \BadMethodCallException("Middleware $className does not implement process method");
         }
         return $middlewareInstance->process($request, new Next($this));
     }
@@ -59,7 +59,11 @@ class Request
         if ($reflectionParam->isDefaultValueAvailable()) {
             return $reflectionParam->getDefaultValue();
         }
-        throw new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing.");
+        $missingParameterException = new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing");
+        if (method_exists($this->transformer, 'transformMissingParameterException')) {
+            $missingParameterException = $this->transformer->transformMissingParameterException($missingParameterException);
+        }
+        throw $missingParameterException;
     }
 
     private function processController($request)
@@ -67,13 +71,17 @@ class Request
         $controller = \Scoop\Context::inject($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
-            throw new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
+            $missingMethodException = new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
+            if (method_exists($this->transformer, 'transformMissingMethodException')) {
+                $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException, $this->method);
+            }
+            throw $missingMethodException;
         }
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
         $response = $callable->invokeArgs($controller, $args);
-        if ($this->transformer) {
-            $response = call_user_func($this->transformer, $response);
+        if (method_exists($this->transformer, 'transformResponse')) {
+            $response = $this->transformer->transformResponse($response);
         }
         return $response;
     }

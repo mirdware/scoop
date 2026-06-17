@@ -45,7 +45,7 @@ final class Creator
         if (array_keys($values) !== range(0, $numValues - 1)) {
             $order = array();
             foreach ($this->fieldNames as $index => $name) {
-                if (!isset($values[$name])) {
+                if (!array_key_exists($name, $values)) {
                     throw new \InvalidArgumentException("Column $name missing");
                 }
                 $order[$index] = $values[$name];

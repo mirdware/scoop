@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Http\Exception;
+namespace Scoop\Http\Error;
 
 class Proxy
 {

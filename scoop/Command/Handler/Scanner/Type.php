@@ -5,10 +5,12 @@ namespace Scoop\Command\Handler\Scanner;
 class Type
 {
     private $writer;
+    private $environment;
 
-    public function __construct(\Scoop\Command\Writer $writer)
+    public function __construct(\Scoop\Command\Writer $writer, \Scoop\Bootstrap\Environment $environment)
     {
         $this->writer = $writer;
+        $this->environment = $environment;
     }
 
     public function execute($command)
@@ -20,7 +22,7 @@ class Type
             if (strpos($namespace, 'Scoop\\') !== 0) {
                 $directory = rtrim($directory, '/') . '/';
                 $prefix = str_replace('\\', '_', $namespace);
-                $scanner = new \Scoop\Bootstrap\Scanner\Type($directory, $prefix);
+                $scanner = new \Scoop\Bootstrap\Scanner\Type($this->environment, $directory, $prefix);
                 $lineWriter->write(
                     "scanning $directory folder...",
                     "<link:{$scanner->getCacheFilePath()}!>"

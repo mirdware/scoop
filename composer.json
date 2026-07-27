@@ -36,9 +36,6 @@
         "veewee/composer-run-parallel": "^1.3"
     },
     "scripts": {
-        "pre-install-cmd": [
-            "Composer\\Config::disableProcessTimeout"
-        ],
         "build": [
             "@php app/ice scan types",
             "@php app/ice scan routes",
@@ -54,6 +51,7 @@
         "api": "./vendor/bin/openapi src -o openapi.yaml"
     },
     "config": {
+        "process-timeout": 0,
         "allow-plugins": {
             "phpstan/extension-installer": true,
             "veewee/composer-run-parallel": true

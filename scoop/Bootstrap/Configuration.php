@@ -20,13 +20,7 @@ class Configuration
         \Scoop\Http\Error\Mapper::setMessages(
             $this->environment->getConfig("messages.$language.errors", array())
         );
-        \Scoop\View\Helper::setKeyMessages("messages.$language." );
-    }
-
-    public function setStorage($storage)
-    {
-        \Scoop\Bootstrap\Scanner::setStorage($storage);
-        \Scoop\View\Template::setPath('app/views/', "{$storage}cache/views/");
+        \Scoop\View\Helper::setKeyMessages("messages.$language.");
     }
 
     public function setUp()
@@ -34,8 +28,9 @@ class Configuration
         $this->setLanguage(
             $this->environment->getConfig('language', 'es')
         );
-        $this->setStorage(
-            $this->environment->getConfig('storage', 'app/storage/')
+        \Scoop\View\Template::setPath(
+            'app/views/',
+            $this->environment->getStoragePath('cache/views')
         );
     }
 }

@@ -4,10 +4,10 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Type extends \Scoop\Bootstrap\Scanner
 {
-    public function __construct($directory, $prefix)
+    public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
     {
-        $cacheFilePath = $this->getPath('/cache/project/', "{$prefix}types.php");
-        $metaFilePath = $this->getPath('/cache/project/', "{$prefix}meta.php");
+        $cacheFilePath = $environment->getStoragePath('cache/project') . "{$prefix}types.php";
+        $metaFilePath = $environment->getStoragePath('cache/project') . "{$prefix}meta.php";
         parent::__construct($directory, '/\.php$/', $cacheFilePath, $metaFilePath);
     }
 

@@ -6,7 +6,7 @@ class View
 {
     private $writer;
     private $directory;
-    private $viewStorage;
+    private $environment;
 
     public function __construct(
         \Scoop\Command\Writer $writer,
@@ -15,12 +15,13 @@ class View
     ) {
         $this->writer = $writer;
         $this->directory = $directory;
-        $this->viewStorage = $environment->getConfig('storage', 'app/storage');
+        $this->environment = $environment;
     }
 
     public function execute()
     {
-        if ($this->directory->delete($this->viewStorage . '/cache/views/')) {
+        $viewStorage = $this->environment->getStoragePath('cache/views');
+        if ($this->directory->delete($viewStorage)) {
             return $this->writer->write('View cache cleaned <success:successfully!>.');
         }
         $this->writer->write('<info:Nothing to clean.!>');

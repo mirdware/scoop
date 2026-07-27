@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Persistence\Entity;
+namespace Scoop\Persistence\Entity\Mapper;
 
-class DiscriminatorMapper
+class Discriminator
 {
     private $root;
     private $entityMap;
@@ -34,7 +34,7 @@ class DiscriminatorMapper
         $reader->restrict("r.$idName = :id");
         $row += $reader->run(array('id' => $row[$idName]))->fetch();
         if (isset($this->entityMap[$root]['discriminator']['map'])) {
-            $discriminator = new DiscriminatorMapper($root, $this->entityMap);
+            $discriminator = new Discriminator($root, $this->entityMap);
             return $discriminator->discriminate($row);
         }
         return $root;

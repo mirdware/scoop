@@ -60,7 +60,7 @@ class RequestHandler
             return $reflectionParam->getDefaultValue();
         }
         $missingParameterException = new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing");
-        if (method_exists($this->transformer, 'transformMissingParameterException')) {
+        if ($this->transformer && method_exists($this->transformer, 'transformMissingParameterException')) {
             $missingParameterException = $this->transformer->transformMissingParameterException($missingParameterException);
         }
         throw $missingParameterException;
@@ -72,7 +72,7 @@ class RequestHandler
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
             $missingMethodException = new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
-            if (method_exists($this->transformer, 'transformMissingMethodException')) {
+            if ($this->transformer && method_exists($this->transformer, 'transformMissingMethodException')) {
                 $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException, $this->method);
             }
             throw $missingMethodException;
@@ -80,7 +80,7 @@ class RequestHandler
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
         $response = $callable->invokeArgs($controller, $args);
-        if (method_exists($this->transformer, 'transformResponse')) {
+        if ($this->transformer && method_exists($this->transformer, 'transformResponse')) {
             $response = $this->transformer->transformResponse($response);
         }
         return $response;

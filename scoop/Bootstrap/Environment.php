@@ -13,16 +13,19 @@ class Environment
     );
     private static $version;
     private $config;
+    private $storagePath;
 
-    public function __construct($configPath)
+    public function __construct($configPath, $options = array())
     {
-        if (!self::$sessionInit) {
+        $options = array_merge(array(
+            'storagePath' => 'app/storage',
+            'stateless' => false
+        ), $options);
+        if (!$options['stateless'] && !self::$sessionInit) {
             self::$sessionInit = session_start();
         }
-        $this->config = array(
-            'base' => require $configPath . '.php',
-            'data' => array()
-        );
+        $this->config = $configPath . '.php';
+        $this->storagePath = $options['storagePath'];
         if (isset($_SERVER['HTTP_HOST'])) {
             $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
@@ -31,11 +34,20 @@ class Environment
             define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
         define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
-        self::$loaders += $this->getConfig('loaders', array());
     }
 
     public function getConfig($name, $default = null)
     {
+        if (is_string($this->config)) {
+            $this->config = array(
+                'base' => require $this->config,
+                'data' => array()
+            );
+            if (!isset($this->config['base']['providers']) || !is_array($this->config['base']['providers'])) {
+                throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
+            }
+            self::$loaders += $this->getConfig('loaders', array());
+        }
         if (isset($this->config['data'][$name])) {
             return $this->config['data'][$name];
         }
@@ -46,15 +58,21 @@ class Environment
                 return $default;
             }
             if (is_string($res[$key])) {
-                if ($key === 'providers') {
-                    throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
-                }
                 $res[$key] = $this->loadLazily($res[$key]);
             }
             $res = $res[$key];
         }
         $this->config['data'][$name] = $res;
         return $res;
+    }
+
+    public function getStoragePath($path)
+    {
+        $path = trim($this->storagePath, '/') . '/' . trim($path, '/') . '/';
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        return $path;
     }
 
     public function loadLazily($path)

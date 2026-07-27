@@ -8,9 +8,7 @@ class JsonParser
 
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $storagePath = $environment->getConfig('storage', 'app/storage/');
-        $storagePath = rtrim($storagePath, '/') . '/';
-        $this->cachePath = "{$storagePath}cache/json/";
+        $this->cachePath = $environment->getStoragePath('cache/json');
     }
 
     public function load($url)

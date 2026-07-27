@@ -92,9 +92,10 @@ class Payload
             $instance = $reflection->newInstance();
             foreach ($data as $property => $value) {
                 if ($reflection->hasProperty($property)) {
-                    $prop = $reflection->getProperty($property);
-                    $prop->setAccessible(true);
-                    $prop->setValue($instance, $value);
+                    $accessor = \Closure::bind(function($entity, $name, $value) {
+                        $entity->$name = $value;
+                    }, null, $this->type);
+                    $accessor($instance, $property, $value);
                 }
             }
             return $instance;

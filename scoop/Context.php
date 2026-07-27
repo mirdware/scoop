@@ -9,10 +9,10 @@ class Context
     private static $injector;
     private static $environment;
 
-    public static function load($configPath)
+    public static function load($configPath, $options = array())
     {
         require 'scoop/Bootstrap/Environment.php';
-        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
+        self::$environment = new \Scoop\Bootstrap\Environment($configPath, $options);
         if (!isset(self::$loader)) {
             if (is_readable('vendor/autoload.php')) {
                 self::$loader = require 'vendor/autoload.php';

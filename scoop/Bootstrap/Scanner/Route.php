@@ -9,8 +9,8 @@ class Route extends \Scoop\Bootstrap\Scanner
         parent::__construct(
             $environment->getConfig('routes', 'app/routes'),
             '/(endpoint|middlewares)\.php$/',
-            $this->getPath('/cache/', 'routes.php'),
-            $this->getPath('/cache/', 'routes.meta.php')
+            $environment->getStoragePath('cache') . 'routes.php',
+            $environment->getStoragePath('cache') .'routes.meta.php'
         );
     }
 

@@ -11,16 +11,18 @@ class Query
     private $map;
     private $aggregates;
     private $discriminator;
+    private $accessor;
 
-    public function __construct($mapper, $aggregate, $map)
+    public function __construct($mapper, $aggregate, $map, $accessor)
     {
+        $this->accessor = $accessor;
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
         $this->joins = array();
         $this->fields = $this->getFields($this->root, 'r', false);
         $this->aggregates = array();
-        $this->discriminator = new DiscriminatorMapper($aggregate, $map['entities']);
+        $this->discriminator = new \Scoop\Persistence\Entity\Mapper\Discriminator($aggregate, $map['entities']);
         $discriminatorColumn = $this->discriminator->getColumn();
         if ($discriminatorColumn) {
             $this->fields[$discriminatorColumn] = 'r.' . $discriminatorColumn;
@@ -144,27 +146,26 @@ class Query
 
     private function assignAggregates($name, $alias, $entity, $aggregateList, $rows)
     {
-        $object = new \ReflectionObject($entity);
         $entityMap = $this->map['entities'][$name];
-        $idName = $this->mapper->getTableId($name);
+        $idColumn = $this->mapper->getTableId($name);
         $prefix = $alias !== 'r' ? $alias . '$a$' : '';
-        $id = $this->getId($object, $entity, $idName);
-        $row = $this->findRow($prefix . $idName, $id, $rows);
+        $id = $this->getId($entity);
+        $row = $this->findRow($prefix . $idColumn, $id, $rows);
         foreach ($aggregateList as $name => $map) {
             $alias = $map['alias'];
             $className = $map['type'];
             $fields = $this->getFields($className, $alias, true);
             $prefix = $alias !== 'r' ? $alias . '$a$' : '';
-            $idName = $prefix . $this->mapper->getTableId($className);
+            $idColumn = $prefix . $this->mapper->getTableId($className);
             $relationType = $entityMap['relations'][$name][2];
             $isArray = $relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY;
             $value = array();
-            $id = $row[$idName];
+            $id = $row[$idColumn];
             if (!$id) {
                 if (!$isArray) continue;
             } elseif ($isArray) {
                 foreach ($rows as $r) {
-                    $id = $r[$idName];
+                    $id = $r[$idColumn];
                     if (!isset($value[$id])) {
                         $value[$id] = $this->mapper->make($className, $id, $r, $fields);
                         if (!empty($map['aggregates'])) {
@@ -179,9 +180,9 @@ class Query
                     $this->assignAggregates($className, $alias, $value, $map['aggregates'], $rows);
                 }
             }
-            $prop = $object->getProperty($name);
-            $prop->setAccessible(true);
-            $prop->setValue($entity, $value);
+            $className = $this->accessor->getDeclaringClass(get_class($entity), $name);
+            if (!$className) continue;
+            $this->accessor->get($className)($entity, $name, $value);
         }
     }
 
@@ -194,15 +195,14 @@ class Query
         }
     }
 
-    private function getId($object, $entity, $idName)
+    private function getId($entity)
     {
-        if ($object->hasProperty($idName)) {
-            return $object->getProperty($idName)->getValue($entity);
+        $className = get_class($entity);
+        while ($parent = get_parent_class($className)) {
+            $className = $parent;
         }
-        $parent = $object->getParentClass();
-        if ($parent) {
-            return $this->getId($parent, $entity, $idName);
-        }
+        $idName = $this->mapper->getIdName($className);
+        return $this->accessor->get($className)($entity, $idName);
     }
 
     private function createReader()
@@ -239,30 +239,29 @@ class Query
         return array_merge($fields, $this->getParentsFields($entity, $table, $isProp));
     }
 
-    private function getParentsFields($entity, $table, $isProp)
+    private function getParentsFields($className, $table, $isProp)
     {
-        $ref = new \ReflectionClass($entity);
         $index = 0;
         $fields = array();
-        $id = $this->mapper->getTableId($ref->getName());
-        while ($parent = $ref->getParentClass()) {
-            $name = $parent->getName();
+        $id = $this->mapper->getTableId($className);
+        $ownPrefix = $table !== 'r' ? $table . '$a$' : '';
+        while ($parentName = get_parent_class($className)) {
             $parentAlias = 'p' . $index . '$' . $table;
             if (!$isProp) {
-                $parentId = $this->mapper->getTableId($name);
-                $parentTable = $this->map['entities'][$name]['table'];
+                $parentId = $this->mapper->getTableId($parentName);
+                $parentTable = $this->map['entities'][$parentName]['table'];
                 $this->joins[] = array("$parentTable $parentAlias", "$parentAlias.$parentId=$table.$id", 'inner');
             }
-            $parentFields  = $this->getFields($name, $parentAlias, $isProp);
+            $parentFields = $this->getFields($parentName, $parentAlias, $isProp);
             foreach ($parentFields as $name => $parentField) {
-                $name = str_replace($parentAlias . '$a$', '', $name);
+                $name = str_replace($parentAlias . '$a$', $ownPrefix, $name);
                 if ($isProp) {
                     $fields[$index][$name] = $parentField;
                 } else {
                     $fields[$name] = $parentField;
                 }
             }
-            $ref = $parent;
+            $className = $parentName;
             $index++;
         }
         return $fields;

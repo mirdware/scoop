@@ -12,23 +12,25 @@ class Relation
     private $mapper;
     private $relationMap;
     private $manager;
+    private $accessor;
 
-    public function __construct($map, $mapper, $manager)
+    public function __construct($map, $mapper, $manager, $accessor)
     {
         $this->relationMap = $map;
         $this->mapper = $mapper;
         $this->manager = $manager;
+        $this->accessor = $accessor;
         $this->many = array();
     }
 
-    public function add($entity, $object, $relations)
+    public function add($entity, $relations)
     {
+        $entityName = get_class($entity);
         foreach ($relations as $name => $relation) {
-            if (!$object->hasProperty($name)) continue;
-            $property = $object->getProperty($name);
-            if (!$property->isInitialized($entity)) continue;
-            $property->setAccessible(true);
-            $relationEntity = $property->getValue($entity);
+            $declaringClass = $this->accessor->getDeclaringClass($entityName, $name);
+            if (!$declaringClass) continue;
+            $accessor = $this->accessor->get($declaringClass);
+            $relationEntity = $accessor($entity, $name);
             if (!$relationEntity) continue;
             list($relationName, $mapperKey) = $this->getPropertyRelation($relation);
             if (is_array($relationEntity)) {
@@ -36,51 +38,49 @@ class Relation
                     if (!$this->mapper->contains($e)) {
                         $this->manager->save($e);
                     }
-                    $objectRelation = new \ReflectionObject($e);
                     if ($mapperKey !== null) {
                         $this->many[$mapperKey][] = array($entity, $e);
                     }
-                    if (!$objectRelation->hasProperty($relationName)) continue;
-                    $property = $objectRelation->getProperty($relationName);
-                    $property->setAccessible(true);
+                    $classRelated = $this->accessor->getDeclaringClass(get_class($e), $relationName);
+                    if (!$classRelated) continue;
+                    $relatedAccessor = $this->accessor->get($classRelated);
                     $value = $entity;
                     if ($mapperKey !== null) {
-                        $value = $property->getValue($e);
+                        $value = $relatedAccessor($e, $relationName);
                         if (!$value) {
                             $value = array($entity);
                         } elseif (!in_array($entity, $value)) {
                             array_push($value, $entity);
                         }
                     }
-                    $property->setValue($e, $value);
+                    $relatedAccessor($e, $relationName, $value);
                 }
             } elseif (is_object($relationEntity)) {
                 if (!$this->mapper->contains($relationEntity)) {
                     $this->manager->save($relationEntity);
                 }
-                $objectRelation = new \ReflectionObject($relationEntity);
-                if (!$objectRelation->hasProperty($relationName)) continue;
-                $property = $objectRelation->getProperty($relationName);
-                $property->setAccessible(true);
-                $value = $property->getValue($relationEntity);
+                $classRelated = $this->accessor->getDeclaringClass(get_class($relationEntity), $relationName);
+                if (!$classRelated) continue;
+                $relatedAccessor = $this->accessor->get($classRelated);
+                $value = $relatedAccessor($relationEntity, $relationName);
                 if (!is_array($value)) {
                     $value = $entity;
                 } elseif (!in_array($entity, $value)) {
                     array_push($value, $entity);
                 }
-                $property->setValue($relationEntity, $value);
+                $relatedAccessor($relationEntity, $relationName, $value);
             }
         }
     }
 
     public function remove($entity, $relations)
     {
-        $object = new \ReflectionObject($entity);
+        $entityName = get_class($entity);
         foreach ($relations as $name => $relation) {
-            if (!$object->hasProperty($name)) continue;
-            $property = $object->getProperty($name);
-            $property->setAccessible(true);
-            $relationEntity = $property->getValue($entity);
+            $declaringClass = $this->accessor->getDeclaringClass($entityName, $name);
+            if (!$declaringClass) continue;
+            $accessor = $this->accessor->get($declaringClass);
+            $relationEntity = $accessor($entity, $name);
             if (!$relationEntity) {
                 continue;
             }
@@ -89,12 +89,11 @@ class Relation
                     $this->manager->remove($e);
                 }
             } elseif (is_object($relationEntity)) {
-                $objectRelation = new \ReflectionObject($relationEntity);
                 $relationName = $this->getPropertyRelation($relation)[0];
-                if (!$objectRelation->hasProperty($relationName)) continue;
-                $property = $objectRelation->getProperty($relationName);
-                $property->setAccessible(true);
-                $value = $property->getValue($relationEntity);
+                $classRelated = $this->accessor->getDeclaringClass(get_class($relationEntity), $relationName);
+                if (!$classRelated) continue;
+                $relatedAccessor = $this->accessor->get($classRelated);
+                $value = $relatedAccessor($relationEntity, $relationName);
                 if (is_array($value)) {
                     $index = array_search($entity, $value);
                     if ($index !== false) {
@@ -104,7 +103,7 @@ class Relation
                     $this->manager->remove($relationEntity);
                     $value = null;
                 }
-                $property->setValue($relationEntity, $value);
+                $relatedAccessor($relationEntity, $relationName, $value);
             }
         }
     }
@@ -114,34 +113,50 @@ class Relation
         foreach ($this->many as $key => $relation) {
             $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
             $fields = array();
-            $properties = array();
+            $idNames = array();
             foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
                 if (isset($definition['column'])) {
-                    $fields[] = $definition['column'];
-                    $properties[] = $name;
+                    $fields[$name] = $definition['column'];
+                    $idNames[$name] = $this->mapper->getIdName($name);
                 }
             }
-            $idNames = array_map(array($this->mapper, 'getIdName'), $properties);
-            $create = $sqo->create($fields);
+            $create = $sqo->create(array_values($fields));
+            $owners = new \SplObjectStorage();
+            $seen = array();
             foreach ($relation as $entities) {
-                $id = array();
-                foreach ($entities as $entity) {
-                    $object = new \ReflectionObject($entity);
-                    $name = $object->getName();
-                    $i = array_search($name, $properties);
-                    if ($i === false) {
-                        throw new \UnexpectedValueException($name . ' not is present on ' . $key . ' relation');
-                    }
-                    $prop = $object->getProperty($idNames[$i]);
-                    $prop->setAccessible(true);
-                    $id[$i] = $prop->getValue($entity);
+                $relationIds = array();
+                list($name, $value) = $this->getRelationValue($entities[0], $key, $idNames);
+                $fieldName = $fields[$name];
+                $relationIds[$fieldName] = $value;
+                if (!isset($owners[$entities[0]])) {
+                    $sqo->delete()
+                    ->restrict($fieldName . '=:ownerId')
+                    ->run(array('ownerId' => $relationIds[$fieldName]));
+                    $owners[$entities[0]] = true;
                 }
-                ksort($id);
-                $create->create($id);
+                list($name, $value) = $this->getRelationValue($entities[1], $key, $idNames);
+                $relationIds[$fields[$name]] = $value;
+                ksort($relationIds);
+                $dedupeKey = implode(':', $relationIds);
+                if (isset($seen[$dedupeKey])) continue;
+                $seen[$dedupeKey] = true;
+                $create->create($relationIds);
             }
             $create->run();
         }
         $this->many = array();
+    }
+
+    private function getRelationValue($entity, $key, $idNames)
+    {
+        $name = get_class($entity);
+        if (!isset($idNames[$name])) {
+            throw new \UnexpectedValueException("$name not is present on $key relation");
+        }
+        $idName = $idNames[$name];
+        return array($name, $this->accessor->get(
+            $this->accessor->getDeclaringClass($name, $idName)
+        )($entity, $idName));
     }
 
     private function getPropertyRelation($relation)

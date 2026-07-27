@@ -10,7 +10,7 @@ class Directory
             return false;
         }
         $items = scandir($dir);
-        if (!$items) {
+        if (count($items) === 2) {
             return false;
         }
         foreach ($items as $item) {

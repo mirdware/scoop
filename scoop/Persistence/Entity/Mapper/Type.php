@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Persistence\Entity;
+namespace Scoop\Persistence\Entity\Mapper;
 
-class TypeMapper
+class Type
 {
     private $types = array(
         'string' => 'Scoop\Persistence\Entity\Type\Varchar',

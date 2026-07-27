@@ -5,7 +5,7 @@ namespace Scoop\View;
 final class Template
 {
     const SERVICE = '\Scoop\View\Service';
-    private static $cachePath = 'app/storage/cache/views';
+    private static $cachePath = 'app/storage/cache/views/';
     private static $viewPath = 'app/views/';
     private static $inHead;
 

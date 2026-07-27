@@ -4,7 +4,6 @@ namespace Scoop\Bootstrap;
 
 abstract class Scanner
 {
-    private static $storagePath = 'app/storage';
     private $metaFilePath;
     private $cacheFilePath;
     private $filePattern;
@@ -44,11 +43,6 @@ abstract class Scanner
         return $this->directory;
     }
 
-    public static function setStorage($path)
-    {
-        self::$storagePath = $path;
-    }
-
     private function save($data, $filePath)
     {
         $content = "<?php\n\nreturn " . var_export($data, true) . ";\n";
@@ -73,15 +67,6 @@ abstract class Scanner
             }
         }
         return $isModified || count($meta) !== count($this->map);
-    }
-
-    protected function getPath($path, $fileName)
-    {
-        $path = rtrim(self::$storagePath, '/') . $path;
-        if (!is_dir($path)) {
-            mkdir($path, 0755, true);
-        }
-        return $path . $fileName;
     }
 
     abstract protected function check($filePath);

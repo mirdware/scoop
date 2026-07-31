@@ -13,17 +13,6 @@ class Request extends \Scoop\Http\Message\Request
     private $attributes;
     private $flash;
     private $urlPath;
-    private static $redirects = array(
-        300 => 'HTTP/1.1 300 Multiple Choices',
-        301 => 'HTTP/1.1 301 Moved Permanently',
-        302 => 'HTTP/1.1 302 Found',
-        303 => 'HTTP/1.1 303 See Other',
-        304 => 'HTTP/1.1 304 Not Modified',
-        305 => 'HTTP/1.1 305 Use Proxy',
-        306 => 'HTTP/1.1 306 Not Used',
-        307 => 'HTTP/1.1 307 Temporary Redirect',
-        308 => 'HTTP/1.1 308 Permanent Redirect'
-    );
 
     public function __construct(
         $uri = null,
@@ -171,11 +160,11 @@ class Request extends \Scoop\Http\Message\Request
 
     public function redirect($url, $status = 302)
     {
-        header(self::$redirects[$status], true, $status);
         if ($url instanceof \Scoop\Http\Message\Server\Route) {
             $url->flushMessage($this->flash);
             $url = \Scoop\Context::inject('\Scoop\Http\Router')->getURL($url);
         }
+        http_response_code($status);
         header("Location:$url", $status);
         exit;
     }

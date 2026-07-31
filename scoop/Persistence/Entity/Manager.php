@@ -15,7 +15,7 @@ class Manager
     {
         $this->map = compact('entities', 'values', 'relations');
         $this->accessor = new Accessor();
-        $this->typeMapper = new \Scoop\Persistence\Entity\Mapper\Type($types);
+        $this->typeMapper = new Mapper\Type($types);
         $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor);
         $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor);
         $this->hasProperties = array();

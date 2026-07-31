@@ -4,13 +4,16 @@ namespace Scoop\Http;
 
 class Router
 {
+    private $tree;
     private $routes;
     private $current;
 
     public function __construct(\Scoop\Bootstrap\Scanner\Route $scanner)
     {
         if (DEBUG_MODE) $scanner->scan();
-        $this->routes = require $scanner->getCacheFilePath();
+        $routes = require $scanner->getCacheFilePath();
+        $this->routes = $routes['map'];
+        $this->tree = $routes['tree'];
     }
 
     public function route(\Scoop\Http\Message\Server\Request $request)
@@ -26,17 +29,11 @@ class Router
             }
             $controller = $route['controller'];
             $method = $request->getMethod();
-            if (is_array($controller)) {
-                if (!isset($controller[$method])) {
-                    throw new \Scoop\Http\Exception\MethodNotAllowed("Resource does not support $method method", $method);
-                }
+            if (is_array($controller) && isset($controller[$method])) {
                 $controller = $controller[$method];
                 if (method_exists($controller, '__invoke')) {
                     $method = '__invoke';
                 }
-            }
-            if (!class_exists($controller)) {
-                throw new \Scoop\Http\Exception\NotFound();
             }
             $requestHandler = new \Scoop\Middleware\RequestHandler(
                 $controller,
@@ -81,22 +78,37 @@ class Router
 
     private function getRoute($url)
     {
-        foreach ($this->routes as $key => $routeDefinition) {
-            $urlPattern = $routeDefinition['url'];
-            $regex = preg_quote($urlPattern, '#');
-            $regex = preg_replace('/\\\\\[(\w+)\\\\\]/', '([^/]+)', $regex);
-            if (preg_match("#^$regex$#", $url, $matches)) {
-                $routeDefinition['params'] = array();
-                preg_match_all('/\[(\w+)\]/', $urlPattern, $paramNames);
-                $numParams = count($paramNames[1]);
-                for ($i = 0; $i < $numParams; $i++) {
-                    if (isset($matches[$i + 1])) {
-                        $routeDefinition['params'][$paramNames[1][$i]] = urldecode($matches[$i + 1]);
-                    }
-                }
-                $routeDefinition['id'] = $key;
-                return $routeDefinition;
+        $path = trim($url, '/');
+        $segments = $path === '' ? array() : explode('/', $path);
+        $result = $this->match($this->tree, $segments, 0, array());
+        if (!$result) return;
+        $id = $result[0]['id'];
+        return array_merge(array(
+            'id' => $id,
+            'params' => $result[1]
+        ), $this->routes[$id]);
+    }
+
+    private function match($node, $segments, $index, $params)
+    {
+        if ($index === count($segments)) {
+            return isset($node['id']) ? array($node, $params) : null;
+        }
+        $segment = $segments[$index];
+        if (isset($node['s'][$segment])) {
+            $result = $this->match($node['s'][$segment], $segments, $index + 1, $params);
+            if ($result !== null) {
+                return $result;
             }
         }
+        if (isset($node['d'])) {
+            $withParam = $params;
+            $withParam[$node['d']['p']] = urldecode($segment);
+            $result = $this->match($node['d'], $segments, $index + 1, $withParam);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        return null;
     }
 }

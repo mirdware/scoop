@@ -9,6 +9,7 @@ class Relation
     const MANY_TO_ONE = 3;
     const MANY_TO_MANY = 4;
     private $many;
+    private $touched = array();
     private $mapper;
     private $relationMap;
     private $manager;
@@ -31,9 +32,15 @@ class Relation
             if (!$declaringClass) continue;
             $accessor = $this->accessor->get($declaringClass);
             $relationEntity = $accessor($entity, $name);
-            if (!$relationEntity) continue;
+            if ($relationEntity === null) continue;
             list($relationName, $mapperKey) = $this->getPropertyRelation($relation);
             if (is_array($relationEntity)) {
+                if ($mapperKey !== null) {
+                    if (!isset($this->many[$mapperKey])) {
+                        $this->many[$mapperKey] = array();
+                    }
+                    $this->touched[$mapperKey][] = $entity;
+                }
                 foreach ($relationEntity as $e) {
                     if (!$this->mapper->contains($e)) {
                         $this->manager->save($e);
@@ -123,6 +130,14 @@ class Relation
             $create = $sqo->create(array_values($fields));
             $owners = new \SplObjectStorage();
             $seen = array();
+            foreach (isset($this->touched[$key]) ? $this->touched[$key] : array() as $ownerEntity) {
+                if (isset($owners[$ownerEntity])) continue;
+                list($name, $value) = $this->getRelationValue($ownerEntity, $key, $idNames);
+                $sqo->delete()
+                ->restrict($fields[$name] . '=:ownerId')
+                ->run(array('ownerId' => $value));
+                $owners[$ownerEntity] = true;
+            }
             foreach ($relation as $entities) {
                 $relationIds = array();
                 list($name, $value) = $this->getRelationValue($entities[0], $key, $idNames);
@@ -142,9 +157,12 @@ class Relation
                 $seen[$dedupeKey] = true;
                 $create->create($relationIds);
             }
-            $create->run();
+            if ($create->hasData()) {
+                $create->run();
+            }
         }
         $this->many = array();
+        $this->touched = array();
     }
 
     private function getRelationValue($entity, $key, $idNames)

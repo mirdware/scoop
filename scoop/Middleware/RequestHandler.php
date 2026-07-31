@@ -68,14 +68,20 @@ class RequestHandler
 
     private function processController($request)
     {
+        if (!is_string($this->controller)) {
+            $this->throwMissingMethod("Controller not support");
+        }
+        if (!class_exists($this->controller)) {
+            $missingControllerException = new \UnexpectedValueException("{$this->controller} not found");
+            if ($this->transformer && method_exists($this->transformer, 'transformMissingControllerException')) {
+                $missingControllerException = $this->transformer->transformMissingControllerException($missingControllerException);
+            }
+            throw $missingControllerException;
+        }
         $controller = \Scoop\Context::inject($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
-            $missingMethodException = new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
-            if ($this->transformer && method_exists($this->transformer, 'transformMissingMethodException')) {
-                $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException, $this->method);
-            }
-            throw $missingMethodException;
+            $this->throwMissingMethod("{$this->controller} does not implement {$this->method} method");
         }
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
@@ -84,5 +90,14 @@ class RequestHandler
             $response = $this->transformer->transformResponse($response);
         }
         return $response;
+    }
+
+    private function throwMissingMethod($message)
+    {
+        $missingMethodException = new \BadMethodCallException($message);
+        if ($this->transformer && method_exists($this->transformer, 'transformMissingMethodException')) {
+            $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException, $this->method);
+        }
+        throw $missingMethodException;
     }
 }

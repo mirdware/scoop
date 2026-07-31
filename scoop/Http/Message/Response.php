@@ -72,7 +72,7 @@ class Response extends \Scoop\Http\Message
     {
         parent::__construct($headers, $body);
         $this->statusCode = $status;
-         $this->reasonPhrase = isset(self::$statusTexts[$this->statusCode]) ? self::$statusTexts[$this->statusCode] : '';
+        $this->reasonPhrase = isset(self::$statusTexts[$this->statusCode]) ? self::$statusTexts[$this->statusCode] : '';
     }
 
     public function getStatusCode()

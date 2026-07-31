@@ -19,20 +19,23 @@ class Application
         $request = \Scoop\Context::inject($requestType);
         try {
             $response = $router->route($request);
-            gc_collect_cycles();
             $this->printResponse($response);
         } catch (\Exception $ex) {
             $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
             $this->manageError($ex, $request->isAjax());
         }
+        gc_collect_cycles();
     }
 
     private function manageError($ex, $isAjax)
     {
+        \Scoop\Context::reset();
+        if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
+            return $this->printResponse($ex->getResponse());
+        }
         $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
         $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
-        \Scoop\Context::reset();
         $status = $exceptionManager->getStatusCode($ex);
         $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         if (!$status) throw $ex;

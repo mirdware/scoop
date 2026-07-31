@@ -12,6 +12,10 @@ class Transformer
         return new \Scoop\Http\Exception\MethodNotAllowed("Resource does not support $method method", $method, $ex);
     }
 
+    public function transformMissingControllerException(\UnexpectedValueException $ex) {
+        return new \Scoop\Http\Exception\NotFound('Page or resource not found', $ex);
+    }
+
     public function transformResponse($response)
     {
         if ($response instanceof \Scoop\Http\Message\Response) {

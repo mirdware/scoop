@@ -16,7 +16,15 @@ class CorsGuard
         if ($request->getMethod() === 'options') {
             return $this->getPreflightResponse($serverParams);
         }
-        return $this->addOriginHeader($next->handle($request), $serverParams);
+        try {
+            return $this->addOriginHeader($next->handle($request), $serverParams);
+        } catch (\Exception $ex) {
+            $this->addErrorHeaders($serverParams);
+            throw $ex;
+        } catch (\Throwable $ex) {
+            $this->addErrorHeaders($serverParams);
+            throw $ex;
+        }
     }
 
     private function getPreflightResponse($serverParams)
@@ -42,6 +50,20 @@ class CorsGuard
             );
         }
         return $response;
+    }
+
+    private function addErrorHeaders($serverParams)
+    {
+        $response = $this->addOriginHeader(
+            new \Scoop\Http\Message\Response(),
+            $serverParams
+        );
+        $headers = $response->getHeaders();
+        foreach ($headers as $name => $values) {
+            foreach ($values as $value) {
+                header("$name: $value", false);
+            }
+        }
     }
 
     private function addOriginHeader($response, $serverParams)
@@ -75,12 +97,8 @@ class CorsGuard
                 return true;
             }
             if (strpos($allowed, '*') !== false) {
-                $pattern = str_replace(
-                    array('\\*', '.', '/'),
-                    array('[^.]+', '\\.', '\\/'),
-                    preg_quote($allowed, '/')
-                );
-                if (preg_match('/^' . $pattern . '$/', $requestOrigin)) {
+                $pattern = str_replace('\\*', '[^.]+', preg_quote($allowed, '#'));
+                if (preg_match('#^' . $pattern . '$#i', $requestOrigin)) {
                     return true;
                 }
             }

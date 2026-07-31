@@ -4,240 +4,109 @@ namespace Scoop\Persistence\Entity;
 
 class Mapper
 {
-    private $entities;
-    private $attached;
-    private $persisted;
-    private $removed;
-    private $statements;
-    private $typeMapper;
     private $entityMap;
-    private $valueMap;
-    private $fieldTypes = array();
+    private $typeMapper;
     private $accessor;
+    private $identityMap;
+    private $hydrator;
+    private $extractor;
+    private $statements;
 
     public function __construct($entityMap, $valueMap, $typeMapper, $accessor)
     {
         $this->entityMap = $entityMap;
-        $this->valueMap = $valueMap;
-        $this->accessor = $accessor;
-        $this->entities = new \SplObjectStorage();
-        $this->persisted = array();
-        $this->removed = array();
-        $this->attached = array();
-        $this->statements = array();
         $this->typeMapper = $typeMapper;
+        $this->accessor = $accessor;
+        $this->identityMap = new Mapper\Identity();
+        $this->hydrator = new Mapper\Hydrator($this->identityMap, $entityMap, $valueMap, $typeMapper, $accessor);
+        $this->extractor = new Mapper\Extractor($entityMap, $valueMap, $typeMapper, $accessor);
+        $this->statements = array();
     }
 
     public function add($entity)
     {
         $key = $this->getKey($entity);
-        $this->attach($key, $entity);
-        unset($this->removed[$key]);
+        $this->identityMap->attach($key, $entity);
+        $this->identityMap->unmarkRemoved($key);
     }
 
     public function remove($entity)
     {
         $key = $this->getKey($entity);
-        if (isset($this->persisted[$key])) {
-            $this->removed[$key] = $entity;
-            $this->attach($key, $entity);
+        if ($this->identityMap->isPersisted($key)) {
+            $this->identityMap->markRemoved($key, $entity);
+            $this->identityMap->attach($key, $entity);
         }
     }
 
     public function save()
     {
-        foreach ($this->entities as $entity) {
+        foreach ($this->identityMap as $entity) {
             $concreteClassName = get_class($entity);
             $className = $concreteClassName;
-            $fields = array($className => $this->getFields($entity, $className, $this->entityMap[$className]));
+            $fields = array($className => $this->extractor->getFields($entity, $className, $this->entityMap[$className]));
             while ($parent = get_parent_class($className)) {
                 $className = $parent;
-                $fields[$className] = $this->getFields($entity, $className, $this->entityMap[$className]);
+                $fields[$className] = $this->extractor->getFields($entity, $className, $this->entityMap[$className]);
             }
             $this->execute($entity, $fields);
             $key = $this->updateKey($entity, $concreteClassName, $className);
-            $this->persisted[$key] = compact('entity', 'fields');
+            $this->identityMap->setPersisted($key, $entity, $fields);
         }
-        foreach ($this->removed as $key => $entity) {
-            unset($this->persisted[$key], $this->entities[$entity], $this->attached[$key]);
-        }
-        $this->removed = array();
+        $this->identityMap->purgeRemoved();
     }
 
     public function contains($entity)
     {
-        return isset($this->entities[$entity]);
+        return $this->identityMap->contains($entity);
     }
 
     public function detach($entity)
     {
-        if ($this->contains($entity)) {
-            $key = $this->entities[$entity];
-            unset(
-                $this->entities[$entity],
-                $this->attached[$key],
-                $this->removed[$key]
-            );
-        }
+        $this->identityMap->detach($entity);
     }
 
     public function make($className, $id, $row, $names)
     {
-        $key = $className . ':' . $id;
-        if (isset($this->persisted[$key])) {
-            return $this->persisted[$key]['entity'];
-        }
-        $entity = isset($this->attached[$key]) ? $this->attached[$key] : $this->createObject($className);
-        $this->setFields($className, $entity, $names, $row);
-        $fields = array($className => $this->getRowFields($row, $names, $this->entityMap[$className]['properties']));
-        $index = 0;
-        while ($parent = get_parent_class($className)) {
-            $this->setFields($parent, $entity, $names[$index], $row);
-            $fields[$parent] = $this->getRowFields($row, $names[$index], $this->entityMap[$parent]['properties']);
-            $className = $parent;
-            $index++;
-        }
-        $this->persisted[$key] = compact('entity', 'fields');
-        return $entity;
+        return $this->hydrator->make($className, $id, $row, $names);
     }
 
     public function getIdName($className)
     {
-        return isset($this->entityMap[$className]['id']) ? $this->entityMap[$className]['id'] : 'id';
+        return self::resolveIdName($this->entityMap, $className);
     }
 
     public function getTableId($className)
     {
-        $idName = 'id';
-        if (isset($this->entityMap[$className]['id'])) {
-            $idName = $this->entityMap[$className]['id'];
-        }
+        $idName = $this->getIdName($className);
         if (isset($this->entityMap[$className]['properties'][$idName]['column'])) {
             return $this->entityMap[$className]['properties'][$idName]['column'];
         }
-        return $this->toColumn($idName);
+        return self::toColumn($idName);
     }
 
-    private function getFieldTypes($className)
+    public static function resolveIdName($entityMap, $className)
     {
-        if (!isset($this->fieldTypes[$className])) {
-            $types = array();
-            foreach ($this->entityMap[$className]['properties'] as $propName => $propDef) {
-                $fieldName = isset($propDef['column']) ? $propDef['column'] : $this->toColumn($propName);
-                $type = $propDef['type'];
-                if (isset($this->valueMap[$type])) {
-                    $valueMap = $this->valueMap[$type];
-                    if (count($valueMap) > 1) {
-                        foreach ($valueMap as $voName => $voDef) {
-                            $fName = $fieldName . '_' . (isset($voDef['column']) ? $voDef['column'] : $this->toColumn($voName));
-                            $types[$fName] = $voDef['type'];
-                        }
-                    } else {
-                        $voName = key($valueMap);
-                        $types[$fieldName] = $valueMap[$voName]['type'];
-                    }
-                } else {
-                    $types[$fieldName] = $type;
-                }
-            }
-            $this->fieldTypes[$className] = $types;
-        }
-        return $this->fieldTypes[$className];
+        return isset($entityMap[$className]['id']) ? $entityMap[$className]['id'] : 'id';
     }
 
-    private function setFields($className, $entity, $fields, $row)
+    public static function toColumn($property)
     {
-        $valueObjects = array();
-        $properties = $this->entityMap[$className]['properties'];
-        $accessor = $this->accessor->get($className);
-        foreach ($row as $name => $value) {
-            if (!isset($fields[$name])) continue;
-            $propName = $this->toProperty($fields[$name]);
-            $vo = explode('.', $fields[$name]);
-            if (isset($vo[1])) {
-                if (preg_match('/([^\$]+)\$v\$(.*)/', $name, $match)) {
-                    $propName = $this->toProperty($match[1]);
-                    $voProp = $this->toProperty($match[2]);
-                } else {
-                    $propName = $this->toProperty($vo[1]);
-                    $voProp = 'value';
-                }
-                $propClass = $properties[$propName]['type'];
-                if (!isset($valueObjects[$propName])) {
-                    $valueObjects[$propName] = $this->createObject($propClass);
-                }
-                $this->accessor->get($propClass)($valueObjects[$propName], $voProp, $value);
-                $value = $valueObjects[$propName];
-            } else {
-                $value = $this->typeMapper->getEntityValue($properties[$propName]['type'], $value);
-            }
-            if ($accessor($entity, $propName) === null) {
-                $accessor($entity, $propName, $value);
-            }
-        }
+        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $property));
     }
 
-    private function getRowFields($row, $names, $map)
+    public static function toProperty($column)
     {
-        $fields = array();
-        foreach ($names as $name => $column) {
-            if (!is_string($column)) continue;
-            $vo = explode('.', $column);
-            if (isset($vo[1])) {
-                $column = $vo[1];
-            } else {
-                $property = $this->toProperty($column);
-                $column = isset($map[$property]['column']) ? $map[$property]['column'] : $column;
-            }
-            $fields[$column] = $row[$name];
-        }
-        return $fields;
-    }
-
-    private function getFields($entity, $className, $mapper)
-    {
-        $fields = array();
-        $accessor = $this->accessor->get($className);
-        foreach ($mapper['properties'] as $propName => $propDef) {
-            $fieldName = isset($propDef['column']) ? $propDef['column'] : $this->toColumn($propName);
-            $value = $accessor($entity, $propName);
-            if (isset($mapper['relations'][$propName]) && is_object($value)) {
-                $relatedClassName = get_class($value);
-                while ($parent = get_parent_class($relatedClassName)) {
-                    $relatedClassName = $parent;
-                }
-                $idName = $this->getIdName($relatedClassName);
-                $value = $this->accessor->get($relatedClassName)($value, $idName);
-            }
-            $type = $propDef['type'];
-            if (isset($this->valueMap[$type])) {
-                $valueMap = $this->valueMap[$type];
-                if ($value !== null && !is_a($value, $type)) {
-                    throw new \UnexpectedValueException(gettype($value) . ' not is a ' . $type);
-                }
-                $voAccessor = $this->accessor->get($type);
-                if (count($valueMap) > 1) {
-                    foreach ($valueMap as $name => $prop) {
-                        $fName = $fieldName . '_' . (isset($prop['column']) ? $prop['column'] : $this->toColumn($name));
-                        $fields[$fName] = $voAccessor($value, $name);
-                    }
-                } else {
-                    $fields[$fieldName] = $voAccessor($value, key($valueMap));
-                }
-            } else {
-                $fields[$fieldName] = $this->typeMapper->getRowValue($type, $value);
-            }
-        }
-        return $fields;
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
     private function execute($entity, $fields)
     {
-        $key = strval($this->entities[$entity]);
+        $key = strval($this->identityMap->getKey($entity));
         $index = strpos($key, ':');
-        if (isset($this->persisted[$key])) {
+        if ($this->identityMap->isPersisted($key)) {
             $params = array('id' => substr($key, $index + 1));
-            if (isset($this->removed[$key])) {
+            if ($this->identityMap->isRemoved($key)) {
                 foreach ($fields as $className => $value) {
                     $idName = $this->getTableId($className);
                     $this->getStatement($className)
@@ -247,7 +116,8 @@ class Mapper
                 }
             } else {
                 foreach ($fields as $className => $value) {
-                    $updatedFields = $this->getChangedFields($className, $this->persisted[$key]['fields'][$className], $value);
+                    $persistedFields = &$this->identityMap->getPersistedFields($key, $className);
+                    $updatedFields = $this->extractor->getChangedFields($className, $persistedFields, $value);
                     if (empty($updatedFields)) {
                         continue;
                     }
@@ -272,7 +142,7 @@ class Mapper
                 $idName = $this->getTableId($className);
                 $value[$idName] = isset($value[$idName]) ? $value[$idName] : $id;
                 $statement = $this->getStatement($className);
-                $value = $this->clearNulls($value);
+                $value = $this->extractor->clearNulls($value);
                 $statement->create($value)->run();
                 $id = isset($value[$idName]) ? $value[$idName] : $statement->getLastId();
                 $baseClassName = $className;
@@ -291,21 +161,10 @@ class Mapper
         return $this->statements[$className];
     }
 
-    private function clearNulls($value, $only = null)
-    {
-        $filtered = array();
-        foreach ($value as $key => $element) {
-            if (($only !== null && !isset($only[$key])) || $element !== null) {
-                $filtered[$key] = $element;
-            }
-        }
-        return $filtered;
-    }
-
     private function getKey($entity)
     {
-        if ($this->contains($entity)) {
-            return $this->entities[$entity];
+        if ($this->identityMap->contains($entity)) {
+            return $this->identityMap->getKey($entity);
         }
         $className = get_class($entity);
         $rootClassName = $className;
@@ -317,57 +176,13 @@ class Mapper
         return $className . ':' . ($id ? $id : spl_object_hash($entity));
     }
 
-    private function attach($key, $entity)
-    {
-        if (isset($this->attached[$key])) {
-            unset($this->entities[$entity]);
-        }
-        if (isset($this->persisted[$key])) {
-            $this->persisted[$key]['entity'] = $entity;
-        }
-        if (isset($this->removed[$key])) {
-            $this->removed[$key] = $entity;
-        }
-        $this->entities[$entity] = $key;
-        $this->attached[$key] = $entity;
-    }
-
-    private function createObject($className)
-    {
-        $reflectionClass = new \ReflectionClass($className);
-        return $reflectionClass->newInstanceWithoutConstructor();
-    }
-
-    private function toColumn($property)
-    {
-        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $property));
-    }
-
-    private function toProperty($column)
-    {
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
-    }
-
-    private function getChangedFields($className, &$persistedFields, $entityFields)
-    {
-        $types = $this->getFieldTypes($className);
-        $fields = array();
-        foreach ($persistedFields as $key => $oldValue) {
-            $type = isset($types[$key]) ? $types[$key] : null;
-            if (!$this->typeMapper->isSame($type, $oldValue, $entityFields[$key])) {
-                $fields[$key] = $entityFields[$key];
-                $persistedFields[$key] = $fields[$key];
-            }
-        }
-        return $fields;
-    }
-
     private function updateKey($entity, $concreteClassName, $rootClassName)
     {
         $idName = $this->getIdName($rootClassName);
         $properties = $this->entityMap[$rootClassName]['properties'];
+        $key = $this->identityMap->getKey($entity);
         if (
-            !isset($this->persisted[$this->entities[$entity]]) &&
+            !$this->identityMap->isPersisted($key) &&
             isset($properties[$idName]['type']) &&
             $this->typeMapper->hasAutoIncrement($properties[$idName]['type'])
         ) {
@@ -375,8 +190,10 @@ class Mapper
             $id = $accessor($entity, $idName);
             $id = $id ? $id : $this->statements[$rootClassName]->getLastId();
             $accessor($entity, $idName, $id);
-            $this->entities[$entity] = "$concreteClassName:$id";
+            $newKey = "$concreteClassName:$id";
+            $this->identityMap->reassignKey($entity, $newKey);
+            return $newKey;
         }
-        return $this->entities[$entity];
+        return $key;
     }
 }

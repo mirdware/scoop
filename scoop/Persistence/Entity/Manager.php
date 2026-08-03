@@ -52,7 +52,7 @@ class Manager
     public function search($classEntity)
     {
         $this->getMapper($classEntity);
-        return new Query($this->mapper, $classEntity, $this->map, $this->accessor);
+        return new Query($this->mapper, $classEntity, $this->map, $this->accessor, $this->relations);
     }
 
     public function flush()

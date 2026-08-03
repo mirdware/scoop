@@ -5,18 +5,27 @@ namespace Scoop\Log\Handler;
 class Standard
 {
     private $formatter;
-    private $stream;
+    private $streamName;
+    private $resource;
 
     public function __construct($formatter, $error = false)
     {
         $this->formatter = $formatter;
-        $this->stream = $error ? 'php://stderr' : 'php://stdout';
+        $this->streamName = $error ? 'php://stderr' : 'php://stdout';
     }
 
     public function handle($log)
     {
-        $std = fopen($this->stream, 'w');
-        fwrite($std, $this->formatter->format($log) . PHP_EOL);
-        fclose($std);
+        if (!is_resource($this->resource)) {
+            $this->resource = fopen($this->streamName, 'w');
+        }
+        return fwrite($this->resource, $this->formatter->format($log) . PHP_EOL);
+    }
+
+    public function __destruct()
+    {
+        if (is_resource($this->resource)) {
+            fclose($this->resource);
+        }
     }
 }

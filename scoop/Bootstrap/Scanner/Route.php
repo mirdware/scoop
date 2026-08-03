@@ -18,6 +18,7 @@ class Route extends \Scoop\Bootstrap\Scanner
     {
         $map = array();
         $middlewaresMap = array();
+        $tree = array('s' => array(), 'd' => null);
         uksort($fileMap, function($a, $b) {
             return substr_count($a, '/') - substr_count($b, '/');
         });
@@ -36,6 +37,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 if (isset($route['middlewares'])) {
                     $applicableMiddlewares = array_merge($applicableMiddlewares, $route['middlewares']);
                 }
+                $this->insert($tree, $route['url'], $id);
                 $map[$id] = array(
                     'url' => $route['url'],
                     'controller' => $route['controller'],
@@ -45,10 +47,6 @@ class Route extends \Scoop\Bootstrap\Scanner
             } else {
                 $middlewaresMap[$route['url']] = $route['middlewares'];
             }
-        }
-        $tree = array('s' => array(), 'd' => null);
-        foreach ($map as $id => $data) {
-            $this->insert($tree, $data['url'], $id);
         }
         return compact('map', 'tree');
     }

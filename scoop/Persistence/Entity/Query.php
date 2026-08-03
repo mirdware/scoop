@@ -13,16 +13,16 @@ class Query
     private $joinResolver;
     private $assembler;
 
-    public function __construct($mapper, $aggregate, $map, $accessor)
+    public function __construct($mapper, $aggregate, $map, $accessor, $relations)
     {
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
         $this->aggregates = array();
         $this->fieldResolver = new Resolver\Field($map, $mapper);
-        $this->fieldResolver->addFields($this->root, 'r');
+        $this->fieldResolver->addFields($this->root, 'r', false);
         $this->joinResolver = new Resolver\Join($mapper, $map, $this->fieldResolver);
-        $this->assembler = new Assembler($map, $mapper, $accessor, $this->fieldResolver);
+        $this->assembler = new Assembler($map, $mapper, $accessor, $this->fieldResolver, $relations);
         $this->discriminator = new Mapper\Discriminator($aggregate, $map['entities']);
         $discriminatorColumn = $this->discriminator->getColumn();
         if ($discriminatorColumn) {

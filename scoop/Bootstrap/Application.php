@@ -30,12 +30,12 @@ class Application
 
     private function manageError($ex, $isAjax)
     {
+        $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
+        $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
         \Scoop\Context::reset();
         if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
             return $this->printResponse($ex->getResponse());
         }
-        $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
-        $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
         $status = $exceptionManager->getStatusCode($ex);
         $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         if (!$status) throw $ex;

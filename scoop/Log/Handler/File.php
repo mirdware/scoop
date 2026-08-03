@@ -6,6 +6,7 @@ class File
 {
     private $fileName;
     private $formatter;
+    private $resource;
 
     public function __construct($formatter, $file)
     {
@@ -21,6 +22,17 @@ class File
 
     public function handle($log)
     {
-        return file_put_contents($this->fileName, $this->formatter->format($log) . PHP_EOL, FILE_APPEND);
+        if (!is_resource($this->resource)) {
+            $this->resource = fopen($this->fileName, 'a');
+        }
+        flock($this->resource, LOCK_EX);
+        return fwrite($this->resource, $this->formatter->format($log) . PHP_EOL);
+    }
+
+    public function __destruct()
+    {
+        if (is_resource($this->resource)) {
+            fclose($this->resource);
+        }
     }
 }

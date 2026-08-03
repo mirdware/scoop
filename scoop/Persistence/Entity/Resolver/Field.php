@@ -15,14 +15,14 @@ class Field
         $this->mapper = $mapper;
     }
 
-    public function addFields($entity, $table)
+    public function addFields($entity, $table, $isOptional)
     {
-        $this->fields = array_merge($this->fields, $this->resolve($entity, $table, false));
+        $this->fields = array_merge($this->fields, $this->resolve($entity, $table, false, $isOptional));
     }
 
     public function fieldsFor($entity, $table)
     {
-        return $this->resolve($entity, $table, true);
+        return $this->resolve($entity, $table, true, false);
     }
 
     public function addRawField($key, $value)
@@ -45,7 +45,7 @@ class Field
         return $this->joins;
     }
 
-    private function resolve($entity, $table, $isProp)
+    private function resolve($entity, $table, $isProp, $isOptional)
     {
         $fields = array();
         foreach ($this->map['entities'][$entity]['properties'] as $key => $value) {
@@ -66,10 +66,10 @@ class Field
                 $fields[$alias] = $isProp ? $key : "$table.$value";
             }
         }
-        return array_merge($fields, $this->parentsFields($entity, $table, $isProp));
+        return array_merge($fields, $this->parentsFields($entity, $table, $isProp, $isOptional));
     }
 
-    private function parentsFields($className, $table, $isProp)
+    private function parentsFields($className, $table, $isProp, $isOptional)
     {
         $index = 0;
         $fields = array();
@@ -80,9 +80,10 @@ class Field
             if (!$isProp) {
                 $parentId = $this->mapper->getTableId($parentName);
                 $parentTable = $this->map['entities'][$parentName]['table'];
-                $this->joins[] = array("$parentTable $parentAlias", "$parentAlias.$parentId=$table.$id", 'inner');
+                $joinType = $isOptional ? 'left' : 'inner';
+                $this->joins[] = array("$parentTable $parentAlias", "$parentAlias.$parentId=$table.$id", $joinType);
             }
-            $parentFields = $this->resolve($parentName, $parentAlias, $isProp);
+            $parentFields = $this->resolve($parentName, $parentAlias, $isProp, $isOptional);
             foreach ($parentFields as $name => $parentField) {
                 $name = str_replace($parentAlias . '$a$', $ownPrefix, $name);
                 if ($isProp) {

@@ -15,13 +15,14 @@ class Route
 
     public function execute($command)
     {
+        $cacheFilePath = $this->scanner->getCacheFilePath('routes');
         if ($command->hasFlag('f')) {
-            @unlink($this->scanner->getCacheFilePath());
+            @unlink($cacheFilePath);
             @unlink($this->scanner->getMetaFilePath());
         }
         $this->writer->withSeparator(' ')->write(
             "scanning {$this->scanner->getDirectory()} folder...",
-            "<link:{$this->scanner->getCacheFilePath()}!>"
+            "<link:{$cacheFilePath}!>"
         );
         if ($this->scanner->scan()) {
             $this->writer->write('<success:created!>');

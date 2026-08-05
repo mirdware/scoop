@@ -172,7 +172,8 @@ class Mapper
             $rootClassName = $parent;
         }
         $idName = $this->getIdName($rootClassName);
-        $id = $this->accessor->get($rootClassName)($entity, $idName);
+        $accessor = $this->accessor->get($rootClassName);
+        $id = $accessor($entity, $idName);
         return $className . ':' . ($id ? $id : spl_object_hash($entity));
     }
 

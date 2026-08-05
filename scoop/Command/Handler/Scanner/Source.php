@@ -2,7 +2,7 @@
 
 namespace Scoop\Command\Handler\Scanner;
 
-class Type
+class Source
 {
     private $writer;
     private $environment;
@@ -22,13 +22,14 @@ class Type
             if (strpos($namespace, 'Scoop\\') !== 0) {
                 $directory = rtrim($directory, '/') . '/';
                 $prefix = str_replace('\\', '_', $namespace);
-                $scanner = new \Scoop\Bootstrap\Scanner\Type($this->environment, $directory, $prefix);
+                $scanner = new \Scoop\Bootstrap\Scanner\Source($this->environment, $directory, $prefix);
+                $cacheFilePath = $scanner->getCacheFilePath('types');
                 $lineWriter->write(
                     "scanning $directory folder...",
-                    "<link:{$scanner->getCacheFilePath()}!>"
+                    "<link:{$cacheFilePath}!>"
                 );
                 if ($command->hasFlag('f')) {
-                    @unlink($scanner->getCacheFilePath());
+                    @unlink($cacheFilePath);
                     @unlink($scanner->getMetaFilePath());
                 }
                 if ($scanner->scan()) {
@@ -44,7 +45,7 @@ class Type
     public function help()
     {
         $this->writer->write(
-            'Scan source folder for abstractions and their implementations.'
+            'Scan source folder for project metadata.'
         );
     }
 }

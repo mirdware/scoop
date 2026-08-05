@@ -47,6 +47,9 @@ class Cipher
             $string = base64_decode($string);
             $version = substr($version, 1);
         } elseif ($version[0] === '#') {
+            if (strlen($string) % 2 !== 0 || !ctype_xdigit($string)) {
+                return false;
+            }
             $string = hex2bin($string);
             $version = substr($version, 1);
         }

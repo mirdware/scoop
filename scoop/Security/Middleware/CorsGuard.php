@@ -58,7 +58,7 @@ class CorsGuard
             header("Access-Control-Expose-Headers: {$this->config['expose-headers']}");
         }
         $maxAge = isset($this->config['max-age']) ? $this->config['max-age'] :  86400;
-        if (!isset($this->config['credentials']) || boolval($this->config['credentials'])) {
+        if (!isset($this->config['credentials']) || $this->config['credentials']) {
             header('Access-Control-Allow-Credentials: true');
         }
         header("Access-Control-Allow-Origin: {$serverParams['HTTP_ORIGIN']}");

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.2/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/13.2/phpunit.xsd"
          bootstrap="../vendor/autoload.php"
          cacheDirectory="storage/.phpunit.cache"
          executionOrder="depends,defects"
@@ -11,14 +11,18 @@
          colors="true"
          failOnWarning="true">
     <testsuites>
-        <testsuite name="default">
-            <directory>../tests</directory>
+        <testsuite name="application">
+            <directory>../tests/App</directory>
+        </testsuite>
+        <testsuite name="scoop">
+            <directory>../tests/Scoop</directory>
         </testsuite>
     </testsuites>
 
     <source restrictNotices="true" restrictWarnings="true">
         <include>
             <directory>../src</directory>
+            <directory>../scoop</directory>
         </include>
     </source>
 </phpunit>

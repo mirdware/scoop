@@ -5,15 +5,15 @@ namespace Scoop\Bootstrap;
 abstract class Scanner
 {
     private $metaFilePath;
-    private $cacheFilePath;
+    private $cacheFilePaths;
     private $filePattern;
     private $directory;
     private $map;
 
-    public function __construct($directory, $filePattern, $cacheFilePath, $metaFilePath)
+    public function __construct($directory, $filePattern, $cacheFilePaths, $metaFilePath)
     {
         $this->filePattern = $filePattern;
-        $this->cacheFilePath = $cacheFilePath;
+        $this->cacheFilePaths = $cacheFilePaths;
         $this->metaFilePath = $metaFilePath;
         $this->directory = rtrim($directory, '/') . '/';
     }
@@ -23,16 +23,23 @@ abstract class Scanner
         $this->map = array();
         $isModified = $this->analyzeDirectory();
         if ($isModified) {
-            $this->save($this->build($this->map), $this->cacheFilePath);
+            $cache = $this->build($this->map);
+            foreach ($this->cacheFilePaths as $name => $filePath) {
+                $this->save($cache[$name], $filePath);
+            }
             $this->save($this->map, $this->metaFilePath);
         }
         return $isModified;
     }
 
-    public function getCacheFilePath()
+    public function getCacheFilePath($name)
     {
-        return $this->cacheFilePath;
+        if (!isset($this->cacheFilePaths[$name])) {
+            throw new \OutOfBoundsException("Cache $name not found");
+        }
+        return $this->cacheFilePaths[$name];
     }
+
     public function getMetaFilePath()
     {
         return $this->metaFilePath;

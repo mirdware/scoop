@@ -2,7 +2,7 @@
 
 namespace Scoop\Security\Cipher;
 
-abstract final class GcmAlgorithm
+final class GcmAlgorithm
 {
     public static function encrypt($string, $secret)
     {

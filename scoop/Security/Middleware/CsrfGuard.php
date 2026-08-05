@@ -30,11 +30,11 @@ class CsrfGuard
 
     private static function equals($known, $user)
     {
-        if (function_exists('hash_equals')) {
-            return hash_equals($known, $user);
-        }
         if (!is_string($known) || !is_string($user)) {
             return false;
+        }
+        if (function_exists('hash_equals')) {
+            return hash_equals($known, $user);
         }
         $knownLen = strlen($known);
         $userLen = strlen($user);

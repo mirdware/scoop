@@ -2,7 +2,7 @@
 
 namespace Scoop\Security\Cipher;
 
-abstract final class CbcAlgorithm
+final class CbcAlgorithm
 {
     public static function encrypt($string, $secret)
     {

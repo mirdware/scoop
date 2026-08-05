@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Test\Controller;
+namespace Test\App\Controller;
 
 use Scoop\View;
 use PHPUnit\Framework\Attributes\CoversMethod;

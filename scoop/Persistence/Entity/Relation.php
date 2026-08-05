@@ -179,9 +179,10 @@ class Relation
     private function detachRemoved($entityClass, $entity, $mapperKey, $relationName, $removeClass, $currentEntities)
     {
         $idName = $this->mapper->getIdName($entityClass);
-        $ownerId = $this->accessor->get(
+        $accessor = $this->accessor->get(
             $this->accessor->getDeclaringClass($entityClass, $idName)
-        )($entity, $idName);
+        );
+        $ownerId = $accessor($entity, $idName);
         if (!isset($this->loaded[$mapperKey]) ||!isset($this->loaded[$mapperKey][$ownerId])) {
             return;
         }
@@ -212,9 +213,10 @@ class Relation
             throw new \UnexpectedValueException("$name not is present on $key relation");
         }
         $idName = $idNames[$name];
-        return array($name, $this->accessor->get(
+        $accessor = $this->accessor->get(
             $this->accessor->getDeclaringClass($name, $idName)
-        )($entity, $idName));
+        );
+        return array($name, $accessor($entity, $idName));
     }
 
     private function getPropertyRelation($relation)

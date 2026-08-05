@@ -11,7 +11,7 @@ class Router
     public function __construct(\Scoop\Bootstrap\Scanner\Route $scanner)
     {
         if (DEBUG_MODE) $scanner->scan();
-        $routes = require $scanner->getCacheFilePath();
+        $routes = require $scanner->getCacheFilePath('routes');
         $this->routes = $routes['map'];
         $this->tree = $routes['tree'];
     }

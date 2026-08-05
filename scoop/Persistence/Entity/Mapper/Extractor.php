@@ -32,7 +32,8 @@ class Extractor
                     $relatedClassName = $parent;
                 }
                 $idName = \Scoop\Persistence\Entity\Mapper::resolveIdName($this->entityMap, $relatedClassName);
-                $value = $this->accessor->get($relatedClassName)($value, $idName);
+                $relatedAccessor = $this->accessor->get($relatedClassName);
+                $value = $relatedAccessor($value, $idName);
             }
             $type = $propDef['type'];
             if (isset($this->valueMap[$type])) {

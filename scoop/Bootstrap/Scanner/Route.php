@@ -9,8 +9,8 @@ class Route extends \Scoop\Bootstrap\Scanner
         parent::__construct(
             $environment->getConfig('routes', 'app/routes'),
             '/(endpoint|middlewares)\.php$/',
-            $environment->getStoragePath('cache') . 'routes.php',
-            $environment->getStoragePath('cache') .'routes.meta.php'
+            array('routes' => $environment->getStoragePath('cache') . 'routes.php'),
+            $environment->getStoragePath('cache') . 'routes.meta.php'
         );
     }
 
@@ -20,7 +20,12 @@ class Route extends \Scoop\Bootstrap\Scanner
         $middlewaresMap = array();
         $tree = array('s' => array(), 'd' => null);
         uksort($fileMap, function($a, $b) {
-            return substr_count($a, '/') - substr_count($b, '/');
+            $depthA = substr_count($a, '/');
+            $depthB = substr_count($b, '/');
+            if ($depthA !== $depthB) {
+                return $depthA - $depthB;
+            }
+            return strcmp(basename($b), basename($a));
         });
         foreach ($fileMap as $route) {
             if (isset($route['id'])) {
@@ -48,7 +53,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 $middlewaresMap[$route['url']] = $route['middlewares'];
             }
         }
-        return compact('map', 'tree');
+        return array('routes' => compact('map', 'tree'));
     }
 
     protected function check($filePath)

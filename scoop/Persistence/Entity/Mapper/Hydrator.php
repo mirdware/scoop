@@ -69,7 +69,8 @@ class Hydrator
                 if (!isset($valueObjects[$propName])) {
                     $valueObjects[$propName] = $this->createObject($propClass);
                 }
-                $this->accessor->get($propClass)($valueObjects[$propName], $voProp, $value);
+                $valueAccessor = $this->accessor->get($propClass);
+                $valueAccessor($valueObjects[$propName], $voProp, $value);
                 $value = $valueObjects[$propName];
             } else {
                 $value = $this->typeMapper->getEntityValue($properties[$propName]['type'], $value);

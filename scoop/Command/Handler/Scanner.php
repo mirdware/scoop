@@ -10,7 +10,7 @@ class Scanner extends Router
             'Scan project folders',
             $writer,
             new \Scoop\Command\Bus( array(
-            'types' => 'Scoop\Command\Handler\Scanner\Type',
+            'source' => 'Scoop\Command\Handler\Scanner\Source',
             'routes' => 'Scoop\Command\Handler\Scanner\Route'))
         );
     }

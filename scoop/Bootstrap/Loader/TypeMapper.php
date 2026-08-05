@@ -38,9 +38,9 @@ class TypeMapper
             if (strpos($namespace, 'Scoop\\') !== 0) {
                 $directory = rtrim($directory, '/') . '/';
                 $prefix = str_replace('\\', '_', $namespace);
-                $scanner = new \Scoop\Bootstrap\Scanner\Type($this->environment, $directory, $prefix);
+                $scanner = new \Scoop\Bootstrap\Scanner\Source($this->environment, $directory, $prefix);
                 $scanner->scan();
-                $scannedTypes[] = $scanner->getCacheFilePath();
+                $scannedTypes[] = $scanner->getCacheFilePath('types');
             }
         }
         return $scannedTypes;

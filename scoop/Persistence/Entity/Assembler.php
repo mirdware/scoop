@@ -61,7 +61,8 @@ class Assembler
             }
             $className = $this->accessor->getDeclaringClass(get_class($entity), $name);
             if (!$className) continue;
-            $this->accessor->get($className)($entity, $name, $value);
+            $propertyAccessor = $this->accessor->get($className);
+            $propertyAccessor($entity, $name, $value);
         }
     }
 
@@ -81,6 +82,7 @@ class Assembler
             $className = $parent;
         }
         $idName = $this->mapper->getIdName($className);
-        return $this->accessor->get($className)($entity, $idName);
+        $accessor = $this->accessor->get($className);
+        return $accessor($entity, $idName);
     }
 }

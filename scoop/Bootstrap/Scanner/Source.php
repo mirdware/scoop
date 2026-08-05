@@ -2,13 +2,15 @@
 
 namespace Scoop\Bootstrap\Scanner;
 
-class Type extends \Scoop\Bootstrap\Scanner
+class Source extends \Scoop\Bootstrap\Scanner
 {
     public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
     {
-        $cacheFilePath = $environment->getStoragePath('cache/project') . "{$prefix}types.php";
+        $cacheFilePaths = array(
+            'types' => $environment->getStoragePath('cache/project') . "{$prefix}types.php"
+        );
         $metaFilePath = $environment->getStoragePath('cache/project') . "{$prefix}meta.php";
-        parent::__construct($directory, '/\.php$/', $cacheFilePath, $metaFilePath);
+        parent::__construct($directory, '/\.php$/', $cacheFilePaths, $metaFilePath);
     }
 
     protected function build($metaMap)
@@ -25,7 +27,7 @@ class Type extends \Scoop\Bootstrap\Scanner
                 }
             }
         }
-        return $typeMap;
+        return array('types' => $typeMap);
     }
 
     protected function check($filePath)

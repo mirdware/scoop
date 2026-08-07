@@ -7,18 +7,17 @@ class Query
     private $root;
     private $mapper;
     private $map;
-    private $aggregates;
     private $discriminator;
     private $fieldResolver;
     private $joinResolver;
     private $assembler;
+    private $aggregates = array();
 
     public function __construct($mapper, $aggregate, $map, $accessor, $relations)
     {
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
-        $this->aggregates = array();
         $this->fieldResolver = new Resolver\Field($map, $mapper);
         $this->fieldResolver->addFields($this->root, 'r', false);
         $this->joinResolver = new Resolver\Join($mapper, $map, $this->fieldResolver);

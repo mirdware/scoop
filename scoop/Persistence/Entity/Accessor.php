@@ -4,14 +4,8 @@ namespace Scoop\Persistence\Entity;
 
 class Accessor
 {
-    private $accessors;
-    private $properties;
-
-    public function __construct()
-    {
-        $this->accessors = array();
-        $this->properties = array();
-    }
+    private $accessors = array();
+    private $properties = array();
 
     public function get($className)
     {

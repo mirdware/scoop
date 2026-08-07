@@ -9,7 +9,7 @@ class Manager
     private $mapper;
     private $relations;
     private $accessor;
-    private $hasProperties;
+    private $hasProperties = array();
 
     public function __construct($entities, $values, $relations, $types)
     {
@@ -18,7 +18,6 @@ class Manager
         $this->typeMapper = new Mapper\Type($types);
         $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor);
         $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor);
-        $this->hasProperties = array();
         register_shutdown_function(array($this, 'flush'));
     }
 

@@ -8,7 +8,7 @@ class Extractor
     private $valueMap;
     private $typeMapper;
     private $accessor;
-    private $fieldTypes;
+    private $fieldTypes = array();
 
     public function __construct($entityMap, $valueMap, $typeMapper, $accessor)
     {
@@ -16,7 +16,6 @@ class Extractor
         $this->valueMap = $valueMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
-        $this->fieldTypes = array();
     }
 
     public function getFields($entity, $className, $mapper)

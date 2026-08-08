@@ -192,11 +192,11 @@ class Relation
                 $accessor($removedEntity, $relationName, $value);
             }
         }
-        foreach ($added as $addedEntity) {
+        foreach ($added as $entityId => $addedEntity) {
             $value = $accessor($addedEntity, $relationName);
             array_push($value, $entity);
             $accessor($addedEntity, $relationName, $value);
-            $this->previous[$mapperKey][$ownerId][] = $addedEntity;
+            $this->previous[$mapperKey][$ownerId][$entityId] = $addedEntity;
         }
     }
 

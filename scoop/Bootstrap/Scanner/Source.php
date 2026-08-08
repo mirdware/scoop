@@ -4,92 +4,100 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Source extends \Scoop\Bootstrap\Scanner
 {
+    private $parser;
+
     public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
     {
         $cacheFilePaths = array(
-            'types' => $environment->getStoragePath('cache/project') . "{$prefix}types.php"
+            'types' => $environment->getStoragePath('cache/project') . "{$prefix}types.php",
+            'providers' => $environment->getStoragePath('cache/project') . "{$prefix}providers.php"
         );
         $metaFilePath = $environment->getStoragePath('cache/project') . "{$prefix}meta.php";
         parent::__construct($directory, '/\.php$/', $cacheFilePaths, $metaFilePath);
+        $this->parser = new Source\Parser();
     }
 
     protected function build($metaMap)
     {
         $typeMap = array();
-        foreach ($metaMap as $classTyped) {
-            if (isset($classTyped['types'])) {
-                $className = $classTyped['class'];
-                foreach ($classTyped['types'] as $typeName) {
+        $providerMap = array();
+        $declarations = array();
+        foreach ($metaMap as $metadata) {
+            if (isset($metadata['name'])) {
+                $declarations[$metadata['name']] = $metadata;
+            }
+        }
+        foreach ($declarations as $declarationName => $metadata) {
+            $providers = $this->getProviders($metadata, $declarations);
+            if ($metadata['instantiable'] && $providers !== false) {
+                $typeNames = $this->getTypeNames($metadata, $declarations);
+                foreach ($typeNames as $typeName) {
                     if (!isset($typeMap[$typeName])) {
                         $typeMap[$typeName] = array();
                     }
-                    $typeMap[$typeName][] = $className;
+                    $typeMap[$typeName][] = $declarationName;
                 }
+                $providerMap[$declarationName] = $providers;
             }
         }
-        return array('types' => $typeMap);
+        return array('types' => $typeMap, 'providers' => $providerMap);
     }
 
     protected function check($filePath)
     {
-        if (!is_readable($filePath)) return;
-        $content = file_get_contents($filePath);
-        if ($content === false) return;
-        $tokens = token_get_all($content);
-        if ($tokens === false) return;
-        $namespace = '';
-        $fullClassName = '';
-        $hasTypes = false;
-        foreach ($tokens as $index => $token) {
-            if ($tokens[$index][0] === T_NAMESPACE) {
-                $namespace = $this->getNamespace($index, $tokens);
-            } elseif ($token[0] === T_CLASS) {
-                $fullClassName = ($namespace ? $namespace . '\\' : '') . $tokens[$index + 2][1];
-                $hasTypes = $this->containsTypeDefinitions($tokens, $index + 2);
-                break;
+        $stream = fopen($filePath, 'r');
+        if (!$stream) {
+            return array();
+        }
+        $tokenizer = new Source\Tokenizer($stream);
+        while (($tokens = $tokenizer->tokenize()) !== false) {
+            $metadata = $this->parser->parse($tokens);
+            if ($metadata !== false) {
+                fclose($stream);
+                return $metadata;
             }
         }
-        return $hasTypes ? array(
-            'class' => $fullClassName,
-            'types' => $this->getTypeNames($fullClassName)
-        ) : array();
+        fclose($stream);
+        return array();
     }
 
-    private function getNamespace($startIndex, $tokens)
+    private function getTypeNames($declaration, $declarations, $visited = array())
     {
-        $namespace = '';
-        for ($index = $startIndex + 2; isset($tokens[$index]); $index++) {
-            if ($tokens[$index] === ';') {
-                return ltrim($namespace, '\\');
-            }
-            $tokenType = defined('T_NAME_QUALIFIED') ? T_NAME_QUALIFIED : T_STRING;
-            if (is_array($tokens[$index]) && $tokens[$index][0] === $tokenType) {
-                $namespace .= '\\' . $tokens[$index][1];
+        if (isset($visited[$declaration['name']])) {
+            return array();
+        }
+        $visited[$declaration['name']] = true;
+        $directTypes = isset($declaration['types']) ? $declaration['types'] : array();
+        $types = $directTypes;
+        if (isset($declaration['parent'])) {
+            $types[] = $declaration['parent'];
+            if (isset($declarations[$declaration['parent']])) {
+                $types = array_merge($types, $this->getTypeNames($declarations[$declaration['parent']], $declarations, $visited));
             }
         }
-        return ltrim($namespace, '\\');
+        foreach ($directTypes as $typeName) {
+            if (isset($declarations[$typeName])) {
+                $types = array_merge($types, $this->getTypeNames($declarations[$typeName], $declarations, $visited));
+            }
+        }
+        return array_values(array_unique($types));
     }
 
-    private function containsTypeDefinitions($tokens, $startIndex)
+    private function getProviders($declaration, $declarations, $visited = array())
     {
-        for ($index = $startIndex; isset($tokens[$index]); $index++) {
-            if (is_array($tokens[$index]) &&
-                ($tokens[$index][0] === T_EXTENDS || $tokens[$index][0] === T_IMPLEMENTS)) {
-                return true;
-            }
+        if (isset($visited[$declaration['name']])) {
+            return false;
         }
-        return false;
-    }
-
-    private function getTypeNames($className)
-    {
-        if (!class_exists($className)) return;
-        $reflection = new \ReflectionClass($className);
-        $typeNames = $reflection->getInterfaceNames();
-        $parentClass = $reflection->getParentClass();
-        if ($parentClass) {
-            $typeNames[] = $parentClass->getName();
+        $visited[$declaration['name']] = true;
+        if (array_key_exists('providers', $declaration)) {
+            return $declaration['providers'];
         }
-        return $typeNames;
+        if (isset($declaration['parent']) && isset($declarations[$declaration['parent']])) {
+            return $this->getProviders($declarations[$declaration['parent']], $declarations, $visited);
+        }
+        if (isset($declaration['parent'])) {
+            return false;
+        }
+        return array();
     }
 }

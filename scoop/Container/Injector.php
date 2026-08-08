@@ -5,11 +5,19 @@ namespace Scoop\Container;
 abstract class Injector
 {
     private $rules = array();
+    private $definitions = array();
+    private $environment;
 
     public function __construct($environment)
     {
+        $this->environment = $environment;
         $this->setInstance('Scoop\Bootstrap\Environment', $environment);
         $this->bind($environment->getConfig('providers', array()));
+        $providerPath = $environment->getStoragePath('cache/project');
+        $providerFiles = glob("{$providerPath}*providers.php");
+        foreach ($providerFiles as $file) {
+            $this->definitions += require $file;
+        }
     }
 
     public static function formatClassName($className)
@@ -40,12 +48,26 @@ abstract class Injector
 
     public function create($id, $inheritance = null)
     {
-        $method = explode(':', $id);
-        $instance = $this->instantiate($method[0], isset($method[1]) ? $method[1] : null);
+        $definition = explode(':', $id);
+        $className = $definition[0];
+        $instance = $this->instantiate($className);
+        if (isset($definition[1])) {
+            $method = $definition[1];
+            if (!is_callable(array($instance, $method))) {
+                throw new \Scoop\Container\Exception\NotFound("Factory method $className:$method not found");
+            }
+            $instance = $instance->$method();
+            if (!is_object($instance)) {
+                $type = gettype($instance);
+                throw new \Scoop\Container\Exception(
+                    "Factory method $className:$method returned $type and must resolve to an object instance."
+                );
+            }
+        }
         if ($inheritance) {
             if (!is_a($instance, $inheritance) && !is_subclass_of($instance, $inheritance)) {
-                $className = get_class($instance);
-                throw new \Scoop\Container\Exception("Object of type $className does not instance of $inheritance", 1105);
+                $classIntance = get_class($instance);
+                throw new \Scoop\Container\Exception("Object of type $classIntance does not instance of $inheritance", 1105);
             }
             $id = $inheritance;
         }
@@ -53,30 +75,21 @@ abstract class Injector
         return $instance;
     }
 
-    private function instantiate($className, $method)
+    private function instantiate($className)
     {
         if (!class_exists($className)) {
             throw new \Scoop\Container\Exception\NotFound("Class $className not found");
         }
-        $class = new \ReflectionClass($className);
-        if (!$class->isInstantiable()) {
-            throw new \Scoop\Container\Exception("Cannot inject $className because it cannot be instantiated", 1101);
-        }
-        $constructor = $class->getConstructor();
-        if ($constructor) {
-            $args = $this->getArguments($constructor->getParameters());
-            $instance = $class->newInstanceArgs($args);
+        $providers = isset($this->definitions[$className]) ?
+        $this->definitions[$className] :
+        $this->getReflectionProviders($className);
+        if (empty($providers)) {
+            $instance = new $className();
         } else {
-            $instance = $class->newInstanceWithoutConstructor();
-        }
-        if ($method && $class->hasMethod($method)) {
-            $instance = $class->getMethod($method)->invoke($instance);
-            if (!is_object($instance)) {
-                $type = gettype($instance);
-                throw new \Scoop\Container\Exception(
-                    "The factory method $className:$method returned $type and must resolve to an object instance."
-                );
-            }
+            $class = new \ReflectionClass($className);
+            $instance = $class->newInstanceArgs(array_map(function ($provider) {
+                return \Scoop\Context::inject($provider);
+            }, $providers));
         }
         return $instance;
     }
@@ -90,15 +103,54 @@ abstract class Injector
         }
     }
 
-    private function getArguments($params)
+    private function getReflectionProviders($className)
     {
-        $args = array();
-        foreach ($params as $param) {
-            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-            if ($class) {
-                $args[] = \Scoop\Context::inject($class->getName());
-            }
+        $class = new \ReflectionClass($className);
+        if (!$class->isInstantiable()) {
+            throw new \Scoop\Container\Exception\NotFound("Providers for $className not found");
         }
-        return $args;
+        $constructor = $class->getConstructor();
+        if (!$constructor) {
+            return array();
+        }
+        $providers = array();
+        $usesDefault = false;
+        $parameters = $constructor->getParameters();
+        foreach ($parameters as $parameter) {
+            $provider = $this->getParameterClass($parameter, $class);
+            $isDefault = $parameter->isDefaultValueAvailable();
+            if ($provider && !$usesDefault) {
+                $providers[] = $provider;
+                continue;
+            }
+            if (!$provider && $isDefault) {
+                $usesDefault = true;
+                continue;
+            }
+            throw new \Scoop\Container\Exception\notFound("Providers for $className not found");
+        }
+        $this->definitions[$className] = $providers;
+        return $providers;
+    }
+
+    private function getParameterClass($parameter, $class)
+    {
+        if (!method_exists($parameter, 'getType')) {
+            $provider = $parameter->getClass();
+            return $provider ? $provider->getName() : null;
+        }
+        $type = $parameter->getType();
+        if (!$type || !method_exists($type, 'isBuiltin') || $type->isBuiltin()) {
+            return null;
+        }
+        $provider = method_exists($type, 'getName') ? $type->getName() : (string) $type;
+        if ($provider === 'self') {
+            return $class->getName();
+        }
+        if ($provider === 'parent') {
+            $parent = $class->getParentClass();
+            return $parent ? $parent->getName() : null;
+        }
+        return ltrim($provider, '\\');
     }
 }

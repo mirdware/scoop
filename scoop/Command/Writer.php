@@ -4,18 +4,22 @@ namespace Scoop\Command;
 
 class Writer
 {
-    const CLEAR = "\r\e[2K";
     private $stream = 'php://stdout';
     private $right = PHP_EOL;
     private $left = '';
     private $styles = array("\e[0m");
     private $names = array('!>');
+    private $lineLength = 0;
     private $writer;
+    private $isVT100;
 
     public function __construct($styles)
     {
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            exec('chcp 65001 2>NUL');
+        $this->isVT100 = function_exists('sapi_windows_vt100_support') ?
+            sapi_windows_vt100_support(STDOUT, true) :
+            strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN';
+        if (!$this->isVT100) {
+            @exec('chcp 65001 2>NUL');
         }
         foreach ($styles as $name => $style) {
             array_push($this->names, "<$name:");
@@ -55,8 +59,8 @@ class Writer
     {
         $right = $separator;
         $left = '';
-        if ($separator === self::CLEAR) {
-            if ($this->left === self::CLEAR) {
+        if (strpos($separator, "\r") !== false || strpos($separator, "\e[") !== false) {
+            if ($this->left === $separator) {
                 return $this;
             }
             $left = $separator;
@@ -73,7 +77,7 @@ class Writer
     public function write()
     {
         if (isset($this->writer)) {
-            $this->writer->write('');
+            $this->writer->write("\r" . str_repeat(' ', $this->lineLength) . "\r");
             unset($this->writer);
         }
         $args = func_get_args();
@@ -81,26 +85,33 @@ class Writer
         foreach ($args as $msg) {
             fwrite($std, $this->process($msg));
         }
+        fflush($std);
         fclose($std);
         return $this;
     }
 
-    public function spinner($iteration, $theme = 'link', $msg = 'Loading...') {
+    public function spinner($iteration, $msg = '<link:[f]!> Loading...')
+    {
         if (!isset($this->writer)) {
-            $this->writer = $this->withSeparator(self::CLEAR);
+            $this->writer = $this->withSeparator($this->isVT100 ? "\r\e[K" : "\r");
         }
         $frames = array('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏');
         $frame = $frames[$iteration % count($frames)];
-        $this->writer->write("<$theme:$frame!> $msg");
+        $output = str_replace('[f]', $frame, $msg);
+        $this->lineLength = strlen($output);
+        $this->writer->write($output);
     }
 
-    public function progress($current, $total, $theme = 'success', $label = 'Progress:') {
-        if (!$this->writer) {
-            $this->writer = $this->withSeparator(self::CLEAR);
+    public function progress($current, $total, $msg = 'Progress: <success:[f]!> [p]%')
+    {
+        if (!isset($this->writer)) {
+            $this->writer = $this->withSeparator($this->isVT100 ? "\r\e[K" : "\r");
         }
         $percentage = round(($current / $total) * 100);
-        $frames = str_repeat("█", $percentage / 5);
-        $this->writer->write("$label <$theme:" . str_pad($frames, 60, "▒") . "!> $percentage%");
+        $frames = str_repeat("█", round($percentage / 5));
+        $output = str_replace(array('[f]', '[p]'), array(str_pad($frames, 60, "▒"), $percentage), $msg);
+        $this->lineLength = strlen($output);
+        $this->writer->write($output);
     }
 
     public function input($prompt, $hidden = false)
@@ -117,6 +128,7 @@ class Writer
 
     public function process($msg)
     {
-        return $this->left . str_replace($this->names, $this->styles, $msg) . $this->right;
+        $processed = str_replace($this->names, $this->styles, $msg);
+        return $this->left . $processed . $this->right;
     }
 }

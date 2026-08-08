@@ -114,14 +114,14 @@ class Structure
         $i = 0;
         foreach ($files as $name) {
             $file = $fileMap[$name];
-            $this->writer->spinner($i++, 'link', " File <link:$file!> ...");
+            $this->writer->spinner($i++, "File <link:$file!> ... <link>[f]!>");
             $content = file_get_contents($file);
             if ($content) {
                 $connection->exec($content);
                 $creator->create(array($name));
-                $this->writer->write("✔️  File <link:$file!> ... <success:updated!!>");
+                $this->writer->write("File <link:$file!> ... <success:updated!!> ✔️");
             } else {
-                $this->writer->write("⚠️  File <link:$file!> ... <warn:pending!!>");
+                $this->writer->write("File <link:$file!> ... <warn:pending!!> ⚠️");
             }
         }
         $this->save($creator, $updater);

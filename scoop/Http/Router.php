@@ -91,10 +91,10 @@ class Router
 
     private function match($node, $segments, $index, $params)
     {
-        if ($index === count($segments)) {
-            return isset($node['id']) ? array($node, $params) : null;
+        $segment = isset($segments[$index]) ? $segments[$index] : '';
+        if ($index === count($segments) && isset($node['id'])) {
+            return array($node, $params);
         }
-        $segment = $segments[$index];
         if (isset($node['s'][$segment])) {
             $result = $this->match($node['s'][$segment], $segments, $index + 1, $params);
             if ($result !== null) {
@@ -102,9 +102,14 @@ class Router
             }
         }
         if (isset($node['d'])) {
-            $withParam = $params;
-            $withParam[$node['d']['p']] = urldecode($segment);
-            $result = $this->match($node['d'], $segments, $index + 1, $withParam);
+            $segment = urldecode($segment);
+            $newIndex = $index + 1;
+            if (isset($node['_']) && !in_array($segment, $node['_']['m'], true)) {
+                $segment = $node['_']['v'];
+                $newIndex = $index;
+            }
+            $params[$node['d']['p']] = $segment;
+            $result = $this->match($node['d'], $segments, $newIndex, $params);
             if ($result !== null) {
                 return $result;
             }

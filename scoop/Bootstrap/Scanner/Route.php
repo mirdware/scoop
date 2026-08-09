@@ -8,7 +8,7 @@ class Route extends \Scoop\Bootstrap\Scanner
     {
         parent::__construct(
             $environment->getConfig('routes', 'app/routes'),
-            '/(endpoint|middlewares)\.php$/',
+            '/(endpoint|middlewares|default)\.php$/',
             array('routes' => $environment->getStoragePath('cache') . 'routes.php'),
             $environment->getStoragePath('cache') . 'routes.meta.php'
         );
@@ -39,16 +39,19 @@ class Route extends \Scoop\Bootstrap\Scanner
                         $applicableMiddlewares = array_merge($applicableMiddlewares, $middlewares);
                     }
                 }
-                if (isset($route['middlewares'])) {
-                    $applicableMiddlewares = array_merge($applicableMiddlewares, $route['middlewares']);
-                }
-                $this->insert($tree, $route['url'], $id);
+                $applicableMiddlewares = array_merge($applicableMiddlewares, $route['middlewares']);
+                $this->insert($tree, $route['url'], 'id', $id);
                 $map[$id] = array(
                     'url' => $route['url'],
                     'controller' => $route['controller'],
                     'validator' => $route['validator'],
                     'middlewares' => array_unique($applicableMiddlewares),
                 );
+            } elseif (key_exists('value', $route)) {
+                $this->insert($tree, $route['url'], '_', array(
+                    'v' => $route['value'],
+                    'm' => $route['match']
+                ));
             } else {
                 $middlewaresMap[$route['url']] = $route['middlewares'];
             }
@@ -70,16 +73,23 @@ class Route extends \Scoop\Bootstrap\Scanner
                 'id' => isset($route['id']) ? $route['id'] : uniqid(),
                 'controller' => $route['controller'],
                 'validator' => isset($route['validator']) ? $route['validator'] : null,
-                'middlewares' => isset($route['middlewares']) ? $this->validateMiddlewares($route['middlewares'], $filePath) : null
+                'middlewares' => isset($route['middlewares']) ? $this->validateMiddlewares($route['middlewares'], $filePath) : array()
+            );
+        }
+        if ($file === 'middlewares.php') {
+            return array(
+                'url' => $url,
+                'middlewares' => $this->validateMiddlewares($route, $filePath)
             );
         }
         return array(
             'url' => $url,
-            'middlewares' => $this->validateMiddlewares($route, $filePath)
+            'value' => isset($route['value']) ? $route['value'] : $route,
+            'match' => isset($route['match']) ? $route['match'] : array()
         );
     }
 
-    private function insert(&$node, $url, $id)
+    private function insert(&$node, $url, $key, $value)
     {
         $path = trim($url, '/');
         $segments = $path === '' ? array() : explode('/', $path);
@@ -96,7 +106,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 $node = &$node['s'][$segment];
             }
         }
-        $node['id'] = $id;
+        $node[$key] = $value;
     }
 
     private function validateMiddlewares($middlewares, $filePath)

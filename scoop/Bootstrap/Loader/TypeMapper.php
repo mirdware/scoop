@@ -6,6 +6,7 @@ class TypeMapper
 {
     private $storagePath;
     private $environment;
+    private $types = array();
 
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
@@ -15,18 +16,25 @@ class TypeMapper
 
     public function load($type)
     {
-        $files = DEBUG_MODE && is_readable('composer.json') ? $this->scanTypes() : glob("{$this->storagePath}*types.php");
+        if (isset($this->types[$type])) {
+            return $this->types[$type];
+        }
+        $files = DEBUG_MODE && is_readable('composer.json') ?
+        $this->scanTypes() :
+        glob("{$this->storagePath}*types.php");
         $typeNormalized = $this->storagePath . str_replace('\\', '_', $type);
         foreach ($files as $file) {
             $fileName = substr($file, 0, -9);
             if (strpos($typeNormalized, $fileName) === 0) {
                 $map = require $file;
                 if (isset($map[$type])) {
-                    return $map[$type];
+                    $this->types[$type] = $map[$type];
+                    return $this->types[$type];
                 }
             }
         }
-        return array();
+        $this->types[$type] = array();
+        return $this->types[$type];
     }
 
     private function scanTypes()

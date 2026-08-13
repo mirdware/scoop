@@ -5,6 +5,8 @@ namespace Scoop\Bootstrap\Scanner;
 class Source extends \Scoop\Bootstrap\Scanner
 {
     private $parser;
+    private $externalTypes = array();
+    private $externalProviders = array();
 
     public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
     {
@@ -72,12 +74,21 @@ class Source extends \Scoop\Bootstrap\Scanner
         if (isset($declaration['parent'])) {
             $types[] = $declaration['parent'];
             if (isset($declarations[$declaration['parent']])) {
-                $types = array_merge($types, $this->getTypeNames($declarations[$declaration['parent']], $declarations, $visited));
+                $parentTypes = $this->getTypeNames(
+                    $declarations[$declaration['parent']],
+                    $declarations,
+                    $visited
+                );
+                $types = array_merge($types, $parentTypes);
+            } else {
+                $types = array_merge($types, $this->getExternalTypes($declaration['parent']));
             }
         }
         foreach ($directTypes as $typeName) {
             if (isset($declarations[$typeName])) {
                 $types = array_merge($types, $this->getTypeNames($declarations[$typeName], $declarations, $visited));
+            } else {
+                $types = array_merge($types, $this->getExternalTypes($typeName));
             }
         }
         return array_values(array_unique($types));
@@ -92,12 +103,40 @@ class Source extends \Scoop\Bootstrap\Scanner
         if (array_key_exists('providers', $declaration)) {
             return $declaration['providers'];
         }
-        if (isset($declaration['parent']) && isset($declarations[$declaration['parent']])) {
-            return $this->getProviders($declarations[$declaration['parent']], $declarations, $visited);
-        }
         if (isset($declaration['parent'])) {
-            return false;
+            if (isset($declarations[$declaration['parent']])) {
+                return $this->getProviders($declarations[$declaration['parent']], $declarations, $visited);
+            }
+            return $this->getExternalProviders($declaration['parent']);
         }
         return array();
+    }
+
+    private function getExternalTypes($name)
+    {
+        if (!isset($this->externalTypes[$name])) {
+            $this->externalTypes[$name] = array();
+            if (class_exists($name) || interface_exists($name)) {
+                $class = new \ReflectionClass($name);
+                $parents = array();
+                $parent = $class->getParentClass();
+                while ($parent) {
+                    $parents[] = $parent->getName();
+                    $parent = $parent->getParentClass();
+                }
+                $parents = array_merge($parents, $class->getInterfaceNames());
+                $this->externalTypes[$name] = array_values(array_unique($parents));
+            }
+        }
+        return $this->externalTypes[$name];
+    }
+
+    private function getExternalProviders($name)
+    {
+        if (!array_key_exists($name, $this->externalProviders)) {
+            $inspector = new \Scoop\Container\Inspector($name);
+            $this->externalProviders[$name] = $inspector->resolveProviders();
+        }
+        return $this->externalProviders[$name];
     }
 }

@@ -82,6 +82,9 @@ class Route extends \Scoop\Bootstrap\Scanner
                 'middlewares' => $this->validateMiddlewares($route, $filePath)
             );
         }
+        if (isset($route['match']) && !is_array($route['match'])) {
+            throw new \UnexpectedValueException("Match definition in $filePath must be an array");
+        }
         return array(
             'url' => $url,
             'value' => isset($route['value']) ? $route['value'] : $route,

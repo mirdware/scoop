@@ -71,7 +71,7 @@ class Parser
                 $result = $this->constructor->resolve($index, $tokens, $metadata, $namespace, $imports);
                 return $result === false ? false : $this->complete($result);
             }
-            $this->declaration->readType($token, $kind, $mode, $metadata, $namespace, $imports);
+            $index = $this->declaration->readType($index, $tokens, $kind, $mode, $metadata, $namespace, $imports);
         }
         return false;
     }

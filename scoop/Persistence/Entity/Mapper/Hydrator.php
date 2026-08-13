@@ -9,6 +9,7 @@ class Hydrator
     private $valueMap;
     private $typeMapper;
     private $accessor;
+    private $propertyNames = array();
 
     public function __construct($identityMap, $entityMap, $valueMap, $typeMapper, $accessor)
     {
@@ -55,14 +56,14 @@ class Hydrator
         $accessor = $this->accessor->get($className);
         foreach ($row as $name => $value) {
             if (!isset($fields[$name])) continue;
-            $propName = \Scoop\Persistence\Entity\Mapper::toProperty($fields[$name]);
+            $propName = $this->getPropertyName($fields[$name]);
             $vo = explode('.', $fields[$name]);
             if (isset($vo[1])) {
                 if (preg_match('/([^\$]+)\$v\$(.*)/', $name, $match)) {
-                    $propName = \Scoop\Persistence\Entity\Mapper::toProperty($match[1]);
-                    $voProp = \Scoop\Persistence\Entity\Mapper::toProperty($match[2]);
+                    $propName = $this->getPropertyName($match[1]);
+                    $voProp = $this->getPropertyName($match[2]);
                 } else {
-                    $propName = \Scoop\Persistence\Entity\Mapper::toProperty($vo[1]);
+                    $propName = $this->getPropertyName($vo[1]);
                     $voProp = 'value';
                 }
                 $propClass = $properties[$propName]['type'];
@@ -90,11 +91,19 @@ class Hydrator
             if (isset($vo[1])) {
                 $column = $vo[1];
             } else {
-                $property = \Scoop\Persistence\Entity\Mapper::toProperty($column);
+                $property = $this->getPropertyName($column);
                 $column = isset($map[$property]['column']) ? $map[$property]['column'] : $column;
             }
             $fields[$column] = $row[$name];
         }
         return $fields;
+    }
+
+    private function getPropertyName($column)
+    {
+        if (!isset($this->propertyNames[$column])) {
+            $this->propertyNames[$column] = \Scoop\Persistence\Entity\Mapper::toProperty($column);
+        }
+        return $this->propertyNames[$column];
     }
 }

@@ -36,29 +36,35 @@ class Declaration
         return false;
     }
 
-    public function readType($token, $kind, &$mode, &$metadata, $namespace, $imports)
+    public function readType($index, $tokens, $kind, &$mode, &$metadata, $namespace, $imports)
     {
+        $token = $tokens[$index];
         if (Token::isToken($token, T_EXTENDS)) {
             $mode = $kind === 'class' ? 'parent' : 'interface';
-            return;
+            return $index;
         }
         if (Token::isToken($token, T_IMPLEMENTS)) {
             $mode = 'interface';
-            return;
+            return $index;
         }
         if ($token === ',' && $mode === 'parent') {
             $mode = null;
-            return;
+            return $index;
         }
         if (!$mode || !Token::isName($token)) {
-            return;
+            return $index;
         }
-        $typeName = $this->imports->resolveName(Token::text($token), $namespace, $imports, $metadata['name'], null);
+        $name = '';
+        for (; isset($tokens[$index]) && Token::isName($tokens[$index]); $index++) {
+            $name .= Token::text($tokens[$index]);
+        }
+        $typeName = $this->imports->resolveName($name, $namespace, $imports, $metadata['name'], null);
         if ($mode === 'parent') {
             $metadata['parent'] = $typeName;
             $mode = null;
         } else {
             $metadata['types'][] = $typeName;
         }
+        return $index - 1;
     }
 }

@@ -16,9 +16,12 @@ final class GcmAlgorithm
 
     public static function decrypt($string, $secret)
     {
+        $ivlength = openssl_cipher_iv_length('aes-256-gcm');
+        if (!is_string($string) || strlen($string) < 16 + $ivlength + 16) {
+            return false;
+        }
         $keysalt = substr($string, 0, 16);
         $key = hash_pbkdf2('sha512', $secret, $keysalt, 20000, 32, true);
-        $ivlength = openssl_cipher_iv_length('aes-256-gcm');
         $iv = substr($string, 16, $ivlength);
         $tag = substr($string, -16);
         return openssl_decrypt(substr($string, 16 + $ivlength, -16), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);

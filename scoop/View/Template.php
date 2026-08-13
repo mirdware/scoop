@@ -8,19 +8,25 @@ final class Template
     private static $cachePath = 'app/storage/cache/views/';
     private static $viewPath = 'app/views/';
     private static $inHead;
+    private static $compiled = array();
 
     public function parse($templatePath)
     {
         $template = self::$viewPath . $templatePath . '.sdt.php';
         $view = self::$cachePath . $templatePath . '.php';
         self::$inHead = false;
+        if (!DEBUG_MODE && isset(self::$compiled[$templatePath])) {
+            return self::$compiled[$templatePath];
+        }
         if (!is_readable($template)) {
             throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
-        if (is_readable($view) && filemtime($view) > filemtime($template)) {
-            return $view;
+        if (!is_readable($view) || filemtime($template) > filemtime($view)) {
+            $this->create($view, $template);
         }
-        $this->create($view, $template);
+        if (!DEBUG_MODE) {
+            self::$compiled[$templatePath] = $view;
+        }
         return $view;
     }
 
@@ -28,6 +34,7 @@ final class Template
     {
         self::$viewPath = $viewPath;
         self::$cachePath = $cachePath;
+        self::$compiled = array();
     }
 
     protected function create($viewName, $templateName)

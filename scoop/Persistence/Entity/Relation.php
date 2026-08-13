@@ -71,25 +71,15 @@ class Relation
                 continue;
             }
             if (is_array($relationEntity)) {
-                foreach ($relationEntity as $e) {
-                    $this->manager->remove($e);
+                $relationName = $this->getPropertyRelation($relation)[0];
+                foreach ($relationEntity as $relatedEntity) {
+                    $this->unlinkInverse($relatedEntity, $relationName, $entity);
                 }
+                $accessor($entity, $name, array());
             } elseif (is_object($relationEntity)) {
                 $relationName = $this->getPropertyRelation($relation)[0];
-                $classRelated = $this->accessor->getDeclaringClass(get_class($relationEntity), $relationName);
-                if (!$classRelated) continue;
-                $relatedAccessor = $this->accessor->get($classRelated);
-                $value = $relatedAccessor($relationEntity, $relationName);
-                if (is_array($value)) {
-                    $index = array_search($entity, $value);
-                    if ($index !== false) {
-                        array_splice($value, $index, 1);
-                    }
-                } else {
-                    $this->manager->remove($relationEntity);
-                    $value = null;
-                }
-                $relatedAccessor($relationEntity, $relationName, $value);
+                $this->unlinkInverse($relationEntity, $relationName, $entity);
+                $accessor($entity, $name, null);
             }
         }
     }
@@ -152,39 +142,62 @@ class Relation
         if (!isset($this->previous[$mapperKey][$ownerId])) {
             $this->previous[$mapperKey][$ownerId] = array();
         }
-        $classDeclaring = $this->accessor->getDeclaringClass($relationClass, $relationName);
-        if (!$classDeclaring) return;
-        $accessor = $this->accessor->get($classDeclaring);
         $relatedEntities = $this->indexEntities($relationClass, $currentEntities);
         $removed = array_diff_key($this->previous[$mapperKey][$ownerId], $relatedEntities);
         $added = array_diff_key($relatedEntities, $this->previous[$mapperKey][$ownerId]);
         $this->previous[$mapperKey][$ownerId] = array_diff_key($this->previous[$mapperKey][$ownerId], $removed);
         foreach ($removed as $removedEntity) {
-            $value = $accessor($removedEntity, $relationName);
-            if (is_array($value)) {
-                $index = array_search($entity, $value, true);
-                if ($index !== false) {
-                    array_splice($value, $index, 1);
-                    $accessor($removedEntity, $relationName, $value);
-                }
-            } else {
-                $accessor($removedEntity, $relationName, null);
-            }
+            $this->unlinkInverse($removedEntity, $relationName, $entity);
         }
         foreach ($added as $relatedKey => $addedEntity) {
             if (is_object($addedEntity)) {
-                $value = $accessor($addedEntity, $relationName);
-                if (is_array($value)) {
-                    if (!in_array($entity, $value, true)) {
-                        array_push($value, $entity);
-                        $accessor($addedEntity, $relationName, $value);
-                    }
-                } else {
-                    $accessor($addedEntity, $relationName, $entity);
-                }
+                $this->linkInverse($addedEntity, $relationName, $entity);
                 $this->previous[$mapperKey][$ownerId][$relatedKey] = $addedEntity;
             }
         }
+    }
+
+    private function unlinkInverse($relatedEntity, $relationName, $entity)
+    {
+        $accessor = $this->getPropertyAccessor($relatedEntity, $relationName);
+        if (!$accessor) return;
+        $value = $accessor($relatedEntity, $relationName);
+        $isArray = is_array($value);
+        if (!$isArray && $value !== $entity) {
+            return;
+        }
+        if ($isArray) {
+            $index = array_search($entity, $value, true);
+            if ($index === false) return;
+            array_splice($value, $index, 1);
+        } else {
+            $value = null;
+        }
+        $accessor($relatedEntity, $relationName, $value);
+        if (!$this->mapper->contains($relatedEntity)) {
+            $this->manager->save($relatedEntity);
+        }
+    }
+
+    private function linkInverse($relatedEntity, $relationName, $entity)
+    {
+        $accessor = $this->getPropertyAccessor($relatedEntity, $relationName);
+        if (!$accessor) return;
+        $value = $accessor($relatedEntity, $relationName);
+        if (is_array($value)) {
+            if (in_array($entity, $value, true)) return;
+            array_push($value, $entity);
+        } else {
+            $value = $entity;
+        }
+        $accessor($relatedEntity, $relationName, $value);
+    }
+
+    private function getPropertyAccessor($entity, $property)
+    {
+        if (!is_object($entity)) return null;
+        $declaringClass = $this->accessor->getDeclaringClass(get_class($entity), $property);
+        return $declaringClass ? $this->accessor->get($declaringClass) : null;
     }
 
     private function getRelationValue($entity, $key, $idNames)

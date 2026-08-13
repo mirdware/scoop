@@ -80,9 +80,15 @@ abstract class Injector
         if (!class_exists($className)) {
             throw new \Scoop\Container\Exception\NotFound("Class $className not found");
         }
-        $providers = isset($this->definitions[$className]) ?
-        $this->definitions[$className] :
-        $this->getReflectionProviders($className);
+        if (isset($this->definitions[$className])) {
+            $providers = $this->definitions[$className];
+        } else {
+            $inspector = new Inspector($className);
+            $providers = $inspector->resolveProviders();
+            if (!$inspector->isInstantiable() || $providers === false) {
+                throw new \Scoop\Container\Exception\NotFound("Providers for $className not found");
+            }
+        }
         if (empty($providers)) {
             $instance = new $className();
         } else {
@@ -101,56 +107,5 @@ abstract class Injector
             $className = self::formatClassName($className);
             $this->rules[$interfaceName] = $className;
         }
-    }
-
-    private function getReflectionProviders($className)
-    {
-        $class = new \ReflectionClass($className);
-        if (!$class->isInstantiable()) {
-            throw new \Scoop\Container\Exception\NotFound("Providers for $className not found");
-        }
-        $constructor = $class->getConstructor();
-        if (!$constructor) {
-            return array();
-        }
-        $providers = array();
-        $usesDefault = false;
-        $parameters = $constructor->getParameters();
-        foreach ($parameters as $parameter) {
-            $provider = $this->getParameterClass($parameter, $class);
-            $isDefault = $parameter->isDefaultValueAvailable();
-            if ($provider && !$usesDefault) {
-                $providers[] = $provider;
-                continue;
-            }
-            if (!$provider && $isDefault) {
-                $usesDefault = true;
-                continue;
-            }
-            throw new \Scoop\Container\Exception\notFound("Providers for $className not found");
-        }
-        $this->definitions[$className] = $providers;
-        return $providers;
-    }
-
-    private function getParameterClass($parameter, $class)
-    {
-        if (!method_exists($parameter, 'getType')) {
-            $provider = $parameter->getClass();
-            return $provider ? $provider->getName() : null;
-        }
-        $type = $parameter->getType();
-        if (!$type || !method_exists($type, 'isBuiltin') || $type->isBuiltin()) {
-            return null;
-        }
-        $provider = method_exists($type, 'getName') ? $type->getName() : (string) $type;
-        if ($provider === 'self') {
-            return $class->getName();
-        }
-        if ($provider === 'parent') {
-            $parent = $class->getParentClass();
-            return $parent ? $parent->getName() : null;
-        }
-        return ltrim($provider, '\\');
     }
 }

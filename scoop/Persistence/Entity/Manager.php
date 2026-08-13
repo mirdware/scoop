@@ -9,11 +9,13 @@ class Manager
     private $mapper;
     private $relations;
     private $accessor;
+    private $saving;
     private $hasProperties = array();
 
     public function __construct($entities, $values, $relations, $types)
     {
         $this->map = compact('entities', 'values', 'relations');
+        $this->saving = new \SplObjectStorage();
         $this->accessor = new Accessor();
         $this->typeMapper = new Mapper\Type($types);
         $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor);
@@ -23,6 +25,8 @@ class Manager
 
     public function save($entity)
     {
+        if (isset($this->saving[$entity])) return;
+        $this->saving[$entity] = true;
         $mapper = $this->getMapper(get_class($entity));
         if (isset($mapper['relations'])) {
             $this->relations->add($entity, $this->filterRelations(
@@ -34,9 +38,10 @@ class Manager
                 $mapper['relations'],
                 array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY)
             ));
-            return;
+        } else {
+            $this->mapper->add($entity);
         }
-        $this->mapper->add($entity);
+        unset($this->saving[$entity]);
     }
 
     public function remove($entity)

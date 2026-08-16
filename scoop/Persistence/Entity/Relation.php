@@ -12,16 +12,18 @@ class Relation
     private $relationMap;
     private $manager;
     private $accessor;
+    private $builder;
     private $many = array();
     private $loaded = array();
     private $previous = array();
 
-    public function __construct($map, $mapper, $manager, $accessor)
+    public function __construct($map, $mapper, $manager, $accessor, $builder)
     {
         $this->relationMap = $map;
         $this->mapper = $mapper;
         $this->manager = $manager;
         $this->accessor = $accessor;
+        $this->builder = $builder;
     }
 
     public function track($name, $ownerId, $relatedEntities)
@@ -87,7 +89,7 @@ class Relation
     public function save()
     {
         foreach ($this->many as $key => $relation) {
-            $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
+            $sqo = $this->builder->build($this->relationMap[$key]['table']);
             $fields = array();
             $idNames = array();
             foreach ($this->relationMap[$key]['entities'] as $name => $definition) {

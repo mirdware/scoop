@@ -56,7 +56,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 $middlewaresMap[$route['url']] = $route['middlewares'];
             }
         }
-        return array('routes' => compact('map', 'tree'));
+        return array('routes' => array('map' => $map, 'tree' => $tree));
     }
 
     protected function check($filePath)

@@ -10,13 +10,14 @@ class Mapper
     private $identityMap;
     private $hydrator;
     private $extractor;
-    private $statements = array();
+    private $builder;
 
-    public function __construct($entityMap, $valueMap, $typeMapper, $accessor)
+    public function __construct($entityMap, $valueMap, $typeMapper, $accessor, $builder)
     {
         $this->entityMap = $entityMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
+        $this->builder = $builder;
         $this->identityMap = new Mapper\Identity();
         $this->hydrator = new Mapper\Hydrator($this->identityMap, $entityMap, $valueMap, $typeMapper, $accessor);
         $this->extractor = new Mapper\Extractor($entityMap, $valueMap, $typeMapper, $accessor);
@@ -154,10 +155,7 @@ class Mapper
         if (!isset($this->entityMap[$className]['table'])) {
             throw new \RuntimeException($className . ' not mapper configured');
         }
-        if (!isset($this->statements[$className])) {
-            $this->statements[$className] = new \Scoop\Persistence\SQO($this->entityMap[$className]['table']);
-        }
-        return $this->statements[$className];
+        return $this->builder->build($this->entityMap[$className]['table']);
     }
 
     private function getKey($entity)
@@ -188,7 +186,7 @@ class Mapper
         ) {
             $accessor = $this->accessor->get($rootClassName);
             $id = $accessor($entity, $idName);
-            $id = $id ? $id : $this->statements[$rootClassName]->getLastId();
+            $id = $id ? $id : $this->getStatement($rootClassName)->getLastId();
             $accessor($entity, $idName, $id);
             $newKey = "$concreteClassName:$id";
             $this->identityMap->reassignKey($entity, $newKey);

@@ -7,11 +7,13 @@ class Discriminator
     private $root;
     private $entityMap;
     private $discriminator;
+    private $builder;
 
-    public function __construct($root, $entityMap)
+    public function __construct($root, $entityMap, $builder)
     {
         $this->root = $root;
         $this->entityMap = $entityMap;
+        $this->builder = $builder;
         $this->discriminator = $this->getDiscriminator();
     }
 
@@ -29,12 +31,12 @@ class Discriminator
             return $root;
         }
         $idName = isset($this->entityMap[$root]['id']) ? $this->entityMap[$root]['id'] : 'id';
-        $sqo = new \Scoop\Persistence\SQO($this->entityMap[$root]['table'], 'r');
+        $sqo = $this->builder->build($this->entityMap[$root]['table'], 'r');
         $reader = $sqo->read();
         $reader->restrict("r.$idName = :id");
         $row += $reader->run(array('id' => $row[$idName]))->fetch();
         if (isset($this->entityMap[$root]['discriminator']['map'])) {
-            $discriminator = new Discriminator($root, $this->entityMap);
+            $discriminator = new Discriminator($root, $this->entityMap, $this->builder);
             return $discriminator->discriminate($row);
         }
         return $root;

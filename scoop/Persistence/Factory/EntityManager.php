@@ -17,7 +17,8 @@ class EntityManager
             $this->environment->getConfig('model.entities', array()),
             $this->environment->getConfig('model.values', array()),
             $this->environment->getConfig('model.relations', array()),
-            $this->environment->getConfig('model.types', array())
+            $this->environment->getConfig('model.types', array()),
+            new \Scoop\Persistence\Builder()
         );
     }
 }

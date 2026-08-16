@@ -42,7 +42,7 @@ trait Pageable
         $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page', $this->connection);
         $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
         return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
-        ->fetch(\PDO::FETCH_ASSOC) + compact('page', 'size', 'result');
+        ->fetch(\PDO::FETCH_ASSOC) + array('page' => $page, 'size' => $size, 'result' => $result);
     }
 
     protected function getOrder()

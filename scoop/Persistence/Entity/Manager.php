@@ -10,16 +10,18 @@ class Manager
     private $relations;
     private $accessor;
     private $saving;
+    private $builder;
     private $hasProperties = array();
 
-    public function __construct($entities, $values, $relations, $types)
+    public function __construct($entities, $values, $relations, $types, $builder)
     {
-        $this->map = compact('entities', 'values', 'relations');
+        $this->builder = $builder;
+        $this->map = array('entities' => $entities, 'values' => $values, 'relations' => $relations);
         $this->saving = new \SplObjectStorage();
         $this->accessor = new Accessor();
         $this->typeMapper = new Mapper\Type($types);
-        $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor);
-        $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor);
+        $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor, $this->builder);
+        $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor, $this->builder);
         register_shutdown_function(array($this, 'flush'));
     }
 
@@ -56,7 +58,14 @@ class Manager
     public function search($classEntity)
     {
         $this->getMapper($classEntity);
-        return new Query($this->mapper, $classEntity, $this->map, $this->accessor, $this->relations);
+        return new Query(
+            $this->mapper,
+            $classEntity,
+            $this->map,
+            $this->accessor,
+            $this->relations,
+            $this->builder
+        );
     }
 
     public function flush()
@@ -67,8 +76,20 @@ class Manager
 
     public function clean()
     {
-        $this->mapper = new Mapper($this->map['entities'], $this->map['values'], $this->typeMapper, $this->accessor);
-        $this->relations = new Relation($this->map['relations'], $this->mapper, $this, $this->accessor);
+        $this->mapper = new Mapper(
+            $this->map['entities'],
+            $this->map['values'],
+            $this->typeMapper,
+            $this->accessor,
+            $this->builder
+        );
+        $this->relations = new Relation(
+            $this->map['relations'],
+            $this->mapper,
+            $this,
+            $this->accessor,
+            $this->builder
+        );
     }
 
     private function getMapper($classEntity)

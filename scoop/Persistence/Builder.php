@@ -4,8 +4,20 @@ namespace Scoop\Persistence;
 
 class Builder
 {
-    public function build($table, $alias = '', $connection = 'default')
+    private $connectionName;
+    private $instances = array();
+
+    public function __construct($connectionName = 'default')
     {
-        return new SQO($table, $alias, $connection);
+        $this->connectionName = $connectionName;
+    }
+
+    public function build($table, $alias = '')
+    {
+        $key = "$table:$alias";
+        if (!isset($this->instances[$key])) {
+            $this->instances[$key] = new SQO($table, $alias, $this->connectionName);
+        }
+        return $this->instances[$key];
     }
 }

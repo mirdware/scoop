@@ -80,7 +80,7 @@ class Identity implements \IteratorAggregate
 
     public function setPersisted($key, $entity, $fields)
     {
-        $this->persisted[$key] = compact('entity', 'fields');
+        $this->persisted[$key] = array('entity' => $entity, 'fields' => $fields);
     }
 
     public function &getPersistedFields($key, $className)

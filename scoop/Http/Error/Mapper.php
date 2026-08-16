@@ -69,7 +69,7 @@ class Mapper
         $view = new \Scoop\View(
             isset($this->config[$status]['view']) ? $this->config[$status]['view'] : self::VIEW
         );
-        return $view->add(compact('title', 'status', 'ex'));
+        return $view->add(array('title' => $title, 'status' => $status, 'ex' => $ex));
     }
 
     private function interpolate($ex, $message)

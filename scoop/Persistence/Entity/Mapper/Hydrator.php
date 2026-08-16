@@ -9,7 +9,8 @@ class Hydrator
     private $valueMap;
     private $typeMapper;
     private $accessor;
-    private $propertyNames = array();
+    private $reflectionClasses = array();
+    private $plans = array();
 
     public function __construct($identityMap, $entityMap, $valueMap, $typeMapper, $accessor)
     {
@@ -27,15 +28,14 @@ class Hydrator
             return $this->identityMap->getPersistedEntity($key);
         }
         $entity = $this->identityMap->getAttachedEntity($key);
-        if ($entity === null) {
+        $isNew = $entity === null;
+        if ($isNew) {
             $entity = $this->createObject($className);
         }
-        $this->setFields($className, $entity, $names, $row);
-        $fields = array($className => $this->getRowFields($row, $names, $this->entityMap[$className]['properties']));
+        $fields = array($className => $this->hydrate($className, $entity, $names, $row, $isNew));
         $index = 0;
         while ($parent = get_parent_class($className)) {
-            $this->setFields($parent, $entity, $names[$index], $row);
-            $fields[$parent] = $this->getRowFields($row, $names[$index], $this->entityMap[$parent]['properties']);
+            $fields[$parent] = $this->hydrate($parent, $entity, $names[$index], $row, $isNew);
             $className = $parent;
             $index++;
         }
@@ -45,65 +45,85 @@ class Hydrator
 
     public function createObject($className)
     {
-        $reflectionClass = new \ReflectionClass($className);
-        return $reflectionClass->newInstanceWithoutConstructor();
+        if (!isset($this->reflectionClasses[$className])) {
+            $this->reflectionClasses[$className] = new \ReflectionClass($className);
+        }
+        return $this->reflectionClasses[$className]->newInstanceWithoutConstructor();
     }
 
-    private function setFields($className, $entity, $fields, $row)
+    private function hydrate($className, $entity, $fields, $row, $isNew)
     {
         $valueObjects = array();
-        $properties = $this->entityMap[$className]['properties'];
         $accessor = $this->accessor->get($className);
-        foreach ($row as $name => $value) {
-            if (!isset($fields[$name])) continue;
-            $propName = $this->getPropertyName($fields[$name]);
-            $vo = explode('.', $fields[$name]);
-            if (isset($vo[1])) {
-                if (preg_match('/([^\$]+)\$v\$(.*)/', $name, $match)) {
-                    $propName = $this->getPropertyName($match[1]);
-                    $voProp = $this->getPropertyName($match[2]);
-                } else {
-                    $propName = $this->getPropertyName($vo[1]);
-                    $voProp = 'value';
+        $snapshot = array();
+        $plan = $this->getPlan($className, $fields);
+        foreach ($plan as $field) {
+            $name = $field['name'];
+            $hasValue = array_key_exists($name, $row);
+            $value = $hasValue ? $row[$name] : null;
+            $snapshot[$field['column']] = $value;
+            if (!$hasValue) continue;
+            $propName = $field['property'];
+            if (isset($field['valueProperty'])) {
+                if (!array_key_exists($propName, $valueObjects)) {
+                    if (!$isNew && $accessor($entity, $propName) !== null) {
+                        $valueObjects[$propName] = null;
+                        continue;
+                    }
+                    $valueObjects[$propName] = $this->createObject($field['type']);
                 }
-                $propClass = $properties[$propName]['type'];
-                if (!isset($valueObjects[$propName])) {
-                    $valueObjects[$propName] = $this->createObject($propClass);
-                }
-                $valueAccessor = $this->accessor->get($propClass);
-                $valueAccessor($valueObjects[$propName], $voProp, $value);
+                if ($valueObjects[$propName] === null) continue;
+                $valueAccessor = $this->accessor->get($field['type']);
+                $valueAccessor($valueObjects[$propName], $field['valueProperty'], $value);
                 $value = $valueObjects[$propName];
             } else {
-                $value = $this->typeMapper->getEntityValue($properties[$propName]['type'], $value);
+                $value = $this->typeMapper->getEntityValue($field['type'], $value);
             }
-            if ($accessor($entity, $propName) === null) {
+            if ($isNew || $accessor($entity, $propName) === null) {
                 $accessor($entity, $propName, $value);
             }
         }
+        return $snapshot;
     }
 
-    private function getRowFields($row, $names, $map)
+    private function getPlan($className, $fields)
     {
-        $fields = array();
-        foreach ($names as $name => $column) {
+        if (isset($this->plans[$className])) {
+            foreach ($this->plans[$className] as $cached) {
+                if ($cached['fields'] === $fields) {
+                    return $cached['plan'];
+                }
+            }
+        }
+        $plan = array();
+        $properties = $this->entityMap[$className]['properties'];
+        foreach ($fields as $name => $column) {
             if (!is_string($column)) continue;
             $vo = explode('.', $column);
             if (isset($vo[1])) {
-                $column = $vo[1];
+                $snapshotColumn = $vo[1];
+                if (preg_match('/([^\$]+)\$v\$(.*)/', $name, $match)) {
+                    $property = \Scoop\Persistence\Entity\Mapper::toProperty($match[1]);
+                    $valueProperty = \Scoop\Persistence\Entity\Mapper::toProperty($match[2]);
+                } else {
+                    $property = \Scoop\Persistence\Entity\Mapper::toProperty($vo[1]);
+                    $valueProperty = 'value';
+                }
             } else {
-                $property = $this->getPropertyName($column);
-                $column = isset($map[$property]['column']) ? $map[$property]['column'] : $column;
+                $property = \Scoop\Persistence\Entity\Mapper::toProperty($column);
+                $snapshotColumn = isset($properties[$property]['column']) ?
+                    $properties[$property]['column'] : $column;
+                $valueProperty = null;
             }
-            $fields[$column] = $row[$name];
+            $plan[] = array(
+                'name' => $name,
+                'property' => $property,
+                'column' => $snapshotColumn,
+                'type' => $properties[$property]['type'],
+                'valueProperty' => $valueProperty
+            );
         }
-        return $fields;
-    }
-
-    private function getPropertyName($column)
-    {
-        if (!isset($this->propertyNames[$column])) {
-            $this->propertyNames[$column] = \Scoop\Persistence\Entity\Mapper::toProperty($column);
-        }
-        return $this->propertyNames[$column];
+        $this->plans[$className][] = array('fields' => $fields, 'plan' => $plan);
+        return $plan;
     }
 }

@@ -11,18 +11,20 @@ class Query
     private $fieldResolver;
     private $joinResolver;
     private $assembler;
+    private $builder;
     private $aggregates = array();
 
-    public function __construct($mapper, $aggregate, $map, $accessor, $relations)
+    public function __construct($mapper, $aggregate, $map, $accessor, $relations, $builder)
     {
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
+        $this->builder = $builder;
         $this->fieldResolver = new Resolver\Field($map, $mapper);
         $this->fieldResolver->addFields($this->root, 'r', false);
         $this->joinResolver = new Resolver\Join($mapper, $map, $this->fieldResolver);
         $this->assembler = new Assembler($map, $mapper, $accessor, $this->fieldResolver, $relations);
-        $this->discriminator = new Mapper\Discriminator($aggregate, $map['entities']);
+        $this->discriminator = new Mapper\Discriminator($aggregate, $map['entities'], $builder);
         $discriminatorColumn = $this->discriminator->getColumn();
         if ($discriminatorColumn) {
             $this->fieldResolver->addRawField($discriminatorColumn, 'r.' . $discriminatorColumn);
@@ -55,6 +57,23 @@ class Query
         $result = $reader->run($fields);
         $idName = $this->mapper->getTableId($this->root);
         $rows = $result->fetchAll();
+        if (!$this->aggregates) {
+            $aggregateRootList = array();
+            $rootFields = array();
+            foreach ($rows as $row) {
+                $root = $this->discriminator->discriminate($row);
+                if (!isset($rootFields[$root])) {
+                    $rootFields[$root] = $this->fieldResolver->fieldsFor($root, 'r');
+                }
+                $aggregateRootList[] = $this->mapper->make(
+                    $root,
+                    $row[$idName],
+                    $row,
+                    $rootFields[$root]
+                );
+            }
+            return $aggregateRootList;
+        }
         $aggregates = array();
         foreach ($rows as $row) {
             if (!isset($aggregates[$row[$idName]])) {
@@ -78,7 +97,7 @@ class Query
         $reader = $this->createReader();
         $idName = $this->mapper->getTableId($this->root);
         $reader->restrict("r.$idName = :id");
-        $result = $reader->run(compact('id'));
+        $result = $reader->run(array('id' => $id));
         $rows = $result->fetchAll();
         if (!$rows) return null;
         $root = $this->discriminator->discriminate($rows[0]);
@@ -90,7 +109,7 @@ class Query
 
     private function createReader()
     {
-        $sqo = new \Scoop\Persistence\SQO($this->map['entities'][$this->root]['table'], 'r');
+        $sqo = $this->builder->build($this->map['entities'][$this->root]['table'], 'r');
         $reader = $sqo->read($this->fieldResolver->getFields());
         foreach ($this->fieldResolver->getJoins() as $join) {
             $reader->join($join[0], $join[1], $join[2]);

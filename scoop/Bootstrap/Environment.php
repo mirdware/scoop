@@ -18,14 +18,14 @@ class Environment
     public function __construct($configPath, $options = array())
     {
         $options = array_merge(array(
-            'storagePath' => 'app/storage',
+            'storage' => 'app/storage',
             'stateless' => false
         ), $options);
         if (!$options['stateless'] && !self::$sessionInit) {
             self::$sessionInit = session_start();
         }
         $this->config = $configPath . '.php';
-        $this->storagePath = $options['storagePath'];
+        $this->storagePath = $options['storage'];
         if (isset($_SERVER['HTTP_HOST'])) {
             $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||

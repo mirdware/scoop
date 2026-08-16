@@ -156,7 +156,7 @@ class Structure
             return $sqoStruct
             ->update(array('tag' => $tag))
             ->filter('name IN(:files)')
-            ->bind(compact('files'));
+            ->bind(array('files' => $files));
         }
         return null;
     }

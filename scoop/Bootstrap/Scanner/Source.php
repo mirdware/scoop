@@ -10,11 +10,12 @@ class Source extends \Scoop\Bootstrap\Scanner
 
     public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
     {
+        $path = $environment->getStoragePath('cache/project');
         $cacheFilePaths = array(
-            'types' => $environment->getStoragePath('cache/project') . "{$prefix}types.php",
-            'providers' => $environment->getStoragePath('cache/project') . "{$prefix}providers.php"
+            'types' =>  "{$path}{$prefix}types.php",
+            'providers' => "{$path}{$prefix}providers.php"
         );
-        $metaFilePath = $environment->getStoragePath('cache/project') . "{$prefix}meta.php";
+        $metaFilePath = "{$path}{$prefix}meta.php";
         parent::__construct($directory, '/\.php$/', $cacheFilePaths, $metaFilePath);
         $this->parser = new Source\Parser();
     }

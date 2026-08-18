@@ -9,18 +9,18 @@ class Mapper
     private $accessor;
     private $identityMap;
     private $hydrator;
-    private $extractor;
+    private $plan;
     private $builder;
 
-    public function __construct($entityMap, $valueMap, $typeMapper, $accessor, $builder)
+    public function __construct($entityMap, $typeMapper, $accessor, $builder, $plan)
     {
         $this->entityMap = $entityMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
         $this->builder = $builder;
+        $this->plan = $plan;
         $this->identityMap = new Mapper\Identity();
-        $this->hydrator = new Mapper\Hydrator($this->identityMap, $entityMap, $valueMap, $typeMapper, $accessor);
-        $this->extractor = new Mapper\Extractor($entityMap, $valueMap, $typeMapper, $accessor);
+        $this->hydrator = new Mapper\Hydrator($this->identityMap, $typeMapper, $accessor, $plan);
     }
 
     public function add($entity)
@@ -44,10 +44,10 @@ class Mapper
         foreach ($this->identityMap as $entity) {
             $concreteClassName = get_class($entity);
             $className = $concreteClassName;
-            $fields = array($className => $this->extractor->getFields($entity, $className, $this->entityMap[$className]));
+            $fields = array($className => $this->plan->getFields($entity, $className));
             while ($parent = get_parent_class($className)) {
                 $className = $parent;
-                $fields[$className] = $this->extractor->getFields($entity, $className, $this->entityMap[$className]);
+                $fields[$className] = $this->plan->getFields($entity, $className);
             }
             $this->execute($entity, $fields);
             $key = $this->updateKey($entity, $concreteClassName, $className);
@@ -117,7 +117,7 @@ class Mapper
             } else {
                 foreach ($fields as $className => $value) {
                     $persistedFields = &$this->identityMap->getPersistedFields($key, $className);
-                    $updatedFields = $this->extractor->getChangedFields($className, $persistedFields, $value);
+                    $updatedFields = $this->plan->getChangedFields($className, $persistedFields, $value);
                     if (empty($updatedFields)) {
                         continue;
                     }
@@ -142,7 +142,7 @@ class Mapper
                 $idName = $this->getTableId($className);
                 $value[$idName] = isset($value[$idName]) ? $value[$idName] : $id;
                 $statement = $this->getStatement($className);
-                $value = $this->extractor->clearNulls($value);
+                $value = $this->plan->clearNulls($value);
                 $statement->create($value)->run();
                 $id = isset($value[$idName]) ? $value[$idName] : $statement->getLastId();
                 $baseClassName = $className;

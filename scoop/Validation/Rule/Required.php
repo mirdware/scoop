@@ -6,6 +6,6 @@ class Required extends \Scoop\Validation\Rule
 {
     public function validate($value)
     {
-        return $value !== '' && $value != null;
+        return $value !== '' && $value !== null;
     }
 }

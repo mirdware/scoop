@@ -134,10 +134,9 @@ class Validator
             $key = array_shift($fields);
         }
         if (isset($response[$key])) {
-            $response[$key] += $validations;
-        } else {
-            $response[$key] = $validations;
+            $validations = array_merge($validations, $response[$key]);
         }
+        $response[$key] = $validations;
     }
 
     private function setData(&$rules, $data, $index = '')

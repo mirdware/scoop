@@ -6,13 +6,15 @@ class Field
 {
     private $map;
     private $mapper;
-    private $fields = array();
-    private $joins = array();
+    private $fields;
+    private $joins;
 
-    public function __construct($map, $mapper)
+    public function __construct($map, $mapper, $fields, $joins)
     {
         $this->map = $map;
         $this->mapper = $mapper;
+        $this->fields = $fields;
+        $this->joins = $joins;
     }
 
     public function addFields($entity, $table, $isOptional)

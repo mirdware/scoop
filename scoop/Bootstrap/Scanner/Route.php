@@ -6,11 +6,12 @@ class Route extends \Scoop\Bootstrap\Scanner
 {
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
+        $path = $environment->getStoragePath('cache');
         parent::__construct(
             $environment->getConfig('routes', 'app/routes'),
             '/(endpoint|middlewares|default)\.php$/',
-            array('routes' => $environment->getStoragePath('cache') . 'routes.php'),
-            $environment->getStoragePath('cache') . 'routes.meta.php'
+            array('routes' =>  "{$path}routes.php"),
+            "{$path}routes.meta.php"
         );
     }
 

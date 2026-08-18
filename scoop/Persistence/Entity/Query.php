@@ -14,21 +14,16 @@ class Query
     private $builder;
     private $aggregates = array();
 
-    public function __construct($mapper, $aggregate, $map, $accessor, $relations, $builder)
+    public function __construct($mapper, $aggregate, $map, $accessor, $relations, $builder, $plan)
     {
         $this->map = $map;
         $this->root = $aggregate;
         $this->mapper = $mapper;
         $this->builder = $builder;
-        $this->fieldResolver = new Resolver\Field($map, $mapper);
-        $this->fieldResolver->addFields($this->root, 'r', false);
+        $this->fieldResolver = $plan->createFieldResolver($map, $mapper);
         $this->joinResolver = new Resolver\Join($mapper, $map, $this->fieldResolver);
-        $this->assembler = new Assembler($map, $mapper, $accessor, $this->fieldResolver, $relations);
-        $this->discriminator = new Mapper\Discriminator($aggregate, $map['entities'], $builder);
-        $discriminatorColumn = $this->discriminator->getColumn();
-        if ($discriminatorColumn) {
-            $this->fieldResolver->addRawField($discriminatorColumn, 'r.' . $discriminatorColumn);
-        }
+        $this->assembler = new Query\Assembler($map, $mapper, $accessor, $this->fieldResolver, $relations);
+        $this->discriminator = $plan->getDiscriminator();
     }
 
     public function aggregate($aggregates)
@@ -75,11 +70,14 @@ class Query
             return $aggregateRootList;
         }
         $aggregates = array();
+        $rootFields = array();
         foreach ($rows as $row) {
             if (!isset($aggregates[$row[$idName]])) {
                 $root = $this->discriminator->discriminate($row);
-                $fields = $this->fieldResolver->fieldsFor($root, 'r');
-                $aggregateRoot = $this->mapper->make($root, $row[$idName], $row, $fields);
+                if (!isset($rootFields[$root])) {
+                    $rootFields[$root] = $this->fieldResolver->fieldsFor($root, 'r');
+                }
+                $aggregateRoot = $this->mapper->make($root, $row[$idName], $row, $rootFields[$root]);
                 $aggregates[$row[$idName]] = array('root' => $aggregateRoot, 'rows' => array());
             }
             $aggregates[$row[$idName]]['rows'][] = $row;

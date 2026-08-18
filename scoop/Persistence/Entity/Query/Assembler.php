@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Persistence\Entity;
+namespace Scoop\Persistence\Entity\Query;
 
 class Assembler
 {
@@ -9,6 +9,7 @@ class Assembler
     private $accessor;
     private $fieldResolver;
     private $relation;
+    private $fields = array();
 
     public function __construct($map, $mapper, $accessor, $fieldResolver, $relation)
     {
@@ -29,12 +30,17 @@ class Assembler
         foreach ($aggregateList as $name => $map) {
             $alias = $map['alias'];
             $className = $map['type'];
-            $fields = $this->fieldResolver->fieldsFor($className, $alias);
+            $fieldKey = $className . ':' . $alias;
+            if (!isset($this->fields[$fieldKey])) {
+                $this->fields[$fieldKey] = $this->fieldResolver->fieldsFor($className, $alias);
+            }
+            $fields = $this->fields[$fieldKey];
             $prefix = $alias !== 'r' ? $alias . '$a$' : '';
             $idColumn = $prefix . $this->mapper->getTableId($className);
             $relation = $entityMap['relations'][$name];
             $relationType = $relation[2];
-            $isArray = $relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY;
+            $isArray = $relationType === \Scoop\Persistence\Entity\Relation::ONE_TO_MANY ||
+            $relationType === \Scoop\Persistence\Entity\Relation::MANY_TO_MANY;
             $value = array();
             $id = $row[$idColumn];
             if (!$id) {
@@ -49,7 +55,7 @@ class Assembler
                         }
                     }
                 }
-                if ($relationType === Relation::MANY_TO_MANY) {
+                if ($relationType === \Scoop\Persistence\Entity\Relation::MANY_TO_MANY) {
                     $this->relation->track($relation[1], $idOwner, $value);
                 }
                 $value = array_values($value);

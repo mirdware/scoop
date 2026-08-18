@@ -11,6 +11,8 @@ class Manager
     private $accessor;
     private $saving;
     private $builder;
+    private $entityPlan;
+    private $queryPlans = array();
     private $hasProperties = array();
 
     public function __construct($entities, $values, $relations, $types, $builder)
@@ -20,7 +22,14 @@ class Manager
         $this->saving = new \SplObjectStorage();
         $this->accessor = new Accessor();
         $this->typeMapper = new Mapper\Type($types);
-        $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor, $this->builder);
+        $this->entityPlan = new Mapper\Plan($entities, $values, $this->typeMapper, $this->accessor);
+        $this->mapper = new Mapper(
+            $entities,
+            $this->typeMapper,
+            $this->accessor,
+            $this->builder,
+            $this->entityPlan
+        );
         $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor, $this->builder);
         register_shutdown_function(array($this, 'flush'));
     }
@@ -58,13 +67,22 @@ class Manager
     public function search($classEntity)
     {
         $this->getMapper($classEntity);
+        if (!isset($this->queryPlans[$classEntity])) {
+            $this->queryPlans[$classEntity] = new Query\Plan(
+                $classEntity,
+                $this->map,
+                $this->mapper,
+                $this->builder
+            );
+        }
         return new Query(
             $this->mapper,
             $classEntity,
             $this->map,
             $this->accessor,
             $this->relations,
-            $this->builder
+            $this->builder,
+            $this->queryPlans[$classEntity]
         );
     }
 
@@ -76,12 +94,13 @@ class Manager
 
     public function clean()
     {
+        $this->saving = new \SplObjectStorage();
         $this->mapper = new Mapper(
             $this->map['entities'],
-            $this->map['values'],
             $this->typeMapper,
             $this->accessor,
-            $this->builder
+            $this->builder,
+            $this->entityPlan
         );
         $this->relations = new Relation(
             $this->map['relations'],

@@ -82,11 +82,6 @@ class Loader
         }
     }
 
-    public function setUseIncludePath($useIncludePath)
-    {
-        $this->useIncludePath = $useIncludePath;
-    }
-
     public function setClassMapAuthoritative($classMapAuthoritative)
     {
         $this->classMapAuthoritative = $classMapAuthoritative;

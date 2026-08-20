@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import scalarHmrPlugin from './app/scripts/scoop/vite-plugin-scalar-hmr';
-import babel from 'vite-plugin-babel';
+import scalarHmrPlugin from './app/scripts/scoop/vite-plugin-scalar-hmr.js';
+import babel from '@rolldown/plugin-babel';
+import legacy from '@vitejs/plugin-legacy';
 import path from 'path';
-import pkg from './package.json';
+import browserslist from 'browserslist';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
+import { browserslistToTargets } from 'lightningcss';
+import pkg from './package.json' with { type: 'json' };
 
+const BROWSERSLIST_QUERY = 'defaults, not IE 11';
 const appName = pkg.name;
 const pathScripts = 'app/scripts/';
 const pathStyles = 'app/styles/';
@@ -20,23 +25,20 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       !isProduction && scalarHmrPlugin(),
       babel({
-        filter: /\.js$/,
-        babelConfig: {
-          babelrc: false,
-          configFile: false,
-          plugins: [
-            ["@babel/plugin-proposal-decorators", { "version": "legacy" }],
-            ["@babel/plugin-transform-class-properties", { "loose": true }]
-          ]
-        }
+        plugins: [
+          ["@babel/plugin-proposal-decorators", { "version": "2023-11" }]
+        ]
       }),
       viteStaticCopy({
         targets: [
           {
-            src: normalizePath(path.resolve(__dirname, 'node_modules/fa-stylus/fonts/**/*')),
+            src: normalizePath(path.resolve(import.meta.dirname, 'node_modules/fa-stylus/fonts/**/*')),
             dest: 'fonts'
           }
         ]
+      }),
+      legacy({
+        targets: ['defaults', 'not IE 11']
       })
     ],
     root: './',
@@ -56,19 +58,39 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     publicDir: false,
+    css: {
+      transformer: 'lightningcss',
+      lightningcss: {
+        targets: browserslistToTargets(browserslist(BROWSERSLIST_QUERY))
+      },
+      preprocessorOptions: {
+        styl: {
+          paths: [
+            normalizePath(path.resolve(import.meta.dirname, 'node_modules')),
+            normalizePath(path.resolve(import.meta.dirname, 'app/styles'))
+          ],
+          additionalData: `
+            $fa-font-path = "../../node_modules/fa-stylus/fonts"
+            $public = "${isProduction ? '../' : '/public/'}"
+          `
+        }
+      }
+    },
     build: {
       outDir: 'public',
       assetsDir: 'assets',
       emptyOutDir: false,
       sourcemap: isProduction,
       manifest: false,
+      cssMinify: 'lightningcss',
+      cssTarget: browserslistToEsbuild(BROWSERSLIST_QUERY),
       rollupOptions: {
         input: {
-          main: normalizePath(path.resolve(__dirname, pathScripts, 'app.js')),
-          styles: normalizePath(path.resolve(__dirname, pathStyles, 'app.styl'))
+          main: normalizePath(path.resolve(import.meta.dirname, pathScripts, 'app.js')),
+          styles: normalizePath(path.resolve(import.meta.dirname, pathStyles, 'app.styl'))
         },
         output: {
-          entryFileNames: `js/${appName}.min.js`,
+          entryFileNames: (chunkInfo) => chunkInfo.name === 'main' ? `js/${appName}.min.js` : `js/${appName}-[name].min.js`,
           chunkFileNames: `js/${appName}-chunk-[hash].min.js`,
           assetFileNames: (assetInfo) => {
             if (assetInfo.name === 'main.css' || assetInfo.name === 'styles.css' || assetInfo.name.endsWith('app.css')) {
@@ -85,21 +107,10 @@ export default defineConfig(({ command, mode }) => {
         }
       }
     },
-    css: {
-      preprocessorOptions: {
-        styl: {
-          paths: [
-            normalizePath(path.resolve(__dirname, 'node_modules')),
-            normalizePath(path.resolve(__dirname, 'app/styles'))
-          ],
-          additionalData: isProduction ? `$public = "../"` : `$fa-font-path = "/fonts";$public = "/public/"`
-        }
-      }
-    },
     resolve: {
       alias: {
-        '@': normalizePath(path.resolve(__dirname, './app/scripts')),
-        '#': normalizePath(path.resolve(__dirname, './app/styles'))
+        '@': normalizePath(path.resolve(import.meta.dirname, './app/scripts')),
+        '#': normalizePath(path.resolve(import.meta.dirname, './app/styles'))
       }
     }
   };

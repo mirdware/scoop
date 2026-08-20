@@ -28,7 +28,7 @@ class Router
                 $this->validateRoute($route['validator'], $route['params']);
             }
             $controller = $route['controller'];
-            $method = $request->getMethod();
+            $method = strtolower($request->getMethod());
             if (is_array($controller) && isset($controller[$method])) {
                 $controller = $controller[$method];
                 if (method_exists($controller, '__invoke')) {

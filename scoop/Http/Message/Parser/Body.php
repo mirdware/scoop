@@ -30,7 +30,7 @@ class Body
             $this->parsedBody = json_decode($body, true);
             return;
         }
-        if ($method === 'post') {
+        if (strtoupper($method) === 'POST') {
             $this->parsedBody = $_POST;
             $this->uploadedFiles = $this->normalizeFiles($_FILES);
             return;

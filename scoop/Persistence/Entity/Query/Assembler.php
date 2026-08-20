@@ -22,11 +22,10 @@ class Assembler
 
     public function assign($name, $alias, $entity, $aggregateList, $rows)
     {
+        if (empty($rows)) return;
+        $row = $rows[0];
         $entityMap = $this->map['entities'][$name];
-        $idColumn = $this->mapper->getTableId($name);
-        $prefix = $alias !== 'r' ? $alias . '$a$' : '';
         $idOwner = $this->getId($entity);
-        $row = $this->findRow($prefix . $idColumn, $idOwner, $rows);
         foreach ($aggregateList as $name => $map) {
             $alias = $map['alias'];
             $className = $map['type'];
@@ -43,17 +42,22 @@ class Assembler
             $relationType === \Scoop\Persistence\Entity\Relation::MANY_TO_MANY;
             $value = array();
             $id = $row[$idColumn];
-            if (!$id) {
+            if ($id === null) {
                 if (!$isArray) continue;
             } elseif ($isArray) {
+                $groupedRows = array();
                 foreach ($rows as $r) {
                     $id = $r[$idColumn];
-                    if (!isset($value[$id])) {
+                    if ($id === null) continue;
+                    if (!empty($map['aggregates'])) {
+                        $groupedRows[$id][] = $r;
+                    } elseif (!isset($value[$id])) {
                         $value[$id] = $this->mapper->make($className, $id, $r, $fields);
-                        if (!empty($map['aggregates'])) {
-                            $this->assign($className, $alias, $value[$id], $map['aggregates'], $rows);
-                        }
                     }
+                }
+                foreach ($groupedRows as $id => $relatedRows) {
+                    $value[$id] = $this->mapper->make($className, $id, $relatedRows[0], $fields);
+                    $this->assign($className, $alias, $value[$id], $map['aggregates'], $relatedRows);
                 }
                 if ($relationType === \Scoop\Persistence\Entity\Relation::MANY_TO_MANY) {
                     $this->relation->track($relation[1], $idOwner, $value);
@@ -69,15 +73,6 @@ class Assembler
             if (!$className) continue;
             $propertyAccessor = $this->accessor->get($className);
             $propertyAccessor($entity, $name, $value);
-        }
-    }
-
-    private function findRow($idName, $id, $rows)
-    {
-        foreach ($rows as $row) {
-            if ($row[$idName] === $id) {
-                return $row;
-            }
         }
     }
 

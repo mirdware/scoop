@@ -2,6 +2,8 @@
 
 namespace Scoop\Cache;
 
+use stdClass;
+
 class Item
 {
     protected $key;
@@ -41,14 +43,13 @@ class Item
 
     public function isHit()
     {
-        if (!$this->hasPendingChanges && !$this->isHit) {
+        if (!$this->isHit) {
             return false;
         }
         if ($this->expiration === null) {
             return true;
         }
-        $now = new \DateTime();
-        return $now < $this->expiration;
+        return new \DateTime() < $this->expiration;
     }
 
     public function set($value)
@@ -79,9 +80,13 @@ class Item
         return $this;
     }
 
-    public function getExpiration()
+    public function getState()
     {
-        return $this->expiration;
+        return (object) array(
+            'value' => $this->value,
+            'expiration' => $this->expiration === null ? null : clone $this->expiration,
+            'hasPendingChanges' => $this->hasPendingChanges
+        );
     }
 
     private function validateKey($key)

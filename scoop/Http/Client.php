@@ -11,7 +11,7 @@ class Client
         $this->options = $options;
     }
 
-    public function sendRequest(\Scoop\Http\Message\Request $request)
+    public function sendRequest($request)
     {
         $ch = curl_init();
         $responseBodyHandle = fopen('php://temp', 'r+');
@@ -44,9 +44,9 @@ class Client
         return new \Scoop\Http\Message\Response($statusCode, $responseHeaders, $stream);
     }
 
-    private function getOptions(\Scoop\Http\Message\Request $request, $responseBodyHandle, &$responseHeaders)
+    private function getOptions($request, $responseBodyHandle, &$responseHeaders)
     {
-        $method = $request->getMethod();
+        $method = strtoupper($request->getMethod());
         $options = array(
             CURLOPT_URL => (string) $request->getUri(),
             CURLOPT_RETURNTRANSFER => false,
@@ -72,10 +72,10 @@ class Client
             $requestHeaders[] = $name . ': ' . implode(', ', $values);
         }
         $options[CURLOPT_HTTPHEADER] = $requestHeaders;
-        if ($method === 'get' || $method === 'head') {
+        if ($method === 'GET' || $method === 'HEAD') {
             return $options;
         }
-        if ($method === 'post') {
+        if ($method === 'POST') {
             $options[CURLOPT_POST] = true;
         } else {
             $options[CURLOPT_CUSTOMREQUEST] = $method;

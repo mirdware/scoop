@@ -15,7 +15,7 @@ class CorsGuard
     {
         $serverParams = $request->getServerParams();
         $this->addOriginHeader($serverParams);
-        if ($request->getMethod() === 'options') {
+        if (strtoupper($request->getMethod()) === 'OPTIONS') {
             return $this->getPreflightResponse($serverParams);
         }
         return $next->handle($request);

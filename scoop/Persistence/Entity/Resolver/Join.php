@@ -48,21 +48,21 @@ class Join
             if (isset($entityMap['properties'][$propertyName])) {
                 $property = $entityMap['properties'][$propertyName];
                 $columnName = isset($property['column']) ? $property['column'] : $this->mapper->toColumn($propertyName);
-                $comparation = "$leftAlias.$columnName=$rightAlias.$rightId";
+                $comparation = "[$leftAlias].[$columnName]=[$rightAlias].[$rightId]";
             } else {
                 $relationName = $relation[1];
                 if ($relation[2] === \Scoop\Persistence\Entity\Relation::MANY_TO_MANY) {
                     $relation = explode(':', $relationName);
                     $relation = $this->map['relations'][$relation[1]];
                     $relId = $relation['entities'][$left]['column'];
-                    $comparation = "$leftAlias.$leftId=$leftAlias$rightAlias.$relId";
+                    $comparation = "[$leftAlias].[$leftId]=[$leftAlias$rightAlias].[$relId]";
                     $this->fieldResolver->addJoin($relation['table'] . ' ' . $leftAlias . $rightAlias, $comparation, 'left');
                     $relId = $relation['entities'][$aggregate]['column'];
-                    $comparation = "$leftAlias$rightAlias.$relId=$rightAlias.$rightId";
+                    $comparation = "[$leftAlias$rightAlias].[$relId]=[$rightAlias].[$rightId]";
                 } else {
                     $property = $aggregateMap['properties'][$relationName];
                     $columnName = isset($property['column']) ? $property['column'] : $this->mapper->toColumn($relationName);
-                    $comparation = "$leftAlias.$leftId=$rightAlias.$columnName";
+                    $comparation = "[$leftAlias].[$leftId]=[$rightAlias].[$columnName]";
                 }
             }
             $aggregateList[$propertyName] = array('type' => $aggregate, 'alias' => $rightAlias, 'aggregates' => array());

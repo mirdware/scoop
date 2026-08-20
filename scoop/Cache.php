@@ -13,13 +13,13 @@ class Cache
 
     public function get($key, $default = null)
     {
-        $item = $this->itemPool->getItem((string) $key);
+        $item = $this->itemPool->getItem($key);
         return $item->isHit() ? $item->get() : $default;
     }
 
     public function set($key, $value, $ttl = null)
     {
-        $item = $this->itemPool->getItem((string) $key);
+        $item = $this->itemPool->getItem($key);
         $item->set($value);
         if ($ttl !== null) {
             $item->expiresAfter($ttl);
@@ -29,7 +29,7 @@ class Cache
 
     public function delete($key)
     {
-        return $this->itemPool->deleteItem((string) $key);
+        return $this->itemPool->deleteItem($key);
     }
 
     public function clear()
@@ -53,7 +53,7 @@ class Cache
         if (empty($values)) return true;
         $success = true;
         foreach ($values as $key => $value) {
-            $item = $this->itemPool->getItem((string) $key);
+            $item = $this->itemPool->getItem($key);
             $item->set($value);
             if ($ttl !== null) {
                 $item->expiresAfter($ttl);
@@ -72,7 +72,7 @@ class Cache
 
     public function has($key)
     {
-        return $this->itemPool->hasItem((string) $key);
+        return $this->itemPool->hasItem($key);
     }
 
     private function iterableToArray($iterable)

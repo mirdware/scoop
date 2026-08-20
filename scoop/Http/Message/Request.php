@@ -6,12 +6,23 @@ class Request extends \Scoop\Http\Message
 {
     private $method;
     private $uri;
+    private $requestTarget;
 
     public function __construct($uri, $method, $headers = array(), $body = '')
     {
-        parent::__construct($headers, $body);
-        $this->method = strtolower($method);
         $this->uri = is_string($uri) ? new URI($uri) : $uri;
+        $this->method = $method;
+        $port = $this->uri->getPort();
+        $headers += array('Host' => $this->uri->getHost() . ($port ? ":$port" : ''));
+        parent::__construct($headers, $body);
+        $target = $this->uri->getPath();
+        if ($target === '') {
+            $target = '/';
+        }
+        if ($this->uri->getQuery() !== '') {
+            $target .= '?' . $this->uri->getQuery();
+        }
+        $this->requestTarget = $target;
     }
 
     public function getMethod()
@@ -21,13 +32,27 @@ class Request extends \Scoop\Http\Message
 
     public function withMethod($method)
     {
-        $method = strtolower($method);
         if ($this->method === $method) {
             return $this;
         }
         $new = clone $this;
         $new->method = $method;
         return $new;
+    }
+
+    public function withRequestTarget($requestTarget)
+    {
+        if ($requestTarget === $this->requestTarget) {
+            return $this;
+        }
+        $new = clone $this;
+        $new->requestTarget = $requestTarget;
+        return $new;
+    }
+
+    public function getRequestTarget()
+    {
+        return $this->requestTarget;
     }
 
     public function getUri()
@@ -52,6 +77,7 @@ class Request extends \Scoop\Http\Message
                 return $new->withHeader('Host', $host);
             }
         }
-        return $new;
+        $port = $this->uri->getPort();
+        return $new->withHeader('Host', $uri->getHost() . ($port ? ":$port" : ''));
     }
 }

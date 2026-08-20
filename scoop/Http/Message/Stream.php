@@ -147,12 +147,12 @@ class Stream
 
     public function getContents()
     {
-        if (!is_resource($this->resource)) {
-            return '';
+        if (!$this->isReadable()) {
+            throw new \RuntimeException('Stream is not readable', 729);
         }
         $contents = stream_get_contents($this->resource);
         if ($contents === false) {
-            return '';
+            throw new \RuntimeException('Unable to read stream contents', 730);
         }
         return $contents;
     }

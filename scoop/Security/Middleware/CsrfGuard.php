@@ -6,7 +6,7 @@ class CsrfGuard
 {
     public function process($request, $next)
     {
-        if (in_array($request->getMethod(), array('get', 'head', 'options', 'trace'))) {
+        if (in_array(strtoupper($request->getMethod()), array('GET', 'HEAD', 'OPTIONS', 'TRACE'))) {
             return $next->handle($request);
         }
         if (!isset($_SESSION['csrf-token'])) {

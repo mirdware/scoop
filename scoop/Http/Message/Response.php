@@ -70,6 +70,9 @@ class Response extends \Scoop\Http\Message
 
     public function __construct($status = 204, $headers = array(), $body = '')
     {
+        if ($status < 100 || $status > 599) {
+            throw new \InvalidArgumentException('Invalid status code', 791);
+        }
         parent::__construct($headers, $body);
         $this->statusCode = $status;
         $this->reasonPhrase = isset(self::$statusTexts[$this->statusCode]) ? self::$statusTexts[$this->statusCode] : '';

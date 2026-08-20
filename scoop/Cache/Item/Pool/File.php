@@ -97,11 +97,10 @@ class File extends \Scoop\Cache\Item\Pool
         if (!is_dir($dir) && !@mkdir($dir, $this->dirPermissions, true)) {
             return false;
         }
-        $expirationDateTime = $item->getExpiration();
-        $expirationTimestamp = $expirationDateTime ? $expirationDateTime->getTimestamp() : null;
+        $state = $item->getState();
         $dataToSerialize = array(
-            'value' => $item->get(),
-            'expiration' => $expirationTimestamp
+            'value' => $state->value,
+            'expiration' => $state->expiration ? $state->expiration->getTimestamp() : null
         );
         $serializedData = serialize($dataToSerialize);
         $tmpFile = $dir . '/' . uniqid(basename($filePath) . '_', true) . '.tmp';

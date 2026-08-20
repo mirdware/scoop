@@ -2,7 +2,6 @@
 
 namespace Scoop\Cache\Item;
 
-
 abstract class Pool
 {
     private $deferredItems;
@@ -42,20 +41,15 @@ abstract class Pool
         }
         $results = array();
         foreach ($keys as $key) {
-            $keyString = (string) $key;
-            $results[$keyString] = $this->getItem($keyString);
+            $results[$key] = $this->getItem($key);
         }
         return $results;
     }
 
     public function hasItem($key)
     {
-        try {
-            $item = $this->getItem($key);
-            return $item->isHit();
-        } catch (\InvalidArgumentException $e) {
-            return false;
-        }
+        $item = $this->getItem($key);
+        return $item->isHit();
     }
 
     public function clear()
@@ -66,6 +60,7 @@ abstract class Pool
 
     public function deleteItem($key)
     {
+        $this->getItem($key);
         unset($this->deferredItems[$key]);
         return $this->remove($key);
     }
@@ -74,45 +69,36 @@ abstract class Pool
     {
         $allSucceeded = true;
         foreach ($keys as $key) {
-            if (!$this->deleteItem((string) $key)) {
+            if (!$this->deleteItem($key)) {
                 $allSucceeded = false;
             }
         }
         return $allSucceeded;
     }
 
-    public function save($item)
+    public function save(\Scoop\Cache\Item $item)
     {
         $key = $item->getKey();
-        $success = false;
-        if ($item->isHit()) {
-            $expirationToStore = null;
-            if ($item instanceof \Scoop\Cache\Item) {
-                $expirationToStore = $item->getExpiration();
-            } elseif ($this->defaultLifetime > 0) {
-                $expirationToStore = new \DateTime();
-                $expirationToStore->modify("+{$this->defaultLifetime} seconds");
-            }
-            $success = $this->add(new \Scoop\Cache\Item(
-                $key,
-                $expirationToStore,
-                $item->get(),
-                true
-            ));
-        } else {
+        $state = $item->getState();
+        if (!$item->isHit() && !$state->hasPendingChanges) {
             $success = $this->remove($key);
+            unset($this->deferredItems[$key]);
+            return $success;
         }
+        $success = $this->add(new \Scoop\Cache\Item($key, $state->expiration, $state->value, true));
         unset($this->deferredItems[$key]);
         return $success;
     }
 
-    public function saveDeferred($item)
+    public function saveDeferred(\Scoop\Cache\Item $item)
     {
         $key = $item->getKey();
-        if ($item->isHit()) {
+        $state = $item->getState();
+        if ($item->isHit() || $state->hasPendingChanges) {
             $this->deferredItems[$key] = clone $item;
         } else {
-            $this->clear();
+            unset($this->deferredItems[$key]);
+            $this->remove($key);
         }
         return true;
     }

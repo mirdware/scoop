@@ -29,7 +29,7 @@ class Request extends \Scoop\Http\Message\Request
             $uri === null ? new \Scoop\Http\Message\URI(
                 trim(ROOT, '/') . $this->urlPath . (isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '')
             ) : $uri,
-            strtolower($method === null ? $_SERVER['REQUEST_METHOD'] : $method),
+            $method === null ? $_SERVER['REQUEST_METHOD'] : $method,
             $headers === null ? $this->getAllHeaders() : $headers,
             $body === null ? new \Scoop\Http\Message\Stream(fopen('php://input', 'r')) : $body
         );
@@ -93,6 +93,7 @@ class Request extends \Scoop\Http\Message\Request
 
     public function withUploadedFiles($uploadedFiles)
     {
+        $this->validateUploadedFiles($uploadedFiles);
         $new = clone $this;
         $new->uploadedFiles = $uploadedFiles;
         return $new;
@@ -115,6 +116,12 @@ class Request extends \Scoop\Http\Message\Request
 
     public function withParsedBody($data)
     {
+        if ($data === $this->parsedBody) {
+            return $this;
+        }
+        if ($data !== null && !is_array($data) && !is_object($data)) {
+            throw new \InvalidArgumentException('Parsed body must be an array, object, or null');
+        }
         $new = clone $this;
         $new->parsedBody = $data;
         return $new;
@@ -127,7 +134,7 @@ class Request extends \Scoop\Http\Message\Request
 
     public function getAttribute($name, $default = null)
     {
-        return isset($this->attributes[$name]) ? $this->attributes[$name] : $default;
+        return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : $default;
     }
 
     public function withAttribute($name, $value)
@@ -187,6 +194,17 @@ class Request extends \Scoop\Http\Message\Request
     public function flash()
     {
         return $this->flash;
+    }
+
+    private function validateUploadedFiles($uploadedFiles)
+    {
+        foreach ($uploadedFiles as $leaf) {
+            if (is_array($leaf)) {
+                $this->validateUploadedFiles($leaf);
+            } elseif (!$leaf instanceof \Scoop\Http\Message\Server\UploadedFile) {
+                throw new \InvalidArgumentException('Invalid leaf value in uploaded files structure');
+            }
+        }
     }
 
     private function getURLPath()

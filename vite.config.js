@@ -22,6 +22,7 @@ function normalizePath(p) {
 export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production';
   return {
+    base: isProduction ? './' : '/',
     plugins: [
       !isProduction && scalarHmrPlugin(),
       babel({

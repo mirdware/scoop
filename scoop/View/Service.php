@@ -8,7 +8,9 @@ abstract class Service
 
     public static function inject($name, $className)
     {
+        $previous = isset(self::$services[$name]) ? self::$services[$name] : null;
         self::$services[$name] = $className;
+        return $previous;
     }
 
     public static function get($name)

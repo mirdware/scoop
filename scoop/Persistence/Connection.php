@@ -164,11 +164,18 @@ class Connection
     private function getInstance()
     {
         if (!$this->instance) {
+            $options = array(
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            );
+            if ($this->is('pgsql')) {
+                $options[\PDO::ATTR_EMULATE_PREPARES] = true;
+            }
             $this->instance = new \PDO(
                 $this->engine . ':host=' . $this->host . ';dbname=' . $this->name . ($this->port ? ';port=' . $this->port : ''),
                 $this->user,
                 $this->password,
-                array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC)
+                $options
             );
             $this->dispatcher->dispatch(new Event\ConnectionOpened($this));
         }

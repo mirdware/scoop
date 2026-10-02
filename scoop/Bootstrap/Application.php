@@ -72,7 +72,9 @@ class Application
     }
 
     /**
-     * @deprecated see middleware CorsGuard
+     * @deprecated
+     * @see middleware CorsGuard
+     * @since 0.8.1
      */
     private function enableCORS()
     {

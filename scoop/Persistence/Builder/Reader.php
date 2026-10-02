@@ -41,7 +41,7 @@ class Reader extends Criteria
 
     public function group()
     {
-        $this->group += func_get_args();
+        $this->group = array_unique(array_merge($this->group, func_get_args()));
         return $this;
     }
 

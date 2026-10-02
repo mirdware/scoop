@@ -3,7 +3,9 @@
 namespace Scoop\Event;
 
 /**
- * @deprecated use middlewares
+ * @deprecated
+ * @see Event middlewares
+ * @since 0.8.1
  */
 class ListenerStarted
 {

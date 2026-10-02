@@ -81,7 +81,7 @@ class Request extends \Scoop\Http\Message\Request
         if ($this->uploadedFiles === null) {
             if (!$this->bodyParser) {
                 $this->bodyParser = new \Scoop\Http\Message\Parser\Body(
-                    $this->getBody()->getContents(),
+                    $this->getBody(),
                     $this->getMethod(),
                     $this->getHeaderLine('Content-Type')
                 );
@@ -104,7 +104,7 @@ class Request extends \Scoop\Http\Message\Request
         if ($this->parsedBody === null) {
             if (!$this->bodyParser) {
                 $this->bodyParser = new \Scoop\Http\Message\Parser\Body(
-                    $this->getBody()->getContents(),
+                    $this->getBody(),
                     $this->getMethod(),
                     $this->getHeaderLine('Content-Type')
                 );

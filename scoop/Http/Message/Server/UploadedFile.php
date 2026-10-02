@@ -11,21 +11,31 @@ class UploadedFile
     private $moved;
     private $size;
     private $stream;
+    private $temporary;
 
     public function __construct(
         $file,
         $size,
         $error,
         $clientFilename,
-        $clientMediaType
+        $clientMediaType,
+        $temporary = false
     ) {
         $this->file = $file;
         $this->size = $size;
         $this->error = $error;
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
+        $this->temporary = $temporary;
         $this->moved = false;
         $this->stream = null;
+    }
+
+    public function __destruct()
+    {
+        if ($this->temporary && !$this->moved && $this->file !== '' && file_exists($this->file)) {
+            unlink($this->file);
+        }
     }
 
     public function getStream()

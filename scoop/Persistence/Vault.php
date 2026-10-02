@@ -3,7 +3,9 @@
 namespace Scoop\Persistence;
 
 /**
-@deprecated since version 0.8, use Scoop\Security\Cipher instead
+ * @deprecated
+ * @see Scoop\Security\Cipher
+ * @since 0.8.0
 */
 class Vault
 {

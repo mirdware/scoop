@@ -3,7 +3,9 @@
 namespace Scoop\Persistence;
 
 /**
- * @deprecated since version 0.8, use Scoop\Persistence\Connection instead
+ * @deprecated
+ * @see Scoop\Persistence\Connection
+ * @since 0.8.0
  */
 class DBC extends \PDO
 {

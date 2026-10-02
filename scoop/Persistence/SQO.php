@@ -3,7 +3,9 @@
 namespace Scoop\Persistence;
 
 /**
- * @deprecated since version 0.8, use Scoop\Persistence\Builder instead
+ * @deprecated
+ * @see use Scoop\Persistence\Builder
+ * @since 0.8.0
  */
 class SQO
 {

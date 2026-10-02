@@ -2,8 +2,6 @@
 
 namespace Scoop\Http;
 
-use function PHPUnit\Framework\isNumeric;
-
 abstract class Message
 {
     private $body;

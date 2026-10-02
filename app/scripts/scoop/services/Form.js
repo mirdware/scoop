@@ -37,7 +37,7 @@ export default class Form {
         }
         obj[name].push(inp.value);
       } else if (type === 'file') {
-        obj[name] = inp.files;
+        obj[name] = Array.from(inp.files);
       } else if (!obj[name] && type.indexOf("select") == 0 && index != -1) {
         obj[name] = type === "select-multiple" ?
         Array.from(inp.selectedOptions).map(({ value }) => value) :

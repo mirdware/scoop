@@ -2,6 +2,10 @@
 
 namespace Scoop;
 
+/**
+ * @deprecated
+ * @since 0.8.4
+ */
 class Context
 {
     private static $connections = array();

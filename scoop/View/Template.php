@@ -13,7 +13,7 @@ final class Template
     public function parse($templatePath)
     {
         $template = self::$viewPath . $templatePath . '.sdt.php';
-        $view = self::$cachePath . $templatePath . '.php';
+        $view = self::$cachePath . $templatePath . (DEBUG_MODE ? '.debug.php' : '.php');
         self::$inHead = false;
         if (!DEBUG_MODE && isset(self::$compiled[$templatePath])) {
             return self::$compiled[$templatePath];
@@ -40,9 +40,11 @@ final class Template
     protected function create($viewName, $templateName)
     {
         $content = self::compile($templateName);
-        preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
-        $matches = $matches[0];
-        $content = self::clearHTML($content);
+        if (!DEBUG_MODE) {
+            preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
+            $matches = $matches[0];
+            $content = self::clearHTML($content);
+        }
         $content = preg_replace_callback(
             '~<sc-([\.a-zA-Z0-9_-]+)
             \s*((?:\s+[a-zA-Z0-9_-]+\s*=\s*(?:\{.+?\}|"[^"]*"|\'[^\']*\'))*)?
@@ -50,10 +52,13 @@ final class Template
             array('Scoop\View\Template', 'parseCustomTag'),
             $content
         );
-        $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
-        $search = array_merge($search, array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php ', '{{=', '{{', '}}'));
-        $matches = array_merge($matches, array(':', ';', ':', ';', '<?php echo(', '<?php echo #view->escape(',  ') ?>'));
-        $content = str_replace($search, $matches, $content);
+        $search = array('{{=', '{{', '}}');
+        $replace = array('<?php echo(', '<?php echo #view->escape(', ') ?>');
+        if (!DEBUG_MODE) {
+            $search = array_merge(array_map(array('\scoop\view\Template', 'clearHTML'), $matches), array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php '), $search);
+            $replace = array_merge($matches, array(':', ';', ':', ';'), $replace);
+        }
+        $content = str_replace($search, $replace, $content);
         $path = explode('/', $viewName);
         $count = count($path) - 1;
         $dir = '';
@@ -207,6 +212,11 @@ final class Template
             $variable = uniqid('$t');
             $contentValue = "<?php ob_start() ?>$contentValue<?php $variable=ob_get_clean();";
         }
-        return "{$contentValue}echo #view->compose('$componentName', $propsPhpString, $variable); ?>";
+        $result = "{$contentValue}echo #view->compose('$componentName', $propsPhpString, $variable); ?>";
+        if (DEBUG_MODE) {
+            $missing = substr_count($matches[0], "\n") - substr_count($result, "\n");
+            $result .= str_repeat("\n", max(0, $missing));
+        }
+        return $result;
     }
 }

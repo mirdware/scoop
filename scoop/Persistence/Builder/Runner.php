@@ -45,7 +45,6 @@ abstract class Runner
             $this->params[$name . $index] = $value;
             $rule .= ':' . $name . $index . ',';
         }
-        unset($this->params[$name]);
         return substr($rule, 0, -1);
     }
 

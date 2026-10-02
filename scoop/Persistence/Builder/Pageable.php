@@ -4,7 +4,6 @@ namespace Scoop\Persistence\Builder;
 
 trait Pageable
 {
-    private $orderType = ' ASC';
     private $order = array();
     private $limit;
     private $offset;
@@ -17,11 +16,17 @@ trait Pageable
         }
         $args = func_get_args();
         $type = strtoupper($args[$numArgs - 1]);
-        if ($type === 'ASC' || $type === 'DESC') {
-            $this->orderType = ' ' . $type;
+        if ($type !== 'ASC' && $type !== 'DESC') {
+            $type = 'ASC';
+        } else {
             array_pop($args);
         }
-        $this->order += array_map('trim', $args);
+        foreach ($args as $key => $element) {
+            if (!preg_match('/\sASC|DESC\s*$/i', $element)) {
+                $args[$key] = "$element $type";
+            }
+        }
+        $this->order = array_merge($this->order, array_map('trim', $args));
         return $this;
     }
 
@@ -49,11 +54,6 @@ trait Pageable
     {
         if (empty($this->order)) {
             return '';
-        }
-        foreach ($this->order as $key => $element) {
-            if (!preg_match('/\sASC|DESC$/i', $element)) {
-                $this->order[$key] = $element . $this->orderType;
-            }
         }
         return ' ORDER BY ' . implode(', ', $this->order);
     }

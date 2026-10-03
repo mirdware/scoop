@@ -44,6 +44,16 @@ class Client
         return new \Scoop\Http\Message\Response($statusCode, $responseHeaders, $stream);
     }
 
+    public function withOption($option, $value)
+    {
+        if (isset($this->options[$option]) && $this->options[$option] === $value) {
+            return $this;
+        }
+        $new = clone $this;
+        $new->options[$option] = $value;
+        return $new;
+    }
+
     private function getOptions($request, $responseBodyHandle, &$responseHeaders)
     {
         $method = strtoupper($request->getMethod());

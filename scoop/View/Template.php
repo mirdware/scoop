@@ -105,9 +105,6 @@ final class Template
 
     private static function replace($line)
     {
-        if (self::replaceSingle($line)) {
-            return $line;
-        }
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
         $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[(' . $quotes . '|\d+|\$\w+)\])*';
@@ -115,50 +112,45 @@ final class Template
         $fn = '\((' . $quotes . '|' . $safeChars . '|' . $vars . '|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes . '|' . $conditional . '|' . $fn;
         $uri = '(\w+:)?[\$\w\/-]+';
+        if (preg_match('/<head[^>]*>/i', $line)) {
+            self::$inHead = true;
+        }
         $line = preg_replace(array(
-            "/@inject\s([\\\\\w]+)#(\w+)/",
-            "/@extends\s('$uri')/",
-            "/@import\s('$uri'|\"$uri\")/",
-            "/@foreach\s(($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/"
+            "/^\s*\K@inject\s([\\\\\w]+)#(\w+)(?=\s*$)/",
+            "/^\s*\K@extends\s('$uri')(?=\s*$)/",
+            "/^\s*\K@import\s('$uri'|\"$uri\")(?=\s*$)/",
+            "/^\s*\K@foreach\s(($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)(?=\s*$)/",
+            "/^\s*\K:if(?=\s*$)/",
+            "/^\s*\K:foreach(?=\s*$)/",
+            "/^\s*\K:for(?=\s*$)/",
+            "/^\s*\K:while(?=\s*$)/",
+            "/^\s*\K@else(?=\s*$)/",
+            "/^\s*\K@csrf(?=\s*$)/"
         ), array(
             '<?php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') ?>',
             '<?php require #view->getCompilePath(${1});#view->setParent() ?>',
             '<?php require #view->getCompilePath(${1}) ?>',
-            '<?php foreach(${1}): ?>'
+            '<?php foreach(${1}): ?>',
+            '<?php endif ?>',
+            '<?php endforeach ?>',
+            '<?php endfor ?>',
+            '<?php endwhile ?>',
+            '<?php else: ?>',
+            self::$inHead ?
+            '<meta name="csrf-token" content="{{ #view->getCsrfToken() }}">' :
+            '<input type="hidden" name="csrf-token" value="{{ #view->getCsrfToken() }}">'
         ), $line, 1, $count);
-        if ($count !== 0) {
-            return $line;
-        }
-        if (self::replaceRegex($line, "/@(if|elseif|while)\s(($safeExp)+)/")) {
-            return $line;
-        }
-        self::replaceRegex($line, "/@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/");
-        return $line;
-    }
-
-    private static function replaceSingle(&$line)
-    {
-        if (preg_match('/<head[^>]*>/i', $line)) {
-            self::$inHead = true;
-        }
-        $line = str_replace(
-            array(':if', ':foreach', ':for', ':while', '@else', '@csrf'),
-            array(
-                '<?php endif ?>',
-                '<?php endforeach ?>',
-                '<?php endfor ?>',
-                '<?php endwhile ?>',
-                '<?php else: ?>',
-                self::$inHead ?
-                '<meta name="csrf-token" content="{{ #view->getCsrfToken() }}">' :
-                '<input type="hidden" name="csrf-token" value="{{ #view->getCsrfToken() }}">'
-            ),
-            $line, $count
-        );
         if (preg_match('/<\/head[^>]*>/i', $line)) {
             self::$inHead = false;
         }
-        return $count !== 0;
+        if ($count !== 0) {
+            return $line;
+        }
+        if (self::replaceRegex($line, "/^\s*\K@(if|elseif|while)\s(($safeExp)+)(?=\s*$)/")) {
+            return $line;
+        }
+        self::replaceRegex($line, "/^\s*\K@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)(?=\s*$)/");
+        return $line;
     }
 
     private static function replaceRegex(&$line, $regex)

@@ -14,13 +14,15 @@ abstract class Injector
         $this->setInstance('Scoop\Bootstrap\Environment', 'singleton', $environment);
         $interfaces = $environment->getConfig('providers', array());
         $providerPath = $environment->getStoragePath('cache/project');
-        $providerFiles = glob("{$providerPath}*providers.php");
         foreach ($interfaces as $interfaceName => $className) {
             $interfaceName = self::formatClassName($interfaceName);
             $this->rules[$interfaceName] = $className;
         }
-        foreach ($providerFiles as $file) {
-            $this->definitions += require $file;
+        if (!DEBUG_MODE) {
+            $providerFiles = glob("{$providerPath}*providers.php");
+            foreach ($providerFiles as $file) {
+                $this->definitions += require $file;
+            }
         }
     }
 

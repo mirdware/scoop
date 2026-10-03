@@ -93,9 +93,9 @@ class Multipart
             }
             return false;
         }
-        $rawHeaders = substr($this->buffer, 0, $pos);
+        $lines = explode("\r\n", substr($this->buffer, 0, $pos));
         $headers = array();
-        foreach (explode("\r\n", $rawHeaders) as $line) {
+        foreach ($lines as $line) {
             if (strpos($line, ':') !== false) {
                 list($name, $value) = explode(':', $line, 2);
                 $headers[strtolower(trim($name))] = trim($value);

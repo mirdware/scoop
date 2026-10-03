@@ -11,56 +11,66 @@ class Logger
         $this->handlerFactory = $handlerFactory;
     }
 
-    public function emergency($message, $context = array())
+    public function emergency($message, $context = null)
     {
         $this->log(Level::EMERGENCY, $message, $context);
     }
 
-    public function alert($message, $context = array())
+    public function alert($message, $context = null)
     {
         $this->log(Level::ALERT, $message, $context);
     }
 
-    public function critical($message, $context = array())
+    public function critical($message, $context = null)
     {
         $this->log(Level::CRITICAL, $message, $context);
     }
 
-    public function error($message, $context = array())
+    public function error($message, $context = null)
     {
         $this->log(Level::ERROR, $message, $context);
     }
 
-    public function warning($message, $context = array())
+    public function warning($message, $context = null)
     {
         $this->log(Level::WARNING, $message, $context);
     }
 
-    public function notice($message, $context = array())
+    public function notice($message, $context = null)
     {
         $this->log(Level::NOTICE, $message, $context);
     }
 
-    public function info($message, $context = array())
+    public function info($message, $context = null)
     {
         $this->log(Level::INFO, $message, $context);
     }
 
-    public function debug($message, $context = array())
+    public function debug($message, $context = null)
     {
         $this->log(Level::DEBUG, $message, $context);
     }
 
-    public function log($level, $message, $context = array())
+    public function log($level, $message, $context = null)
     {
         $handlers = $this->handlerFactory->create($level);
+        if (empty($handlers)) {
+            return;
+        }
+        $record = array(
+            'message' => self::interpolate($message, $context ? $context : array()),
+            'context' => $context,
+            'level' => $level,
+            'timestamp' => new \DateTime(),
+        );
         foreach ($handlers as $handler) {
-            $handler->handle(array(
-                'message' => self::interpolate($message, $context),
-                'context' => $context,
-                'level' => $level,
-                'timestamp' => new \DateTime()
-            ));
+            try {
+                $handler->handle($record);
+            } catch (\Exception $error) {
+                error_log("Exception writing log: $error");
+            } catch (\Throwable $error) {
+                error_log("Error writing log: $error");
+            }
         }
     }
 
@@ -71,8 +81,19 @@ class Logger
         }
         $replace = array();
         foreach ($context as $key => $value) {
-            $replace['{' . $key . '}'] = !is_object($value) || method_exists($value, '__toString') ?
-            $value : print_r($value, true);
+            $placeholder = '{' . $key . '}';
+            if (strpos($message, $placeholder) !== false) {
+                try {
+                    $replace[$placeholder] = is_scalar($value) || $value === null ||
+                    (is_object($value) && method_exists($value, '__toString')) ?
+                    (string) $value :
+                    print_r($value, true);
+                } catch (\Exception $error) {
+                    $replace[$placeholder] = '[Exception: ' . get_class($error) . ']';
+                } catch (\Throwable $error) {
+                    $replace[$placeholder] = '[Throwable: ' . get_class($error) . ']';
+                }
+            }
         }
         return strtr($message, $replace);
     }

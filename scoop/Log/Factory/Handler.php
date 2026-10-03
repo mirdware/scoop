@@ -4,49 +4,44 @@ namespace Scoop\Log\Factory;
 
 class Handler
 {
-    private $logPath;
     private $handlers;
     private $instances;
 
-    public function __construct($handlers, $logPath)
+    public function __construct($handlers)
     {
-        $this->logPath = $logPath;
         $this->handlers = $handlers;
         $this->instances = array();
     }
 
     public function create($level)
     {
-        if (!defined('\Scoop\Log\Level::' . strtoupper($level))) {
+        if (!defined('\\Scoop\\Log\\Level::' . strtoupper($level))) {
             throw new \InvalidArgumentException("$level not support level");
         }
         if (isset($this->instances[$level])) {
             return $this->instances[$level];
         }
-        $this->instances[$level] = array();
-        if (isset($this->handlers['all'])) {
-            $this->handlers[$level] = array_merge(
-                $this->handlers['all'],
-                isset($this->handlers[$level]) ? $this->handlers[$level] : array()
-            );
+        if (array_key_exists($level, $this->handlers) && empty($this->handlers[$level])) {
+            return $this->instances[$level] = array();
         }
-        if (!empty($this->handlers[$level])) {
-            $this->createHandler($level);
+        $handlers = array_merge(
+            isset($this->handlers['all']) ? $this->handlers['all'] : array(),
+            isset($this->handlers[$level]) ? $this->handlers[$level] : array()
+        );
+        if (empty($handlers)) {
+            $handlers = array('Scoop\Log\Handler\Standard' => array());
         }
-        return $this->instances[$level];
-    }
-
-    private function createHandler($level)
-    {
-        if (!isset($this->handlers[$level]) || !is_array($this->handlers[$level])) {
-            return;
-        }
-        foreach ($this->handlers[$level] as $className => $args) {
-            $instance = $this->createHandlerInstance($className, $args);
-            if ($instance !== null) {
-                $this->instances[$level][] = $instance;
+        $instances = array();
+        foreach ($handlers as $className => $args) {
+            try {
+                $instances[] = $this->createHandlerInstance($className, $args);
+            } catch (\Exception $error) {
+                error_log("Exception writing log: $error");
+            } catch (\Throwable $error) {
+                error_log("Error writing log: $error");
             }
         }
+        return $this->instances[$level] = $instances;
     }
 
     private function createHandlerInstance($className, $args)
@@ -59,7 +54,7 @@ class Handler
         if (!is_array($args)) {
             $args = array();
         }
-        $args = $this->prepareHandlerArguments($className, $args);
+        $args = $this->prepareHandlerArguments($args);
         $reflection = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();
         if ($constructor) {
@@ -75,6 +70,8 @@ class Handler
             $name = $param->getName();
             if (array_key_exists($name, $args)) {
                 $params[] = $args[$name];
+            } else if ($provider = $this->getParameterProvider($param)) {
+                $params[] = \Scoop\Context::inject($provider);
             } else if ($param->isDefaultValueAvailable()) {
                 $params[] = $param->getDefaultValue();
             } else {
@@ -84,15 +81,35 @@ class Handler
         return $params;
     }
 
-    private function prepareHandlerArguments($className, array $args)
+    private function getParameterProvider($parameter)
+    {
+        if (!method_exists($parameter, 'getType')) {
+            $class = $parameter->getClass();
+            return $class ? $class->getName() : null;
+        }
+        $type = $parameter->getType();
+        if (!$type || !method_exists($type, 'isBuiltin') || $type->isBuiltin()) {
+            return null;
+        }
+        $name = method_exists($type, 'getName') ? $type->getName() : (string) $type;
+        if ($name === 'self' || $name === 'static') {
+            return $parameter->getDeclaringClass()->getName();
+        }
+        if ($name === 'parent') {
+            $parent = $parameter->getDeclaringClass()->getParentClass();
+            return $parent ? $parent->getName() : null;
+        }
+        return ltrim($name, '\\');
+    }
+
+    private function prepareHandlerArguments(array $args)
     {
         if (!isset($args['formatter'])) {
             $args['formatter'] = 'Scoop\Log\Formatter';
         }
-        if (is_a($className, 'Scoop\Log\Handler\File', true) && !isset($args['file'])) {
-            $args['file'] = $this->logPath;
+        if (is_string($args['formatter'])) {
+            $args['formatter'] = \Scoop\Context::inject($args['formatter']);
         }
-        $args['formatter'] = \Scoop\Context::inject($args['formatter']);
         return $args;
     }
 }

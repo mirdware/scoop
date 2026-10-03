@@ -15,10 +15,7 @@ class Logger
     {
         return new \Scoop\Log\Logger(
             new \Scoop\Log\Factory\Handler(
-                $this->environment->getConfig('log', array()),
-                $this->environment->getStoragePath('logs')
-                . $this->environment->getConfig('app.name')
-                . '-' . date('Y-m-d') . '.log'
+                $this->environment->getConfig('log', array())
             )
         );
     }

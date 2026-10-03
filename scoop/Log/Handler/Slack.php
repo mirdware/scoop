@@ -5,33 +5,34 @@ namespace Scoop\Log\Handler;
 class Slack
 {
     private $formatter;
+    private $uri;
+    private $httpClient;
     private $config;
-    private $url;
 
-    public function __construct($formatter, $url, $config = array())
+    public function __construct(\Scoop\Http\Client $httpClient, $formatter, $url, $config = array())
     {
         $this->formatter = $formatter;
-        $this->url = $url;
         $this->config = $config;
+        $this->uri = new \Scoop\Http\Message\URI($url);
+        $this->httpClient = $httpClient->withOption(CURLOPT_TIMEOUT, 5);
     }
 
-    public function handle($log)
+    public function handle($record)
     {
-        $ch = curl_init($this->url);
-        $data = json_encode($this->config + array(
-            'text' => $this->formatter->format($log)
+        $body = json_encode($this->config + array(
+            'text' => $this->formatter->format($record)
         ));
-        curl_setopt_array($ch, array(
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $data,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            // Hardening de v0.8.3:
-            CURLOPT_CONNECTTIMEOUT => 1,
-            CURLOPT_TIMEOUT => 2,
-        ));
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
+        if ($body === false) {
+            throw new \RuntimeException('Cannot encode Slack log payload');
+        }
+        $request = new \Scoop\Http\Message\Request($this->uri, 'POST', array(
+            'Content-Type' => 'application/json'
+        ), $body);
+        $response = $this->httpClient->sendRequest($request);
+        $status = $response->getStatusCode();
+        if ($status < 200 || $status >= 300) {
+            throw new \RuntimeException('Slack log delivery failed with HTTP status ' . $status);
+        }
+        return $response->getBody()->getContents();
     }
 }

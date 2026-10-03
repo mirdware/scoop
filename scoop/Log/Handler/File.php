@@ -4,35 +4,39 @@ namespace Scoop\Log\Handler;
 
 class File
 {
+    private $environment;
     private $fileName;
     private $formatter;
-    private $resource;
 
-    public function __construct($formatter, $file)
+    public function __construct(\Scoop\Bootstrap\Environment $environment, $formatter, $file = null)
     {
-        $dir = dirname($file);
-        if (!file_exists($dir)) {
-            if (mkdir($dir, 0700, true) && !is_dir($dir)) {
-                throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s"', $dir));
-            }
-        }
+        $this->environment = $environment;
         $this->formatter = $formatter;
         $this->fileName = $file;
     }
 
-    public function handle($log)
+    public function handle($record)
     {
-        if (!is_resource($this->resource)) {
-            $this->resource = fopen($this->fileName, 'a');
+        $fileName = $this->getFileName($record);
+        $dir = dirname($fileName);
+        if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
+            throw new \UnexpectedValueException("Cannot create log directory: $dir");
         }
-        flock($this->resource, LOCK_EX);
-        return fwrite($this->resource, $this->formatter->format($log) . PHP_EOL);
+        return file_put_contents(
+            $fileName,
+            $this->formatter->format($record) . PHP_EOL,
+            FILE_APPEND | LOCK_EX
+        );
     }
 
-    public function __destruct()
-    {
-        if (is_resource($this->resource)) {
-            fclose($this->resource);
+    private function getFileName($record) {
+        if (!$this->fileName) {
+            $this->fileName = $this->environment->getStoragePath('logs')
+                . $this->environment->getConfig('app.name') . '-{Y-m-d}.log';
         }
+        $fileName = str_replace('{level}', $record['level'], $this->fileName);
+        return preg_replace_callback('/\{([^\}]+)\}/', function ($matches) use ($record) {
+            return $record['timestamp']->format($matches[1]);
+        }, $fileName);
     }
 }

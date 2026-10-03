@@ -14,12 +14,12 @@ class Standard
         $this->streamName = $error ? 'php://stderr' : 'php://stdout';
     }
 
-    public function handle($log)
+    public function handle($record)
     {
         if (!is_resource($this->resource)) {
             $this->resource = fopen($this->streamName, 'w');
         }
-        return fwrite($this->resource, $this->formatter->format($log) . PHP_EOL);
+        return fwrite($this->resource, $this->formatter->format($record) . PHP_EOL);
     }
 
     public function __destruct()

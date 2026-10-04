@@ -63,7 +63,6 @@ class Context
         foreach (self::$connections as $connection) {
             $connection->rollBack();
         }
-        self::configureInjector();
     }
 
     public static function inject($id)

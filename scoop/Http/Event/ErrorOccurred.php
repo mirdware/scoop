@@ -6,9 +6,11 @@ class ErrorOccurred
 {
     private $exception;
     private $status;
+    private $time;
 
     public function __construct($exception, $status)
     {
+        $this->time = new \DateTime();
         $this->exception = $exception;
         $this->status = $status;
     }
@@ -21,5 +23,10 @@ class ErrorOccurred
     public function getStatusCode()
     {
         return $this->status;
+    }
+
+    public function getTime()
+    {
+        return $this->time;
     }
 }

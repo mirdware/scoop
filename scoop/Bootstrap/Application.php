@@ -5,10 +5,16 @@ namespace Scoop\Bootstrap;
 class Application
 {
     private $environment;
+    private $dispatcher;
+    private $logger;
+    private $entityManager;
 
     public function __construct()
     {
         $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
+        $this->dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+        $this->logger = \Scoop\Context::inject('\Scoop\Log\Logger');
+        $this->entityManager = \Scoop\Context::inject('\Scoop\Persistence\Entity\Manager');
         $this->enableCORS();
     }
 
@@ -19,27 +25,49 @@ class Application
         $request = \Scoop\Context::inject($requestType);
         try {
             $response = $router->route($request);
-            $this->printResponse($response);
+            $this->entityManager->flush();
         } catch (\Exception $ex) {
-            $this->manageError($ex, $request->isAjax());
+            $response = $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
-            $this->manageError($ex, $request->isAjax());
+            $response = $this->manageError($ex, $request->isAjax());
         }
-        gc_collect_cycles();
+        $this->printResponse($response);
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        $this->terminate();
+    }
+
+    public function terminate()
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+        try {
+            $this->dispatcher->dispatch(new \Scoop\Http\Event\RequestFinished());
+        } catch (\Exception $ex) {
+            error_log($ex);
+        } catch (\Throwable $ex) {
+            error_log($ex);
+        }
+        $this->entityManager->clean();
+        $this->logger->flush();
     }
 
     private function manageError($ex, $isAjax)
     {
         $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
-        $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+        $status = $exceptionManager->getStatusCode($ex);
+        $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         \Scoop\Context::reset();
         if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
-            return $this->printResponse($ex->getResponse());
+            return $ex->getResponse();
         }
-        $status = $exceptionManager->getStatusCode($ex);
-        $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
-        if (!$status) throw $ex;
-        $this->printResponse($exceptionManager->map($ex, $isAjax, $status));
+        if ($status) {
+            return $exceptionManager->map($ex, $isAjax, $status);
+        }
+        $this->terminate();
+        throw $ex;
     }
 
     private function printResponse($response)

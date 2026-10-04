@@ -31,7 +31,6 @@ class Manager
             $this->entityPlan
         );
         $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor, $this->builder);
-        register_shutdown_function(array($this, 'flush'));
     }
 
     public function save($entity)

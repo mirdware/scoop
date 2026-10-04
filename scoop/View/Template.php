@@ -12,22 +12,19 @@ final class Template
 
     public function parse($templatePath)
     {
-        $template = self::$viewPath . $templatePath . '.sdt.php';
-        $view = self::$cachePath . $templatePath . (DEBUG_MODE ? '.debug.php' : '.php');
-        self::$inHead = false;
         if (!DEBUG_MODE && isset(self::$compiled[$templatePath])) {
             return self::$compiled[$templatePath];
         }
+        $template = self::$viewPath . $templatePath . '.sdt.php';
+        $view = self::$cachePath . $templatePath . (DEBUG_MODE ? '.debug.php' : '.php');
+        self::$inHead = false;
         if (!is_readable($template)) {
             throw new \UnderflowException('Unable to load view or template ' . $templatePath);
         }
         if (!is_readable($view) || filemtime($template) > filemtime($view)) {
             $this->create($view, $template);
         }
-        if (!DEBUG_MODE) {
-            self::$compiled[$templatePath] = $view;
-        }
-        return $view;
+        return self::$compiled[$templatePath] = $view;
     }
 
     public static function setPath($viewPath, $cachePath)

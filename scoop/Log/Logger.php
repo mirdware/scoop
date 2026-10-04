@@ -5,6 +5,7 @@ namespace Scoop\Log;
 class Logger
 {
     private $handlerFactory;
+    private $handlers = array();
 
     public function __construct(\Scoop\Log\Factory\Handler $handlerFactory)
     {
@@ -53,7 +54,10 @@ class Logger
 
     public function log($level, $message, $context = null)
     {
-        $handlers = $this->handlerFactory->create($level);
+        if (!isset($this->handlers[$level])) {
+            $this->handlers[$level] = $handler = $this->handlerFactory->create($level);
+        }
+        $handlers = $this->handlers[$level];
         if (empty($handlers)) {
             return;
         }
@@ -66,10 +70,21 @@ class Logger
         foreach ($handlers as $handler) {
             try {
                 $handler->handle($record);
-            } catch (\Exception $error) {
-                error_log("Exception writing log: $error");
-            } catch (\Throwable $error) {
-                error_log("Error writing log: $error");
+            }  catch (\Exception $ex) {
+                error_log($ex);
+            } catch (\Throwable $ex) {
+                error_log($ex);
+            }
+        }
+    }
+
+    public function flush()
+    {
+        foreach ($this->handlers as $handlers) {
+            foreach ($handlers as $handler) {
+                if (is_callable(array($handler, 'flush'))) {
+                    $handler->flush();
+                }
             }
         }
     }

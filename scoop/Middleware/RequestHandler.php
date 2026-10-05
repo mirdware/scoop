@@ -4,14 +4,22 @@ namespace Scoop\Middleware;
 
 class RequestHandler
 {
+    private $injector;
     private $controller;
     private $middlewares;
     private $params;
     private $method;
     private $transformer;
 
-    public function __construct($controller, $method, $middlewares, $params, $transformer = null)
-    {
+    public function __construct(
+        \Scoop\Container\Injector $injector,
+        $controller,
+        $method,
+        $middlewares,
+        $params, 
+        $transformer = null
+    ) {
+        $this->injector = $injector;
         $this->middlewares = $middlewares;
         $this->params = $params;
         $this->controller = $controller;
@@ -24,7 +32,7 @@ class RequestHandler
         if (empty($this->middlewares)) {
             return $this->processController($request);
         }
-        $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
+        $middlewareInstance = $this->injector->get(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
             $className = get_class($middlewareInstance);
             throw new \BadMethodCallException("Middleware $className does not implement process method");
@@ -78,7 +86,7 @@ class RequestHandler
             }
             throw $missingControllerException;
         }
-        $controller = \Scoop\Context::inject($this->controller);
+        $controller = $this->injector->get($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
             $this->throwMissingMethod("{$this->controller} does not implement {$this->method} method");

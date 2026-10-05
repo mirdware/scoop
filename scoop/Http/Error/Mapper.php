@@ -13,9 +13,9 @@ class Mapper
     );
     private $config;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->config = $environment->getConfig('http.errors', array());
+        $this->config = $context->getConfig('http.errors', array());
         foreach ($this->config as $status => $config) {
             if ($status >=400 && $status <=599 && isset($config['exceptions'])) {
                 foreach ($config['exceptions'] as $exception) {

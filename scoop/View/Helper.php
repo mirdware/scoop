@@ -4,8 +4,9 @@ namespace Scoop\View;
 
 class Helper
 {
+    private $context;
+    private $injector;
     private $components;
-    private $environment;
     private $request;
     private $router;
     private $viteHost;
@@ -21,18 +22,19 @@ class Helper
 
     public function __construct(
         \Scoop\Http\Message\Server\Request $request,
-        \Scoop\Bootstrap\Environment $environment,
+        \Scoop\Bootstrap\Environment $context,
         \Scoop\Http\Router $router,
         \Scoop\View\Heritage $heritage,
         $data
     ) {
-        $this->environment = $environment;
+        $this->context = $context;
         $this->heritage = $heritage;
         $this->request = $request;
         $this->router = $router;
         $this->data = $data;
-        self::$assets = $environment->getConfig('assets', array()) + self::$assets;
+        self::$assets = $context->getConfig('assets', array()) + self::$assets;
         $this->viteHost = getenv('VITE_HOST');
+        $this->injector = $context->getInjector();
     }
 
     public function asset($resource)
@@ -50,7 +52,7 @@ class Helper
         if ($this->viteHost) {
             return "{$this->viteHost}app/styles/app.styl";
         }
-        return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->environment->getConfig('app.version');
+        return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->context->getConfig('app.version');
     }
 
     public function js($javaScript)
@@ -58,7 +60,7 @@ class Helper
         if ($this->viteHost) {
             return "{$this->viteHost}app/scripts/app.js";
         }
-        return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->environment->getConfig('app.version');
+        return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->context->getConfig('app.version');
     }
 
     public function route()
@@ -105,12 +107,12 @@ class Helper
 
     public function getConfig($name, $default = '')
     {
-        return $this->environment->getConfig($name, $default);
+        return $this->context->getConfig($name, $default);
     }
 
     public function translate($msg)
     {
-        return $this->environment->getConfig(self::$keyMessages . $msg);
+        return $this->context->getConfig(self::$keyMessages . $msg);
     }
 
     public function getCsrfToken()
@@ -146,7 +148,7 @@ class Helper
         if (!isset($this->components[$name])) {
             throw new \UnexpectedValueException("Error building the component [component $name not found].");
         }
-        $component = \Scoop\Context::inject($this->components[$name]);
+        $component = $this->injector->get($this->components[$name]);
         $component = $component->render($props, $this->data);
         $subject = ($component instanceof \Scoop\View) ? $component->render() : Template::clearHTML($component);
         return Heritage::parseBlocks($children, $subject);
@@ -177,7 +179,7 @@ class Helper
 
     private function loadComponents()
     {
-        $components = $this->environment->getConfig('components', array());
+        $components = $this->context->getConfig('components', array());
         $this->components = array('message' => '\Scoop\View\Message');
         foreach ($components as $name => $className) {
             if (is_numeric($name)) {

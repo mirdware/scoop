@@ -4,15 +4,15 @@ namespace Scoop\Log\Handler;
 
 class File
 {
-    private $environment;
+    private $context;
     private $fileName;
     private $shouldDefered;
     private $formatter;
     private $records = array();
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment, $formatter, $file = null, $shouldDefered = true)
+    public function __construct(\Scoop\Bootstrap\Environment $context, $formatter, $file = null, $shouldDefered = true)
     {
-        $this->environment = $environment;
+        $this->context = $context;
         $this->shouldDefered = $shouldDefered;
         $this->formatter = $formatter;
         $this->fileName = $file;
@@ -62,8 +62,8 @@ class File
 
     private function getFileName($record) {
         if (!$this->fileName) {
-            $this->fileName = $this->environment->getStoragePath('logs')
-                . $this->environment->getConfig('app.name') . '-{Y-m-d}.log';
+            $this->fileName = $this->context->getStoragePath('logs')
+                . $this->context->getConfig('app.name') . '-{Y-m-d}.log';
         }
         $fileName = str_replace('{level}', $record['level'], $this->fileName);
         $fileName = preg_replace_callback('/\{([^\}]+)\}/', function ($matches) use ($record) {

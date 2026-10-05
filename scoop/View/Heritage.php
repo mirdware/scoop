@@ -4,14 +4,16 @@ namespace Scoop\View;
 
 class Heritage
 {
+    private $injector;
     private $parent;
     private $templates;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
+        $this->injector = $context->getInjector();
         $this->templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
-            $environment->getConfig('templates', array())
+            $context->getConfig('templates', array())
         );
         ob_start();
     }
@@ -24,7 +26,7 @@ class Heritage
             isset($this->templates[$infoPath['extension']])
         ) ? $infoPath['extension'] : 'sdt.php';
         $path = $infoPath['dirname'] . '/' . $infoPath['filename'];
-        $template = \Scoop\Context::inject($this->templates[$ext]);
+        $template = $this->injector->get($this->templates[$ext]);
         return $template->parse($path);
     }
 

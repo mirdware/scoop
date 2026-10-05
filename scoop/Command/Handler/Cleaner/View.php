@@ -6,21 +6,21 @@ class View
 {
     private $writer;
     private $directory;
-    private $environment;
+    private $context;
 
     public function __construct(
         \Scoop\Command\Writer $writer,
-        \Scoop\Bootstrap\Environment $environment,
+        \Scoop\Bootstrap\Environment $context,
         \Scoop\Command\Directory $directory
     ) {
         $this->writer = $writer;
         $this->directory = $directory;
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function execute()
     {
-        $viewStorage = $this->environment->getStoragePath('cache/views');
+        $viewStorage = $this->context->getStoragePath('cache/views');
         if ($this->directory->delete($viewStorage)) {
             return $this->writer->write('View cache cleaned <success:successfully!>.');
         }

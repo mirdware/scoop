@@ -4,6 +4,7 @@ namespace Scoop\Http\Message\Server;
 
 class Request extends \Scoop\Http\Message\Request
 {
+    private $router;
     private $serverParams;
     private $cookieParams;
     private $queryParams;
@@ -15,6 +16,7 @@ class Request extends \Scoop\Http\Message\Request
     private $urlPath;
 
     public function __construct(
+        \Scoop\Http\Router $router,
         $uri = null,
         $body = null,
         $method = null,
@@ -24,6 +26,7 @@ class Request extends \Scoop\Http\Message\Request
         $serverParams = null,
         $cookies = null
     ) {
+        $this->router = $router;
         $this->urlPath = $uri === null ? $this->getURLPath() : $uri->getPath();
         parent::__construct(
             $uri === null ? new \Scoop\Http\Message\URI(
@@ -169,7 +172,7 @@ class Request extends \Scoop\Http\Message\Request
     {
         if ($url instanceof \Scoop\Http\Message\Server\Route) {
             $url->flushMessage($this->flash);
-            $url = \Scoop\Context::inject('\Scoop\Http\Router')->getURL($url);
+            $url = $this->router->getURL($url);
         }
         http_response_code($status);
         header("Location:$url", $status);

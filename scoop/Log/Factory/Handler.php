@@ -4,11 +4,12 @@ namespace Scoop\Log\Factory;
 
 class Handler
 {
+    private $injector;
     private $handlers;
-    private $instances;
 
-    public function __construct($handlers)
+    public function __construct(\Scoop\Container\Injector $injector, $handlers)
     {
+        $this->injector = $injector;
         $this->handlers = $handlers;
     }
 
@@ -67,7 +68,7 @@ class Handler
             if (array_key_exists($name, $args)) {
                 $params[] = $args[$name];
             } else if ($provider = $this->getParameterProvider($param)) {
-                $params[] = \Scoop\Context::inject($provider);
+                $params[] = $this->injector->get($provider);
             } else if ($param->isDefaultValueAvailable()) {
                 $params[] = $param->getDefaultValue();
             } else {
@@ -104,7 +105,7 @@ class Handler
             $args['formatter'] = 'Scoop\Log\Formatter';
         }
         if (is_string($args['formatter'])) {
-            $args['formatter'] = \Scoop\Context::inject($args['formatter']);
+            $args['formatter'] = $this->context->inject($args['formatter']);
         }
         return $args;
     }

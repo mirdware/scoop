@@ -4,23 +4,23 @@ namespace Scoop\Command\Handler;
 
 class PreLoader
 {
+    private $context;
     private $writer;
-    private $environment;
 
     public function __construct(
         \Scoop\Command\Writer $writer,
-        \Scoop\Bootstrap\Environment $environment
+        \Scoop\Bootstrap\Environment $context
     ) {
         $this->writer = $writer
         ->withStyle('quote', \Scoop\Command\Style\Color::CYAN)
         ->withStyle('number', \Scoop\Command\Style\Color::MAGENTA);
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function execute($command)
     {
         $args = $command->getArguments();
-        $res = $this->environment->loadLazily($args[0]);
+        $res = $this->context->loadLazily($args[0]);
         if ($command->hasFlag('v')) {
             $res = var_export($res, true);
             $res = preg_replace_callback('/(\'[^\']*\')|(\d+)|(\b(true|false|NULL)\b)/', function ($matches) {

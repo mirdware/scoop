@@ -4,14 +4,14 @@ namespace Scoop\Bootstrap\Loader;
 
 class TypeMapper
 {
+    private $context;
     private $storagePath;
-    private $environment;
     private $types = array();
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->storagePath = $environment->getStoragePath('cache/project');
-        $this->environment = $environment;
+        $this->context = $context;
+        $this->storagePath = $context->getStoragePath('cache/project');
     }
 
     public function load($type)
@@ -46,7 +46,7 @@ class TypeMapper
             if (strpos($namespace, 'Scoop\\') !== 0) {
                 $directory = rtrim($directory, '/') . '/';
                 $prefix = str_replace('\\', '_', $namespace);
-                $scanner = new \Scoop\Bootstrap\Scanner\Source($this->environment, $directory, $prefix);
+                $scanner = new \Scoop\Bootstrap\Scanner\Source($this->context, $directory, $prefix);
                 $scanner->scan();
                 $scannedTypes[] = $scanner->getCacheFilePath('types');
             }

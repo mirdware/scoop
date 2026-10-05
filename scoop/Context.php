@@ -5,15 +5,23 @@ namespace Scoop;
 class Context
 {
     private static $connections = array();
+    private static $context;
     private static $loader;
-    private static $injector;
+    private static $app;
     private static $environment;
 
+    /**
+     * @deprecated
+     * @since 0.8.5
+     * @see Application instance
+     */
     public static function load($configPath, $options = array())
     {
-        require 'scoop/Bootstrap/Environment.php';
-        self::$environment = new \Scoop\Bootstrap\Environment($configPath, $options);
-        if (!isset(self::$loader)) {
+        if ($configPath instanceof \Scoop\Bootstrap\Application) {
+            self::$app = $configPath;
+        } else {
+            $options['config'] = $configPath;
+            self::$context = $options;
             if (is_readable('vendor/autoload.php')) {
                 self::$loader = require 'vendor/autoload.php';
             } else {
@@ -30,10 +38,29 @@ class Context
                 self::$loader->register(true);
             }
         }
-        self::configureInjector();
-        self::inject('Scoop\Bootstrap\Configuration')->setUp();
     }
 
+    /**
+     * @deprecated
+     */
+    public static function get()
+    {
+        return is_array(self::$context) ? self::$context : array();
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function getLoader()
+    {
+        return self::$loader;
+    }
+
+    /**
+     * @deprecated
+     * @since 0.8.5
+     * @see Connection inject
+     */
     public static function connect($bundle = 'default', $options = array())
     {
         $config = self::normalizeConnection($bundle, $options);
@@ -52,12 +79,22 @@ class Context
         return self::$connections[$key];
     }
 
+    /**
+     * @deprecated
+     * @since 0.8.5
+     * @see Connection::__destruct
+     */
     public static function disconnect($bundle = 'default', $options = array())
     {
         $key = implode('', self::normalizeConnection($bundle, $options));
         unset(self::$connections[$key]);
     }
 
+    /**
+     * @deprecated
+     * @since 0.8.5
+     * @see Connection::rollback
+     */
     public static function reset()
     {
         foreach (self::$connections as $connection) {
@@ -65,9 +102,15 @@ class Context
         }
     }
 
+    /**
+     * @deprecated
+     * @since 0.8.5
+     * @see Application::inject
+     * @see Environment::inject
+     */
     public static function inject($id)
     {
-        return self::$injector->get($id);
+        return self::$app->inject($id);
     }
 
     private static function normalizeConnection($bundle, $options)
@@ -86,15 +129,5 @@ class Context
             'port' => null,
             'driver' => 'pgsql'
         ), $config);
-    }
-
-    private static function configureInjector()
-    {
-        $injector = self::$environment->getConfig('injector', '\Scoop\Container\Injector\Memory');
-        $baseInjector = '\Scoop\Container\Injector';
-        self::$injector = new $injector(self::$environment);
-        if (!(self::$injector instanceof $baseInjector)) {
-            throw new \UnexpectedValueException("$injector not implement $baseInjector");
-        }
     }
 }

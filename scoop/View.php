@@ -7,7 +7,7 @@ final class View
     private $path;
     private $data;
 
-    public function __construct($path)
+    public function __construct(\Scoop\Bootstrap\Environment $context, $path)
     {
         $this->path = $path;
         $this->data = array();

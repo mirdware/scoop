@@ -4,21 +4,21 @@ namespace Scoop\Bootstrap;
 
 class Configuration
 {
-    protected $environment;
+    protected $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function setLanguage($language)
     {
         \Scoop\Validator::setMessages(
-            $this->environment->getConfig("messages.$language.failures", array()),
-            $this->environment->getConfig("messages.$language.fields", array())
+            $this->context->getConfig("messages.$language.failures", array()),
+            $this->context->getConfig("messages.$language.fields", array())
         );
         \Scoop\Http\Error\Mapper::setMessages(
-            $this->environment->getConfig("messages.$language.errors", array())
+            $this->context->getConfig("messages.$language.errors", array())
         );
         \Scoop\View\Helper::setKeyMessages("messages.$language.");
     }
@@ -26,11 +26,11 @@ class Configuration
     public function setUp()
     {
         $this->setLanguage(
-            $this->environment->getConfig('language', 'es')
+            $this->context->getConfig('language', 'es')
         );
         \Scoop\View\Template::setPath(
             'app/views/',
-            $this->environment->getStoragePath('cache/views')
+            $this->context->getStoragePath('cache/views')
         );
     }
 }

@@ -4,16 +4,16 @@ namespace Scoop\Security\Factory;
 
 class Cipher
 {
-    private $environment;
+    private $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function create()
     {
-        $secret = $this->environment->getConfig('cipher', 'bVZi0dt8aN4piLCgOvA4sCYE2Zw16uH3');
+        $secret = $this->context->getConfig('cipher', 'bVZi0dt8aN4piLCgOvA4sCYE2Zw16uH3');
         $encoding = 'base64';
         if (is_array($secret)) {
             $encoding = $secret['encoding'];

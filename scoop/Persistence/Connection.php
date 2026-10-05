@@ -44,6 +44,7 @@ class Connection
     {
         if ($this->instance) {
             $this->commit();
+            unset($this->instance);
             $this->dispatcher->dispatch(new Event\ConnectionClosed($this));
         }
     }

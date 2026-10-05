@@ -8,9 +8,9 @@ class Source extends \Scoop\Bootstrap\Scanner
     private $externalTypes = array();
     private $externalProviders = array();
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment, $directory, $prefix)
+    public function __construct(\Scoop\Bootstrap\Environment $context, $directory, $prefix)
     {
-        $path = $environment->getStoragePath('cache/project');
+        $path = $context->getStoragePath('cache/project');
         $cacheFilePaths = array(
             'types' =>  "{$path}{$prefix}types.php",
             'providers' => "{$path}{$prefix}providers.php"

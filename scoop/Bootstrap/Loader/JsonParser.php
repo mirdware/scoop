@@ -6,9 +6,9 @@ class JsonParser
 {
     private $cachePath;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->cachePath = $environment->getStoragePath('cache/json');
+        $this->cachePath = $context->getStoragePath('cache/json');
     }
 
     public function load($url)

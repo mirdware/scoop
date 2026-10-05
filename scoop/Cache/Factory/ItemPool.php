@@ -4,17 +4,17 @@ namespace Scoop\Cache\Factory;
 
 class ItemPool
 {
-    private $environment;
+    private $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function create()
     {
-        $storagePath = $this->environment->getStoragePath('cache');
-        $lifetime = $this->environment->getConfig('cache.time', 0);
+        $storagePath = $this->context->getStoragePath('cache');
+        $lifetime = $this->context->getConfig('cache.time', 0);
         return new \Scoop\Cache\Item\Pool\File($storagePath, $lifetime);
     }
 }

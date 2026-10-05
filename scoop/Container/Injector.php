@@ -6,14 +6,14 @@ abstract class Injector
 {
     private $rules = array();
     private $definitions = array();
-    private $environment;
+    private $context;
 
-    public function __construct($environment)
+    public function __construct($context)
     {
-        $this->environment = $environment;
-        $this->setInstance('Scoop\Bootstrap\Environment', 'singleton', $environment);
-        $interfaces = $environment->getConfig('providers', array());
-        $providerPath = $environment->getStoragePath('cache/project');
+        $this->context = $context;
+        $this->setInstance('Scoop\Bootstrap\Environment', 'singleton', $context);
+        $interfaces = $context->getConfig('providers', array());
+        $providerPath = $context->getStoragePath('cache/project');
         foreach ($interfaces as $interfaceName => $className) {
             $interfaceName = self::formatClassName($interfaceName);
             $this->rules[$interfaceName] = $className;
@@ -87,7 +87,7 @@ abstract class Injector
         } else {
             $class = new \ReflectionClass($className);
             $instance = $class->newInstanceArgs(array_map(function ($provider) {
-                return \Scoop\Context::inject($provider);
+                return $this->get($provider);
             }, $providers));
         }
         if ($method) {

@@ -4,25 +4,40 @@ namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $environment;
+    private static $loader;
+    private $context;
     private $dispatcher;
     private $logger;
     private $entityManager;
 
-    public function __construct()
+    public function __construct($fileContext = '')
     {
-        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
-        $this->dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
-        $this->logger = \Scoop\Context::inject('\Scoop\Log\Logger');
-        $this->entityManager = \Scoop\Context::inject('\Scoop\Persistence\Entity\Manager');
+        $options = array_merge(array(
+            'config' => 'app/config',
+            'storage' => 'app/storage',
+            'stateful' => false
+        ), $fileContext ? require $fileContext . '.php' : \Scoop\Context::get());
+        require_once 'scoop/Bootstrap/Environment.php';
+        $this->context = new \Scoop\Bootstrap\Environment($options);
+        if (\Scoop\Context::getLoader()) {
+            self::$loader = \Scoop\Context::get();
+        }
+        \Scoop\Context::load($this);
+        if (!isset(self::$loader)) {
+            self::$loader = $this->load();
+        }
+        $this->dispatcher = $this->inject('\Scoop\Event\Dispatcher');
+        $this->logger = $this->inject('\Scoop\Log\Logger');
+        $this->entityManager = $this->inject('\Scoop\Persistence\Entity\Manager');
+        $this->inject('Scoop\Bootstrap\Configuration')->setUp();
         $this->enableCORS();
     }
 
     public function run()
     {
-        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Server\Request');
-        $router = \Scoop\Context::inject('\Scoop\Http\Router');
-        $request = \Scoop\Context::inject($requestType);
+        $requestType = $this->context->getConfig('request', '\Scoop\Http\Message\Server\Request');
+        $router = $this->inject('\Scoop\Http\Router');
+        $request = $this->inject($requestType);
         try {
             $response = $router->route($request);
             $this->entityManager->flush();
@@ -54,9 +69,14 @@ class Application
         $this->logger->flush();
     }
 
+    public function inject($id)
+    {
+        return $this->context->getInjector()->get($id);
+    }
+
     private function manageError($ex, $isAjax)
     {
-        $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
+        $exceptionManager = $this->inject('\Scoop\Http\Error\Mapper');
         $status = $exceptionManager->getStatusCode($ex);
         $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         \Scoop\Context::reset();
@@ -99,6 +119,25 @@ class Application
         fclose($resource);
     }
 
+    private function load()
+    {
+        if (is_readable('vendor/autoload.php')) {
+            return require 'vendor/autoload.php';
+        }
+        require 'scoop/Bootstrap/Loader.php';
+        require 'scoop/Bootstrap/Loader/JsonParser.php';
+        $loader = new \Scoop\Bootstrap\Loader();
+        $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($this->context);
+        $conf = $jsonLoader->load('composer');
+        if (isset($conf['autoload']['psr-4'])) {
+            foreach ($conf['autoload']['psr-4'] as $key => $value) {
+                $loader->set($key, $value);
+            }
+        }
+        $loader->register(true);
+        return $loader;
+    }
+
     /**
      * @deprecated
      * @see middleware CorsGuard
@@ -106,7 +145,7 @@ class Application
      */
     private function enableCORS()
     {
-        $cors = $this->environment->getConfig('cors');
+        $cors = $this->context->getConfig('cors');
         if (!$cors) {
             return;
         }

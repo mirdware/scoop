@@ -4,17 +4,18 @@ namespace Scoop\Event\Factory;
 
 class Bus
 {
-    private $environment;
+    private $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function create()
     {
         return new \Scoop\Event\Bus(
-            $this->environment->getConfig('events', array())
+            $this->context->getInjector(),
+            $this->context->getConfig('events', array())
         );
     }
 }

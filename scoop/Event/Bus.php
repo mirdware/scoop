@@ -4,12 +4,14 @@ namespace Scoop\Event;
 
 class Bus
 {
+    private $injector;
     private $events = array();
     private $listeners = array();
     private $method;
 
-    public function __construct($providers, $method = 'listen')
+    public function __construct(\Scoop\Container\Injector $injector, $providers, $method = 'listen')
     {
+        $this->injector = $injector;
         $this->method = $method;
         foreach ($providers as $eventType => $listeners) {
             $eventType = \Scoop\Container\Injector::formatClassName($eventType);
@@ -43,6 +45,7 @@ class Bus
             if (isset($this->events[$eventClass])) {
                 foreach ($this->events[$eventClass] as $listenerClass => $middlewares) {
                     $this->listeners[$eventName][] = new \Scoop\Event\Listener\Wrapper(
+                        $this->injector,
                         $listenerClass,
                         $this->method,
                         $middlewares

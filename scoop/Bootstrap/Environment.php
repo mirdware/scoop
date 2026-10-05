@@ -12,20 +12,18 @@ class Environment
         'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator'
     );
     private static $version;
+    private $injector;
     private $config;
     private $storagePath;
 
-    public function __construct($configPath, $options = array())
+    public function __construct($context)
     {
-        $options = array_merge(array(
-            'storage' => 'app/storage',
-            'stateless' => false
-        ), $options);
-        if (!$options['stateless'] && !self::$sessionInit) {
+        
+        if (!$context['stateful'] && !self::$sessionInit) {
             self::$sessionInit = session_start();
         }
-        $this->config = $configPath . '.php';
-        $this->storagePath = $options['storage'];
+        $this->config = $context['config'] . '.php';
+        $this->storagePath = $context['storage'];
         if (isset($_SERVER['HTTP_HOST'])) {
             $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
@@ -34,6 +32,7 @@ class Environment
             define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
         define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
+        $this->injector = $this->instantiateInjector();
     }
 
     public function getConfig($name, $default = null)
@@ -75,6 +74,11 @@ class Environment
         return $path;
     }
 
+    public function getInjector()
+    {
+        return $this->injector;
+    }
+
     public function loadLazily($path)
     {
         $index = strpos($path, ':');
@@ -82,7 +86,7 @@ class Environment
             $method = substr($path, 0, $index);
             if (isset(self::$loaders[$method])) {
                 $url = substr($path, $index + 1);
-                $loader = \Scoop\Context::inject(self::$loaders[$method]);
+                $loader = $this->injector->get(self::$loaders[$method]);
                 return $loader->load($url);
             }
         }
@@ -97,5 +101,16 @@ class Environment
             self::$version = $annotations[1][0];
         }
         return self::$version;
+    }
+
+    private function instantiateInjector()
+    {
+        $injector = $this->getConfig('injector', '\Scoop\Container\Injector\Memory');
+        $baseInjector = '\Scoop\Container\Injector';
+        $injector = new $injector($this);
+        if (!($injector instanceof $baseInjector)) {
+            throw new \UnexpectedValueException("$injector not implement $baseInjector");
+        }
+        return $injector;
     }
 }

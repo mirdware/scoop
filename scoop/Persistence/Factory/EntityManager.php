@@ -4,20 +4,20 @@ namespace Scoop\Persistence\Factory;
 
 class EntityManager
 {
-    private $environment;
+    private $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function create()
     {
         return new \Scoop\Persistence\Entity\Manager(
-            $this->environment->getConfig('model.entities', array()),
-            $this->environment->getConfig('model.values', array()),
-            $this->environment->getConfig('model.relations', array()),
-            $this->environment->getConfig('model.types', array()),
+            $this->context->getConfig('model.entities', array()),
+            $this->context->getConfig('model.values', array()),
+            $this->context->getConfig('model.relations', array()),
+            $this->context->getConfig('model.types', array()),
             new \Scoop\Persistence\Builder()
         );
     }

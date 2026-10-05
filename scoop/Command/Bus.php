@@ -4,11 +4,13 @@ namespace Scoop\Command;
 
 class Bus
 {
+    private $injector;
     private $commands = array();
     private $instances = array();
 
-    public function __construct($commands)
+    public function __construct(\Scoop\Container\Injector $injector, $commands)
     {
+        $this->injector = $injector;
         foreach ($commands as $command => $handler) {
             $ref = new \ReflectionClass($handler);
             if (!$ref->hasMethod('help') || !$ref->hasMethod('execute')) {
@@ -36,7 +38,7 @@ class Bus
             if (!isset($this->commands[$name])) {
                 throw new \UnexpectedValueException("Command $name not found", 9904);
             }
-            $this->instances[$name] = \Scoop\Context::inject($this->commands[$name]);
+            $this->instances[$name] = $this->injector->get($this->commands[$name]);
         }
         $command = new \Scoop\Command\Request($args);
         if ($command->getOption('help')) {

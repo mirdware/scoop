@@ -4,18 +4,19 @@ namespace Scoop\Log\Factory;
 
 class Logger
 {
-    private $environment;
+    private $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
-        $this->environment = $environment;
+        $this->context = $context;
     }
 
     public function create()
     {
         return new \Scoop\Log\Logger(
             new \Scoop\Log\Factory\Handler(
-                $this->environment->getConfig('log', array())
+                $this->context->getInjector(),
+                $this->context->getConfig('log', array())
             )
         );
     }

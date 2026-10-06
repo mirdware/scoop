@@ -7,7 +7,7 @@ final class View
     private $path;
     private $data;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context, $path)
+    public function __construct($path)
     {
         $this->path = $path;
         $this->data = array();
@@ -33,14 +33,15 @@ final class View
 
     public function render()
     {
-        $request = Context::inject('Scoop\Http\Message\Server\Request');
-        $environment = Context::inject('Scoop\Bootstrap\Environment');
-        $router = Context::inject('Scoop\Http\Router');
+        $context = View\Service::getContext();
+        $injector = $context->getInjector();
+        $request = $injector->get('Scoop\Http\Message\Server\Request');
+        $router = $injector->get('Scoop\Http\Router');
         $bufferLevel = ob_get_level();
         $previous = null;
         try {
-            $heritage = new View\Heritage($environment);
-            $helper = new View\Helper($request, $environment, $router, $heritage, $this->data);
+            $heritage = new View\Heritage($context);
+            $helper = new View\Helper($request, $context, $router, $heritage, $this->data);
             $previous = View\Service::inject('view', $helper);
             extract($this->data, EXTR_SKIP);
             require $heritage->getCompilePath($this->path);

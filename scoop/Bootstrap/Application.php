@@ -18,19 +18,21 @@ class Application
             'stateful' => false
         ), $fileContext ? require $fileContext . '.php' : \Scoop\Context::get());
         require_once 'scoop/Bootstrap/Environment.php';
-        $this->context = new \Scoop\Bootstrap\Environment($options);
         if (\Scoop\Context::getLoader()) {
             self::$loader = \Scoop\Context::get();
         }
         \Scoop\Context::load($this);
         if (!isset(self::$loader)) {
-            self::$loader = $this->load();
+            self::$loader = $this->load($options['storage']);
         }
+        $this->context = new \Scoop\Bootstrap\Environment($options);
         $this->dispatcher = $this->inject('\Scoop\Event\Dispatcher');
         $this->logger = $this->inject('\Scoop\Log\Logger');
         $this->entityManager = $this->inject('\Scoop\Persistence\Entity\Manager');
         $this->inject('Scoop\Bootstrap\Configuration')->setUp();
-        $this->enableCORS();
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $this->enableCORS();
+        }
     }
 
     public function run()
@@ -38,6 +40,7 @@ class Application
         $requestType = $this->context->getConfig('request', '\Scoop\Http\Message\Server\Request');
         $router = $this->inject('\Scoop\Http\Router');
         $request = $this->inject($requestType);
+        \Scoop\View\Service::setup($this->context);
         try {
             $response = $router->route($request);
             $this->entityManager->flush();
@@ -65,6 +68,7 @@ class Application
         } catch (\Throwable $ex) {
             error_log($ex);
         }
+        \Scoop\View\Service::clean();
         $this->entityManager->clean();
         $this->logger->flush();
     }
@@ -119,7 +123,7 @@ class Application
         fclose($resource);
     }
 
-    private function load()
+    private function load($storagePath)
     {
         if (is_readable('vendor/autoload.php')) {
             return require 'vendor/autoload.php';
@@ -127,7 +131,11 @@ class Application
         require 'scoop/Bootstrap/Loader.php';
         require 'scoop/Bootstrap/Loader/JsonParser.php';
         $loader = new \Scoop\Bootstrap\Loader();
-        $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($this->context);
+        $path = trim($storagePath, '/') . '/cache/json/';
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($path);
         $conf = $jsonLoader->load('composer');
         if (isset($conf['autoload']['psr-4'])) {
             foreach ($conf['autoload']['psr-4'] as $key => $value) {

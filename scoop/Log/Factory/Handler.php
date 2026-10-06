@@ -105,7 +105,7 @@ class Handler
             $args['formatter'] = 'Scoop\Log\Formatter';
         }
         if (is_string($args['formatter'])) {
-            $args['formatter'] = $this->context->inject($args['formatter']);
+            $args['formatter'] = $this->injector->get($args['formatter']);
         }
         return $args;
     }

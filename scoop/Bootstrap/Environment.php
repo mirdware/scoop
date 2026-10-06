@@ -7,9 +7,9 @@ class Environment
     private static $sessionInit = false;
     private static $loaders = array(
         'import' => 'Scoop\Bootstrap\Loader\Importer',
-        'json' => 'Scoop\Bootstrap\Loader\JsonParser',
         'typeof' => 'Scoop\Bootstrap\Loader\TypeMapper',
-        'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator'
+        'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator',
+        'json' => 'Scoop\Bootstrap\Loader\Factory\JsonParser:create'
     );
     private static $version;
     private $injector;

@@ -28,7 +28,12 @@ class Context
                 require 'scoop/Bootstrap/Loader.php';
                 require 'scoop/Bootstrap/Loader/JsonParser.php';
                 self::$loader = new \Scoop\Bootstrap\Loader();
-                $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser(self::$environment);
+                $storagePath = isset($options['storage']) ? $options['storage'] : 'app/storage';
+                $path = trim($storagePath, '/') . '/cache/json/';
+                if (!is_dir($path)) {
+                    mkdir($path, 0755, true);
+                }
+                $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($path);
                 $conf = $jsonLoader->load('composer');
                 if (isset($conf['autoload']['psr-4'])) {
                     foreach ($conf['autoload']['psr-4'] as $key => $value) {
@@ -110,12 +115,15 @@ class Context
      */
     public static function inject($id)
     {
+        if (!isset(self::$app)) {
+            self::$app = new \Scoop\Bootstrap\Application();
+        }
         return self::$app->inject($id);
     }
 
     private static function normalizeConnection($bundle, $options)
     {
-        $config = self::$environment->getConfig('db.' . $bundle, array()) + $options;
+        $config = self::inject('Scoop\Bootstrap\Environment')->getConfig('db.' . $bundle, array()) + $options;
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {

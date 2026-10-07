@@ -9,6 +9,7 @@ return array(
     'Scoop\Cache\Item\Pool' => 'Scoop\Cache\Factory\ItemPool:create',
     'Scoop\Security\Cipher' => 'Scoop\Security\Factory\Cipher:create',
     'Scoop\Persistence\Vault' => 'Scoop\Persistence\Factory\Vault:create',
+    'Scoop\Persistence\Connection' => 'Scoop\Persistence\Factory\Connection:create',
     'Scoop\Persistence\Entity\Manager' => 'Scoop\Persistence\Factory\EntityManager:create',
 
     'App\Repository\Quote' => 'App\Repository\QuoteArray'

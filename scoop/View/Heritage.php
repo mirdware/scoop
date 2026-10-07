@@ -51,11 +51,13 @@ class Heritage
 
     public static function parseBlocks($content, $parent)
     {
-        $content = str_replace('$', '\$', $content);
-        $res =preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#', function ($matches) use (&$parent) {
+        $res = preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#s', function ($matches) use (&$parent) {
             $parent = str_replace("@slot[{$matches[1]}]", trim($matches[2]), $parent, $count);
             return $count ? '' : $matches[0];
         }, $content);
-        return preg_replace('#@slot(?!\[)#', trim($res), $parent);
+        $res = trim($res);
+        return preg_replace_callback('#@slot(?!\[)#', function () use ($res) {
+            return $res;
+        }, $parent);
     }
 }

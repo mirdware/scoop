@@ -6,30 +6,30 @@ class Application
 {
     private static $loader;
     private $context;
+    private $injector;
     private $dispatcher;
-    private $logger;
-    private $entityManager;
 
     public function __construct($fileContext = '')
     {
+        $default = array();
+        if (class_exists('\Scoop\Context')) {
+            if (\Scoop\Context::getLoader()) {
+                self::$loader = \Scoop\Context::getLoader();
+            }
+            $default = \Scoop\Context::get();
+        }
         $options = array_merge(array(
             'config' => 'app/config',
             'storage' => 'app/storage',
             'stateful' => false
-        ), $fileContext ? require $fileContext . '.php' : \Scoop\Context::get());
-        require_once 'scoop/Bootstrap/Environment.php';
-        if (\Scoop\Context::getLoader()) {
-            self::$loader = \Scoop\Context::get();
-        }
-        \Scoop\Context::load($this);
+        ), $fileContext ? require $fileContext . '.php' : $default);
         if (!isset(self::$loader)) {
             self::$loader = $this->load($options['storage']);
         }
+        \Scoop\Context::load($this);
         $this->context = new \Scoop\Bootstrap\Environment($options);
-        $this->dispatcher = $this->inject('\Scoop\Event\Dispatcher');
-        $this->logger = $this->inject('\Scoop\Log\Logger');
-        $this->entityManager = $this->inject('\Scoop\Persistence\Entity\Manager');
-        $this->inject('Scoop\Bootstrap\Configuration')->setUp();
+        $this->injector = $this->context->getInjector();
+        $this->dispatcher = $this->inject('Scoop\Event\Dispatcher');
         if (isset($_SERVER['HTTP_HOST'])) {
             $this->enableCORS();
         }
@@ -37,13 +37,17 @@ class Application
 
     public function run()
     {
-        $requestType = $this->context->getConfig('request', '\Scoop\Http\Message\Server\Request');
-        $router = $this->inject('\Scoop\Http\Router');
+        $requestType = $this->context->getConfig('request', 'Scoop\Http\Message\Server\Request');
+        $router = $this->inject('Scoop\Http\Router');
         $request = $this->inject($requestType);
-        \Scoop\View\Service::setup($this->context);
+        $this->inject('Scoop\Bootstrap\Configuration')->setUp();
+        \Scoop\View\Service::setUp($this->context);
         try {
             $response = $router->route($request);
-            $this->entityManager->flush();
+            $entityManager = $this->findDependency('Scoop\Persistence\Entity\Manager');
+            if ($entityManager) {
+                $entityManager->flush();
+            }
         } catch (\Exception $ex) {
             $response = $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
@@ -68,19 +72,33 @@ class Application
         } catch (\Throwable $ex) {
             error_log($ex);
         }
-        \Scoop\View\Service::clean();
-        $this->entityManager->clean();
-        $this->logger->flush();
+        \Scoop\View\Service::reset();
+        $logger = $this->findDependency('Scoop\Log\Logger');
+        $entityManager = $this->findDependency('Scoop\Persistence\Entity\Manager');
+        if ($entityManager) {
+            $entityManager->clean();
+        }
+        if ($logger) {
+            $logger->flush();
+        }
+        $this->injector->clean();
     }
 
     public function inject($id)
     {
-        return $this->context->getInjector()->get($id);
+        return $this->injector->get($id);
+    }
+
+    private function findDependency($id)
+    {
+        if (!is_callable(array($this->injector, 'contains')) || $this->injector->contains($id)) {
+            return $this->inject($id);
+        }
     }
 
     private function manageError($ex, $isAjax)
     {
-        $exceptionManager = $this->inject('\Scoop\Http\Error\Mapper');
+        $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
         $status = $exceptionManager->getStatusCode($ex);
         $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         \Scoop\Context::reset();

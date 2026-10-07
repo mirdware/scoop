@@ -8,7 +8,6 @@ class Context
     private static $context;
     private static $loader;
     private static $app;
-    private static $environment;
 
     /**
      * @deprecated

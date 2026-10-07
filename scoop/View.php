@@ -42,10 +42,9 @@ final class View
         try {
             $heritage = new View\Heritage($context);
             $helper = new View\Helper($request, $context, $router, $heritage, $this->data);
-            $previous = View\Service::inject('view', $helper);
-            extract($this->data, EXTR_SKIP);
-            require $heritage->getCompilePath($this->path);
-            $content = $heritage->getContent();
+            $previous = View\Service::takeSnapshot();
+            View\Service::inject('view', $helper);
+            $content = $this->getContent($heritage);
         } catch (\Exception $error) {
             $this->restoreRenderState($previous, $bufferLevel);
             throw $error;
@@ -57,10 +56,17 @@ final class View
         return $content;
     }
 
+    private function getContent($__heritage_)
+    {
+        extract($this->data, EXTR_SKIP);
+        require $__heritage_->getCompilePath($this->path);
+        return $__heritage_->getContent();
+    }
+
     private function restoreRenderState($previous, $bufferLevel)
     {
-        if ($previous) {
-            View\Service::inject('view', $previous);
+        if ($previous !== null) {
+            View\Service::restore($previous);
         }
         while (ob_get_level() > $bufferLevel) {
             if (!ob_end_clean()) {

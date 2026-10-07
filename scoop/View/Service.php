@@ -4,20 +4,21 @@ namespace Scoop\View;
 
 abstract class Service
 {
-    private static $context;
-    private static $injector;
+    private static $context = null;
+    private static $injector = null;
     private static $services = array();
 
-    public static function setup(\Scoop\Bootstrap\Environment $context)
+    public static function setUp(\Scoop\Bootstrap\Environment $context)
     {
         self::$context = $context;
         self::$injector = $context->getInjector();
     }
 
-    public static function clean()
+    public static function reset()
     {
+        self::$context = null;
+        self::$injector = null;
         self::$services = array();
-        unset(self::$context, self::$injector);
     }
 
     public static function getContext()

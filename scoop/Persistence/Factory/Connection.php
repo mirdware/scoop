@@ -7,7 +7,7 @@ class Connection
     private $context;
     private $dispatcher;
 
-    public function __contruct(
+    public function __construct(
         \Scoop\Bootstrap\Environment $context,
         \Scoop\Event\Dispatcher $dispatcher
     ) {

@@ -4,13 +4,13 @@ namespace Scoop\Bootstrap\Loader;
 
 class TypeInstantiator
 {
-    private $context;
+    private $injector;
     private $mapper;
     private $instances;
 
     public function __construct(\Scoop\Bootstrap\Environment $context, TypeMapper $mapper)
     {
-        $this->context = $context;
+        $this->injector = $context->getInjector();
         $this->mapper = $mapper;
         $this->instances = array();
     }
@@ -21,7 +21,7 @@ class TypeInstantiator
             $derivedTypes = $this->mapper->load($type);
             $instancesTypes = array();
             foreach ($derivedTypes as $derivedType) {
-                $instancesTypes[] = $this->context->inject($derivedType);
+                $instancesTypes[] = $this->injector->get($derivedType);
             }
             $this->instances[$type] = $instancesTypes;
         }

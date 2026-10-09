@@ -26,11 +26,19 @@ abstract class Service
         return self::$context;
     }
 
+    public static function takeSnapshot()
+    {
+        return self::$services;
+    }
+
+    public static function restore($services)
+    {
+        self::$services = $services;
+    }
+
     public static function inject($name, $className)
     {
-        $previous = isset(self::$services[$name]) ? self::$services[$name] : null;
         self::$services[$name] = $className;
-        return $previous;
     }
 
     public static function get($name)

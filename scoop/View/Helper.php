@@ -22,7 +22,7 @@ class Helper
 
     public function __construct(
         \Scoop\Http\Message\Server\Request $request,
-        \Scoop\Bootstrap\Environment $context,
+        \Scoop\Context $context,
         \Scoop\Http\Router $router,
         \Scoop\View\Heritage $heritage,
         $data

@@ -10,7 +10,7 @@ class File
     private $formatter;
     private $records = array();
 
-    public function __construct(\Scoop\Bootstrap\Environment $context, $formatter, $file = null, $shouldDefered = true)
+    public function __construct(\Scoop\Context $context, $formatter, $file = null, $shouldDefered = true)
     {
         $this->context = $context;
         $this->shouldDefered = $shouldDefered;

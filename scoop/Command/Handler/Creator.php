@@ -4,7 +4,7 @@ namespace Scoop\Command\Handler;
 
 class Creator extends Router
 {
-    public function __construct(\Scoop\Bootstrap\Environment $context, \Scoop\Command\Writer $writer)
+    public function __construct(\Scoop\Context $context, \Scoop\Command\Writer $writer)
     {
         parent::__construct(
             'create new starter artifacts',

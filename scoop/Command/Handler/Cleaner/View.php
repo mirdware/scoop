@@ -4,18 +4,18 @@ namespace Scoop\Command\Handler\Cleaner;
 
 class View
 {
+    private $context;
     private $writer;
     private $directory;
-    private $context;
 
     public function __construct(
+        \Scoop\Context $context,
         \Scoop\Command\Writer $writer,
-        \Scoop\Bootstrap\Environment $context,
         \Scoop\Command\Directory $directory
     ) {
+        $this->context = $context;
         $this->writer = $writer;
         $this->directory = $directory;
-        $this->context = $context;
     }
 
     public function execute()

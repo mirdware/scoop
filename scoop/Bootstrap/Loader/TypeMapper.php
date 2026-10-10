@@ -8,7 +8,7 @@ class TypeMapper
     private $storagePath;
     private $types = array();
 
-    public function __construct(\Scoop\Bootstrap\Environment $context)
+    public function __construct(\Scoop\Context $context)
     {
         $this->context = $context;
         $this->storagePath = $context->getStoragePath('cache/project');

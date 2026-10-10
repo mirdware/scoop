@@ -2,7 +2,7 @@
 
 namespace Scoop;
 
-class Context
+class Context extends Bootstrap\Environment
 {
     private static $connections = array();
     private static $context;

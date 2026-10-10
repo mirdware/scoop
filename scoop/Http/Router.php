@@ -9,7 +9,7 @@ class Router
     private $routes;
     private $current;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context, \Scoop\Bootstrap\Scanner\Route $scanner)
+    public function __construct(\Scoop\Context $context, \Scoop\Bootstrap\Scanner\Route $scanner)
     {
         if (DEBUG_MODE) $scanner->scan();
         $routes = require $scanner->getCacheFilePath('routes');

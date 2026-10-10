@@ -21,7 +21,7 @@ class Application
         $options = array_merge(array(
             'config' => 'app/config',
             'storage' => 'app/storage',
-            'stateful' => false
+            'stateless' => false
         ), $fileContext ? require $fileContext . '.php' : $default);
         if (!isset(self::$loader)) {
             self::$loader = $this->load($options['storage']);

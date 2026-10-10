@@ -1,0 +1,38 @@
+root * /app
+encode gzip
+log
+
+route {
+	@indexWithQuery {
+		path /index.php
+		expression `{query} != ""`
+	}
+	redir @indexWithQuery /?{query} 301
+	@index path /index.php
+	redir @index / 301
+
+	@private path_regexp private (^|/)\.|\.(php|ini|log|bak|sql|env)$
+	respond @private 404
+
+	@asset {
+		path /public/*
+		file
+	}
+	handle @asset {
+		file_server
+	}
+
+	@doubleSlash expression `{path}.startsWith("//") || {path}.startsWith("/\\")`
+	respond @doubleSlash 404
+	@missingSlashWithQuery {
+		path_regexp missingSlashWithQuery ^/[^.]*[^/]$
+		expression `{query} != ""`
+	}
+	redir @missingSlashWithQuery {path}/?{query} 308
+	@missingSlash path_regexp missingSlash ^/[^.]*[^/]$
+	redir @missingSlash {path}/ 308
+
+	@application path_regexp application (?s)^/(.*)$
+	rewrite @application /index.php?{query}&route={re.application.1}
+	php
+}

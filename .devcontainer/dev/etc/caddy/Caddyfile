@@ -1,0 +1,10 @@
+{
+	auto_https off
+	admin off
+	frankenphp
+}
+
+:8001 {
+	bind 127.0.0.1
+	import /etc/caddy/scoop.caddy
+}

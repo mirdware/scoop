@@ -17,7 +17,7 @@ class PreLoader
         $this->context = $context;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request  $command)
     {
         $args = $command->getArguments();
         $res = $this->context->loadLazily($args[0]);

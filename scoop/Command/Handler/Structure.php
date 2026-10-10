@@ -11,7 +11,7 @@ class Structure
         $this->writer = $writer;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         $name = $command->getOption('name', 'default');
         $connection = $this->getConnection(

@@ -18,8 +18,7 @@ class Environment
 
     public function __construct($context)
     {
-        
-        if (!$context['stateful'] && !self::$sessionInit) {
+        if (!$context['stateless'] && !self::$sessionInit) {
             self::$sessionInit = session_start();
         }
         $this->config = $context['config'] . '.php';

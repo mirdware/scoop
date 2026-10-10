@@ -1,0 +1,14 @@
+{
+	admin off
+	persist_config off
+	frankenphp
+}
+
+{$SERVER_NAME::80} {
+	import /etc/caddy/scoop.caddy
+}
+
+http://:8001 {
+	bind 127.0.0.1
+	import /etc/caddy/scoop.caddy
+}

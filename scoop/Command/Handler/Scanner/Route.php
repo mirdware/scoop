@@ -13,7 +13,7 @@ class Route
         $this->scanner = $scanner;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         $cacheFilePath = $this->scanner->getCacheFilePath('routes');
         if ($command->hasFlag('f')) {

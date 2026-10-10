@@ -6,7 +6,8 @@
 **/tests/
 Dockerfile
 .devcontainer/
-!.devcontainer/docker/
+!.devcontainer/common/
+!.devcontainer/prod/
 app/storage/*
 app/phpunit.xml
 app/phpcs.xml

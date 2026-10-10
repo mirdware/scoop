@@ -13,7 +13,7 @@ const BROWSERSLIST_QUERY = 'defaults, not IE 11';
 const appName = pkg.name;
 const pathScripts = 'app/scripts/';
 const pathStyles = 'app/styles/';
-const phpHost = process.env.PHP_HOST || 'http://localhost:8001';
+const phpHost = process.env.PHP_HOST || 'http://127.0.0.1:8001';
 
 function normalizePath(p) {
   return p.replace(/\\/g, '/');

@@ -67,17 +67,10 @@ class Request extends \Scoop\Http\Message
         }
         $new = clone $this;
         $new->uri = $uri;
-        if (!$preserveHost || !$this->hasHeader('Host')) {
-            $host = $uri->getHost();
-            if ($host !== '') {
-                $port = $uri->getPort();
-                if ($port !== null) {
-                    $host .= ":$port";
-                }
-                return $new->withHeader('Host', $host);
-            }
+        if ($preserveHost && $this->getHeaderLine('Host') !== '') {
+            return $new;
         }
-        $port = $this->uri->getPort();
+        $port = $uri->getPort();
         return $new->withHeader('Host', $uri->getHost() . ($port ? ":$port" : ''));
     }
 }

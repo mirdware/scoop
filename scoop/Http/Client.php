@@ -21,7 +21,9 @@ class Client
         if (curl_exec($ch) === false) {
             $error = curl_error($ch);
             $errno = curl_errno($ch);
-            curl_close($ch);
+            if (is_resource($ch)) {
+                curl_close($ch);
+            }
             fclose($responseBodyHandle);
             if (in_array($errno, array(
                 CURLE_COULDNT_RESOLVE_PROXY,
@@ -38,7 +40,9 @@ class Client
             throw new \Scoop\Http\Exception\Request($error, $request, $errno);
         }
         $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        if (is_resource($ch)) {
+            curl_close($ch);
+        }
         rewind($responseBodyHandle);
         $stream = new \Scoop\Http\Message\Stream($responseBodyHandle);
         return new \Scoop\Http\Message\Response($statusCode, $responseHeaders, $stream);

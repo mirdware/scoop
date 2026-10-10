@@ -95,7 +95,7 @@ class Query
             $args = $args[0];
         }
         foreach ($args as $key => &$value) {
-            if ($value instanceof Builder\Reader) {
+            if ($value instanceof Reader) {
                 $value = '(' . $value . ')';
             } else {
                 $value = $this->connection->quoteColumn($value, true);

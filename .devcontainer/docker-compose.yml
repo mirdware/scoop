@@ -2,6 +2,7 @@ services:
   webapp:
     container_name: webapp
     build:
+      context: .
       dockerfile: Dockerfile
     volumes:
       - ../.:/app
@@ -15,11 +16,10 @@ services:
     environment:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_NAME: ${DB_NAME:-scoop}
-      PHP_DISPLAY_ERRORS: 1
+      VITE_HOST: http://localhost:8000/
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
       XDEBUG_MODE: develop,coverage,debug,profile
-      #XDEBUG_SESSION_START=scoop
-      XDEBUG_IDE_KEY: scoop
-      XDEBUG_CLIENT_HOST: host.docker.internal
   db:
     container_name: db
     image: postgres:14.1-alpine
@@ -29,7 +29,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-scoop}
     healthcheck:
-      test: [CMD-SHELL, pg_isready]
+      test: [CMD-SHELL, 'pg_isready -U postgres -d "$$POSTGRES_DB"']
       interval: 30s
       timeout: 60s
       retries: 5

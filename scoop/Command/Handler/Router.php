@@ -15,7 +15,7 @@ class Router
         $this->bus = $bus;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         $args = $command->getArguments();
         $commandName = array_shift($args);

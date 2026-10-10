@@ -10,7 +10,7 @@ class Struct
     {
         $this->writer = $writer;
     }
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         $name = $this->normalizeName($command->getOption('name'));
         $path = $this->getPath($command->getOption('schema', ''));

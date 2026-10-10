@@ -15,7 +15,7 @@ class Cache
         $this->cache = $cache;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         if ($command->hasFlag('f')) {
             $this->cache->clear();

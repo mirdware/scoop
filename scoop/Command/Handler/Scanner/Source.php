@@ -13,7 +13,7 @@ class Source
         $this->context = $context;
     }
 
-    public function execute($command)
+    public function execute(\Scoop\Command\Request $command)
     {
         $composerJson = json_decode(file_get_contents('composer.json'), true);
         $psr4 = $composerJson['autoload']['psr-4'];

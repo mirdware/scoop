@@ -5,12 +5,17 @@ namespace Scoop\Persistence\Builder;
 class Reader extends Criteria
 {
     use Pageable;
+    private $context;
     private $group = array();
     private $having = '';
 
-    public function __construct(\Scoop\Persistence\Connection $connection, $query)
-    {
-        parent::__construct($connection, $query, \Scoop\Persistence\SQO::READ);
+    public function __construct(
+        \Scoop\Context $context,
+        \Scoop\Persistence\Connection $connection,
+        $query
+    ) {
+        parent::__construct($connection, $query, Query::READ);
+        $this->context = $context;
         $this->connection = $connection;
     }
 
@@ -54,12 +59,12 @@ class Reader extends Criteria
 
     public function union(Reader $reader)
     {
-        return new Union($this->connection, $this, $reader, 'UNION');
+        return new Union($this->context, $this->connection, $this, $reader, 'UNION');
     }
 
     public function unionAll(Reader $reader)
     {
-        return new Union($this->connection, $this, $reader, 'UNION ALL');
+        return new Union($this->context, $this->connection, $this, $reader, 'UNION ALL');
     }
 
     public function __toString()

@@ -1,19 +1,20 @@
 #!/usr/bin/env php
 <?php
 
-if (php_sapi_name() !== 'cli') {
-    exit;
+$script = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
+if (php_sapi_name() !== 'cli' && realpath($script) !== __FILE__) {
+    return;
 }
-require 'scoop/Context.php';
-\Scoop\Context::load('app/config');
+require 'scoop/Bootstrap/Application.php';
+$app = new \Scoop\Bootstrap\Application('app/context');
 array_shift($argv);
 $commandName = array_shift($argv);
 $trace = $commandName === '--trace';
 if ($trace) {
     $commandName = array_shift($argv);
 }
-$writer = \Scoop\Context::inject('\Scoop\Command\Writer');
-$commandBus = \Scoop\Context::inject('\Scoop\Command\Bus');
+$writer = $app->inject('\Scoop\Command\Writer');
+$commandBus = $app->inject('\Scoop\Command\Bus');
 if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
     try {
         $commandBus->dispatch($commandName, $argv);
@@ -25,7 +26,7 @@ if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version ' . \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getVersion(),
+        'ICE/SCOOP version ' . $app->inject('\Scoop\Context')->getVersion(),
         '',
         'Commands:'
     );

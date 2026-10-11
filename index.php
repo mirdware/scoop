@@ -9,10 +9,21 @@
  * @license http://opensource.org/licenses/MIT MIT
  * @author  Marlon Ramírez <marlonramirez@outlook.com>
  * @link http://getscoop.org
- * @version 0.8
+ * @version 0.9
  */
 
-require 'scoop/Context.php';
-\Scoop\Context::load('app/config');
-$app = new \Scoop\Bootstrap\Application();
-$app->run();
+require 'scoop/Bootstrap/Application.php';
+$app = new \Scoop\Bootstrap\Application('app/context');
+try {
+    $app->run();
+} catch (Exception $ex) {
+    $app->terminate();
+    throw $ex;
+} catch (Throwable $ex) {
+    $app->terminate();
+    throw $ex;
+}
+if (function_exists('fastcgi_finish_request')) {
+    fastcgi_finish_request();
+}
+$app->terminate();

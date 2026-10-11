@@ -174,18 +174,16 @@ class Request extends \Scoop\Http\Message\Request
             $url->flushMessage($this->flash);
             $url = $this->router->getURL($url);
         }
-        http_response_code($status);
-        header("Location:$url", $status);
-        exit;
+        return new \Scoop\Http\Message\Response($status, array('location' => $url));
     }
 
     public function goBack()
     {
         $http_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $this->flash->get('http');
         if ($http_referer) {
-            $this->redirect($http_referer);
+            return $this->redirect($http_referer);
         }
-        exit;
+        return new \Scoop\Http\Message\Response();
     }
 
     public function isAjax()

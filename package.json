@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "Simple Components of Object-Oriented Programming",
   "type": "module",
   "repository": {
@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run build",
     "build": "vite build",
-    "dev": "concurrently \"vite\" \"php -S 127.0.0.1:8001 app/router.php\""
+    "dev": "cross-env PHP_HOST=http://127.0.0.1:8002 concurrently \"vite\" \"php -S 127.0.0.1:8002 app/router.php\""
   },
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",
@@ -19,6 +19,7 @@
     "@rolldown/plugin-babel": "^0.2.4",
     "@vitejs/plugin-legacy": "^8.2.3",
     "concurrently": "^10.0.6",
+    "cross-env": "^10.1.0",
     "stylus": "^0.64.0",
     "vite": "^8.3.4",
     "vite-plugin-static-copy": "^4.1.1"

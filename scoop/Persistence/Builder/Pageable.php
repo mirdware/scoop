@@ -40,11 +40,9 @@ trait Pageable
     public function page($params)
     {
         $page = isset($params['page']) ? intval($params['page']) : 0;
-        $size = isset($params['size']) ?
-        intval($params['size']) :
-        \Scoop\Context::inject('\Scoop\Bootstrap\Environment')->getConfig('page.size', 12);
+        $size = isset($params['size']) ? intval($params['size']) : $this->context->getConfig('page.size', 12);
         unset($params['page'], $params['size']);
-        $paginated = new \Scoop\Persistence\SQO($this->bind($params), 'page', $this->connection);
+        $paginated = new Query($this->context, $this->connection, $this->bind($params), 'page');
         $result = $paginated->read()->limit($page * $size, $size)->run($params)->fetchAll();
         return $paginated->read(array('total' => 'COUNT(*)'))->run($params)
         ->fetch(\PDO::FETCH_ASSOC) + array('page' => $page, 'size' => $size, 'result' => $result);

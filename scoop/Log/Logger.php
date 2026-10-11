@@ -83,7 +83,13 @@ class Logger
         foreach ($this->handlers as $handlers) {
             foreach ($handlers as $handler) {
                 if (is_callable(array($handler, 'flush'))) {
-                    $handler->flush();
+                    try {
+                        $handler->flush();
+                    } catch (\Exception $ex) {
+                        error_log($ex);
+                    } catch (\Throwable $ex) {
+                        error_log($ex);
+                    }
                 }
             }
         }

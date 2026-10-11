@@ -7,14 +7,20 @@ class Query
     const READ = 1;
     const UPDATE = 2;
     const DELETE = 3;
+    private $context;
+    private $connection;
     private $table;
     private $aliasTable;
-    private $connection;
     private $isSubquery;
 
-    public function __construct($table, $alias = '', $connection = 'default')
-    {
-        $this->connection = is_string($connection) ? \Scoop\Context::connect($connection) : $connection;
+    public function __construct(
+        \Scoop\Context $context,
+        \Scoop\Persistence\Connection $connection,
+        $table,
+        $alias = ''
+    ) {
+        $this->context = $context;
+        $this->connection = $connection;
         if ($alias !== '') {
             $alias = $this->connection->quoteColumn($alias);
         }
@@ -44,7 +50,7 @@ class Query
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', $this->getFields($args)) : '*';
         $query = 'SELECT ' . $fields . ' FROM ' . $this->aliasTable;
-        return new Reader($this->connection, $query);
+        return new Reader($this->context, $this->connection, $query);
     }
 
     public function update($fields)

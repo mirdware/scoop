@@ -73,6 +73,6 @@ class Criteria extends Runner
 
     protected function requiresTransaction()
     {
-        return $this->type !== \Scoop\Persistence\SQO::READ;
+        return $this->type !== Query::READ;
     }
 }

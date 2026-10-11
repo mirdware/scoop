@@ -4,18 +4,24 @@ namespace Scoop\Command\Handler;
 
 class Structure
 {
+    private $context;
+    private $dispatcher;
     private $writer;
 
-    public function __construct(\Scoop\Command\Writer $writer)
-    {
+    public function __construct(
+        \Scoop\Context $context,
+        \Scoop\Event\Dispatcher $dispatcher,
+        \Scoop\Command\Writer $writer
+    ) {
+        $this->context = $context;
+        $this->dispatcher = $dispatcher;
         $this->writer = $writer;
     }
 
     public function execute(\Scoop\Command\Request $command)
     {
-        $name = $command->getOption('name', 'default');
         $connection = $this->getConnection(
-            $name,
+            $command->getOption('name', 'db'),
             $command->getOption('user'),
             $command->getOption('password')
         );
@@ -52,14 +58,28 @@ class Structure
 
     private function getConnection($name, $user, $password)
     {
-        $options = array();
+        $config = $this->context->getConfig($name, array());
         if ($user) {
-            $options['user'] = $user;
+            $config['user'] = $user;
         }
         if ($password) {
-            $options['password'] = $password;
+            $config['password'] = $password;
         }
-        return \Scoop\Context::connect($name, $options);
+        $requireds = array('database', 'user');
+        foreach ($requireds as $required) {
+            if (!isset($config[$required])) {
+                throw new \OutOfBoundsException("Property $required not found in database configuration");
+            }
+        }
+        return new \Scoop\Persistence\Connection(
+            $this->dispatcher,
+            $config['database'],
+            $config['user'],
+            isset($config['password']) ? $config['password'] : '',
+            isset($config['host']) ? $config['host'] : '127.0.0.1',
+            isset($config['port']) ? $config['port'] : null,
+            isset($config['driver']) ? $config['driver'] : 'pgsql'
+        );
     }
 
     private function collectFiles($filePatten, $collectedSqlFiles)
@@ -103,7 +123,7 @@ class Structure
     private function update($connection, $schema, $tag)
     {
         $tableName = $connection->is('pgsql') ? 'public.structs' : 'structs';
-        $sqoStruct = new \Scoop\Persistence\SQO($tableName, 's', $connection);
+        $sqoStruct = new \Scoop\Persistence\Builder\Query($this->context, $connection, $tableName, 's');
         $creator = $sqoStruct->create(array('name'));
         $files = array_unique($this->getFiles($schema));
         $fileMap = $this->getFileMap($files);

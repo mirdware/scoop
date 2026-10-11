@@ -2,139 +2,117 @@
 
 namespace Scoop;
 
-class Context extends Bootstrap\Environment
+class Context
 {
-    private static $connections = array();
-    private static $context;
-    private static $loader;
-    private static $app;
+    private static $loaders = array(
+        'import' => 'Scoop\Bootstrap\Loader\Importer',
+        'typeof' => 'Scoop\Bootstrap\Loader\TypeMapper',
+        'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator',
+        'json' => 'Scoop\Bootstrap\Loader\Factory\JsonParser:create'
+    );
+    private static $version;
+    private $injector;
+    private $config;
+    private $storagePath;
 
-    /**
-     * @deprecated
-     * @since 0.8.5
-     * @see Application instance
-     */
-    public static function load($configPath, $options = array())
+    public function __construct($context)
     {
-        if ($configPath instanceof \Scoop\Bootstrap\Application) {
-            self::$app = $configPath;
-        } else {
-            $options['config'] = $configPath;
-            self::$context = $options;
-            if (is_readable('vendor/autoload.php')) {
-                self::$loader = require 'vendor/autoload.php';
-            } else {
-                require 'scoop/Bootstrap/Loader.php';
-                require 'scoop/Bootstrap/Loader/JsonParser.php';
-                self::$loader = new \Scoop\Bootstrap\Loader();
-                $storagePath = isset($options['storage']) ? $options['storage'] : 'app/storage';
-                $path = trim($storagePath, '/') . '/cache/json/';
-                if (!is_dir($path)) {
-                    mkdir($path, 0755, true);
-                }
-                $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($path);
-                $conf = $jsonLoader->load('composer');
-                if (isset($conf['autoload']['psr-4'])) {
-                    foreach ($conf['autoload']['psr-4'] as $key => $value) {
-                        self::$loader->set($key, $value);
-                    }
-                }
-                self::$loader->register(true);
-            }
-        }
+        $this->defineConstants();
+        $this->config = $context['map'] . '.php';
+        $this->storagePath = $context['storage'];
+        $this->injector = $this->instantiateInjector();
     }
 
-    /**
-     * @deprecated
-     */
-    public static function get()
+    public function getConfig($name, $default = null)
     {
-        return is_array(self::$context) ? self::$context : array();
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function getLoader()
-    {
-        return self::$loader;
-    }
-
-    /**
-     * @deprecated
-     * @since 0.8.5
-     * @see Connection inject
-     */
-    public static function connect($bundle = 'default', $options = array())
-    {
-        $config = self::normalizeConnection($bundle, $options);
-        $key = implode('', $config);
-        if (!isset(self::$connections[$key])) {
-            self::$connections[$key] = new Persistence\Connection(
-                self::inject('\Scoop\Event\Dispatcher'),
-                $config['database'],
-                $config['user'],
-                $config['password'],
-                $config['host'],
-                $config['port'],
-                $config['driver']
+        if (is_string($this->config)) {
+            $this->config = array(
+                'base' => require $this->config,
+                'data' => array()
             );
+            if (!isset($this->config['base']['providers']) || !is_array($this->config['base']['providers'])) {
+                throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
+            }
+            self::$loaders += $this->getConfig('loaders', array());
         }
-        return self::$connections[$key];
-    }
-
-    /**
-     * @deprecated
-     * @since 0.8.5
-     * @see Connection::__destruct
-     */
-    public static function disconnect($bundle = 'default', $options = array())
-    {
-        $key = implode('', self::normalizeConnection($bundle, $options));
-        unset(self::$connections[$key]);
-    }
-
-    /**
-     * @deprecated
-     * @since 0.8.5
-     * @see Connection::rollback
-     */
-    public static function reset()
-    {
-        foreach (self::$connections as $connection) {
-            $connection->rollBack();
+        if (isset($this->config['data'][$name])) {
+            return $this->config['data'][$name];
         }
-    }
-
-    /**
-     * @deprecated
-     * @since 0.8.5
-     * @see Application::inject
-     * @see Environment::inject
-     */
-    public static function inject($id)
-    {
-        if (!isset(self::$app)) {
-            self::$app = new \Scoop\Bootstrap\Application();
+        $data = explode('.', $name);
+        $res = $this->config['base'];
+        foreach ($data as $key) {
+            if (!isset($res[$key])) {
+                return $default;
+            }
+            if (is_string($res[$key])) {
+                $res[$key] = $this->loadLazily($res[$key]);
+            }
+            $res = $res[$key];
         }
-        return self::$app->inject($id);
+        $this->config['data'][$name] = $res;
+        return $res;
     }
 
-    private static function normalizeConnection($bundle, $options)
+    public function getStoragePath($path)
     {
-        $config = self::inject('Scoop\Bootstrap\Environment')->getConfig('db.' . $bundle, array()) + $options;
-        $requireds = array('database', 'user');
-        foreach ($requireds as $required) {
-            if (!isset($config[$required])) {
-                throw new \OutOfBoundsException('Property ' . $required .
-                ' not found in database configuration');
+        $path = trim($this->storagePath, '/') . '/' . trim($path, '/') . '/';
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        return $path;
+    }
+
+    public function getInjector()
+    {
+        return $this->injector;
+    }
+
+    public function loadLazily($path)
+    {
+        $index = strpos($path, ':');
+        if ($index !== false) {
+            $method = substr($path, 0, $index);
+            if (isset(self::$loaders[$method])) {
+                $url = substr($path, $index + 1);
+                $loader = $this->injector->get(self::$loaders[$method]);
+                return $loader->load($url);
             }
         }
-        return array_merge(array(
-            'password' => '',
-            'host' => '127.0.0.1',
-            'port' => null,
-            'driver' => 'pgsql'
-        ), $config);
+        return $path;
+    }
+
+    public function getVersion()
+    {
+        if (!self::$version) {
+            $index = file_get_contents('index.php');
+            preg_match_all('# @version\s+(.*?)\n#s', $index, $annotations);
+            self::$version = $annotations[1][0];
+        }
+        return self::$version;
+    }
+
+    private function instantiateInjector()
+    {
+        $injector = $this->getConfig('injector', '\Scoop\Container\Injector\Memory');
+        $baseInjector = '\Scoop\Container\Injector';
+        $injector = new $injector($this);
+        if (!($injector instanceof $baseInjector)) {
+            throw new \UnexpectedValueException("$injector not implement $baseInjector");
+        }
+        return $injector;
+    }
+
+    private function defineConstants()
+    {
+        if (!defined('ROOT') && isset($_SERVER['HTTP_HOST'])) {
+            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
+            $viteHost = getenv('VITE_HOST');
+            define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
+        }
+        if (!defined('DEBUG_MODE')) {
+            define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
+        }
     }
 }

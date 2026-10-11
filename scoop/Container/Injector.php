@@ -4,14 +4,13 @@ namespace Scoop\Container;
 
 abstract class Injector
 {
+    private $context;
     private $rules = array();
     private $definitions = array();
-    private $context;
 
-    public function __construct($context)
+    public function __construct(\Scoop\Context $context)
     {
         $this->context = $context;
-        $this->setInstance('Scoop\Bootstrap\Environment', 'singleton', $context);
         $this->setInstance('Scoop\Context', 'singleton', $context);
         $interfaces = $context->getConfig('providers', array());
         $providerPath = $context->getStoragePath('cache/project');

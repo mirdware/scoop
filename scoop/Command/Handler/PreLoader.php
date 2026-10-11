@@ -7,14 +7,12 @@ class PreLoader
     private $context;
     private $writer;
 
-    public function __construct(
-        \Scoop\Command\Writer $writer,
-        \Scoop\Bootstrap\Environment $context
-    ) {
+    public function __construct(\Scoop\Context $context, \Scoop\Command\Writer $writer)
+    {
+        $this->context = $context;
         $this->writer = $writer
         ->withStyle('quote', \Scoop\Command\Style\Color::CYAN)
         ->withStyle('number', \Scoop\Command\Style\Color::MAGENTA);
-        $this->context = $context;
     }
 
     public function execute(\Scoop\Command\Request  $command)

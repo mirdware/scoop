@@ -12,6 +12,7 @@ abstract class Injector
     {
         $this->context = $context;
         $this->setInstance('Scoop\Bootstrap\Environment', 'singleton', $context);
+        $this->setInstance('Scoop\Context', 'singleton', $context);
         $interfaces = $context->getConfig('providers', array());
         $providerPath = $context->getStoragePath('cache/project');
         foreach ($interfaces as $interfaceName => $className) {

@@ -8,7 +8,7 @@ abstract class Service
     private static $injector = null;
     private static $services = array();
 
-    public static function setUp(\Scoop\Bootstrap\Environment $context)
+    public static function setUp(\Scoop\Context $context)
     {
         self::$context = $context;
         self::$injector = $context->getInjector();

@@ -8,7 +8,7 @@ class TypeInstantiator
     private $mapper;
     private $instances;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context, TypeMapper $mapper)
+    public function __construct(\Scoop\Context $context, TypeMapper $mapper)
     {
         $this->injector = $context->getInjector();
         $this->mapper = $mapper;

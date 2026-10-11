@@ -5,10 +5,12 @@ namespace Scoop\Persistence\Factory;
 class EntityManager
 {
     private $context;
+    private $queryBuilder;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context)
+    public function __construct(\Scoop\Context $context, \Scoop\Persistence\Builder $builder)
     {
         $this->context = $context;
+        $this->queryBuilder = $builder;
     }
 
     public function create()
@@ -18,7 +20,7 @@ class EntityManager
             $this->context->getConfig('model.values', array()),
             $this->context->getConfig('model.relations', array()),
             $this->context->getConfig('model.types', array()),
-            new \Scoop\Persistence\Builder()
+            $this->queryBuilder
         );
     }
 }

@@ -4,7 +4,7 @@ namespace Scoop\Bootstrap\Scanner;
 
 class Route extends \Scoop\Bootstrap\Scanner
 {
-    public function __construct(\Scoop\Bootstrap\Environment $context)
+    public function __construct(\Scoop\Context $context)
     {
         $path = $context->getStoragePath('cache');
         parent::__construct(

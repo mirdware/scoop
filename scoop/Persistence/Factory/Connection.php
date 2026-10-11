@@ -8,7 +8,7 @@ class Connection
     private $dispatcher;
 
     public function __construct(
-        \Scoop\Bootstrap\Environment $context,
+        \Scoop\Context $context,
         \Scoop\Event\Dispatcher $dispatcher
     ) {
         $this->context = $context;

@@ -27,7 +27,7 @@ class Application
             self::$loader = $this->load($options['storage']);
         }
         \Scoop\Context::load($this);
-        $this->context = new \Scoop\Bootstrap\Environment($options);
+        $this->context = new \Scoop\Context($options);
         $this->injector = $this->context->getInjector();
         $this->dispatcher = $this->inject('Scoop\Event\Dispatcher');
         if (isset($_SERVER['HTTP_HOST'])) {

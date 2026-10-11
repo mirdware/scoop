@@ -6,7 +6,7 @@ class Configuration
 {
     protected $context;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context)
+    public function __construct(\Scoop\Context $context)
     {
         $this->context = $context;
     }

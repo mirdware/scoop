@@ -13,7 +13,7 @@ class Mapper
     );
     private $config;
 
-    public function __construct(\Scoop\Bootstrap\Environment $context)
+    public function __construct(\Scoop\Context $context)
     {
         $this->config = $context->getConfig('http.errors', array());
         foreach ($this->config as $status => $config) {

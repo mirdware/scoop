@@ -8,6 +8,9 @@ class Application
     private $context;
     private $injector;
     private $stateful;
+    private $error;
+    private $status;
+    private $terminated;
 
     public function __construct($fileContext)
     {
@@ -27,9 +30,7 @@ class Application
 
     public function run()
     {
-        if ($this->stateful && session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->bootstrap();
         $requestType = $this->context->getConfig('request', 'Scoop\Http\Message\Server\Request');
         $router = $this->inject('Scoop\Http\Router');
         $request = $this->inject($requestType);
@@ -45,6 +46,7 @@ class Application
             $response = $this->manageError($ex, $request->isAjax());
         }
         $this->printResponse($response);
+        $this->terminated = true;
     }
 
     public function terminate()
@@ -53,9 +55,11 @@ class Application
             session_write_close();
         }
         try {
-            $this->inject('Scoop\Event\Dispatcher')->dispatch(
-                new \Scoop\Http\Event\RequestFinished()
-            );
+            if ($this->terminated) {
+                $this->inject('Scoop\Event\Dispatcher')->dispatch(
+                    new \Scoop\Http\Event\RequestFinished($this->error, $this->status)
+                );
+            }
         } catch (\Exception $ex) {
             error_log($ex);
         } catch (\Throwable $ex) {
@@ -65,6 +69,7 @@ class Application
         $this->executeDependency('Scoop\Persistence\Entity\Manager', 'clean');
         $this->executeDependency('Scoop\Log\Logger', 'flush');
         $this->injector->clean();
+        $this->terminated = false;
     }
 
     public function inject($id)
@@ -76,22 +81,22 @@ class Application
     {
         $this->executeDependency('Scoop\Persistence\Connection', 'rollback');
         $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
-        $status = $exceptionManager->getStatusCode($ex);
-        $this->inject('Scoop\Event\Dispatcher')->dispatch(
-            new \Scoop\Http\Event\ErrorOccurred($ex, $status)
-        );
+        $this->status = $exceptionManager->getStatusCode($ex);
+        $this->error = $ex;
         if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
             return $ex->getResponse();
         }
-        if ($status) {
-            return $exceptionManager->map($ex, $isAjax, $status);
+        if ($this->status) {
+            return $exceptionManager->map($ex, $isAjax, $this->status);
         }
+        $this->terminated = true;
         throw $ex;
     }
 
     private function executeDependency($className, $callback)
     {
-        if (!is_callable(array($this->injector, 'contains')) || $this->injector->contains($className)) {
+        $method = 'contains';
+        if (!is_callable(array($this->injector, $method)) || $this->injector->$method($className)) {
             $this->inject($className)->$callback();
         }
     }
@@ -123,6 +128,23 @@ class Application
         $resource = $body->detach();
         fpassthru($resource);
         fclose($resource);
+    }
+
+    private function bootstrap()
+    {
+        $this->terminated = false;
+        $this->error = null;
+        $this->status = null;
+        if (!defined('ROOT')) {
+            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
+            $viteHost = getenv('VITE_HOST');
+            define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
+        }
+        if ($this->stateful && session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     private function load($storagePath)

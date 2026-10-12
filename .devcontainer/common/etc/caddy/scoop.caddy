@@ -33,6 +33,6 @@ route {
 	redir @missingSlash {path}/ 308
 
 	@application path_regexp application (?s)^/(.*)$
-	rewrite @application /index.php?{query}&route={re.application.1}
+	rewrite @application /{args[0]}?{query}&route={re.application.1}
 	php
 }

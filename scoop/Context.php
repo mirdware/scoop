@@ -17,7 +17,9 @@ class Context
 
     public function __construct($context)
     {
-        $this->defineConstants();
+        if (!defined('DEBUG_MODE')) {
+            define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
+        }
         $this->config = $context['map'] . '.php';
         $this->storagePath = $context['storage'];
         $this->injector = $this->instantiateInjector();
@@ -56,8 +58,8 @@ class Context
     public function getStoragePath($path)
     {
         $path = trim($this->storagePath, '/') . '/' . trim($path, '/') . '/';
-        if (!is_dir($path)) {
-            mkdir($path, 0755, true);
+        if (!is_dir($path) && !@mkdir($path, 0755, true) && !is_dir($path)) {
+            throw new \RuntimeException("Cannot create storage directory: $path");
         }
         return $path;
     }
@@ -100,19 +102,5 @@ class Context
             throw new \UnexpectedValueException("$injector not implement $baseInjector");
         }
         return $injector;
-    }
-
-    private function defineConstants()
-    {
-        if (!defined('ROOT') && isset($_SERVER['HTTP_HOST'])) {
-            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
-            $viteHost = getenv('VITE_HOST');
-            define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
-        }
-        if (!defined('DEBUG_MODE')) {
-            define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
-        }
     }
 }

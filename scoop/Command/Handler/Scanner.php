@@ -13,7 +13,8 @@ class Scanner extends Router
                 $context->getInjector(),
                 array(
                     'source' => 'Scoop\Command\Handler\Scanner\Source',
-                    'routes' => 'Scoop\Command\Handler\Scanner\Route'
+                    'routes' => 'Scoop\Command\Handler\Scanner\Route',
+                    'views' => 'Scoop\Command\Handler\Scanner\View'
                 )
             )
         );

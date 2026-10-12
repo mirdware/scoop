@@ -39,6 +39,6 @@ ENV XDG_CONFIG_HOME=/config \
 USER 1000:1000
 WORKDIR /app
 EXPOSE 80 443 443/udp
-HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 CMD ["php", "app/ice", "check", "health", "--port=8001"]
+HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 CMD ["php", "app/ice", "check", "health"]
 ENTRYPOINT ["frankenphp"]
 CMD ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

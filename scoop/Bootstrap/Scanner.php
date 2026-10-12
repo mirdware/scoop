@@ -57,7 +57,9 @@ abstract class Scanner
     }
 
     private function analyzeDirectory() {
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->directory));
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($this->directory, \FilesystemIterator::SKIP_DOTS)
+        );
         $regex = new \RegexIterator($iterator, $this->filePattern);
         $isModified = !is_readable($this->metaFilePath);
         $meta = !$isModified ? require $this->metaFilePath : array();

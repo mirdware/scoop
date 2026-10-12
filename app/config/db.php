@@ -6,10 +6,8 @@ $password = getenv('DB_PASSWORD');
 $db = getenv('DB_NAME');
 
 return array(
-    'default' => array(
-        'host' => $host ? $host : 'db',
-        'database' => $db ? $db : 'scoop',
-        'user' => $user ? $user : 'postgres',
-        'password' => $password ? $password : 'postgres'
-    )
+    'host' => $host ? $host : 'db',
+    'database' => $db ? $db : 'scoop',
+    'user' => $user ? $user : 'postgres',
+    'password' => $password ? $password : 'postgres'
 );

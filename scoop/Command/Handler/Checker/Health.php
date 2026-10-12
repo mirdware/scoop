@@ -22,7 +22,7 @@ class Health
             ->sendRequest(
             new \Scoop\Http\Message\Request(
                 new \Scoop\Http\Message\URI(
-                    $command->getOption('schema', 'http') . '://' .
+                    ($command->hasFlag('s') ? 'https' : 'http') . '://' .
                     trim($command->getOption('host', '127.0.0.1'), '/') . ':' .
                     $command->getOption('port', '80') . '/' .
                     ($path === '' ? '' : $path . '/')

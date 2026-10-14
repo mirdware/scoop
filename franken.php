@@ -19,7 +19,7 @@ function reportUncatchableException($ex) {
     if (!headers_sent()) {
         http_response_code(500);
         header('Content-Type: text/plain; charset=utf-8');
-        echo 'Internal Server Error';
+        echo defined('DEBUG_MODE') && DEBUG_MODE ? (string) $ex : 'Internal Server Error';
     }
 }
 

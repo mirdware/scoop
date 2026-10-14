@@ -41,9 +41,4 @@ class Union extends Runner {
         }
         return $sql . $this->getOrder() . $this->getLimit();
     }
-
-    protected function requiresTransaction()
-    {
-        return false;
-    }
 }

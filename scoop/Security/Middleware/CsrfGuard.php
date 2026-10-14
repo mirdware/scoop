@@ -9,6 +9,9 @@ class CsrfGuard
         if (in_array(strtoupper($request->getMethod()), array('GET', 'HEAD', 'OPTIONS', 'TRACE'))) {
             return $next->handle($request);
         }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            throw new \LogicException('CSRF requires an active session. Enable `stateful` => true in the application context.');
+        }
         if (!isset($_SESSION['csrf-token'])) {
             throw new \Scoop\Http\Exception\Forbidden('CSRF token not found in session');
         }

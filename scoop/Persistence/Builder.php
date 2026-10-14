@@ -22,4 +22,9 @@ class Builder
         }
         return $this->instances[$key];
     }
+
+    public function getConnection()
+    {
+        return $this->connection;
+    }
 }

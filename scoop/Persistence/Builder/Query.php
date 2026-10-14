@@ -90,11 +90,6 @@ class Query
         return $this->connection->lastInsertId($nameSeq);
     }
 
-    public function getConnection()
-    {
-        return $this->connection;
-    }
-
     private function getFields($args)
     {
         if (is_array($args[0])) {

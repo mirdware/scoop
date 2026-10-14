@@ -44,15 +44,14 @@ class Payload
         if ($this->request->isAjax()) {
             $response = new \Scoop\Http\Message\Response(
                 400,
-                array('Content-Type' => 'application/json'), 
+                array('Content-Type' => 'application/json'),
                 json_encode(array('code' => 400, 'message' => $errors))
             );
         } else {
-            $_SESSION['data-scoop'] += array(
-                'body' => $this->request->getParsedBody(),
-                'query' => $this->request->getQueryParams(),
-                'error' => $errors
-            );
+            $this->request->flash()
+            ->set('body', $this->request->getParsedBody())
+            ->set('query', $this->request->getQueryParams())
+            ->set('error', $errors);
             $response = new \Scoop\Http\Message\Response(
                 302,
                 array('Location' => $_SERVER['HTTP_REFERER'])

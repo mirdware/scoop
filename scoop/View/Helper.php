@@ -117,6 +117,9 @@ class Helper
 
     public function getCsrfToken()
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            throw new \LogicException('CSRF requires an active session. Enable `stateful` => true in the application context.');
+        }
         if (!isset($_SESSION['csrf-token'])) {
             $_SESSION['csrf-token'] = $this->generateToken();
         }

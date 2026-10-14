@@ -31,9 +31,6 @@ abstract class Runner
         }
         $sql = $this->__toString();
         $statement = $this->connection->prepare($sql);
-        if ($this->requiresTransaction()) {
-            $this->connection->beginTransaction();
-        }
         $statement->execute($this->getParamsAllowed($sql));
         return $statement;
     }
@@ -65,6 +62,4 @@ abstract class Runner
     }
 
     abstract public function __toString();
-
-    abstract protected function requiresTransaction();
 }

@@ -87,8 +87,13 @@ class Manager
 
     public function flush()
     {
+        $connection = $this->builder->getConnection();
+        $ownsTransaction = $connection->beginTransaction() === true;
         $this->mapper->save();
         $this->relations->save();
+        if ($ownsTransaction) {
+            $connection->commit();
+        }
     }
 
     public function clean()

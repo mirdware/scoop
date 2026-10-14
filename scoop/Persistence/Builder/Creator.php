@@ -70,7 +70,6 @@ final class Creator
     public function run($params = null)
     {
         $statement = $this->connection->prepare($this);
-        $this->connection->beginTransaction();
         if ($this->isSubquery) {
             return $statement->execute($params);
         }

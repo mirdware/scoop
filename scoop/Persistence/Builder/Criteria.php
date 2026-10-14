@@ -70,9 +70,4 @@ class Criteria extends Runner
         }
         return ' WHERE (' . implode(') ' . $this->connector . ' (', $rules) . ')';
     }
-
-    protected function requiresTransaction()
-    {
-        return $this->type !== Query::READ;
-    }
 }

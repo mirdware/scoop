@@ -1,0 +1,12 @@
+:root {
+  --font-family-body: Helvetica, arial, freesans, clean, sans-serif;
+  --font-family-mono: monospace;
+  --font-family-message: Arial, Helvetica, sans-serif;
+  --font-size-root: 100%;
+  --font-size-base: 1rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --line-height-normal: normal;
+  --line-height-tight: 1;
+}

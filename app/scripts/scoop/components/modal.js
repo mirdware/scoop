@@ -1,17 +1,21 @@
-import { Component } from 'scalar';
+import { Component, inject } from 'scalar';
 import ModalService from '../services/Modal';
 
 function close($) {
   $.dismiss ? $.dismiss() : $._modal.close();
 }
 
+@inject(ModalService)
 export default class Modal extends Component {
+  constructor(modal) {
+    super();
+    this._modal = modal;
+  }
+
   listen() {
     return {
       mount: () => {
-        const _modal = this.inject(ModalService);
-        this._modal = _modal;
-        this.compose(_modal.overlay.$dom, () => ({
+        this.compose(this._modal.overlay.$dom, () => ({
           click: () => close(this)
         }));
       },

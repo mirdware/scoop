@@ -1,30 +1,31 @@
-import { Component, customElement } from 'scalar';
-import styles from './multi-select.css?raw';
-import template from './multi-select.html?raw';
+import { customElement } from 'scalar';
+import styles from './styles.css?inline';
+import template from './template.html?raw';
 
 function loadOptions($) {
-  const $option = $.querySelector('option');
-  if ($option) {
+  const options = Array.from($.shadowRoot.host.querySelectorAll('option'));
+  if (!options.length) return;
+  options.forEach(($option) => {
     $.$select.appendChild($option);
     $.checkList.push($option);
-  }
+  });
+  refresh($);
 }
 
-function toogleItem(index, $) {
-  const item = $.checkList[index];
+function toogleItem(item, $) {
   item.selected = !item.selected;
   if ($.selectAll) {
-    if (parseInt(index)) {
-      calculateAllSelector($);
-    } else {
+    if (item.text === 'All') {
       $._data.forEach((i) => i.selected = item.selected);
+    } else {
+      calculateAllSelector($);
     }
   }
 }
 
 function dispatchEvent($) {
   $.$select.dispatchEvent(new Event('change'));
-  $.dispatchEvent(new CustomEvent('changed', {
+  $.shadowRoot.host.dispatchEvent(new CustomEvent('changed', {
     detail: JSON.parse(JSON.stringify($.value))
   }));
 }
@@ -44,8 +45,7 @@ function refresh($) {
   dispatchEvent($);
 }
 
-function removeBadge(e, $) {
-  const badge = $.badgeList[$.getIndex(e)];
+function removeBadge(e, badge, $) {
   badge.selected = false;
   refresh($);
   e.stopPropagation();
@@ -57,9 +57,13 @@ function search(e, $) {
 }
 
 function show($) {
-  $.show ='block';
-  $.$search.focus();
-  $.$search.select();
+  setTimeout(() => {
+    $._txtSearch = '';
+    $._currentFocus = -1;
+    $.show = 'block';
+    $.$search.focus();
+    $.$search.select();
+  }, 1);
 }
 
 function toUp($) {
@@ -67,7 +71,7 @@ function toUp($) {
   const { length } = $.checkList;
   currentFocus++;
   if (currentFocus >= length) {
-      currentFocus = 0;
+    currentFocus = 0;
   }
   $._currentFocus = currentFocus;
 }
@@ -77,7 +81,7 @@ function toDown($) {
   const { length } = $.checkList;
   currentFocus--;
   if (currentFocus < 0) {
-      currentFocus = length - 1;
+    currentFocus = length - 1;
   }
   $._currentFocus = currentFocus;
 }
@@ -85,7 +89,7 @@ function toDown($) {
 function enter($) {
   const currentFocus = $._currentFocus;
   if (currentFocus > -1) {
-    toogleItem(currentFocus, $);
+    toogleItem($.checkList[currentFocus], $);
   }
 }
 
@@ -98,19 +102,22 @@ function controlKey(e, $) {
 }
 
 function close($) {
+  if ($.show === 'none') return;
   $.show = 'none';
   refresh($);
 }
 
 @customElement({ template, styles })
-export default class MultiSelect extends Component {
+export default class MultiSelect {
+  #closeController = new AbortController();
+
   constructor() {
-    super();
     this._data = [];
     this._currentFocus = -1;
     this._txtAll ='All';
     this._txtRemove = 'Remove';
-    this._txtSearch ='Search';
+    this._txtSearch = 'Search';
+    this.show = 'none';
     this.placeholder ='select a item';
     this.maxItems = 5;
     this.selectAll = false;
@@ -121,30 +128,34 @@ export default class MultiSelect extends Component {
     this.value = [];
   }
 
-  connectedCallback() {
+  onInit() {
     this.$select = this.shadowRoot.querySelector('select');
     this.$search = this.shadowRoot.querySelector('.search');
-    if (this.selectAll) {
-      const allSelector = { text: this._txtAll, all: true };
-      this.checkList.unshift(allSelector);
-    }
-    setTimeout(() => {
-      this._data = this.checkList;
-      refresh(this);
-    }, 0);
-    document.addEventListener('click', (e) => {
-      if (e.target !== this) {
+    this._data = this.checkList;
+    document.addEventListener("click", (e) => {
+      if (e.target !== this.shadowRoot.host) {
         close(this);
       }
+    }, {
+      passive: true,
+      signal: this.#closeController.signal
     });
   }
 
+  connectedCallback() {
+    if (this.selectAll) {
+      this.checkList.unshift({ text: this._txtAll, all: true });
+    }
+  }
+
   listen = () => ({
+    mount: () => this.onInit(),
+    unmount: () => this.#closeController.abort(),
     slotchange: () => loadOptions(this),
-    '.dropdown': { click: () => show(this), keydown: (e) => e.keyCode === 13 && show(this) },
+    '.dropdown': { click: () => show(this) },
     '.list-wrapper': { _keydown: (e) => controlKey(e, this) },
-    '.list label': { change: (e) => toogleItem(this.getIndex(e), this) },
-    '.optext span': { _click: (e) => removeBadge(e, this) },
-    '.search': { input: (e) => search(e, this) }
+    '.list label': { change: (_, item) => toogleItem(item, this) },
+    '.optext span': { _click: (e, badge) => removeBadge(e, badge, this) },
+    '.search': { input: (e) => search(e, this), keydown: (e) => e.keyCode === 13 && search(e, this) }
   });
 }

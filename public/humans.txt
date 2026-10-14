@@ -2,17 +2,16 @@
     Creator: Marlon Ramirez
     Contact: marlonramirez [at] outlook.com
     Site: http://getscoop.org
-    Twitter: @marloyramirez
+    Twitter: @marloiramirez
     From: Cali, Colombia
 
 /* THANKS */
-    DROPBOX: http://www.dropbox.com/
-    GITHUB: http://github.com/
-    MIRDWARE: http://mirdware.com
+    GITHUB: https://github.com/
+    SESPESOFT: https://sespesoft.com
 
 /* SITE */
     Last Update: 2018/02/26
     Language: Español
     Standards: HTML5, CSS3, JavaScript
-    Components: scalar, font-awesome, browserify, stylus, gulp
-    Software: Sublime Text 3, Gimp, NodeJS
+    Components: scalar, Tabler Icons, Vite, Lightning CSS
+    Software: VSCode, Bun

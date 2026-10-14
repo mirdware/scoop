@@ -1,0 +1,116 @@
+:host {
+  color: var(--on-surface, #171a21);
+}
+
+.dropdown {
+  display: inline-block;
+  padding: 2px 5px 0px 5px;
+  border-radius: 4px;
+  border: solid 1px color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+  background-color: var(--surface, white);
+  position: relative;
+  max-width: 100%;
+}
+
+.optext, .placeholder {
+  margin-right:calc(var(--space-relative-unit) * 2);
+  margin-bottom:2px;
+  padding:1px 0;
+  border-radius: 4px;
+  display:inline-block;
+}
+
+.optext {
+  background-color:color-mix(in srgb, var(--secondary) 20%, var(--surface));
+  padding:1px calc(var(--space-relative-unit) * 3);
+}
+
+.optdel {
+  float: right;
+  font-size: .7em;
+  margin-left: calc(var(--space-relative-unit) * 2);
+  margin-right: calc(var(--space-relative-unit) * -2);
+  cursor: pointer;
+  color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+
+  &:hover {
+    color: var(--error, #c66);
+  }
+}
+
+.placeholder {
+  color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+}
+
+.list-wrapper {
+  box-shadow: rgb(0 0 0 / 20%) 0 3px 8px;
+  z-index: 100;
+  padding:2px;
+  border-radius: 4px;
+  border: solid 1px color-mix(in srgb, var(--secondary) 20%, var(--surface));
+  display: none;
+  margin: -1px;
+  position: absolute;
+  top:0;
+  left: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
+  background: var(--surface, white);
+}
+
+.search {
+  color: var(--on-surface, #171a21);
+  padding: calc(var(--space-relative-unit) * 2);
+  box-sizing: border-box;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.list {
+  padding:2px;
+  max-height: 15rem;
+  text-align: left;
+  overflow-y:auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--outline);
+    border-radius:3px;
+  }
+
+  & label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    overflow-wrap: anywhere;
+    padding: 5px;
+  }
+
+  & input {
+    flex-shrink: 0;
+    height: 1.15em;
+    width: 1.15em;
+    margin-right: 0.35em;
+  }
+}
+
+.list label:hover, #active {
+  background-color: color-mix(in srgb, var(--secondary) 20%, var(--surface));
+}
+
+.maxselected {
+  width:100%;
+  box-sizing: border-box;
+}
+
+.all-selector {
+  border-bottom:solid 1px var(--outline);
+}

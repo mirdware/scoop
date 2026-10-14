@@ -1,13 +1,15 @@
-FROM node:24-bookworm-slim AS assets
+FROM oven/bun:1 AS assets
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 COPY vite.config.js ./
+COPY public/ public/
+COPY app/views/ app/views/
 COPY app/styles/ app/styles/
 COPY app/scripts/ app/scripts/
-RUN npm run build
+RUN bun run build
 
-FROM dunglas/frankenphp:1.12.0-php8.5-bookworm AS runtime
+FROM dunglas/frankenphp:1.13.0-php8.5-bookworm AS runtime
 ENV PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/etc/php/conf.d
 RUN --mount=type=bind,source=.devcontainer/common/etc/php/extensions.list,target=/tmp/extensions.list \
     tr -d '\r' < /tmp/extensions.list | xargs install-php-extensions \
@@ -29,7 +31,7 @@ COPY --from=assets /app/public/ ./public/
 RUN composer dump-autoload --optimize --no-dev \
     && composer build \
     && rm -rf app/styles app/scripts .devcontainer tests vite.config.js package.json \
-    package-lock.json composer.json composer.lock .htaccess
+    bun.lock composer.json composer.lock .htaccess
 
 FROM runtime AS production
 COPY --from=application --chown=1000:1000 /app/ /app/

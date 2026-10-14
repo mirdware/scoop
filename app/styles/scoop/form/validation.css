@@ -1,0 +1,67 @@
+.input-box {
+  &.error .icon {
+    color: var(--error);
+    visibility: visible;
+  }
+
+  &.error .icon:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/circle-x.svg") center / contain no-repeat;
+  }
+
+  &.error .input {
+    border-color: var(--error) !important;
+  }
+
+  &.error label {
+    color: var(--error);
+  }
+
+  &.success .icon {
+    color: var(--success);
+    visibility: visible;
+  }
+
+  &.success .icon:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/circle-check.svg") center / contain no-repeat;
+  }
+
+  &.success .input {
+    border-color: var(--success) !important;
+  }
+
+  &.success label {
+    color: var(--success);
+  }
+
+  &.warning .icon {
+    color: var(--warning);
+    visibility: visible;
+  }
+
+  &.warning .icon:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/alert-circle.svg") center / contain no-repeat;
+  }
+
+  &.warning .input {
+    border-color: var(--warning) !important;
+  }
+
+  &.warning label {
+    color: var(--warning);
+  }
+}

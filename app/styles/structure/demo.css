@@ -1,0 +1,93 @@
+html,
+body {
+  height: 100%;
+}
+
+.theme-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: calc(var(--space-relative-unit) * 2) calc(var(--space-relative-unit) * 4);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--on-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+.theme-toggle-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: currentColor;
+  mask: url("@icon/moon.svg") center / contain no-repeat;
+}
+
+:root[data-theme="dark"] .theme-toggle-icon {
+  mask-image: url("@icon/sun.svg");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle-icon {
+    mask-image: url("@icon/sun.svg");
+  }
+}
+
+footer.main {
+  text-align: right;
+  width: 95%;
+  margin: auto;
+  height: 60px;
+}
+
+.wrapper {
+  min-height: 100%;
+  margin-bottom: -60px;
+  text-align: center;
+}
+
+.jumbotron {
+  margin: 0 auto;
+  color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+  padding-bottom: 60px;
+
+  & blockquote {
+    letter-spacing: 0.02em;
+    max-width: 35em;
+    margin: auto;
+  }
+
+  & h1:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/scoop.svg") center / contain no-repeat;
+  }
+
+  & h1:before {
+    font-size: 1em;
+    margin-right: 0.2em;
+    color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+  }
+
+  & pre {
+    overflow: auto;
+  }
+}

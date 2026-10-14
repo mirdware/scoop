@@ -1,7 +1,7 @@
-public/css/*
-public/js/*
-public/fonts/*
-app/storage/*
+/public/css/
+/public/js/
+/public/assets/
+/app/storage/
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
@@ -63,13 +63,9 @@ ehthumbs_vista.db
 composer.phar
 /vendor/
 
-# Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control
-# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
-composer.lock
-
-#node
+# JavaScript (Bun)
 /node_modules/
-package-lock.json
+bun.lockb
 
 *.architect~
 !.gitkeep

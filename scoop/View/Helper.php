@@ -50,7 +50,7 @@ class Helper
     public function css($styleSheet)
     {
         if ($this->viteHost) {
-            return "{$this->viteHost}app/styles/app.styl";
+            return "{$this->viteHost}app/styles/app.css";
         }
         return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->context->getConfig('app.version');
     }

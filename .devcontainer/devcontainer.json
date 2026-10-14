@@ -6,12 +6,12 @@
     "forwardPorts": [8000],
     "workspaceFolder": "/app",
     "shutdownAction": "stopCompose",
-    "postCreateCommand": "npm install && composer install",
+    "postCreateCommand": "bun install --frozen-lockfile && composer install",
     "postStartCommand": "php app/ice dbup",
-    "postAttachCommand": "./node_modules/.bin/vite",
-	"customizations": {
-		"vscode": {
-			"extensions": [
+    "postAttachCommand": "bun concurrently --names vite,php \"bun vite\" \"frankenphp run --config /etc/caddy/Caddyfile --adapter caddyfile\"",
+    "customizations": {
+        "vscode": {
+            "extensions": [
                 "devsense.intelli-php-vscode",
                 "devsense.phptools-vscode",
                 "devsense.profiler-php-vscode",
@@ -24,6 +24,6 @@
             "settings": {
                 "phpstan.configFile": "app/phpstan.neon"
             }
-		}
-	}
+        }
+    }
 }

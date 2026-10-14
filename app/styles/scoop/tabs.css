@@ -1,0 +1,61 @@
+.scoop-tabs {
+  display: flex;
+  flex-wrap: wrap;
+
+  & input[name=tab] {
+    position: absolute;
+    opacity: 0;
+  }
+
+  & input[name=tab]:checked + label {
+    background: var(--surface);
+    color: var(--on-surface);
+  }
+
+  & input[name=tab]:checked + label + .panel {
+    display: block;
+  }
+
+  & input[name=tab]:focus + label {
+    z-index: 1;
+  }
+
+  & input[name=tab] + label {
+    width: 100%;
+    padding: calc(var(--space-relative-unit) * 4) calc(var(--space-relative-unit) * 6);
+    background: var(--primary);
+    cursor: pointer;
+    font-weight: var(--font-weight-bold);
+    font-size: 18px;
+    color: var(--on-primary);
+    transition: background 0.1s, color 0.1s;
+  }
+
+  & input[name=tab] + label:hover {
+    background: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+    color: var(--primary);
+  }
+
+  & input[name=tab] + label:active {
+    background: color-mix(in srgb, var(--surface) 84%, var(--on-surface));
+  }
+
+  & .panel {
+    background: var(--surface);
+    color: var(--on-surface);
+    display: none;
+    width: 100%;
+    padding: calc(var(--space-relative-unit) * 4) calc(var(--space-relative-unit) * 8);
+    box-shadow: 0 0 80px -40px rgb(0 0 0 / 20%);
+  }
+
+  @media (min-width: 600px) {
+    & input[name=tab] + label {
+      width: auto;
+    }
+
+    & .panel {
+      order: 99;
+    }
+  }
+}

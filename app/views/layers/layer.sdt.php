@@ -25,6 +25,11 @@
         </a>
         <div class="wrapper">
             <header>
+                <div class="theme-toolbar">
+                    <button type="button" class="theme-toggle" data-theme-toggle data-attr="ariaLabel:label;title:label" aria-label="Cambiar a modo oscuro" title="Cambiar a modo oscuro">
+                        <span class="theme-toggle-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
                 <a href="http://getscoop.org" target="_blank">
                     <img src="http://res.cloudinary.com/dwserhw7s/image/upload/v1487892509/scoop_l67ae4.png" width="240" height="104" alt="scoop" />
                 </a>

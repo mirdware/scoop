@@ -4,8 +4,7 @@ namespace Scoop\Bootstrap;
 
 /**
  * @deprecated Removed instead of \Scoop\Context
- * @since 0.8.5
- * @see \Scoop\Context
+ * @since 0.8.6
  */
 class Environment
 {

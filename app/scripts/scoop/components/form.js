@@ -1,4 +1,4 @@
-import {Component} from 'scalar';
+import { Component, inject } from 'scalar';
 import Resource from '@spawm/resource';
 import Messenger from '../services/Messenger';
 import FormService from '../services/Form';
@@ -30,10 +30,10 @@ function removeErrors(form) {
 
 function submit($, form) {
   $.loading = true;
-  $.inject(Messenger).close();
+  $._messenger.close();
   removeErrors(form);
   if (!form.checkValidity) validate(form);
-  $.submit($.inject(FormService).toObject(form), form);
+  $.submit($._form.toObject(form), form);
 }
 
 function reset(form) {
@@ -43,7 +43,14 @@ function reset(form) {
   }
 }
 
+@inject(Messenger, FormService)
 export default class Form extends Component {
+  constructor(messenger, form) {
+    super();
+    this._messenger = messenger;
+    this._form = form;
+  }
+
   listen() {
     return {
       '.input': {
@@ -79,7 +86,7 @@ export default class Form extends Component {
 
   fail(res) {
     if (typeof res.message === 'string') {
-      return this.inject(Messenger).showError(res.message);
+      return this._messenger.showError(res.message);
     }
     const { message } = res;
     let focused = false;
@@ -98,7 +105,7 @@ export default class Form extends Component {
   }
 
   done(res, form) {
-    this.inject(Messenger).showSuccess(res);
+    this._messenger.showSuccess(res);
     if (form.method.toLowerCase() === 'post') {
       form.reset();
       return reset(form);

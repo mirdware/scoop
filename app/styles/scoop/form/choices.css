@@ -1,0 +1,86 @@
+.radio input[type=radio],
+.checkbox input[type=radio],
+.radio input[type=checkbox],
+.checkbox input[type=checkbox] {
+  display: none;
+}
+
+.radio input[type=radio] + label,
+.checkbox input[type=radio] + label,
+.radio input[type=checkbox] + label,
+.checkbox input[type=checkbox] + label {
+  margin-left: calc(var(--space-relative-unit) * 4);
+}
+
+.radio input[type=radio] + label:before,
+.checkbox input[type=radio] + label:before,
+.radio input[type=checkbox] + label:before,
+.checkbox input[type=checkbox] + label:before {
+  display: inline-block;
+  color: var(--outline);
+  font-style: normal;
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  margin-left: -1.2em;
+  padding-right: 0.2em;
+  width: 1em;
+  text-align: left;
+}
+
+.radio input[type=radio]:checked + label:before,
+.checkbox input[type=radio]:checked + label:before,
+.radio input[type=checkbox]:checked + label:before,
+.checkbox input[type=checkbox]:checked + label:before,
+.radio input[type=radio] + label:hover:before,
+.checkbox input[type=radio] + label:hover:before,
+.radio input[type=checkbox] + label:hover:before,
+.checkbox input[type=checkbox] + label:hover:before {
+  color: var(--secondary);
+}
+
+.radio input[type=radio]:disabled + label:before,
+.checkbox input[type=radio]:disabled + label:before,
+.radio input[type=checkbox]:disabled + label:before,
+.checkbox input[type=checkbox]:disabled + label:before {
+  color: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+}
+
+.radio input[type=radio] + label:before,
+.checkbox input[type=radio] + label:before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("@icon/circle.svg") center / contain no-repeat;
+}
+
+.radio input[type=radio]:checked + label:before,
+.checkbox input[type=radio]:checked + label:before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("@icon/circle-dot.svg") center / contain no-repeat;
+}
+
+.radio input[type=checkbox] + label:before,
+.checkbox input[type=checkbox] + label:before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("@icon/square.svg") center / contain no-repeat;
+}
+
+.radio input[type=checkbox]:checked + label:before,
+.checkbox input[type=checkbox]:checked + label:before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url("@icon/square-check.svg") center / contain no-repeat;
+}

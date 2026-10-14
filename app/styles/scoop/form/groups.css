@@ -1,0 +1,41 @@
+.group-box {
+  display: inline-block;
+  padding: 0 calc(var(--space-relative-unit) * 2);
+  box-sizing: border-box;
+
+  &
+.input-box {
+    display: block;
+    padding: 0;
+  }
+
+  & .input-box .input {
+    width: 100%;
+  }
+
+  & .input-box .input.number-short {
+    width: 6em;
+  }
+
+  & .input-box.group {
+    display: flex;
+  }
+
+  & .input-box .icon {
+    right: -0.8em;
+  }
+
+  & .input-box[data-tooltip]:focus-within::before {
+    right: 0;
+    left: 0;
+  }
+
+  & .input-box em {
+    right: -0.5em;
+  }
+
+  &.block {
+    display: block;
+    margin: calc(var(--space-relative-unit) * 2) 0 1.2em 0;
+  }
+}

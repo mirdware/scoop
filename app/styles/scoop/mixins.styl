@@ -19,8 +19,14 @@ font-face($family, $file, $weight = "normal")
 alert-box($icon, $color)
     .icon
         fa-icon $icon
+        font-family FontAwesome
         color $color
         visibility visible
+        &:before
+            mask none
+            background-color transparent
+            width auto
+            height auto
     .input
         border-color $color !important
     label

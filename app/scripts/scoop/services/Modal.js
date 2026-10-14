@@ -1,3 +1,4 @@
+import { inject } from 'scalar';
 import Resource from '@spawm/resource';
 import Overlay from './Overlay';
 
@@ -7,7 +8,7 @@ function destructuring() {
     return {
       $dom,
       $body: $dom.querySelector('.body'),
-      $title: $dom.querySelector('.header h2')
+      $title: $dom.querySelector('.header h3, .header h2')
     };
   }
 }
@@ -53,9 +54,10 @@ function show($dom, $body, content) {
   style.marginTop = ($dom.clientHeight / 2 * -1) + 'px';
 }
 
+@inject(Overlay)
 export default class Modal {
-  constructor(inject) {
-    this.overlay = inject(Overlay);
+  constructor(overlay) {
+    this.overlay = overlay;
     this.modal = destructuring()|| generateModal();
   }
 

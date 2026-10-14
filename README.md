@@ -61,13 +61,13 @@ Scoop requiere inversión en aprendizaje arquitectónico. **No es ideal para:**
 ¿Listo para probar scoop? En solo unos minutos tendrás tu primer proyecto funcionando.
 
 Scoop está diseñado para ser compatible con versiones de PHP desde la 5.4 en adelante. Este amplio soporte busca ofrecer una solución robusta y perdurable, permitiendo que tus proyectos se mantengan operativos a lo largo del tiempo y en diversos entornos.
-Si bien el núcleo es compatible con versiones anteriores, **te alentamos a utilizar las versiones más recientes de PHP (recomendamos 8.1+) para tus nuevos desarrollos** para aprovechar al máximo las mejoras de rendimiento, seguridad y las últimas características del lenguaje al construir tus aplicaciones.
+Si bien el núcleo es compatible con versiones anteriores, **te alentamos a utilizar las versiones más recientes de PHP (recomendamos 8.3+) para tus nuevos desarrollos** para aprovechar al máximo las mejoras de rendimiento, seguridad y las últimas características del lenguaje al construir tus aplicaciones.
 
 Requisitos previos:
 
-* PHP >=5.4 (Recomendado PHP 8.1+ para nuevos proyectos)
+* PHP >=5.4 (Recomendado PHP >= 8.3 para nuevos proyectos)
 * Composer
-* Node + npm
+* Node 22.18+ de la rama 22 o Node >=24.11, con npm, para el toolchain actual
 
 Crea un nuevo proyecto y ejecuta el servidor de desarrollo.
 

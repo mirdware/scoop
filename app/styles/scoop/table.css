@@ -1,0 +1,108 @@
+.scoop-table {
+  overflow-x: auto;
+  border-collapse: collapse;
+
+  & caption {
+    font-size: 1.5em;
+    margin: calc(var(--space-relative-unit) * 2) 0 calc(var(--space-relative-unit) * 3);
+  }
+
+  & tr {
+    background-color: color-mix(in srgb, var(--surface) 96%, var(--on-surface));
+    border: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+  }
+
+  & tr:hover td {
+    background-color: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+    cursor: default;
+  }
+
+  & th,
+  & td {
+    padding: 0.625em;
+    text-align: center;
+    height: 1em;
+    overflow-wrap: anywhere;
+  }
+
+  & th code,
+  & td code {
+    white-space: normal;
+  }
+
+  & td > * {
+    min-width: 0;
+  }
+
+  & th input[type=checkbox],
+  & td input[type=checkbox],
+  & th input[type=radio],
+  & td input[type=radio] {
+    padding: 0;
+  }
+
+  & th label,
+  & td label {
+    margin: 0;
+  }
+
+  & th {
+    font-size: 0.85em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  @media screen and (max-width: 600px) {
+    & {
+      border: 0;
+    }
+
+    & caption {
+      font-size: 1.3em;
+    }
+
+    & thead {
+      border: none;
+      clip: rect(0 0 0 0);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+    & tr {
+      border-bottom: 3px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+      display: block;
+      margin-bottom: 0.625em;
+    }
+
+    & td:not([hidden]) {
+      border-bottom: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+      display: flex;
+      font-size: 0.8em;
+      text-align: right;
+      height: auto;
+      justify-content: space-between;
+      gap: calc(var(--space-unit) * 3);
+    }
+
+    & td::before {
+      content: attr(data-label);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      text-align: left;
+      flex: 0 0 40%;
+    }
+
+    & td > * {
+      text-align: right;
+      flex: 1;
+    }
+
+    & td:last-child {
+      border-bottom: 0;
+    }
+  }
+}

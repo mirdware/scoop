@@ -4,7 +4,7 @@ namespace Scoop\Http\Event;
 
 /**
  * @deprecated use RequestFinished instead
- * @since 0.8.5
+ * @since 0.8.6
  */
 class ErrorOccurred
 {

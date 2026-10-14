@@ -1,0 +1,97 @@
+#msg {
+  background: var(--surface) no-repeat 5px center;
+  font: var(--font-weight-bold) 1em var(--font-family-message);
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+  padding: 0.2em 0;
+  border-bottom: solid 1px color-mix(in srgb, var(--outline) 55%, var(--surface));
+
+  &:before {
+    font-size: 1.5em;
+    margin: 0 calc(var(--space-relative-unit) * 2);
+    vertical-align: middle;
+  }
+
+  & .close {
+    font-size: 1em;
+  }
+
+  & .close:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/x.svg") center / contain no-repeat;
+  }
+
+  & i {
+    float: right;
+    margin-right: calc(var(--space-relative-unit) * 2);
+    cursor: pointer;
+    color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+  }
+
+  &.not {
+    height: 0;
+    display: none;
+  }
+
+  &.success {
+    color: color-mix(in srgb, var(--success) 85%, var(--on-surface));
+  }
+
+  &.success:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/check.svg") center / contain no-repeat;
+  }
+
+  &.error {
+    color: color-mix(in srgb, var(--error) 85%, var(--on-surface));
+  }
+
+  &.error:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/circle-x.svg") center / contain no-repeat;
+  }
+
+  &.warning {
+    color: color-mix(in srgb, var(--warning) 85%, var(--on-surface));
+  }
+
+  &.warning:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/alert-circle.svg") center / contain no-repeat;
+  }
+
+  &.info {
+    color: color-mix(in srgb, var(--info) 85%, var(--on-surface));
+  }
+
+  &.info:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/info-circle.svg") center / contain no-repeat;
+  }
+}
+
+.center {
+  text-align: center;
+}

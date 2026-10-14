@@ -1,0 +1,40 @@
+:host {
+  color: var(--on-surface, #171a21);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+
+input[type=search] {
+  color: var(--on-surface, #171a21);
+  background-color: var(--surface, #fff);
+  width: 100%;
+}
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  top: 100%;
+  left: 0;
+  right: 0;
+
+  & div {
+    padding: calc(var(--space-relative-unit) * 2);
+    cursor: pointer;
+    background-color: var(--surface, #fff);
+    border-bottom: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+  }
+}
+
+.autocomplete-items div:hover, #active {
+  background-color: color-mix(in srgb, var(--secondary) 20%, var(--surface));
+}

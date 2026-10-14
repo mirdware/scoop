@@ -1,0 +1,183 @@
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-success {
+  background-color: var(--success);
+}
+
+.bg-warning {
+  background-color: var(--warning);
+}
+
+.bg-error {
+  background-color: var(--error);
+}
+
+.bg-info {
+  background-color: var(--info);
+}
+
+.bg-transparent {
+  background-color: transparent;
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-secondary {
+  color: var(--secondary);
+}
+
+.text-on-primary {
+  color: var(--on-primary);
+}
+
+.text-on-secondary {
+  color: var(--on-secondary);
+}
+
+.text-on-surface {
+  color: var(--on-surface);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-error {
+  color: var(--error);
+}
+
+.text-info {
+  color: var(--info);
+}
+
+.text-main {
+  color: var(--on-surface);
+}
+
+.text-muted {
+  color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+}
+
+.bg-surface-muted {
+  background-color: color-mix(in srgb, var(--surface) 96%, var(--on-surface));
+}
+
+.bg-surface-hover {
+  background-color: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+}
+
+.bg-surface-active {
+  background-color: color-mix(in srgb, var(--surface) 84%, var(--on-surface));
+}
+
+.bg-success-subtle {
+  background-color: color-mix(in srgb, var(--success) 15%, var(--surface));
+}
+
+.bg-warning-subtle {
+  background-color: color-mix(in srgb, var(--warning) 15%, var(--surface));
+}
+
+.bg-error-subtle {
+  background-color: color-mix(in srgb, var(--error) 15%, var(--surface));
+}
+
+.bg-info-subtle {
+  background-color: color-mix(in srgb, var(--info) 15%, var(--surface));
+}
+
+.bg-selection {
+  background-color: color-mix(in srgb, var(--secondary) 20%, var(--surface));
+}
+
+.border {
+  border: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+}
+
+.border-0 {
+  border: 0;
+}
+
+.border-outline {
+  border-color: var(--outline);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.border-secondary {
+  border-color: var(--secondary);
+}
+
+.border-success {
+  border-color: var(--success);
+}
+
+.border-warning {
+  border-color: var(--warning);
+}
+
+.border-error {
+  border-color: var(--error);
+}
+
+.border-info {
+  border-color: var(--info);
+}
+
+.rounded-none {
+  border-radius: 0;
+}
+
+.rounded-sm {
+  border-radius: calc(var(--space-unit) * 0.5);
+}
+
+.rounded-md {
+  border-radius: var(--space-unit);
+}
+
+.rounded-lg {
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+.rounded-xl {
+  border-radius: calc(var(--space-unit) * 3);
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+}
+
+.shadow-md {
+  box-shadow: 0 3px 8px rgb(0 0 0 / 20%);
+}
+
+.shadow-none {
+  box-shadow: none;
+}

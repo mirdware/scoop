@@ -1,4 +1,4 @@
-import { Component } from 'scalar';
+import { Component, inject } from 'scalar';
 import Resource from '@spawm/resource';
 import ModalService from '../services/Modal';
 import FormService from '../services/Form';
@@ -8,18 +8,18 @@ const location = window.location;
 const queryParams = {};
 
 async function sendRequest($) {
-  let url = $.options.url ? $.options.url + location.search : location.href;
+  const url = new URL($.options.url ? $.options.url + location.search : location.href, location.href).href;
   const resource = new Resource(url, {
-    redirect: false 
+    redirect: false
   });
-  if (url.indexOf('http') !== 0) {
-    url = location.protocol + url;
-  }
   $.loading = true;
-  const data = await resource.get();
-  $.refresh(data);
-  Object.assign($, getQueryParams($), data);
-  $.loading = false;
+  try {
+    const data = await resource.get();
+    $.refresh(data);
+    Object.assign($, getQueryParams($), data);
+  } finally {
+    $.loading = false;
+  }
 }
 
 function getPage(name, search) {
@@ -65,10 +65,9 @@ function setPage($, $element) {
 
 async function openModal(e, $) {
   const target = e.currentTarget;
-  const _modal = $.inject(ModalService);
-  const $dom = await _modal.open(target.form.dataset.modal, target.title);
+  const $dom = await $._modal.open(target.form.dataset.modal, target.title);
   const res = await $.compose($dom, Search).send(getQueryParams($));
-  $.inject(FormService).setQueryString(res);
+  $._form.setQueryString(res);
   sendRequest($);
 }
 
@@ -91,22 +90,28 @@ function init($, options) {
 
 function search(form, $) {
   if (!$.loading) {
-    const _form = $.inject(FormService);
-    const data = _form.toObject(form);
-    _form.setQueryString(data);
+    const data = $._form.toObject(form);
+    $._form.setQueryString(data);
     sendRequest($);
   }
 }
 
 function getQueryParams($) {
-  const res = $.inject(FormService).getQueryParams(location.search);
+  const res = $._form.getQueryParams(location.search);
   for (const key in queryParams) {
     queryParams[key] = '';
   }
   return Object.assign(queryParams, res);
 }
 
+@inject(ModalService, FormService)
 export default class Pageable extends Component {
+  constructor(modal, form) {
+    super();
+    this._modal = modal;
+    this._form = form;
+  }
+
   listen() {
     return {
       mount: (e) => init(this, e.target.dataset.options),

@@ -1,0 +1,48 @@
+.input-box {
+  position: relative;
+  display: inline-block;
+  padding: 0 calc(var(--space-relative-unit) * 2);
+
+  & em {
+    color: var(--error);
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  & .icon {
+    position: absolute;
+    right: -0.3em;
+    top: 30%;
+    vertical-align: middle;
+    visibility: hidden;
+    font-size: 1em;
+    width: auto !important;
+  }
+
+  & .icon:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/circle.svg") center / contain no-repeat;
+  }
+
+  &[data-tooltip]:focus-within::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    text-align: center;
+    top: 100%;
+    margin-top: -0.8em;
+    right: 0.5em;
+    left: 0.5em;
+    display: inline-block;
+    padding: 0.3em calc(var(--space-relative-unit) * 2);
+    border-radius: 0 0 0.5em 0.5em;
+    background: var(--on-surface);
+    color: var(--surface);
+    font: 0.9em sans-serif;
+    z-index: 1;
+  }
+}

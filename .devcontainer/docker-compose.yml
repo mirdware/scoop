@@ -1,6 +1,7 @@
 services:
   webapp:
     container_name: webapp
+    init: true
     build:
       context: .
       dockerfile: Dockerfile

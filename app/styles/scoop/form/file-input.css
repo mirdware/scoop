@@ -1,0 +1,18 @@
+.custom-input-file {
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+
+  & .input-file {
+    outline: 0;
+    font-size: 10000px;
+    border: 10000px solid transparent;
+    opacity: 0;
+    filter: alpha(opacity=50);
+    position: absolute;
+    right: -1000px;
+    top: -1000px;
+    cursor: pointer;
+    z-index: 1;
+  }
+}

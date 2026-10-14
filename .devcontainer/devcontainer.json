@@ -8,7 +8,7 @@
     "shutdownAction": "stopCompose",
     "postCreateCommand": "npm install && composer install",
     "postStartCommand": "php app/ice dbup",
-    "postAttachCommand": "./node_modules/.bin/vite",
+    "postAttachCommand": "./node_modules/.bin/concurrently --names vite,php \"./node_modules/.bin/vite\" \"frankenphp run --config /etc/caddy/Caddyfile --adapter caddyfile\"",
 	"customizations": {
 		"vscode": {
 			"extensions": [

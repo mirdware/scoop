@@ -1,0 +1,13 @@
+label {
+  position: relative;
+  cursor: pointer;
+
+  &.out {
+    margin-right: calc(var(--space-relative-unit) * -2);
+    margin-left: calc(var(--space-relative-unit) * 2);
+  }
+}
+
+input[type="currency"] {
+  text-align: right;
+}

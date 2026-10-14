@@ -14,4 +14,4 @@ COPY dev/ /
 WORKDIR /app
 EXPOSE 8000 8001
 HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 CMD ["php", "app/ice", "check", "health", "--port=8001"]
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+CMD ["sleep", "infinity"]

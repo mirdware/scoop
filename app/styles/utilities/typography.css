@@ -1,0 +1,133 @@
+.text-xs {
+  font-size: calc(var(--font-size-base) * 0.75);
+}
+
+.text-sm {
+  font-size: calc(var(--font-size-base) * 0.875);
+}
+
+.text-md {
+  font-size: var(--font-size-base);
+}
+
+.text-lg {
+  font-size: calc(var(--font-size-base) * 1.125);
+}
+
+.text-xl {
+  font-size: calc(var(--font-size-base) * 1.25);
+}
+
+.text-2xl {
+  font-size: calc(var(--font-size-base) * 1.5);
+}
+
+.text-3xl {
+  font-size: calc(var(--font-size-base) * 1.875);
+}
+
+.text-4xl {
+  font-size: calc(var(--font-size-base) * 2.25);
+}
+
+.font-normal {
+  font-weight: var(--font-weight-normal);
+}
+
+.font-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.font-body {
+  font-family: var(--font-family-body);
+}
+
+.font-mono {
+  font-family: var(--font-family-mono);
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.text-start {
+  text-align: start;
+}
+
+.text-end {
+  text-align: end;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.not-italic {
+  font-style: normal;
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+.no-underline {
+  text-decoration-line: none;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-wrap {
+  white-space: normal;
+}
+
+.text-nowrap {
+  white-space: nowrap;
+}
+
+.break-words {
+  overflow-wrap: anywhere;
+}
+
+.leading-normal {
+  line-height: var(--line-height-normal);
+}
+
+.leading-tight {
+  line-height: var(--line-height-tight);
+}
+
+.leading-relaxed {
+  line-height: 1.625;
+}

@@ -1,7 +1,7 @@
-public/css/*
-public/js/*
-public/fonts/*
-app/storage/*
+/public/css/
+/public/js/
+/public/assets/
+/app/storage/
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/

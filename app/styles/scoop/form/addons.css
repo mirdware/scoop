@@ -1,0 +1,29 @@
+.input-box {
+  &.group {
+    display: inline-flex;
+  }
+
+  &.group * {
+    border-radius: 0;
+  }
+
+  &.group :first-child {
+    border-top-left-radius: 0.3em;
+    border-bottom-left-radius: 0.3em;
+  }
+
+  &.group .last,
+  &.group :last-child {
+    border-top-right-radius: 0.3em;
+    border-bottom-right-radius: 0.3em;
+  }
+
+  &.group .badge {
+    background: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+    color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+    padding: calc(var(--space-relative-unit) * 2);
+    margin: 0.4em 0;
+    border: 1px solid color-mix(in srgb, var(--outline) 55%, var(--surface));
+    vertical-align: middle;
+  }
+}

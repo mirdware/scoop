@@ -1,0 +1,51 @@
+#scoop-modal {
+  display: none;
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1003;
+  animation-name: animatetop;
+  animation-duration: 0.4s;
+
+  & .header {
+    background: var(--primary);
+    cursor: default;
+    width: 100%;
+    border-bottom: 1px solid var(--outline);
+    border-radius: 0.5em 0.5em 0 0;
+    display: flex;
+  }
+
+  & .header h3 {
+    color: var(--on-primary);
+    margin: calc(var(--space-relative-unit) * 2);
+    font-size: 1em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    flex: 1 1 auto;
+  }
+
+  & .header div {
+    cursor: pointer;
+    float: right;
+    padding: calc(var(--space-relative-unit) * 2);
+    border-left: 1px solid var(--outline);
+    color: var(--on-primary);
+  }
+
+  & .header div:before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    mask: url("@icon/x.svg") center / contain no-repeat;
+  }
+
+  & .body {
+    background: var(--surface);
+    padding: calc(var(--space-relative-unit) * 2);
+    border-radius: 0 0 0.5em 0.5em;
+  }
+}

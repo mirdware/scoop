@@ -1,0 +1,22 @@
+input:not([type=submit]):not([type=button]):not([type=file]):not([type=reset]):not([type=color]):not([type=image]):not([type=radio]):not([type=checkbox]):not([type=range]):read-only,
+textarea:read-only {
+  cursor: not-allowed;
+}
+
+.input {
+  background-color: var(--surface);
+  color: var(--on-surface);
+  border-radius: 0.3em;
+  border: solid 1px var(--outline);
+  padding: calc(var(--space-relative-unit) * 2);
+  margin: calc(var(--space-relative-unit) * 2) 0;
+  vertical-align: middle;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  &:disabled {
+    color: color-mix(in srgb, var(--on-surface) 70%, var(--surface));
+    cursor: not-allowed;
+    background-color: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+  }
+}

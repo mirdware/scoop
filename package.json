@@ -10,7 +10,7 @@
   "scripts": {
     "start": "bun run --bun dev",
     "build": "vite build",
-    "dev": "PHP_HOST=http://127.0.0.1:8002 concurrently --names vite,php \"vite\" \"php -S 127.0.0.1:8002 app/router.php\""
+    "dev": "concurrently --names vite,php \"vite\" \"php -S 127.0.0.1:8001 app/router.php\""
   },
   "author": "Marlon Ramirez <marlonramirez@outlook.com>",
   "license": "MIT",

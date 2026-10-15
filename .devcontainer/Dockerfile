@@ -12,6 +12,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 COPY common/ /
 COPY dev/ /
 WORKDIR /app
-EXPOSE 8000 8001
-HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 CMD ["php", "app/ice", "check", "health", "--port=8001"]
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 CMD ["php", "app/ice", "check", "health", "--port=8000"]
 CMD ["sleep", "infinity"]

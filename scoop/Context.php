@@ -10,7 +10,6 @@ class Context
         'instanceof' => 'Scoop\Bootstrap\Loader\TypeInstantiator',
         'json' => 'Scoop\Bootstrap\Loader\Factory\JsonParser:create'
     );
-    private static $version;
     private $injector;
     private $config;
     private $storagePath;
@@ -81,16 +80,6 @@ class Context
             }
         }
         return $path;
-    }
-
-    public function getVersion()
-    {
-        if (!self::$version) {
-            $index = file_get_contents('index.php');
-            preg_match_all('# @version\s+(.*?)\n#s', $index, $annotations);
-            self::$version = $annotations[1][0];
-        }
-        return self::$version;
     }
 
     private function instantiateInjector()

@@ -4,3 +4,8 @@ parameters:
         - ../src
     parallel:
         maximumNumberOfProcesses: 3
+services:
+    -
+        class: Test\Architecture
+        tags:
+            - phpat.test

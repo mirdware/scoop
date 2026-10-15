@@ -2,17 +2,14 @@
 	auto_https off
 	admin off
 	persist_config off
-	frankenphp {
-		worker {
-			file /app/franken.php
-			num 2
-			watch /app/franken.php /app/scoop/**/*.php /app/src/**/*.php /app/app/**/*.php
-		}
+	log default {
+		output stderr
+		format console
 	}
+	frankenphp
 }
 
-:8001 {
+:8002 {
 	bind 127.0.0.1
-	log_skip
-	import /etc/caddy/scoop.caddy franken.php
+	import /etc/caddy/scoop.caddy index.php
 }

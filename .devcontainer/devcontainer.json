@@ -8,7 +8,7 @@
     "shutdownAction": "stopCompose",
     "postCreateCommand": "bun install --frozen-lockfile && composer install",
     "postStartCommand": "php app/ice dbup",
-    "postAttachCommand": "bun concurrently --names vite,php \"bun vite\" \"frankenphp run --config /etc/caddy/Caddyfile --adapter caddyfile\"",
+    "postAttachCommand": "PHP_HOST=http://127.0.0.1:8002 bun concurrently --names vite,php \"vite\" \"frankenphp run --config /etc/caddy/Caddyfile --adapter caddyfile\"",
     "customizations": {
         "vscode": {
             "extensions": [

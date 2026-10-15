@@ -26,7 +26,7 @@ if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
-        'ICE/SCOOP version ' . $app->inject('\Scoop\Context')->getVersion(),
+        'ICE/SCOOP version 0.9.0',
         '',
         'Commands:'
     );

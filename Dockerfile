@@ -1,6 +1,6 @@
 FROM oven/bun:1 AS assets
 WORKDIR /app
-COPY package.json bun.lock ./
+COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile
 COPY vite.config.js ./
 COPY public/ public/

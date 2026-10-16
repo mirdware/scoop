@@ -31,3 +31,4 @@ bz2
 sockets
 redis
 apcu
+pcntl

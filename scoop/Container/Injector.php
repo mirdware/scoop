@@ -47,9 +47,6 @@ abstract class Injector
         $id = self::formatClassName($id);
         if (!$this->contains($id)) {
             list($service, $method, $scope, $inheritance) = $this->normalize($id);
-            if (!$service) {
-                throw new \Scoop\Container\Exception("provider '$id' must define a valid service name");
-            }
             $instance = $this->instantiate($service, $method, $inheritance);
             $this->setInstance($id, $scope, $instance);
             return $instance;
@@ -136,7 +133,7 @@ abstract class Injector
                 $service = $service['service'];
             }
         }
-        $service = is_string($service) ? self::formatClassName($service) : null;
+        $service = is_string($service) ? self::formatClassName($service) : $id;
         return array($service, $method, $scope, $inheritance);
     }
 

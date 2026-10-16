@@ -11,10 +11,34 @@ class ItemPool
         $this->context = $context;
     }
 
-    public function create()
+    public function createInFile()
     {
-        $storagePath = $this->context->getStoragePath('cache');
-        $lifetime = $this->context->getConfig('cache.time', 0);
-        return new \Scoop\Cache\Item\Pool\File($storagePath, $lifetime);
+        return new \Scoop\Cache\Item\Pool\File(
+            $this->context->getStoragePath('cache'),
+            $this->context->getConfig('cache.time', 0),
+            $this->context->getConfig('cache.cleanup.interval', 60),
+            $this->context->getConfig('cache.cleanup.limit', 100)
+        );
+    }
+
+    public function createInMemory()
+    {
+        return new \Scoop\Cache\Item\Pool\Memory(
+            $this->context->getConfig('cache.time', 0),
+            $this->context->getConfig('cache.cleanup.interval', 60),
+            $this->context->getConfig('cache.cleanup.limit', 100)
+        );
+    }
+
+    public function createInApcu()
+    {
+        $namespace = $this->context->getConfig(
+            'cache.namespace',
+            realpath($this->context->getStoragePath('cache'))
+        );
+        return new \Scoop\Cache\Item\Pool\Apcu(
+            $namespace,
+            $this->context->getConfig('cache.time', 0)
+        );
     }
 }

@@ -67,6 +67,7 @@ class Application
         }
         \Scoop\View\Service::reset();
         $this->executeDependency('Scoop\Persistence\Entity\Manager', 'clean');
+        $this->executeDependency('Scoop\Persistence\Connection', '__destruct');
         $this->executeDependency('Scoop\Log\Logger', 'flush');
         $this->injector->clean();
         $this->terminated = false;

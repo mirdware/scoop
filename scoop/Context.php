@@ -56,7 +56,7 @@ class Context
 
     public function getStoragePath($path)
     {
-        $path = trim($this->storagePath, '/') . '/' . trim($path, '/') . '/';
+        $path = rtrim($this->storagePath, '/') . '/' . trim($path, '/') . '/';
         if (!is_dir($path) && !@mkdir($path, 0755, true) && !is_dir($path)) {
             throw new \RuntimeException("Cannot create storage directory: $path");
         }

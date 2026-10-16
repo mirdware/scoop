@@ -11,9 +11,11 @@ class Mapper
     private $hydrator;
     private $plan;
     private $builder;
+    private $dispatcher;
 
-    public function __construct($entityMap, $typeMapper, $accessor, $builder, $plan)
+    public function __construct($dispatcher, $entityMap, $typeMapper, $accessor, $builder, $plan)
     {
+        $this->dispatcher = $dispatcher;
         $this->entityMap = $entityMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
@@ -49,9 +51,19 @@ class Mapper
                 $className = $parent;
                 $fields[$className] = $this->plan->getFields($entity, $className);
             }
-            $this->execute($entity, $fields);
-            $key = $this->updateKey($entity, $concreteClassName, $className);
+            $event = $this->execute($entity, $fields) ? 'Scoop\Persistence\Event\EntityUpdated' : null;
+            $classes = array_keys($fields);
+            $key = $this->updateKey($entity, $concreteClassName, end($classes));
+            if (!$this->identityMap->isPersisted($key)) {
+                $event = 'Scoop\Persistence\Event\EntityPersisted';
+            }
+            if ($this->identityMap->isRemoved($key)) {
+                $event = 'Scoop\Persistence\Event\EntityRemoved';
+            }
             $this->identityMap->setPersisted($key, $entity, $fields);
+            if ($event) {
+                $this->dispatcher->dispatch(new $event($entity));
+            }
         }
         $this->identityMap->purgeRemoved();
     }
@@ -114,40 +126,42 @@ class Mapper
                     ->restrict($idName . '=:id')
                     ->run($params);
                 }
-            } else {
-                foreach ($fields as $className => $value) {
-                    $persistedFields = &$this->identityMap->getPersistedFields($key, $className);
-                    $updatedFields = $this->plan->getChangedFields($className, $persistedFields, $value);
-                    if (empty($updatedFields)) {
-                        continue;
-                    }
+                return true;
+            }
+            $updated = false;
+            foreach ($fields as $className => $value) {
+                $persistedFields = &$this->identityMap->getPersistedFields($key, $className);
+                $updatedFields = $this->plan->getChangedFields($className, $persistedFields, $value);
+                if (!empty($updatedFields)) {
                     $idName = $this->getTableId($className);
                     $this->getStatement($className)
                     ->update($updatedFields)
                     ->restrict($idName . '=:id')
                     ->run($params);
+                    $updated = true;
                 }
             }
-        } else {
-            $baseClassName = array_keys($fields)[0];
-            $fields = array_reverse($fields, true);
-            $id = null;
-            foreach ($fields as $className => $value) {
-                if (isset($this->entityMap[$className]['discriminator'])) {
-                    extract($this->entityMap[$className]['discriminator']);
-                    if (isset($column, $map[$baseClassName])) {
-                        $value[$column] = $map[$baseClassName];
-                    }
-                }
-                $idName = $this->getTableId($className);
-                $value[$idName] = isset($value[$idName]) ? $value[$idName] : $id;
-                $statement = $this->getStatement($className);
-                $value = $this->plan->clearNulls($value);
-                $statement->create($value)->run();
-                $id = isset($value[$idName]) ? $value[$idName] : $statement->getLastId();
-                $baseClassName = $className;
-            }
+            return $updated;
         }
+        $baseClassName = array_keys($fields)[0];
+        $fields = array_reverse($fields, true);
+        $id = null;
+        foreach ($fields as $className => $value) {
+            if (isset($this->entityMap[$className]['discriminator'])) {
+                extract($this->entityMap[$className]['discriminator']);
+                if (isset($column, $map[$baseClassName])) {
+                    $value[$column] = $map[$baseClassName];
+                }
+            }
+            $idName = $this->getTableId($className);
+            $value[$idName] = isset($value[$idName]) ? $value[$idName] : $id;
+            $statement = $this->getStatement($className);
+            $value = $this->plan->clearNulls($value);
+            $statement->create($value)->run();
+            $id = isset($value[$idName]) ? $value[$idName] : $statement->getLastId();
+            $baseClassName = $className;
+        }
+        return true;
     }
 
     private function getStatement($className)

@@ -1,6 +1,5 @@
 root * /app
 encode gzip
-log
 
 route {
 	@indexWithQuery {

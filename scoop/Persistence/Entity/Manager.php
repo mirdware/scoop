@@ -11,12 +11,15 @@ class Manager
     private $accessor;
     private $saving;
     private $builder;
+    private $dispatcher;
     private $entityPlan;
+    private $working = false;
     private $queryPlans = array();
     private $hasProperties = array();
 
-    public function __construct($entities, $values, $relations, $types, $builder)
+    public function __construct($dispatcher, $builder, $entities, $values, $relations, $types)
     {
+        $this->dispatcher = $dispatcher;
         $this->builder = $builder;
         $this->map = array('entities' => $entities, 'values' => $values, 'relations' => $relations);
         $this->saving = new \SplObjectStorage();
@@ -24,6 +27,7 @@ class Manager
         $this->typeMapper = new Mapper\Type($types);
         $this->entityPlan = new Mapper\Plan($entities, $values, $this->typeMapper, $this->accessor);
         $this->mapper = new Mapper(
+            $this->dispatcher,
             $entities,
             $this->typeMapper,
             $this->accessor,
@@ -51,6 +55,7 @@ class Manager
         } else {
             $this->mapper->add($entity);
         }
+        $this->working = true;
         unset($this->saving[$entity]);
     }
 
@@ -61,6 +66,7 @@ class Manager
             $this->relations->remove($entity, $mapper['relations']);
         }
         $this->mapper->remove($entity);
+        $this->working = true;
     }
 
     public function search($classEntity)
@@ -87,6 +93,9 @@ class Manager
 
     public function flush()
     {
+        if (!$this->working) {
+            return;
+        }
         $connection = $this->builder->getConnection();
         $ownsTransaction = $connection->beginTransaction() === true;
         $this->mapper->save();
@@ -100,6 +109,7 @@ class Manager
     {
         $this->saving = new \SplObjectStorage();
         $this->mapper = new Mapper(
+            $this->dispatcher,
             $this->map['entities'],
             $this->typeMapper,
             $this->accessor,
@@ -113,6 +123,7 @@ class Manager
             $this->accessor,
             $this->builder
         );
+        $this->working = false;
     }
 
     private function getMapper($classEntity)

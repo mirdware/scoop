@@ -5,39 +5,42 @@ namespace Scoop\Cache\Item\Pool;
 class File extends \Scoop\Cache\Item\Pool
 {
     private $cacheDir;
-    private $directoryLevels;
-    private $fileExtension;
-    private $filePermissions;
-    private $dirPermissions;
+    const DIRECTORY_LEVELS = 2;
+    const FILE_PERMISSIONS = 0600;
+    const DIRECTORY_PERMISSIONS = 0700;
+    private $cleanupInterval;
+    private $cleanupLimit;
+    private $cleanupIterator;
+    private $nextCleanup = 0;
 
     public function __construct(
         $cacheDir,
         $defaultLifetime = 0,
-        $directoryLevels = 2,
-        $fileExtension = 'cache',
-        $filePermissions = 0664,
-        $dirPermissions = 0775
+        $cleanupInterval = 60,
+        $cleanupLimit = 100
     ) {
         parent::__construct($defaultLifetime);
         $this->cacheDir = rtrim($cacheDir, '/\\');
-        $this->directoryLevels = max(0, (int) $directoryLevels);
-        $this->fileExtension = $fileExtension;
-        $this->filePermissions = $filePermissions;
-        $this->dirPermissions = $dirPermissions;
-        if (!is_dir($this->cacheDir) && !@mkdir($this->cacheDir, $this->dirPermissions, true)) {
-            throw new \RuntimeException("Cache directory '{$this->cacheDir}' does not exist and could not be created.");
-        }
-        if (!is_writable($this->cacheDir)) {
-            throw new \RuntimeException("Cache directory '{$this->cacheDir}' is not writable.");
+        $this->cleanupInterval = (int) $cleanupInterval;
+        $this->cleanupLimit = (int) $cleanupLimit;
+        foreach (array('data', 'temporary') as $directory) {
+            $path = $this->cacheDir . '/' . $directory;
+            if (!is_dir($path) && !@mkdir($path, self::DIRECTORY_PERMISSIONS, true) && !is_dir($path)) {
+                throw new \RuntimeException('Cannot create cache directory: ' . $path);
+            }
         }
     }
 
     public function prune()
     {
+        $this->cleanupIterator = null;
         $now = time();
         $prunedAnything = false;
         $iterator = $this->getIterator();
         foreach ($iterator as $file) {
+            if ($file->isLink()) {
+                continue;
+            }
             $filePath = $file->getRealPath();
             if ($file->isDir()) {
                 $dirContents = new \FilesystemIterator($filePath);
@@ -47,13 +50,11 @@ class File extends \Scoop\Cache\Item\Pool
                     }
                 }
             } else {
-                if ($file->getExtension() === $this->fileExtension) {
-                    $dataToUnserialize = $this->unserialize($filePath);
-                    if (is_array($dataToUnserialize) && isset($dataToUnserialize['expiration']) &&
-                        $dataToUnserialize['expiration'] !== null && $now >= $dataToUnserialize['expiration']) {
-                        if (@unlink($filePath)) {
-                            $prunedAnything = true;
-                        }
+                $dataToUnserialize = $this->unserialize($filePath);
+                if (is_array($dataToUnserialize) && isset($dataToUnserialize['expiration']) &&
+                    $now >= $dataToUnserialize['expiration']) {
+                    if (@unlink($filePath)) {
+                        $prunedAnything = true;
                     }
                 }
             }
@@ -63,6 +64,7 @@ class File extends \Scoop\Cache\Item\Pool
 
     protected function fetch($key)
     {
+        $this->maintain();
         $filePath = $this->getFilePath($key);
         $data = $this->unserialize($filePath);
         if ($data === null) {
@@ -92,9 +94,10 @@ class File extends \Scoop\Cache\Item\Pool
 
     protected function add(\Scoop\Cache\Item $item)
     {
+        $this->maintain();
         $filePath = $this->getFilePath($item->getKey());
         $dir = dirname($filePath);
-        if (!is_dir($dir) && !@mkdir($dir, $this->dirPermissions, true)) {
+        if (!is_dir($dir) && !@mkdir($dir, self::DIRECTORY_PERMISSIONS, true) && !is_dir($dir)) {
             return false;
         }
         $state = $item->getState();
@@ -103,8 +106,15 @@ class File extends \Scoop\Cache\Item\Pool
             'expiration' => $state->expiration ? $state->expiration->getTimestamp() : null
         );
         $serializedData = serialize($dataToSerialize);
-        $tmpFile = $dir . '/' . uniqid(basename($filePath) . '_', true) . '.tmp';
-        if (@file_put_contents($tmpFile, $serializedData, LOCK_EX) === false) {
+        $tmpFile = $this->cacheDir . '/temporary/' . uniqid(basename($filePath) . '_', true);
+        $stream = @fopen($tmpFile, 'xb');
+        if (!$stream) {
+            return false;
+        }
+        $success = @chmod($tmpFile, self::FILE_PERMISSIONS) &&
+            fwrite($stream, $serializedData) === strlen($serializedData);
+        fclose($stream);
+        if (!$success) {
             @unlink($tmpFile);
             return false;
         }
@@ -117,16 +127,15 @@ class File extends \Scoop\Cache\Item\Pool
 
     protected function removeAll()
     {
+        $this->cleanupIterator = null;
         $success = true;
         $iterator = $this->getIterator();
         foreach ($iterator as $file) {
-            if ($file->isDir()) {
+            if ($file->isDir() && !$file->isLink()) {
                 @rmdir($file->getRealPath());
             } else {
-                if ($file->getExtension() === $this->fileExtension) {
-                    if (!@unlink($file->getRealPath())) {
-                        $success = false;
-                    }
+                if (!@unlink($file->getPathname())) {
+                    $success = false;
                 }
             }
         }
@@ -136,13 +145,61 @@ class File extends \Scoop\Cache\Item\Pool
     private function getFilePath($key)
     {
         $hash = sha1($key);
-        $path = $this->cacheDir;
-        if ($this->directoryLevels > 0) {
-            for ($i = 0; $i < $this->directoryLevels; ++$i) {
-                $path .= '/' . substr($hash, $i * 2, 2);
-            }
+        $path = $this->cacheDir . '/data';
+        for ($i = 0; $i < self::DIRECTORY_LEVELS; ++$i) {
+            $path .= '/' . substr($hash, $i * 2, 2);
         }
-        return "$path/$hash.{$this->fileExtension}";
+        return "$path/$hash";
+    }
+
+    private function maintain()
+    {
+        if ($this->cleanupInterval < 1 || time() < $this->nextCleanup) {
+            return;
+        }
+        $now = time();
+        $this->nextCleanup = $now + $this->cleanupInterval;
+        $lock = @fopen($this->cacheDir . '/.cleanup', 'c+');
+        if (!$lock) {
+            return;
+        }
+        @chmod($this->cacheDir . '/.cleanup', self::FILE_PERMISSIONS);
+        if (!flock($lock, LOCK_EX | LOCK_NB)) {
+            fclose($lock);
+            return;
+        }
+        $next = (int) stream_get_contents($lock);
+        if ($next <= $now) {
+            try {
+                if (!$this->cleanupIterator || !$this->cleanupIterator->valid()) {
+                    $this->cleanupIterator = $this->getIterator();
+                    $this->cleanupIterator->rewind();
+                }
+                $remaining = $this->cleanupLimit;
+                while ($remaining-- > 0 && $this->cleanupIterator->valid()) {
+                    $file = $this->cleanupIterator->current();
+                    $this->cleanupIterator->next();
+                    if (!$file->isFile() || $file->isLink()) {
+                        continue;
+                    }
+                    $path = $file->getPathname();
+                    $data = $this->unserialize($path);
+                    if (is_array($data) && isset($data['expiration']) && $data['expiration'] <= $now) {
+                        @unlink($path);
+                    }
+                }
+            } catch (\UnexpectedValueException $ex) {
+                $this->cleanupIterator = null;
+            }
+            rewind($lock);
+            ftruncate($lock, 0);
+            fwrite($lock, (string) $this->nextCleanup);
+            fflush($lock);
+        } else {
+            $this->nextCleanup = $next;
+        }
+        flock($lock, LOCK_UN);
+        fclose($lock);
     }
 
     private function unserialize($filePath)
@@ -171,7 +228,7 @@ class File extends \Scoop\Cache\Item\Pool
     private function getIterator()
     {
         return new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->cacheDir, \RecursiveDirectoryIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
+            new \RecursiveDirectoryIterator($this->cacheDir . '/data', \RecursiveDirectoryIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::CHILD_FIRST
         );
     }

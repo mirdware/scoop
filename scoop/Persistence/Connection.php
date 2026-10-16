@@ -12,6 +12,7 @@ class Connection
     private $host;
     private $dispatcher;
     private $instance;
+    private $closing = false;
     private $quoteLeft = '[';
     private $quoteRight = ']';
     private $quoteChar = '';
@@ -43,8 +44,16 @@ class Connection
     public function __destruct()
     {
         if ($this->instance) {
+            $this->closing = true;
             unset($this->instance);
-            $this->dispatcher->dispatch(new Event\ConnectionClosed($this));
+            try {
+                $this->dispatcher->dispatch(new Event\ConnectionClosed($this));
+            } catch (\Exception $ex) {
+                error_log($ex);
+            } catch (\Throwable $ex) {
+                error_log($ex);
+            }
+            $this->closing = false;
         }
     }
 
@@ -163,6 +172,9 @@ class Connection
 
     private function getInstance()
     {
+        if ($this->closing) {
+            throw new \RuntimeException('Connection closed');
+        }
         if (!$this->instance) {
             $options = array(
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,

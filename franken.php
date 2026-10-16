@@ -15,11 +15,9 @@ $handler = static function () use (&$app) {
 };
 
 function reportUncatchableException($ex) {
-    error_log($ex);
+    frankenphp_log((string) $ex, FRANKENPHP_LOG_LEVEL_ERROR);
     if (!headers_sent()) {
         http_response_code(500);
-        header('Content-Type: text/plain; charset=utf-8');
-        echo defined('DEBUG_MODE') && DEBUG_MODE ? (string) $ex : 'Internal Server Error';
     }
 }
 

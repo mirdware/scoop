@@ -1,16 +1,50 @@
 <?php
 
 return array(
-    'Scoop\Cache' => 'Scoop\Cache\Factory\Simple:create',
-    'Scoop\Event\Bus' => 'Scoop\Event\Factory\Bus:create',
-    'Scoop\Log\Logger' => 'Scoop\Log\Factory\Logger:create',
-    'Scoop\Command\Bus' => 'Scoop\Command\Factory\Bus:create',
-    'Scoop\Command\Writer' => 'Scoop\Command\Factory\Writer:create',
-    'Scoop\Cache\Item\Pool' => 'Scoop\Cache\Factory\ItemPool:create',
-    'Scoop\Security\Cipher' => 'Scoop\Security\Factory\Cipher:create',
-    'Scoop\Persistence\Vault' => 'Scoop\Persistence\Factory\Vault:create',
-    'Scoop\Persistence\Connection' => 'Scoop\Persistence\Factory\Connection:create',
-    'Scoop\Persistence\Entity\Manager' => 'Scoop\Persistence\Factory\EntityManager:create',
-
+    'Scoop\Event\Bus' => array(
+        'service' => 'Scoop\Event\Factory\Bus',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Log\Logger' => array(
+        'service' => 'Scoop\Log\Factory\Logger',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Command\Bus' => array(
+        'service' => 'Scoop\Command\Factory\Bus',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Cache' => array(
+        'service' => 'Scoop\Cache\Factory\Simple',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Cache\Item\Pool' => array(
+        'service' => 'Scoop\Cache\Factory\ItemPool',
+        'method' => 'createInFile',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Command\Writer' => array(
+        'service' => 'Scoop\Command\Factory\Writer',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Security\Cipher' => array(
+        'service' => 'Scoop\Security\Factory\Cipher',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Persistence\Connection' => array(
+        'service' => 'Scoop\Persistence\Factory\Connection',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
+    'Scoop\Persistence\Entity\Manager' => array(
+        'service' => 'Scoop\Persistence\Factory\EntityManager',
+        'method' => 'create',
+        'scope' => 'singleton'
+    ),
     'App\Repository\Quote' => 'App\Repository\QuoteArray'
 );

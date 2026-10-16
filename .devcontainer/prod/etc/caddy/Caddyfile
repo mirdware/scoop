@@ -1,10 +1,27 @@
 {
 	admin off
 	persist_config off
+	log default {
+		exclude frankenphp
+		output stderr
+		format json
+		level WARN
+	}
+	log php {
+		include frankenphp
+		output stderr
+		format json
+		level INFO
+	}
 	frankenphp
 }
 
 {$SERVER_NAME::80} {
+	log {
+		output stderr
+		format json
+		level WARN
+	}
 	import /etc/caddy/scoop.caddy
 }
 

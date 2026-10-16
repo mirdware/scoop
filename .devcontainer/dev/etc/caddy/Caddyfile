@@ -2,11 +2,15 @@
 	auto_https off
 	admin off
 	persist_config off
+	log default {
+		output stderr
+		format console
+		level INFO
+	}
 	frankenphp
 }
 
 :8001 {
 	bind 127.0.0.1
-	log_skip
 	import /etc/caddy/scoop.caddy
 }

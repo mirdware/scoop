@@ -8,10 +8,11 @@ abstract class Injector
     private $rules = array();
     private $definitions = array();
 
-    public function __construct(\Scoop\Context $context)
+    public function __construct(\Scoop\Context $context, \Scoop\Bootstrap\Lifecycle $lifecycle)
     {
         $this->context = $context;
         $this->setInstance('Scoop\Context', 'singleton', $context);
+        $this->setInstance('Scoop\Bootstrap\Lifecycle', 'singleton', $lifecycle);
         $interfaces = $context->getConfig('providers', array());
         $providerPath = $context->getStoragePath('cache/project');
         foreach ($interfaces as $interfaceName => $className) {

@@ -2,11 +2,29 @@
 <?php
 
 $script = isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : '';
+$contextFile = getenv('ICE_CONTEXT');
 if (php_sapi_name() !== 'cli' && realpath($script) !== __FILE__) {
     return;
 }
+
+function dispatchEvent($dispatcher, $event) {
+    try {
+        $dispatcher->dispatch($event);
+    } catch (\Exception $ex) {
+        error_log($ex);
+    } catch (\Throwable $ex) {
+        error_log($ex);
+    }
+}
+
+function manageError($writer, $trace, $ex) {
+    $code = intval($ex->getCode());
+    $writer->withError()->write('<danger:[ERROR]!> <error:' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
+    return $code ? $code : 1;
+}
+
 require 'scoop/Bootstrap/Application.php';
-$app = new \Scoop\Bootstrap\Application('app/context');
+$app = new \Scoop\Bootstrap\Application($contextFile ? $contextFile : 'app/context');
 array_shift($argv);
 $commandName = array_shift($argv);
 $trace = $commandName === '--trace';
@@ -15,14 +33,21 @@ if ($trace) {
 }
 $writer = $app->inject('\Scoop\Command\Writer');
 $commandBus = $app->inject('\Scoop\Command\Bus');
+$exitCode = 0;
 if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
+    $dispatcher = $app->inject('Scoop\Event\Dispatcher');
+    $error = null;
+    dispatchEvent($dispatcher, new \Scoop\Command\Event\ExecutionStarted($commandName, $argv));
     try {
         $commandBus->dispatch($commandName, $argv);
     } catch (Exception $ex) {
-        $code = intval($ex->getCode());
-        $writer->withError()->write('<danger:[ERROR]!> <error:' . $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '') . '!>');
-        exit($code ? $code : 1);
+        $error = $ex;
+        $exitCode = manageError($writer, $trace, $ex);
+    } catch (\Throwable $ex) {
+        $error = $ex;
+        $exitCode = manageError($writer, $trace, $ex);
     }
+    dispatchEvent($dispatcher, new \Scoop\Command\Event\ExecutionFinished($commandName, $argv, $exitCode, $error));
 } else {
     $commands = $commandBus->getCommands();
     $writer->write(
@@ -43,3 +68,5 @@ if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
         'Run app/ice COMMAND --help for more information'
     );
 }
+$app->terminate();
+exit($exitCode);

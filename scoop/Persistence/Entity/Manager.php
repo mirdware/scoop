@@ -11,14 +11,23 @@ class Manager
     private $accessor;
     private $saving;
     private $builder;
+    private $lifecycle;
     private $dispatcher;
     private $entityPlan;
     private $working = false;
     private $queryPlans = array();
     private $hasProperties = array();
 
-    public function __construct($dispatcher, $builder, $entities, $values, $relations, $types)
-    {
+    public function __construct(
+        \Scoop\Bootstrap\Lifecycle $lifecycle,
+        \Scoop\Event\Dispatcher $dispatcher,
+        \Scoop\Persistence\Builder $builder,
+        $entities,
+        $values,
+        $relations,
+        $types
+    ) {
+        $this->lifecycle = $lifecycle;
         $this->dispatcher = $dispatcher;
         $this->builder = $builder;
         $this->map = array('entities' => $entities, 'values' => $values, 'relations' => $relations);
@@ -39,6 +48,7 @@ class Manager
 
     public function save($entity)
     {
+        $this->registerLifecycle();
         if (isset($this->saving[$entity])) return;
         $this->saving[$entity] = true;
         $mapper = $this->getMapper(get_class($entity));
@@ -61,6 +71,7 @@ class Manager
 
     public function remove($entity)
     {
+        $this->registerLifecycle();
         $mapper = $this->getMapper(get_class($entity));
         if (isset($mapper['relations'])) {
             $this->relations->remove($entity, $mapper['relations']);
@@ -71,6 +82,7 @@ class Manager
 
     public function search($classEntity)
     {
+        $this->registerLifecycle();
         $this->getMapper($classEntity);
         if (!isset($this->queryPlans[$classEntity])) {
             $this->queryPlans[$classEntity] = new Query\Plan(
@@ -124,6 +136,13 @@ class Manager
             $this->builder
         );
         $this->working = false;
+    }
+
+    private function registerLifecycle()
+    {
+        $this->lifecycle
+        ->register('complete', $this, 'flush')
+        ->register('terminate', $this, 'clean');
     }
 
     private function getMapper($classEntity)

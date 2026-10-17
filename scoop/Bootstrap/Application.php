@@ -10,6 +10,7 @@ class Application
     private $stateful;
     private $error;
     private $status;
+    private $lifecycle;
     private $terminated;
 
     public function __construct($fileContext)
@@ -24,7 +25,8 @@ class Application
             self::$loader = $this->load($options['storage']);
         }
         $this->stateful = $options['stateful'];
-        $this->context = new \Scoop\Context($options);
+        $this->lifecycle = new Lifecycle();
+        $this->context = new \Scoop\Context($this->lifecycle, $options);
         $this->injector = $this->context->getInjector();
     }
 
@@ -38,15 +40,14 @@ class Application
         \Scoop\View\Service::setUp($this->context);
         try {
             $response = $router->route($request);
-            $this->executeDependency('Scoop\Persistence\Entity\Manager', 'flush');
-            $this->executeDependency('Scoop\Persistence\Connection', 'commit');
+            $this->terminated = true;
+            $this->lifecycle->execute($this, 'complete', true);
         } catch (\Exception $ex) {
             $response = $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
             $response = $this->manageError($ex, $request->isAjax());
         }
         $this->printResponse($response);
-        $this->terminated = true;
     }
 
     public function terminate()
@@ -65,10 +66,9 @@ class Application
         } catch (\Throwable $ex) {
             error_log($ex);
         }
+        $this->terminated = true;
         \Scoop\View\Service::reset();
-        $this->executeDependency('Scoop\Persistence\Entity\Manager', 'clean');
-        $this->executeDependency('Scoop\Persistence\Connection', '__destruct');
-        $this->executeDependency('Scoop\Log\Logger', 'flush');
+        $this->lifecycle->execute($this, 'terminate', false);
         $this->injector->clean();
         $this->terminated = false;
     }
@@ -78,9 +78,15 @@ class Application
         return $this->injector->get($id);
     }
 
+    public function isShuttingDown()
+    {
+        return $this->terminated;
+    }
+
     private function manageError($ex, $isAjax)
     {
-        $this->executeDependency('Scoop\Persistence\Connection', 'rollback');
+        $this->terminated = true;
+        $this->lifecycle->execute($this, 'rollback', false);
         $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
         $this->status = $exceptionManager->getStatusCode($ex);
         $this->error = $ex;
@@ -90,16 +96,7 @@ class Application
         if ($this->status) {
             return $exceptionManager->map($ex, $isAjax, $this->status);
         }
-        $this->terminated = true;
         throw $ex;
-    }
-
-    private function executeDependency($className, $callback)
-    {
-        $method = 'contains';
-        if (!is_callable(array($this->injector, $method)) || $this->injector->$method($className)) {
-            $this->inject($className)->$callback();
-        }
     }
 
     private function printResponse($response)

@@ -4,6 +4,7 @@ namespace Scoop\Persistence;
 
 class Connection
 {
+    private $lifecycle;
     private $name;
     private $user;
     private $password;
@@ -17,8 +18,17 @@ class Connection
     private $quoteRight = ']';
     private $quoteChar = '';
 
-    public function __construct($dispatcher, $name, $user, $password, $host, $port, $engine)
-    {
+    public function __construct(
+        \Scoop\Bootstrap\Lifecycle $lifecycle,
+        \Scoop\Event\Dispatcher $dispatcher,
+        $name,
+        $user,
+        $password,
+        $host,
+        $port,
+        $engine
+    ) {
+        $this->lifecycle = $lifecycle;
         $this->name = $name;
         $this->user = $user;
         $this->password = $password;
@@ -41,9 +51,9 @@ class Connection
         return $result;
     }
 
-    public function __destruct()
+    public function close()
     {
-        if ($this->instance) {
+        if (isset($this->instance)) {
             $this->closing = true;
             unset($this->instance);
             try {
@@ -67,16 +77,18 @@ class Connection
 
     public function commit()
     {
-        if ($this->instance && $this->instance->inTransaction()) {
-            $this->instance->commit();
+        if (isset($this->instance) && $this->instance->inTransaction()) {
+            return $this->instance->commit();
         }
+        return false;
     }
 
     public function rollBack()
     {
-        if ($this->instance && $this->instance->inTransaction()) {
-            $this->instance->rollBack();
+        if (isset($this->instance) && $this->instance->inTransaction()) {
+            return $this->instance->rollBack();
         }
+        return false;
     }
 
     public function errorCode()
@@ -175,7 +187,11 @@ class Connection
         if ($this->closing) {
             throw new \RuntimeException('Connection closed');
         }
-        if (!$this->instance) {
+        if (!isset($this->instance)) {
+            $this->lifecycle
+            ->register('complete', $this, 'commit', 2)
+            ->register('rollback', $this, 'rollback')
+            ->register('terminate', $this, 'close');
             $options = array(
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,

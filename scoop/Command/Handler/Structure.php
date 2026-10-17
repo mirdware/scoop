@@ -5,15 +5,18 @@ namespace Scoop\Command\Handler;
 class Structure
 {
     private $context;
+    private $lifecycle;
     private $dispatcher;
     private $writer;
 
     public function __construct(
+        \Scoop\Bootstrap\Lifecycle $lifecycle,
         \Scoop\Context $context,
         \Scoop\Event\Dispatcher $dispatcher,
         \Scoop\Command\Writer $writer
     ) {
         $this->context = $context;
+        $this->lifecycle = $lifecycle;
         $this->dispatcher = $dispatcher;
         $this->writer = $writer;
     }
@@ -72,6 +75,7 @@ class Structure
             }
         }
         return new \Scoop\Persistence\Connection(
+            $this->lifecycle,
             $this->dispatcher,
             $config['database'],
             $config['user'],

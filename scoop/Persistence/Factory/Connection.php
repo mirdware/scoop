@@ -5,13 +5,16 @@ namespace Scoop\Persistence\Factory;
 class Connection
 {
     private $context;
+    private $lifecycle;
     private $dispatcher;
 
     public function __construct(
         \Scoop\Context $context,
+        \Scoop\Bootstrap\Lifecycle $lifecycle,
         \Scoop\Event\Dispatcher $dispatcher
     ) {
         $this->context = $context;
+        $this->lifecycle = $lifecycle;
         $this->dispatcher = $dispatcher;
     }
 
@@ -25,6 +28,7 @@ class Connection
             }
         }
         return new \Scoop\Persistence\Connection(
+            $this->lifecycle,
             $this->dispatcher,
             $config['database'],
             $config['user'],

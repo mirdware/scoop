@@ -14,14 +14,14 @@ class Context
     private $config;
     private $storagePath;
 
-    public function __construct($context)
+    public function __construct(\Scoop\Bootstrap\Lifecycle $lifecycle, $map)
     {
         if (!defined('DEBUG_MODE')) {
             define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
         }
-        $this->config = $context['map'] . '.php';
-        $this->storagePath = $context['storage'];
-        $this->injector = $this->instantiateInjector();
+        $this->config = $map['map'] . '.php';
+        $this->storagePath = $map['storage'];
+        $this->injector = $this->instantiateInjector($lifecycle);
     }
 
     public function getConfig($name, $default = null)
@@ -82,11 +82,11 @@ class Context
         return $path;
     }
 
-    private function instantiateInjector()
+    private function instantiateInjector($lifecycle)
     {
         $injector = $this->getConfig('injector', '\Scoop\Container\Injector\Memory');
         $baseInjector = '\Scoop\Container\Injector';
-        $injector = new $injector($this);
+        $injector = new $injector($this, $lifecycle);
         if (!($injector instanceof $baseInjector)) {
             throw new \UnexpectedValueException("$injector not implement $baseInjector");
         }

@@ -6,9 +6,11 @@ class Logger
 {
     private $handlerFactory;
     private $handlers = array();
+    private $lifecycle;
 
-    public function __construct(\Scoop\Log\Factory\Handler $handlerFactory)
+    public function __construct(\Scoop\Bootstrap\Lifecycle $lifecycle, \Scoop\Log\Factory\Handler $handlerFactory)
     {
+        $this->lifecycle = $lifecycle;
         $this->handlerFactory = $handlerFactory;
     }
 
@@ -61,6 +63,7 @@ class Logger
         if (empty($handlers)) {
             return;
         }
+        $this->lifecycle->register('terminate', $this, 'flush', 10);
         $record = array(
             'message' => self::interpolate($message, $context ? $context : array()),
             'context' => $context,

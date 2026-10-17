@@ -8,6 +8,7 @@ abstract class ProcessEvent
     private $replica;
     private $pid;
     private $time;
+    private $starts;
 
     public function __construct(\Scoop\Command\Pool\Worker $worker)
     {
@@ -15,6 +16,12 @@ abstract class ProcessEvent
         $this->replica = $worker->getReplica();
         $this->pid = $worker->getPid();
         $this->time = new \DateTime();
+        $this->starts = $worker->getStartCount();
+    }
+
+    public function getStartCount()
+    {
+        return $this->starts;
     }
 
     public function getCommand()

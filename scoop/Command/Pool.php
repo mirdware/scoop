@@ -87,25 +87,21 @@ class Pool
 
     private function tick(Pool\Worker $worker)
     {
-        if ($worker->isFinished()) {
+        if ($worker->isFinished() || Pool\Worker::now() < $worker->getNext()) {
             return;
         }
+        $event = 'Scoop\Command\Event\ProcessStarted';
         if ($worker->hasProcess()) {
             if ($worker->isRunning()) {
                 return;
             }
             $worker->close();
-            $this->dispatcher->dispatch(new \Scoop\Command\Event\ProcessExited($worker));
-            $this->retry($worker);
-            return;
+            $event = 'Scoop\Command\Event\ProcessExited';
+        } elseif (!$worker->start()) {
+            $event = 'Scoop\Command\Event\ProcessFailed';
         }
-        if (Pool\Worker::now() < $worker->getNext()) {
-            return;
-        }
-        if ($worker->start()) {
-            $this->dispatcher->dispatch(new \Scoop\Command\Event\ProcessStarted($worker));
-        } else {
-            $this->dispatcher->dispatch(new \Scoop\Command\Event\ProcessStartFailed($worker));
+        $this->dispatcher->dispatch(new $event($worker));
+        if ($event !== 'Scoop\Command\Event\ProcessStarted') {
             $this->retry($worker);
         }
     }
@@ -122,7 +118,6 @@ class Pool
         $lived = Pool\Worker::now() - $worker->getStarted();
         $delay = $lived < 5 ? min($worker->getDelay() * 2, $this->maxDelay) : 1;
         $worker->scheduleRestart($delay);
-        $this->dispatcher->dispatch(new \Scoop\Command\Event\ProcessRestartScheduled($worker));
     }
 
     private function stop()

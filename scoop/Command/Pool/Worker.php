@@ -14,6 +14,7 @@ class Worker
     private $exitCode;
     private $policy;
     private $finished = false;
+    private $starts = 0;
 
     public function __construct(array $command, $replica, $policy)
     {
@@ -25,6 +26,11 @@ class Worker
     public function getPolicy()
     {
         return $this->policy;
+    }
+
+    public function getStartCount()
+    {
+        return $this->starts;
     }
 
     public function isFinished()
@@ -115,6 +121,7 @@ class Worker
             return false;
         }
         $this->isRunning();
+        $this->starts++;
         return true;
     }
 

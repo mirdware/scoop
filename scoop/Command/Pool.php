@@ -7,7 +7,6 @@ class Pool
     private $signalHandlers = array();
     private $windowsHandler = false;
     private $workers = array();
-    private $activeWorkers = array();
     private $running = false;
     private $shutdownTimeout;
     private $maxDelay;
@@ -20,25 +19,33 @@ class Pool
         $this->dispatcher = $dispatcher;
     }
 
-    public function add($command, $processes = 1, $policy = 'always')
+    public function run($workers)
     {
-        if (!in_array($policy, array('always', 'never', 'on-failure'), true)) {
-            throw new \InvalidArgumentException('Unknown restart policy');
+        $this->workers = array();
+        foreach ($workers as $name => $worker) {
+            if (!isset($worker['command']) || !is_array($worker['command'])) {
+                throw new \InvalidArgumentException("Worker '$name' must define a command array.");
+            }
+            $command = $worker['command'];
+            $policy = 'always';
+            $processes = 1;
+            if (isset($worker['policy'])) {
+                $policy = $worker['policy'];
+                if (!in_array($policy, array('never', 'on-failure', 'always'), true)) {
+                    throw new \InvalidArgumentException("Worker '$name' has an invalid restart policy.");
+                }
+            }
+            if (isset($worker['processes']) && is_int($worker['processes']) && $worker['processes'] > 0) {
+                $processes = $worker['processes'];
+            }
+            for ($i = 0; $i < $processes; $i++) {
+                $this->workers[] = new Pool\Worker($name, $command, $i, $policy);
+            }
         }
-        $new = clone $this;
-        for ($i = 0; $i < $processes; $i++) {
-            $new->workers[] = new Pool\Worker($command, $i, $policy);
-        }
-        return $new;
-    }
-
-    public function run()
-    {
-        if (!$this->workers) {
+        if (empty($this->workers)) {
             return;
         }
         $this->running = true;
-        $this->activeWorkers = array();
         try {
             if (function_exists('pcntl_signal')) {
                 foreach (array(SIGTERM, SIGINT) as $signal) {
@@ -52,15 +59,12 @@ class Pool
             } elseif (function_exists('sapi_windows_set_ctrl_handler')) {
                 $this->windowsHandler = sapi_windows_set_ctrl_handler(array($this, 'stop'));
             }
-            foreach ($this->workers as $worker) {
-                $this->activeWorkers[] = clone $worker;
-            }
             while ($this->running) {
                 $pending = false;
                 if (function_exists('pcntl_signal_dispatch')) {
                     pcntl_signal_dispatch();
                 }
-                foreach ($this->activeWorkers as $worker) {
+                foreach ($this->workers as $worker) {
                     if ($this->running) {
                         $this->tick($worker);
                         if (!$worker->isFinished()) {
@@ -108,12 +112,10 @@ class Pool
 
     private function retry(Pool\Worker $worker)
     {
-        if (
-            $worker->getPolicy() === 'never'
-            || ($worker->getPolicy() === 'on-failure' && $worker->getExitCode() === 0)
-        ) {
-            $worker->complete();
-            return;
+        $policy = $worker->getPolicy();
+        $code = $worker->getExitCode();
+        if ($policy === 'never' || ($policy === 'on-failure' && $code === 0)) {
+            return $worker->complete();
         }
         $lived = Pool\Worker::now() - $worker->getStarted();
         $delay = $lived < 5 ? min($worker->getDelay() * 2, $this->maxDelay) : 1;
@@ -130,20 +132,20 @@ class Pool
         $this->running = false;
         $stopedEvents = array();
         try {
-            foreach ($this->activeWorkers as $worker) {
+            foreach ($this->workers as $worker) {
                 $worker->terminate();
             }
             $deadline = Pool\Worker::now() + $this->shutdownTimeout;
             while (Pool\Worker::now() < $deadline && $this->alive()) {
                 usleep(100000);
             }
-            foreach ($this->activeWorkers as $worker) {
+            foreach ($this->workers as $worker) {
                 if ($worker->hasProcess()) {
                     $worker->close();
                     $stopedEvents[] = new Event\ProcessStopped($worker);
                 }
             }
-            $this->activeWorkers = array();
+            $this->workers = array();
         } catch (\Exception $exception) {
             $this->restoreSignals($stopedEvents);
             throw $exception;
@@ -156,7 +158,7 @@ class Pool
 
     private function alive()
     {
-        foreach ($this->activeWorkers as $worker) {
+        foreach ($this->workers as $worker) {
             if ($worker->isRunning()) {
                 return true;
             }

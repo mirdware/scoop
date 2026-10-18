@@ -4,6 +4,7 @@ namespace Scoop\Command\Pool;
 
 class Worker
 {
+    private $name;
     private $replica;
     private $command;
     private $process;
@@ -16,11 +17,17 @@ class Worker
     private $finished = false;
     private $starts = 0;
 
-    public function __construct(array $command, $replica, $policy)
+    public function __construct($name, array $command, $replica, $policy)
     {
+        $this->name = $name;
         $this->command = array_values($command);
         $this->replica = $replica;
         $this->policy = $policy;
+    }
+
+    public function getName()
+    {
+        return $this->name;
     }
 
     public function getPolicy()

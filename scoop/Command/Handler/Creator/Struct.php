@@ -5,18 +5,19 @@ namespace Scoop\Command\Handler\Creator;
 class Struct
 {
     private $writer;
+    private $clock;
 
-    public function __construct(\Scoop\Command\Writer $writer)
+    public function __construct(\Scoop\Command\Writer $writer, \Scoop\Clock $clock)
     {
         $this->writer = $writer;
+        $this->clock = $clock;
     }
+
     public function execute(\Scoop\Command\Request $command)
     {
         $name = $this->normalizeName($command->getOption('name'));
         $path = $this->getPath($command->getOption('schema', ''));
-        $microtime = microtime(true);
-        $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime));
-        $path = $path . $date->format('YmdGisu') . $name . '.sql';
+        $path = $path . $this->clock->now()->format('YmdGisu') . $name . '.sql';
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);

@@ -91,6 +91,9 @@ export default defineConfig(async ({ command, mode }) => {
     ],
     root: './',
     server: {
+      watch: {
+        ignored: ['**/vendor/**', '**/node_modules/**']
+      },
       strictPort: true,
       host: '0.0.0.0',
       port: 8000,

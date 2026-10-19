@@ -9,7 +9,7 @@ class Memory extends \Scoop\Cache\Item\Pool
     private $cleanupLimit;
     private $nextCleanup = 0;
 
-    public function __construct($defaultLifetime = 0, $cleanupInterval = 60, $cleanupLimit = 100)
+    public function __construct($defaultLifetime, $cleanupInterval, $cleanupLimit)
     {
         parent::__construct($defaultLifetime);
         $this->items = array();

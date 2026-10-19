@@ -15,7 +15,9 @@ class Slack
         $this->formatter = $formatter;
         $this->config = $config;
         $this->uri = new \Scoop\Http\Message\URI($url);
-        $this->httpClient = $httpClient->withOption(CURLOPT_TIMEOUT, 5);
+        $this->httpClient = $httpClient->withOptions(array(
+            'curl' => array(CURLOPT_TIMEOUT => 5)
+        ));
     }
 
     public function handle($record)

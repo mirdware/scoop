@@ -16,6 +16,11 @@ return array(
         'method' => 'create',
         'scope' => 'singleton'
     ),
+    'Scoop\Circuit\Breaker' => array(
+        'service' => 'Scoop\Circuit\Factory\Breaker',
+        'method' => 'createInFile',
+        'scope' => 'singleton'
+    ),
     'Scoop\Cache' => array(
         'service' => 'Scoop\Cache\Factory\Simple',
         'method' => 'create',

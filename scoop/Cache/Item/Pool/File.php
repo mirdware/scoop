@@ -15,9 +15,9 @@ class File extends \Scoop\Cache\Item\Pool
 
     public function __construct(
         $cacheDir,
-        $defaultLifetime = 0,
-        $cleanupInterval = 60,
-        $cleanupLimit = 100
+        $defaultLifetime,
+        $cleanupInterval,
+        $cleanupLimit
     ) {
         parent::__construct($defaultLifetime);
         $this->cacheDir = rtrim($cacheDir, '/\\');

@@ -17,19 +17,20 @@ class Health
     {
         $path = trim($command->getOption('path', ''), '/');
         $response = $this->httpClient
-            ->withOption(CURLOPT_CONNECTTIMEOUT, 2)
-            ->withOption(CURLOPT_TIMEOUT, 5)
-            ->sendRequest(
-            new \Scoop\Http\Message\Request(
-                new \Scoop\Http\Message\URI(
-                    ($command->hasFlag('s') ? 'https' : 'http') . '://' .
-                    trim($command->getOption('host', '127.0.0.1'), '/') . ':' .
-                    $command->getOption('port', '80') . '/' .
-                    ($path === '' ? '' : $path . '/')
-                ),
-                'GET'
+        ->withOptions(array(
+            'curl' => array(
+                CURLOPT_CONNECTTIMEOUT => 2,
+                CURLOPT_TIMEOUT => 5
             )
-        );
+        ))->sendRequest(new \Scoop\Http\Message\Request(
+            new \Scoop\Http\Message\URI(
+                ($command->hasFlag('s') ? 'https' : 'http') . '://' .
+                trim($command->getOption('host', '127.0.0.1'), '/') . ':' .
+                $command->getOption('port', '80') . '/' .
+                ($path === '' ? '' : $path . '/')
+            ),
+            'GET'
+        ));
         $status = $response->getStatusCode();
         $body = $response->getBody()->getContents();
         if ($status !== 200) {

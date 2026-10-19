@@ -6,13 +6,10 @@ class Apcu extends \Scoop\Cache\Item\Pool
 {
     private $prefix;
 
-    public function __construct($namespace, $defaultLifetime = 0)
+    public function __construct($namespace, $defaultLifetime)
     {
-        if (!is_string($namespace) || trim($namespace) === '') {
-            throw new \InvalidArgumentException('APCu requires a non-empty cache namespace.');
-        }
         parent::__construct($defaultLifetime);
-        $this->prefix = 'scoop.' . sha1($namespace) . '.';
+        $this->prefix = 'scoop.cache.' . sha1($namespace) . '.';
     }
 
     public function prune()

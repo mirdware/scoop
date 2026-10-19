@@ -32,12 +32,8 @@ class ItemPool
 
     public function createInApcu()
     {
-        $namespace = $this->context->getConfig(
-            'cache.namespace',
-            realpath($this->context->getStoragePath('cache'))
-        );
         return new \Scoop\Cache\Item\Pool\Apcu(
-            $namespace,
+            $this->context->getConfig('cache.namespace', 'default'),
             $this->context->getConfig('cache.time', 0)
         );
     }

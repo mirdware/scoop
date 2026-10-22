@@ -38,8 +38,6 @@ final class Template
     {
         $content = self::compile($templateName);
         if (!DEBUG_MODE) {
-            preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
-            $matches = $matches[0];
             $content = self::clearHTML($content);
         }
         $content = preg_replace_callback(
@@ -52,8 +50,8 @@ final class Template
         $search = array('{{=', '{{', '}}');
         $replace = array('<?php echo(', '<?php echo #view->escape(', ') ?>');
         if (!DEBUG_MODE) {
-            $search = array_merge(array_map(array('\scoop\view\Template', 'clearHTML'), $matches), array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php '), $search);
-            $replace = array_merge($matches, array(':', ';', ':', ';'), $replace);
+            $search = array_merge(array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php '), $search);
+            $replace = array_merge(array(':', ';', ':', ';'), $replace);
         }
         $content = str_replace($search, $replace, $content);
         $path = explode('/', $viewName);
@@ -72,6 +70,16 @@ final class Template
 
     public static function clearHTML($html)
     {
+        $blocks = array();
+        $prefix = "\x1A" . uniqid('block_');
+        $pattern = <<<'REGEX'
+~<(pre|textarea)\b(?:[^>"']|"[^"]*"|'[^']*')*>.*?</\1\s*>|(?<svg><svg\b(?:[^>"']|"[^"]*"|'[^']*')*>(?:(?&svg)|(?!</?svg\b).)*</svg\s*>)~is
+REGEX;
+        $html = preg_replace_callback($pattern, function ($match) use (&$blocks, $prefix) {
+            $key = $prefix . count($blocks) . "\x1A";
+            $blocks[$key] = $match[0];
+            return $key;
+        }, $html);
         preg_match(
             '/\s*<\s*html\s*(.*?)\s*>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
             $html,
@@ -86,7 +94,7 @@ final class Template
             array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<' ),
             $html
         );
-        return $html;
+        return strtr($html, $blocks);
     }
 
     private static function compile($template)

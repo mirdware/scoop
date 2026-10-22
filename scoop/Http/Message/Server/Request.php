@@ -30,7 +30,7 @@ class Request extends \Scoop\Http\Message\Request
         $this->urlPath = $uri === null ? $this->getURLPath() : $uri->getPath();
         parent::__construct(
             $uri === null ? new \Scoop\Http\Message\URI(
-                trim(ROOT, '/') . $this->urlPath . (isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '')
+                rtrim(\Scoop\Context::getUrl(), '/') . $this->urlPath . (isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '')
             ) : $uri,
             $method === null ? $_SERVER['REQUEST_METHOD'] : $method,
             $headers === null ? $this->getAllHeaders() : $headers,
@@ -238,8 +238,9 @@ class Request extends \Scoop\Http\Message\Request
         $referencer = array();
         if (!$this->isAjax() && session_status() === PHP_SESSION_ACTIVE) {
             $referencer = isset($_SESSION['data-scoop']) ? $_SESSION['data-scoop'] : array();
+            $baseUrl = \Scoop\Context::getUrl();
             $_SESSION['data-scoop'] = array(
-                'http' => substr(ROOT, 0, strpos(ROOT, '/', 7)) . $_SERVER['REQUEST_URI']
+                'http' => substr($baseUrl, 0, strpos($baseUrl, '/', 7)) . $_SERVER['REQUEST_URI']
             );
         }
         return $referencer;

@@ -73,6 +73,7 @@ class Connection
         if (!$instance->inTransaction()) {
             return $instance->beginTransaction();
         }
+        return false;
     }
 
     public function commit()
@@ -89,6 +90,33 @@ class Connection
             return $this->instance->rollBack();
         }
         return false;
+    }
+
+    public function transact($callback)
+    {
+        if (!is_callable($callback)) {
+            throw new \RuntimeException('The callback should to be callable');
+        }
+        $level = false;
+        if (!$this->beginTransaction()) {
+            $level = uniqid('LEVEL_');
+            $this->exec(($this->quoteChar ? 'SAVEPOINT ' : 'SAVE TRANSACTION ') . $level);
+        }
+        try {
+            $result = $callback($this);
+            if (!$level) {
+                $this->commit();
+            } elseif ($this->quoteChar) {
+                $this->exec("RELEASE SAVEPOINT $level");
+            }
+        } catch (\Exception $ex) {
+            $this->rollbackTransaction($level);
+            throw $ex;
+        } catch (\Throwable $ex) {
+            $this->rollbackTransaction($level);
+            throw $ex;
+        }
+        return $result;
     }
 
     public function errorCode()
@@ -180,6 +208,21 @@ class Connection
 
     private function __clone()
     {
+    }
+
+    private function rollbackTransaction($level)
+    {
+        try {
+            if ($level) {
+                $rollback = $this->quoteChar ? 'ROLLBACK TO SAVEPOINT ' : 'ROLLBACK TRANSACTION ';
+                return $this->exec($rollback . $level) !== false;
+            }
+            return $this->rollBack();
+        } catch (\Exception $ex) {
+            error_log($ex);
+        } catch(\Throwable $ex) {
+            error_log($ex);
+        }
     }
 
     private function getInstance()

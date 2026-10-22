@@ -51,18 +51,13 @@ class Mapper
                 $className = $parent;
                 $fields[$className] = $this->plan->getFields($entity, $className);
             }
-            $event = $this->execute($entity, $fields) ? 'Scoop\Persistence\Event\EntityUpdated' : null;
+            $persisted = $this->execute($entity, $fields);
             $classes = array_keys($fields);
             $key = $this->updateKey($entity, $concreteClassName, end($classes));
-            if (!$this->identityMap->isPersisted($key)) {
-                $event = 'Scoop\Persistence\Event\EntityPersisted';
-            }
-            if ($this->identityMap->isRemoved($key)) {
-                $event = 'Scoop\Persistence\Event\EntityRemoved';
-            }
+            $persisted = $persisted && !$this->identityMap->isPersisted($key);
             $this->identityMap->setPersisted($key, $entity, $fields);
-            if ($event) {
-                $this->dispatcher->dispatch(new $event($entity));
+            if ($persisted) {
+                $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityPersisted($entity));
             }
         }
         $this->identityMap->purgeRemoved();
@@ -112,13 +107,14 @@ class Mapper
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $column))));
     }
 
-    private function execute($entity, $fields)
+    private function execute($entity, &$fields)
     {
         $key = strval($this->identityMap->getKey($entity));
         $index = strpos($key, ':');
         if ($this->identityMap->isPersisted($key)) {
             $params = array('id' => substr($key, $index + 1));
             if ($this->identityMap->isRemoved($key)) {
+                $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityDeletionPrepared($entity));
                 foreach ($fields as $className => $value) {
                     $idName = $this->getTableId($className);
                     $this->getStatement($className)
@@ -126,27 +122,45 @@ class Mapper
                     ->restrict($idName . '=:id')
                     ->run($params);
                 }
+                $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityRemoved($entity));
                 return true;
             }
             $updated = false;
-            foreach ($fields as $className => $value) {
+            $prepared = false;
+            $classNames = array_keys($fields);
+            $numClasses = count($classNames);
+            for ($i = 0; $i < $numClasses; ++$i) {
+                $className = $classNames[$i];
                 $persistedFields = &$this->identityMap->getPersistedFields($key, $className);
-                $updatedFields = $this->plan->getChangedFields($className, $persistedFields, $value);
+                $previousFields = $persistedFields;
+                $updatedFields = $this->plan->getChangedFields($className, $persistedFields, $fields[$className]);
                 if (!empty($updatedFields)) {
-                    $idName = $this->getTableId($className);
-                    $this->getStatement($className)
-                    ->update($updatedFields)
-                    ->restrict($idName . '=:id')
-                    ->run($params);
-                    $updated = true;
+                    if (!$prepared) {
+                        $persistedFields = $previousFields;
+                        $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityUpdatePrepared($entity));
+                        $fields = $this->refreshFields($entity, $fields);
+                        $prepared = true;
+                        $i = -1;
+                    } else {
+                        $idName = $this->getTableId($className);
+                        $this->getStatement($className)
+                        ->update($updatedFields)
+                        ->restrict($idName . '=:id')
+                        ->run($params);
+                        $updated = true;
+                    }
                 }
+            }
+            if ($updated) {
+                $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityUpdated($entity));
             }
             return $updated;
         }
         $baseClassName = array_keys($fields)[0];
-        $fields = array_reverse($fields, true);
         $id = null;
-        foreach ($fields as $className => $value) {
+        $this->dispatcher->dispatch(new \Scoop\Persistence\Event\EntityInsertionPrepared($entity));
+        $fields = $this->refreshFields($entity, $fields);
+        foreach (array_reverse($fields, true) as $className => $value) {
             if (isset($this->entityMap[$className]['discriminator'])) {
                 extract($this->entityMap[$className]['discriminator']);
                 if (isset($column, $map[$baseClassName])) {
@@ -162,6 +176,14 @@ class Mapper
             $baseClassName = $className;
         }
         return true;
+    }
+
+    private function refreshFields($entity, $fields)
+    {
+        foreach ($fields as $className => $value) {
+            $fields[$className] = $this->plan->getFields($entity, $className);
+        }
+        return $fields;
     }
 
     private function getStatement($className)

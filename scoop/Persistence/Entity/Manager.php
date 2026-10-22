@@ -108,13 +108,10 @@ class Manager
         if (!$this->working) {
             return;
         }
-        $connection = $this->builder->getConnection();
-        $ownsTransaction = $connection->beginTransaction() === true;
-        $this->mapper->save();
-        $this->relations->save();
-        if ($ownsTransaction) {
-            $connection->commit();
-        }
+        $this->builder->getConnection()->transact(function () {
+            $this->mapper->save();
+            $this->relations->save();
+        });
     }
 
     public function clean()

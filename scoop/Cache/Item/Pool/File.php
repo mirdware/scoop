@@ -106,20 +106,24 @@ class File extends \Scoop\Cache\Item\Pool
             'expiration' => $state->expiration ? $state->expiration->getTimestamp() : null
         );
         $serializedData = serialize($dataToSerialize);
-        $tmpFile = $this->cacheDir . '/temporary/' . uniqid(basename($filePath) . '_', true);
+        $temporaryDir = $this->cacheDir . '/temporary';
+        if (!is_dir($temporaryDir) || !is_writable($temporaryDir) || is_dir($filePath)) {
+            return false;
+        }
+        $tmpFile = $temporaryDir . '/' . uniqid(basename($filePath) . '_', true);
         $stream = @fopen($tmpFile, 'xb');
         if (!$stream) {
             return false;
         }
-        $success = @chmod($tmpFile, self::FILE_PERMISSIONS) &&
+        $success = chmod($tmpFile, self::FILE_PERMISSIONS) &&
             fwrite($stream, $serializedData) === strlen($serializedData);
         fclose($stream);
         if (!$success) {
-            @unlink($tmpFile);
+            unlink($tmpFile);
             return false;
         }
         if (!@rename($tmpFile, $filePath)) {
-            @unlink($tmpFile);
+            unlink($tmpFile);
             return false;
         }
         return true;
@@ -159,11 +163,16 @@ class File extends \Scoop\Cache\Item\Pool
         }
         $now = time();
         $this->nextCleanup = $now + $this->cleanupInterval;
-        $lock = @fopen($this->cacheDir . '/.cleanup', 'c+');
+        $lockPath = $this->cacheDir . '/.cleanup';
+        $verifyPath = is_file($lockPath) ? $lockPath : $this->cacheDir;
+        if (!is_writable($verifyPath) || !is_readable($verifyPath)) {
+            return;
+        }
+        $lock = fopen($lockPath, 'c+');
         if (!$lock) {
             return;
         }
-        @chmod($this->cacheDir . '/.cleanup', self::FILE_PERMISSIONS);
+        chmod($lockPath, self::FILE_PERMISSIONS);
         if (!flock($lock, LOCK_EX | LOCK_NB)) {
             fclose($lock);
             return;
@@ -210,7 +219,7 @@ class File extends \Scoop\Cache\Item\Pool
         $fp = @fopen($filePath, 'rb');
         if (!$fp) return null;
         if (!flock($fp, LOCK_SH)) {
-            @fclose($fp);
+            fclose($fp);
             return null;
         }
         $serializedData = '';
@@ -218,11 +227,15 @@ class File extends \Scoop\Cache\Item\Pool
             $serializedData .= fread($fp, 8192);
         }
         flock($fp, LOCK_UN);
-        @fclose($fp);
-        if ($serializedData === '') {
+        fclose($fp);
+        if (strncmp($serializedData, 'a:', 2) !== 0) {
             return null;
         }
-        return @unserialize($serializedData);
+        $data = unserialize($serializedData);
+        if (!key_exists('value', $data)) {
+            return null;
+        }
+        return $data;
     }
 
     private function getIterator()

@@ -37,9 +37,14 @@ class Helper
         $this->injector = $context->getInjector();
     }
 
+    public function getUrl($path)
+    {
+        return \Scoop\Context::getUrl() . ltrim($path, '/');
+    }
+
     public function asset($resource)
     {
-        return ROOT . self::$assets['path'] . $resource;
+        return $this->getUrl(self::$assets['path'] . $resource);
     }
 
     public function img($image)
@@ -50,7 +55,7 @@ class Helper
     public function css($styleSheet)
     {
         if ($this->viteHost) {
-            return "{$this->viteHost}app/styles/app.css";
+            return $this->getUrl('app/styles/app.css');
         }
         return $this->asset(self::$assets['css'] . $styleSheet) . '?v=' . $this->context->getConfig('app.version');
     }
@@ -58,7 +63,7 @@ class Helper
     public function js($javaScript)
     {
         if ($this->viteHost) {
-            return "{$this->viteHost}app/scripts/app.js";
+            return $this->getUrl('app/scripts/app.js');
         }
         return $this->asset(self::$assets['js'] . $javaScript) . '?v=' . $this->context->getConfig('app.version');
     }
@@ -77,7 +82,9 @@ class Helper
                 ->withQuery($query)
             );
         }
-        $host = $this->viteHost ? rtrim($this->viteHost, '/') : '//' . $_SERVER['HTTP_HOST'];
+        $url = \Scoop\Context::getUrl();
+        $baseUrl = new \Scoop\Http\Message\URI($url);
+        $host = $this->viteHost ? rtrim($url, '/') : $baseUrl->getScheme() . '://' . $baseUrl->getAuthority();
         $query = array_merge($this->request->getQueryParams(), $query);
         $queryString = http_build_query($query);
         if ($queryString) {
@@ -91,7 +98,7 @@ class Helper
         if (!$path) {
             throw new \InvalidArgumentException("route with id $id not found");
         }
-        return rtrim(ROOT, '/') . $path;
+        return $this->getUrl($path);
     }
 
     public function addPage($data, $quantity, $name = 'page')

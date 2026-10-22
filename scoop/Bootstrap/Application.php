@@ -2,14 +2,18 @@
 
 namespace Scoop\Bootstrap;
 
+use OpenApi\Spec\Response;
+use Scoop\View\Message;
+
 class Application
 {
     private static $loader;
     private $context;
     private $injector;
     private $stateful;
+    private $request;
+    private $response;
     private $error;
-    private $status;
     private $lifecycle;
     private $terminated;
 
@@ -32,22 +36,72 @@ class Application
 
     public function run()
     {
-        $this->bootstrap();
+        $this->terminated = false;
+        $this->error = null;
+        $this->response = null;
+        if ($this->stateful && session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $requestType = $this->context->getConfig('request', 'Scoop\Http\Message\Server\Request');
-        $router = $this->inject('Scoop\Http\Router');
-        $request = $this->inject($requestType);
-        $this->inject('Scoop\Bootstrap\Configuration')->setUp();
+        $router = $this->injector->get('Scoop\Http\Router');
+        $this->request = $this->injector->get($requestType);
+        $this->injector->get('Scoop\Bootstrap\Configuration')->setUp();
         \Scoop\View\Service::setUp($this->context);
         try {
-            $response = $router->route($request);
+            $this->response = $router->route($this->request);
             $this->terminated = true;
             $this->lifecycle->execute($this, 'complete', true);
         } catch (\Exception $ex) {
-            $response = $this->manageError($ex, $request->isAjax());
+            $this->response = $this->manageError($ex, $this->request->isAjax());
         } catch (\Throwable $ex) {
-            $response = $this->manageError($ex, $request->isAjax());
+            $this->response = $this->manageError($ex, $this->request->isAjax());
         }
-        $this->printResponse($response);
+        $this->printResponse();
+    }
+
+    public function execute(array $argv)
+    {
+        $code = 0;
+        $ex = null;
+        $commandName = array_shift($argv);
+        $trace = $commandName === '--trace';
+        if ($trace) {
+            $commandName = array_shift($argv);
+        }
+        $this->dispatchEvent(new \Scoop\Command\Event\ExecutionStarted($commandName, $argv));
+        try {
+            $writer = $this->injector->get('Scoop\Command\Writer');
+            $commandBus = $this->injector->get('Scoop\Command\Bus');
+            if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
+                $commandBus->dispatch($commandName, $argv);
+                $this->lifecycle->execute($this, 'complete', true);
+            } else {
+                $commands = $commandBus->getCommands();
+                $writer->write(
+                    'ICE/SCOOP version 0.9.0',
+                    '',
+                    'Commands:'
+                );
+                $maxlength = max(array_map('strlen', array_keys($commands)));
+                foreach ($commands as $command => $controller) {
+                    $command = str_pad($command, $maxlength);
+                    $writer->write("$command => <link:$controller.php!>");
+                }
+                $writer->write(
+                    '',
+                    'Options:',
+                    '--trace => show exception stack when execute a command',
+                    '',
+                    'Run app/ice COMMAND --help for more information'
+                );
+            }
+        } catch (\Exception $ex) {
+            $code = $this->writeError($writer, $ex, $trace);
+        } catch (\Throwable $ex) {
+            $code = $this->writeError($writer, $ex, $trace);
+        }
+        $this->dispatchEvent(new \Scoop\Command\Event\ExecutionFinished($commandName, $argv, $code, $ex));
+        return $code;
     }
 
     public function terminate()
@@ -55,27 +109,19 @@ class Application
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
-        try {
-            if ($this->terminated) {
-                $this->inject('Scoop\Event\Dispatcher')->dispatch(
-                    new \Scoop\Http\Event\RequestFinished($this->error, $this->status)
-                );
-            }
-        } catch (\Exception $ex) {
-            error_log($ex);
-        } catch (\Throwable $ex) {
-            error_log($ex);
+        if (isset($this->request)) {
+            $this->dispatchEvent(new \Scoop\Http\Event\RequestFinished(
+                $this->request,
+                $this->response,
+                $this->error
+            ));
         }
         $this->terminated = true;
         \Scoop\View\Service::reset();
         $this->lifecycle->execute($this, 'terminate', false);
+        $_SESSION = array();
         $this->injector->clean();
         $this->terminated = false;
-    }
-
-    public function inject($id)
-    {
-        return $this->injector->get($id);
     }
 
     public function isShuttingDown()
@@ -83,23 +129,7 @@ class Application
         return $this->terminated;
     }
 
-    private function manageError($ex, $isAjax)
-    {
-        $this->terminated = true;
-        $this->lifecycle->execute($this, 'rollback', false);
-        $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
-        $this->status = $exceptionManager->getStatusCode($ex);
-        $this->error = $ex;
-        if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
-            return $ex->getResponse();
-        }
-        if ($this->status) {
-            return $exceptionManager->map($ex, $isAjax, $this->status);
-        }
-        throw $ex;
-    }
-
-    private function printResponse($response)
+    private function printResponse()
     {
         $ignore = array(
             'transfer-encoding' => 1,
@@ -112,8 +142,8 @@ class Application
             'trailers' => 1,
             'upgrade' => 1
         );
-        http_response_code($response->getStatusCode());
-        $headers = $response->getHeaders();
+        http_response_code($this->response->getStatusCode());
+        $headers = $this->response->getHeaders();
         foreach ($headers as $name => $values) {
             if (!isset($ignore[strtolower($name)])) {
                 foreach ($values as $value) {
@@ -121,27 +151,49 @@ class Application
                 }
             }
         }
-        $body = $response->getBody();
+        $body = $this->response->getBody();
         $body->rewind();
         $resource = $body->detach();
         fpassthru($resource);
         fclose($resource);
     }
 
-    private function bootstrap()
+    private function manageError($ex, $isAjax)
     {
-        $this->terminated = false;
-        $this->error = null;
-        $this->status = null;
-        if (!defined('ROOT')) {
-            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
-            $viteHost = getenv('VITE_HOST');
-            define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
+        $this->error = $ex;
+        $this->terminated = true;
+        $this->lifecycle->execute($this, 'rollback', false);
+        $exceptionManager = $this->injector->get('Scoop\Http\Error\Mapper');
+        $status = $exceptionManager->getStatusCode($ex);
+        if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
+            return $ex->getResponse();
         }
-        if ($this->stateful && session_status() === PHP_SESSION_NONE) {
-            session_start();
+        if ($status) {
+            return $exceptionManager->map($ex, $isAjax, $status);
+        }
+        throw $ex;
+    }
+
+    private function writeError($writer, $ex, $trace)
+    {
+        $code = intval($ex->getCode());
+        $message = $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '');
+        if (isset($writer)) {
+            $writer->withError()->write("<danger:[ERROR]!> <error:$message!>");
+        } else {
+            error_log($message);
+        }
+        $this->lifecycle->execute($this, 'rollback', false);
+        return $code ? $code : 1;
+    }
+
+    private function dispatchEvent($event) {
+        try {
+            $this->injector->get('Scoop\Event\Dispatcher')->dispatch($event);
+        } catch (\Exception $ex) {
+            error_log($ex);
+        } catch (\Throwable $ex) {
+            error_log($ex);
         }
     }
 

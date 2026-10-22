@@ -21,7 +21,12 @@ class File extends \Scoop\Circuit\Breaker
     protected function synchronize($key, callable $callback)
     {
         $name = sha1($key);
-        $lock = @fopen($this->directory . '/locks/' . $name, 'c+');
+        $lockPath = $this->directory . '/locks/' . $name;
+        $verifyPath = is_file($lockPath) ? $lockPath : dirname($lockPath);
+        if (!is_writable($verifyPath) || !is_readable($verifyPath)) {
+            throw new \RuntimeException('Cannot open circuit lock.');
+        }
+        $lock = fopen($lockPath, 'c+');
         if (!$lock) {
             throw new \RuntimeException('Cannot open circuit lock.');
         }
@@ -53,12 +58,12 @@ class File extends \Scoop\Circuit\Breaker
         $temporary = $path . '.' . uniqid('', true);
         $data = serialize($state);
         if (file_put_contents($temporary, $data) !== strlen($data)) {
-            @unlink($temporary);
+            unlink($temporary);
             throw new \RuntimeException('Cannot write circuit state.');
         }
-        @chmod($temporary, 0600);
-        if (!@rename($temporary, $path)) {
-            @unlink($temporary);
+        chmod($temporary, 0600);
+        if (!rename($temporary, $path)) {
+            unlink($temporary);
             throw new \RuntimeException('Cannot replace circuit state.');
         }
     }

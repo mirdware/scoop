@@ -11,12 +11,17 @@ class Pool
     private $shutdownTimeout;
     private $maxDelay;
     private $dispatcher;
+    private $app;
 
     public function __construct(\Scoop\Event\Dispatcher $dispatcher, $shutdownTimeout = 120, $maxDelay = 60)
     {
         $this->shutdownTimeout = $shutdownTimeout;
         $this->maxDelay = $maxDelay;
         $this->dispatcher = $dispatcher;
+        if (function_exists('pcntl_fork') && function_exists('posix_kill')) {
+            $context = getenv('ICE_CONTEXT');
+            $this->app = new \Scoop\Bootstrap\Application($context ? $context : '');
+        }
     }
 
     public function run($workers)
@@ -38,8 +43,13 @@ class Pool
             if (isset($worker['processes']) && is_int($worker['processes']) && $worker['processes'] > 0) {
                 $processes = $worker['processes'];
             }
+            $internal = empty($worker['external']);
+            $app = $internal ? $this->app : null;
+            if ($internal && !$app) {
+                $command = array_merge(array(PHP_BINARY, 'app/ice'), $command);
+            }
             for ($i = 0; $i < $processes; $i++) {
-                $this->workers[] = new Pool\Worker($name, $command, $i, $policy);
+                $this->workers[] = new Pool\Worker($name, $command, $i, $policy, $app);
             }
         }
         if (empty($this->workers)) {
@@ -146,12 +156,12 @@ class Pool
                 }
             }
             $this->workers = array();
-        } catch (\Exception $exception) {
+        } catch (\Exception $ex) {
             $this->restoreSignals($stopedEvents);
-            throw $exception;
-        } catch (\Throwable $exception) {
+            throw $ex;
+        } catch (\Throwable $ex) {
             $this->restoreSignals($stopedEvents);
-            throw $exception;
+            throw $ex;
         }
         $this->restoreSignals($stopedEvents);
     }

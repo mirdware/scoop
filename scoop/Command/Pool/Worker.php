@@ -16,13 +16,15 @@ class Worker
     private $policy;
     private $finished = false;
     private $starts = 0;
+    private $app;
 
-    public function __construct($name, array $command, $replica, $policy)
+    public function __construct($name, array $command, $replica, $policy, $app)
     {
         $this->name = $name;
         $this->command = array_values($command);
         $this->replica = $replica;
         $this->policy = $policy;
+        $this->app = $app;
     }
 
     public function getName()
@@ -87,13 +89,16 @@ class Worker
 
     public function hasProcess()
     {
-        return is_resource($this->process);
+        return $this->app ? $this->process !== null : is_resource($this->process);
     }
 
     public function isRunning()
     {
         if (!$this->hasProcess()) {
             return false;
+        }
+        if ($this->app) {
+            return $this->exitCode === null && !$this->wait(WNOHANG);
         }
         $status = proc_get_status($this->process);
         $this->pid = $status['pid'];
@@ -108,6 +113,83 @@ class Worker
         $this->started = self::now();
         $this->pid = null;
         $this->exitCode = null;
+        $started = $this->app ? $this->startFork() : $this->startProcess();
+        if ($started) {
+            $this->starts++;
+        }
+        return $started;
+    }
+
+    public function scheduleRestart($delay)
+    {
+        $this->delay = $delay;
+        $this->next = self::now() + $delay;
+    }
+
+    public function terminate()
+    {
+        if ($this->isRunning()) {
+            if ($this->app) {
+                posix_kill($this->pid, SIGTERM);
+                return;
+            }
+            $sent = false;
+            if (function_exists('sapi_windows_generate_ctrl_event')) {
+                $sent = @sapi_windows_generate_ctrl_event(PHP_WINDOWS_EVENT_CTRL_BREAK, $this->pid);
+            }
+            if (!$sent) {
+                proc_terminate($this->process, 15);
+            }
+        }
+    }
+
+    public function close()
+    {
+        if ($this->hasProcess()) {
+            if ($this->app) {
+                if ($this->isRunning()) {
+                    posix_kill($this->pid, SIGKILL);
+                    $this->wait(0);
+                }
+                $this->process = null;
+                return;
+            }
+            if ($this->isRunning()) {
+                proc_terminate($this->process, 9);
+            }
+            $exitCode = proc_close($this->process);
+            $this->process = null;
+            if ($this->exitCode === null) {
+                $this->exitCode = $exitCode;
+            }
+        }
+    }
+
+    public static function now()
+    {
+        return function_exists('hrtime') ? hrtime(true) / 1000000000 : microtime(true);
+    }
+
+    private function startFork()
+    {
+        $pid = pcntl_fork();
+        if ($pid === -1) {
+            return false;
+        }
+        if ($pid === 0) {
+            pcntl_signal(SIGTERM, SIG_DFL);
+            pcntl_signal(SIGINT, SIG_DFL);
+            $code = $this->app->execute($this->command);
+            $this->app->terminate();
+            exit($code);
+        }
+        $this->pid = $pid;
+        $this->process = $pid;
+        return true;
+    }
+
+    private function startProcess()
+    {
         $command = $this->command;
         if (PHP_VERSION_ID < 70400) {
             $command = DIRECTORY_SEPARATOR === '\\' ?
@@ -128,46 +210,28 @@ class Worker
             return false;
         }
         $this->isRunning();
-        $this->starts++;
         return true;
     }
 
-    public function scheduleRestart($delay)
+    private function wait($options)
     {
-        $this->delay = $delay;
-        $this->next = self::now() + $delay;
-    }
-
-    public function terminate()
-    {
-        if ($this->isRunning()) {
-            $sent = false;
-            if (function_exists('sapi_windows_generate_ctrl_event')) {
-                $sent = @sapi_windows_generate_ctrl_event(PHP_WINDOWS_EVENT_CTRL_BREAK, $this->pid);
-            }
-            if (!$sent) {
-                proc_terminate($this->process, 15);
-            }
+        do {
+            $status = null;
+            $pid = pcntl_waitpid($this->pid, $status, $options);
+        } while ($pid === -1 && pcntl_get_last_error() === PCNTL_EINTR);
+        if ($pid === 0) {
+            return false;
         }
-    }
-
-    public function close()
-    {
-        if ($this->hasProcess()) {
-            if ($this->isRunning()) {
-                proc_terminate($this->process, 9);
-            }
-            $exitCode = proc_close($this->process);
-            $this->process = null;
-            if ($this->exitCode === null) {
-                $this->exitCode = $exitCode;
-            }
+        if ($pid === -1) {
+            $this->exitCode = 1;
+        } elseif (pcntl_wifexited($status)) {
+            $this->exitCode = pcntl_wexitstatus($status);
+        } elseif (pcntl_wifsignaled($status)) {
+            $this->exitCode = 128 + pcntl_wtermsig($status);
+        } else {
+            $this->exitCode = 1;
         }
-    }
-
-    public static function now()
-    {
-        return function_exists('hrtime') ? hrtime(true) / 1000000000 : microtime(true);
+        return true;
     }
 
     private function quotePosixArgument($argument)

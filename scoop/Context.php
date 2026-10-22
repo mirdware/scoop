@@ -82,6 +82,15 @@ class Context
         return $path;
     }
 
+    public static function getUrl()
+    {
+        $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+        (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+        (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
+        $viteHost = getenv('VITE_HOST');
+        return ($viteHost ? rtrim($viteHost, '/') : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\')) . '/';
+    }
+
     private function instantiateInjector($lifecycle)
     {
         $injector = $this->getConfig('injector', '\Scoop\Container\Injector\Memory');

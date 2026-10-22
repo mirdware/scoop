@@ -16,10 +16,10 @@ class Writer
     public function __construct($styles)
     {
         $this->isVT100 = function_exists('sapi_windows_vt100_support') ?
-            sapi_windows_vt100_support(STDOUT, true) :
-            strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN';
-        if (!$this->isVT100) {
-            @exec('chcp 65001 2>NUL');
+        sapi_windows_vt100_support(STDOUT, true) :
+        strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN';
+        if (!$this->isVT100 && function_exists('exec')) {
+            exec('chcp 65001 2>NUL');
         }
         foreach ($styles as $name => $style) {
             array_push($this->names, "<$name:");

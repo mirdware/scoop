@@ -98,7 +98,7 @@ class Route
         if ($queryString) {
             $queryString = "?$queryString";
         }
-        return rtrim(ROOT, '/') . $path . $queryString;
+        return rtrim(\Scoop\Context::getUrl(), '/') . $path . $queryString;
     }
 
     private function buildFromPositional($url)

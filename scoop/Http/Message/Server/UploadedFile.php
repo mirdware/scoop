@@ -68,8 +68,11 @@ class UploadedFile
         if (is_uploaded_file($this->file)) {
             $success = move_uploaded_file($this->file, $targetPath);
         } else {
-            $success = @rename($this->file, $targetPath);
-            if (!$success) {
+            if (!is_file($this->file) || is_dir($targetPath)) {
+                throw new \RuntimeException('The file could not be moved', 735);
+            }
+            $success = rename($this->file, $targetPath);
+            if (!$success && is_readable($this->file)) {
                 $success = copy($this->file, $targetPath) && unlink($this->file);
             }
         }

@@ -1,5 +1,5 @@
 FROM oven/bun:1 AS bun
-FROM dunglas/frankenphp:1.13.0-php8.5-bookworm
+FROM dunglas/frankenphp:1.13-php8.5-bookworm
 ENV PHP_INI_SCAN_DIR="/usr/local/etc/php/conf.d:/etc/php/conf.d"
 RUN --mount=type=bind,source=common/etc/php/extensions.list,target=/tmp/extensions.list \
     apt-get update && apt-get install -y --no-install-recommends git unzip curl \

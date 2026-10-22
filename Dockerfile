@@ -9,7 +9,7 @@ COPY app/styles/ app/styles/
 COPY app/scripts/ app/scripts/
 RUN npm run build
 
-FROM dunglas/frankenphp:1.13.0-php8.5-bookworm AS runtime
+FROM dunglas/frankenphp:1.13-php8.5-bookworm AS runtime
 ENV PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/etc/php/conf.d
 RUN --mount=type=bind,source=.devcontainer/common/etc/php/extensions.list,target=/tmp/extensions.list \
     tr -d '\r' < /tmp/extensions.list | xargs install-php-extensions \

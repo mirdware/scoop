@@ -34,7 +34,9 @@ class Environment
             $viteHost = getenv('VITE_HOST');
             define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
-        define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
+        if (!defined('DEBUG_MODE')) {
+            define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
+        }
         $this->injector = $this->instantiateInjector();
     }
 

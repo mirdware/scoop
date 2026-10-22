@@ -4,25 +4,32 @@ namespace Scoop\Http\Event;
 
 class RequestFinished
 {
+    private $request;
+    private $response;
     private $error;
-    private $status;
     private $time;
 
-    public function __construct($error, $status)
+    public function __construct($request, $response, $error)
     {
         $this->time = new \DateTime();
+        $this->response = $response;
+        $this->request = $request;
         $this->error = $error;
-        $this->status = $status;
+    }
+
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    public function getResponse()
+    {
+        return $this->response;
     }
 
     public function getError()
     {
         return $this->error;
-    }
-
-    public function getStatusCode()
-    {
-        return $this->status;
     }
 
     public function getTime()

@@ -14,6 +14,7 @@ class MinLength extends \Scoop\Validation\Rule
 
     public function validate($value)
     {
+        $value = $value === null ? '' : $value;
         $this->length = strlen($value);
         return $this->min <= $this->length;
     }

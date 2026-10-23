@@ -13,6 +13,7 @@ class Date extends \Scoop\Validation\Rule
 
     public function validate($value)
     {
+        $value = $value === null ? '' : $value;
         if ($this->format) {
             $dateTime = \DateTime::createFromFormat($this->format, $value);
             return $dateTime && $dateTime->format($this->format) === $value;

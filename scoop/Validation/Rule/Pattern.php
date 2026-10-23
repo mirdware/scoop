@@ -13,6 +13,7 @@ class Pattern extends \Scoop\Validation\Rule
 
     public function validate($value)
     {
+        $value = $value === null ? '' : $value;
         return preg_match('/' . $this->pattern . '/', $value);
     }
 }

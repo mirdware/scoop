@@ -10,9 +10,15 @@ class Architecture
 {
     private $namespaces;
 
-    public function __construct($contextFile = null)
+    public function __construct(string $contextFile)
     {
-        $this->namespaces = $this->boundedNamespaces($contextFile ? $contextFile : dirname(__DIR__) . '/app/context.php');
+        if (substr($contextFile, -4) !== '.php') {
+            $contextFile .= '.php';
+        }
+        if (!preg_match('~^(?:[A-Za-z]:[/\\\\]|/)~', $contextFile)) {
+            $contextFile = dirname(__DIR__) . '/' . $contextFile;
+        }
+        $this->namespaces = $this->boundedNamespaces($contextFile);
     }
 
     public function testBoundedIsolation(): array
@@ -75,7 +81,14 @@ class Architecture
         }
         $namespaces = array();
         foreach ($context['bounded'] as $namespace => $directory) {
-            if (!is_string($namespace) || !preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*(\\\\[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)*\\\\?$/D', $namespace)) {
+            if (
+                !is_string($namespace)
+                || !preg_match(
+                    '/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*'
+                    . '(\\\\[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)*\\\\?$/D',
+                    $namespace
+                )
+            ) {
                 throw new \UnexpectedValueException('Each bounded key must be a namespace.');
             }
             if (!is_string($directory) || $directory === '') {
@@ -83,7 +96,10 @@ class Architecture
             }
             $namespace = rtrim($namespace, '\\');
             foreach ($namespaces as $existing) {
-                if (stripos($namespace . '\\', $existing . '\\') === 0 || stripos($existing . '\\', $namespace . '\\') === 0) {
+                if (
+                    stripos($namespace . '\\', $existing . '\\') === 0
+                    || stripos($existing . '\\', $namespace . '\\') === 0
+                ) {
                     throw new \UnexpectedValueException('Bounded namespaces must not overlap: ' . $namespace);
                 }
             }

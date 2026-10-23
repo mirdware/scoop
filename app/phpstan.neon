@@ -1,11 +1,24 @@
 parameters:
+    scoopEntitiesFile: app/config/model
+    scoopContextFile: app/context
     level: 1
     paths:
         - ../src
     parallel:
         maximumNumberOfProcesses: 3
+parametersSchema:
+    scoopEntitiesFile: string()
+    scoopContextFile: string()
 services:
     -
+        class: Test\EntityProperties
+        arguments:
+            entitiesFile: %scoopEntitiesFile%
+        tags:
+            - phpstan.properties.readWriteExtension
+    -
         class: Test\Architecture
+        arguments:
+            contextFile: %scoopContextFile%
         tags:
             - phpat.test

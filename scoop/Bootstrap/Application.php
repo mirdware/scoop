@@ -74,6 +74,7 @@ class Application
             $commandBus = $this->injector->get('Scoop\Command\Bus');
             if ($commandName !== null && preg_match('/^[a-zA-Z]/', $commandName)) {
                 $commandBus->dispatch($commandName, $argv);
+                $this->terminated = true;
                 $this->lifecycle->execute($this, 'complete', true);
             } else {
                 $commands = $commandBus->getCommands();
@@ -176,6 +177,7 @@ class Application
 
     private function writeError($writer, $ex, $trace)
     {
+        $this->terminated = true;
         $code = intval($ex->getCode());
         $message = $ex->getMessage() . ($trace ? PHP_EOL . $ex->getTraceAsString() : '');
         if (isset($writer)) {
